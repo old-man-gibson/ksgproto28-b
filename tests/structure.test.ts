@@ -72,7 +72,8 @@ describe('system folders', () => {
 
   it('the kernel-side files of a system do not import Svelte or the UI', () => {
     // Files reachable from index.ts run in the worker and in node.
-    for (const file of listFiles('src/systems').filter((f) => f.endsWith('.ts') && !f.endsWith('/panel.ts'))) {
+    const uiSide = (f: string) => f.endsWith('/panel.ts') || f === 'src/systems/panels.ts';
+    for (const file of listFiles('src/systems').filter((f) => f.endsWith('.ts') && !uiSide(f))) {
       const source = stripComments(readText(file));
       expect(source, `${file} imports a Svelte file`).not.toMatch(/from\s+'[^']*\.svelte(\.ts)?'/);
       expect(source, `${file} imports svelte`).not.toMatch(/from\s+'svelte/);

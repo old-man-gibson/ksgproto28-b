@@ -1,0 +1,95 @@
+/*
+ * Design tokens. This is the only global stylesheet. It may style :root, html
+ * and body and nothing else; a test enforces that. Every other style lives in
+ * a component's own <style> block and reads these tokens.
+ *
+ * A theme is a set of colour tokens. The default theme is on :root; the
+ * others override it through the data-theme attribute on <html>.
+ */
+:root {
+  --color-bg: #14161a;
+  --color-surface: #1d2026;
+  --color-surface-raised: #272b33;
+  --color-border: #3a3f4a;
+  --color-text: #e6e8ec;
+  --color-text-dim: #9aa1ad;
+  --color-accent: #6ea8fe;
+  --color-accent-text: #0b1220;
+  --color-ok: #6fcf97;
+  --color-warn: #f2c94c;
+  --color-danger: #eb5757;
+  --color-overlay: rgba(0, 0, 0, 0.6);
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+
+  --radius: 6px;
+  --border: 1px solid var(--color-border);
+  --shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+
+  --font-body: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  --text-sm: 0.8125rem;
+  --text-md: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 2rem;
+
+  /* Smallest size of anything a finger must hit. */
+  --tap: 2.75rem;
+  /* Width below which the shell uses the phone layout: 640px. Media queries
+     cannot read a custom property, so components repeat the number. */
+  --nav-width: 12rem;
+
+  color-scheme: dark;
+}
+
+:root[data-theme='light'] {
+  --color-bg: #f4f5f7;
+  --color-surface: #ffffff;
+  --color-surface-raised: #eceef2;
+  --color-border: #c9cdd6;
+  --color-text: #1b1e24;
+  --color-text-dim: #5c6370;
+  --color-accent: #1f5fd1;
+  --color-accent-text: #ffffff;
+  --color-ok: #1e8e4e;
+  --color-warn: #9a6b00;
+  --color-danger: #c62828;
+  --color-overlay: rgba(20, 22, 26, 0.45);
+  --shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  color-scheme: light;
+}
+
+:root[data-theme='parchment'] {
+  --color-bg: #efe6d2;
+  --color-surface: #f8f1e1;
+  --color-surface-raised: #e6dbc2;
+  --color-border: #b9a983;
+  --color-text: #2e2618;
+  --color-text-dim: #6b5d43;
+  --color-accent: #8a4b12;
+  --color-accent-text: #fdf8ec;
+  --color-ok: #3d6b2f;
+  --color-warn: #8a5a00;
+  --color-danger: #9c2b1b;
+  --color-overlay: rgba(46, 38, 24, 0.45);
+  --shadow: 0 4px 16px rgba(46, 38, 24, 0.2);
+  color-scheme: light;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--text-md);
+  line-height: 1.4;
+}
