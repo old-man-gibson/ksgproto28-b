@@ -1,0 +1,191 @@
+/**
+ * The system module contract. A system is one folder under src/systems/. Its
+ * index.ts default-exports the result of `defineSystem`. The kernel composes
+ * the game from the list of declarations and from nothing else.
+ */
+import type { ContentIndex, RegistryDef } from './content';
+import type { DeepReadonly, Json } from './json';
+import type { Rng } from './rng';
+
+// ---- commands ----
+
+export interface Command<P = unknown> {
+  readonly type: string;
+  readonly payload: P;
+}
+
+/** A command type and its payload type. Call it to build a command. */
+export interface CommandDef<P> {
+  (payload: P): Command<P>;
+  readonly type: string;
+}
+
+export function defineCommand<P = void>(type: string): CommandDef<P> {
+  const make = (payload: P): Command<P> => ({ type, payload });
+  return Object.assign(make, { type });
+}
+
+/** A command either ran or was skipped with a reason. */
+export type CommandResult = { readonly ok: true } | { readonly ok: false; readonly reason: string };
+
+export const OK: CommandResult = Object.freeze({ ok: true });
+
+export function skipped(reason: string): CommandResult {
+  return { ok: false, reason };
+}
+
+export interface CommandHandler<S> {
+  readonly command: CommandDef<any>;
+  handle(ctx: Ctx<S>, payload: any): CommandResult;
+}
+
+export function handle<S, P>(
+  command: CommandDef<P>,
+  fn: (ctx: Ctx<S>, payload: P) => CommandResult,
+): CommandHandler<S> {
+  return { command, handle: fn };
+}
+
+// ---- events ----
+
+/** An event type and its payload type. */
+export interface EventDef<P> {
+  readonly type: string;
+  /** Type marker only. Never set. */
+  readonly __payload?: P;
+}
+
+export function defineEvent<P = void>(type: string): EventDef<P> {
+  return { type };
+}
+
+export interface GameEvent<P = unknown> {
+  readonly type: string;
+  /** Who caused it. Defaults to the id of the emitting system. */
+  readonly source: string;
+  readonly tick: number;
+  readonly payload: P;
+}
+
+export interface EventHandler<S> {
+  readonly event: EventDef<any>;
+  handle(ctx: Ctx<S>, event: GameEvent<any>): void;
+}
+
+export function on<S, P>(event: EventDef<P>, fn: (ctx: Ctx<S>, event: GameEvent<P>) => void): EventHandler<S> {
+  return { event, handle: fn };
+}
+
+// ---- derived values ----
+
+export interface Modifier {
+  stat: string;
+  /** Value of a stat = (base + sum of add) * product of mult. */
+  kind: 'add' | 'mult';
+  value: number;
+}
+
+export interface StatDef {
+  base: number;
+}
+
+/** What a modifier source may read. It may not read derived values. */
+export interface SourceCtx<S> {
+  readonly state: DeepReadonly<S>;
+  readonly content: ContentIndex;
+  read<T>(system: SystemDef<T, any>): DeepReadonly<T>;
+}
+
+export interface ModifierSourceDef<S> {
+  /** `<system id>/<name>`. */
+  id: string;
+  collect(ctx: SourceCtx<S>): Modifier[];
+}
+
+// ---- contexts ----
+
+/** Read access, given to `view`. */
+export interface ViewCtx<S> {
+  readonly state: DeepReadonly<S>;
+  readonly tick: number;
+  readonly content: ContentIndex;
+  derived(stat: string): number;
+  read<T>(system: SystemDef<T, any>): DeepReadonly<T>;
+}
+
+/** Write access to the system's own slice, given to tick, commands and events. */
+export interface Ctx<S> {
+  /** The system's own slice. Mutate it in place. */
+  readonly state: S;
+  readonly tick: number;
+  readonly rng: Rng;
+  readonly content: ContentIndex;
+  derived(stat: string): number;
+  /** Another system's slice, read-only. */
+  read<T>(system: SystemDef<T, any>): DeepReadonly<T>;
+  /** Queue an event. Delivery happens after the current handler returns. */
+  emit<P>(event: EventDef<P>, payload: P, source?: string): void;
+  /** Bump the change counter of a modifier source. Call it when its inputs change. */
+  touch(sourceId: string): void;
+  /** Record an action that did not happen, outside a command. */
+  skip(action: string, reason: string): void;
+}
+
+// ---- the declaration ----
+
+export interface SystemDef<S, V = unknown> {
+  /** Equals the folder name. Lower case letters, digits and hyphens. */
+  id: string;
+  /** Version of the slice shape. Starts at 1. */
+  version: number;
+  /** A new slice. Must be JSON. */
+  initial(): S;
+  /** Step N takes slice data at version N to version N + 1. Defined in migrations.ts. */
+  migrations?: Record<number, (data: Json) => Json>;
+  /** Derived values this system owns, keyed `<system id>/<name>`. */
+  stats?: Record<string, StatDef>;
+  modifiers?: ModifierSourceDef<S>[];
+  tick?(ctx: Ctx<S>): void;
+  commands?: CommandHandler<S>[];
+  events?: EventHandler<S>[];
+  /** Registry name to registry. Names are unique across the game. */
+  content?: Record<string, RegistryDef>;
+  /** What the UI sees of this system. Must return new objects, never the slice. */
+  view?(ctx: ViewCtx<S>): V;
+  /** Tick order: lower runs first. Ties run in id order. Default 0. */
+  order?: number;
+}
+
+const SYSTEM_ID = /^[a-z][a-z0-9-]*$/;
+
+/** Check a declaration and return it. Throws on a contract breach. */
+export function defineSystem<S, V = unknown>(def: SystemDef<S, V>): SystemDef<S, V> {
+  const bad = (message: string): never => {
+    throw new Error(`system "${def.id}": ${message}`);
+  };
+  if (!SYSTEM_ID.test(def.id)) bad('id must match ' + SYSTEM_ID.source);
+  if (!Number.isInteger(def.version) || def.version < 1) bad('version must be an integer of 1 or more');
+
+  const steps = Object.keys(def.migrations ?? {})
+    .map(Number)
+    .sort((a, b) => a - b);
+  const expected = Array.from({ length: def.version - 1 }, (_, i) => i + 1);
+  if (steps.length !== expected.length || steps.some((step, i) => step !== expected[i]))
+    bad(`version ${def.version} needs migrations for exactly [${expected.join(', ')}], got [${steps.join(', ')}]`);
+
+  const prefix = def.id + '/';
+  const owned = (kind: string, ids: string[]) => {
+    const seen = new Set<string>();
+    for (const id of ids) {
+      if (!id.startsWith(prefix) || id.length === prefix.length) bad(`${kind} "${id}" must start with "${prefix}"`);
+      if (seen.has(id)) bad(`${kind} "${id}" is declared twice`);
+      seen.add(id);
+    }
+  };
+  owned('stat', Object.keys(def.stats ?? {}));
+  owned('modifier source', (def.modifiers ?? []).map((m) => m.id));
+  owned('command', (def.commands ?? []).map((c) => c.command.type));
+  return def;
+}
+
+export type AnySystem = SystemDef<any, any>;

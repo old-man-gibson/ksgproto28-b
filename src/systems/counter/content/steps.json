@@ -1,0 +1,26 @@
+[
+  {
+    "id": "small_step",
+    "name": "Small step",
+    "cost": 10,
+    "costGrowth": 1.5,
+    "rateAdd": 1
+  },
+  {
+    "id": "big_step",
+    "name": "Big step",
+    "cost": 100,
+    "costGrowth": 1.6,
+    "rateAdd": 8,
+    "requires": "small_step"
+  },
+  {
+    "id": "doubler",
+    "name": "Doubler",
+    "cost": 500,
+    "costGrowth": 4,
+    "rateAdd": 0,
+    "rateMult": 2,
+    "requires": "big_step"
+  }
+]
