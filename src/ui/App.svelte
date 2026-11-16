@@ -184,8 +184,8 @@
   footer {
     grid-area: footer;
     display: flex;
-    justify-content: space-between;
-    gap: var(--space-3);
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-5);
     padding: var(--space-2) var(--space-4);
     border-top: var(--border);
     color: var(--color-text-dim);

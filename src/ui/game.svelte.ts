@@ -156,6 +156,8 @@ export async function boot(): Promise<void> {
   simulatedAt = Date.now();
   started = true;
   publish();
+  // Store the caught-up state now, so a second reload does not repeat the gap.
+  if (game.loadError === null) save();
   lastFrame = performance.now();
   requestAnimationFrame(frame);
   setInterval(save, AUTOSAVE_MS);

@@ -59,7 +59,8 @@
     }
   }
 
-  const refIds = (name: string) => (working[name] ?? []).map((row) => String(row.id));
+  // A Set, because an edit in progress can hold the same id twice.
+  const refIds = (name: string) => [...new Set((working[name] ?? []).map((row) => String(row.id)))];
 
   async function save() {
     saving = true;
@@ -70,7 +71,7 @@
         body: JSON.stringify({ registry: registryName, records: $state.snapshot(records) }),
       });
       const body = (await response.json()) as { ok?: boolean; file?: string; error?: string; issues?: unknown[] };
-      if (body.ok) status = { ok: true, text: `Wrote ${body.file}` };
+      if (body.ok) status = { ok: true, text: `Wrote ${body.file}. Reload the game page to use it.` };
       else status = { ok: false, text: body.error ?? `The server refused the edit: ${body.issues?.length ?? 0} issue(s)` };
     } catch (err) {
       status = { ok: false, text: `Save failed: ${(err as Error).message}` };

@@ -114,9 +114,10 @@
   }
 
   @media (max-width: 640px) {
-    /* Clear of the navigation bar at the bottom of the phone layout. */
+    /* Clear of the navigation bar and the footer line at the bottom of the
+       phone layout. */
     .dev-log {
-      bottom: calc(var(--tap) + var(--space-5) + env(safe-area-inset-bottom, 0px));
+      bottom: calc(var(--tap) + var(--space-6) + 2.5rem + env(safe-area-inset-bottom, 0px));
     }
   }
 </style>
