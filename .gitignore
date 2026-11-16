@@ -1,0 +1,28 @@
+node_modules/
+dist/
+*.local
+.claude/settings.local.json
+.forge-backups/
+.scratch-*/
+
+# This repository is PUBLIC. No third-party pixels go in git, bought or free.
+# Rule: every third-party art file lives under src/assets/licensed/, one
+# folder per source (aekashics/, mattz-art/, clockwork-raven/, idylwild/).
+# Git holds manifests and tile indexes only (names and paths, no pixels).
+# A checkout without the folder must still run: emoji for icons, the node
+# diagram for maps, no portrait for monsters.
+src/assets/licensed/
+
+# The paths the old repository used, ignored too in case a file is copied
+# across with its old path.
+src/assets/enemies/
+src/assets/tilemaps/
+src/assets/packs/
+
+# The art pack zip for the Import art pack button, and any other archive.
+art-pack/
+*.zip
+
+# Screenshots can contain licensed pixels. Local only.
+docs/**/*.png
+docs/**/*.jpg
