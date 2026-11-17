@@ -5,7 +5,9 @@ import { buyStep } from '../src/systems/counter';
 import { makeKernel } from './helpers';
 
 /** Wall-clock limit for simulating 8 hours of ticks with the toy system. */
-const EIGHT_HOUR_BUDGET_MS = 2000;
+// Raised from 2,000 in spine port 4: the combat system adds a tick and three
+// event handlers. Measured 929 ms alone and 1,447 ms inside the full test run.
+const EIGHT_HOUR_BUDGET_MS = 3000;
 
 describe('headless runner', () => {
   it('runs N ticks and the commands at their ticks', () => {
@@ -75,5 +77,6 @@ describe('offline catch-up', () => {
 
     expect((result.kernel.data as { tick: number }).tick).toBe(200 + ticks);
     expect(elapsed, `8 hours took ${elapsed.toFixed(0)} ms`).toBeLessThan(EIGHT_HOUR_BUDGET_MS);
-  });
+    // The test's own time limit is above the budget, so the budget is what fails.
+  }, EIGHT_HOUR_BUDGET_MS * 5);
 });

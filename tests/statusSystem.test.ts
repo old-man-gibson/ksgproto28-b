@@ -380,7 +380,8 @@ describe('offline catch-up with a condition held', () => {
     const elapsed = performance.now() - started;
     expect((result.slices.statuses.data as unknown as StatusesState).held[PLAYER].map((h) => h.id)).toEqual(['bleeding', 'tainted']);
     expect(elapsed, `8 hours took ${elapsed.toFixed(0)} ms`).toBeLessThan(HELD_EIGHT_HOUR_BUDGET_MS);
-  });
+    // The test's own time limit is above the budget, so the budget is what fails.
+  }, HELD_EIGHT_HOUR_BUDGET_MS * 3);
 });
 
 describe('save', () => {

@@ -1363,6 +1363,14 @@ export function runCombatTick(ctx: C): void {
   tickEnemyRegen(ctx, c);
   tickEnemyMinds(c);
 
+  // What `combat/damage-enemy` killed since the last tick is swept here: the
+  // request has no kill of its own. The old tick swept at this point, after
+  // the strikes of the run's ability.
+  if (c.enemies.some((e) => e !== null && e.hp <= 0)) {
+    sweepDead(ctx);
+    if (!state.fight) return;
+  }
+
   const front = c.enemies[0];
   if (!front) {
     // Every slot emptied. `onKill` ends the encounter first, so this is a guard.

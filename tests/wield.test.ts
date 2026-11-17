@@ -452,9 +452,8 @@ describe('hand bonuses', () => {
   });
 });
 
-describe('parrying in a fight', () => {
-  // Ported in tests/combatStatuses.test.ts (spine port 4): turns blows aside and answers them, without spending the action bar
-});
+// describe('parrying in a fight'):
+// Ported in tests/combatStatuses.test.ts (spine port 4): turns blows aside and answers them, without spending the action bar
 
 describe('the parry line', () => {
   it('Deflection trains from any parrying tool, and raises both axes', () => {

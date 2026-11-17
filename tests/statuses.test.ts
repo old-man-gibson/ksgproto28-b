@@ -533,9 +533,8 @@ describe('conditions on the other side of the fight', () => {
   });
 });
 
-describe('afflictions in a real fight', () => {
-  // Ported in tests/combatStatuses.test.ts (spine port 4): fighting things that burn you leaves you burning
-});
+// describe('afflictions in a real fight'):
+// Ported in tests/combatStatuses.test.ts (spine port 4): fighting things that burn you leaves you burning
 
 describe('conditions that stop you doing things', () => {
   it('a rattled head blocks spells and sends blows wide', () => {
@@ -1191,9 +1190,8 @@ describe('removal that answers to how HARD, not how often', () => {
   });
 });
 
-describe('a monster hears the type it was actually hit with', () => {
-  // Ported in tests/combatStatuses.test.ts (spine port 4): never reports a slice key as a damage type
-});
+// describe('a monster hears the type it was actually hit with'):
+// Ported in tests/combatStatuses.test.ts (spine port 4): never reports a slice key as a damage type
 
 describe('conditions are resisted on APPLICATION, not only on their damage', () => {
   it('an ice slime does not freeze from the chill that freezes anything else', () => {
