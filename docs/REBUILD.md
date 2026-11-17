@@ -71,7 +71,8 @@ cross-system laws enforced by tests.
 
 1. **Kernel.** The skeleton in section 3, an empty shell UI, the forge reading
    schemas, `npm run verify` in continuous integration.
-2. **Spine.** Floor 0 and floors 1 to 3, up to first prestige. Needs combat,
+2. **Spine.** Floor 0, the town Threshold and floors 1 to 6, up to first prestige.
+   Port order: `docs/SPINE.md`. Needs combat,
    statuses, derived stats, attributes, skills, levels, navigation, quests,
    shops, prestige.
 3. **Systems, one per port.** Martial, arcane, divine, alchemy, cooking,
