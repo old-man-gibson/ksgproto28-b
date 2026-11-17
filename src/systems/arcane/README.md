@@ -27,9 +27,9 @@ Ported now (spine port 5):
 |---|---|
 | `ARCANE_WORDS` | Content `arcane_words`, whole. `art` is a file name. |
 | `parseSentence`, `ArcaneParse`, `ArcaneClause`, `SpokenWord`, `displayWord`, `splitWordId` | `grammar.ts` |
-| `composeArcane`, every conjunction, adverb position rule, ward, mending, undoing and stacking rule, the signature | `compose.ts` |
-| `counterEfficiency`, `matchCeiling`, the undo constants | `counter.ts` |
-| `wordBonusFor`, `WORD_POWER_PER_LEVEL` | `compose.ts`. `composeArcane` keeps the `levels` argument. |
+| `composeArcane`, every conjunction, adverb position rule, ward, mending, undoing and stacking rule, the signature | `grammar.ts` |
+| `counterEfficiency`, `matchCeiling`, the undo constants | `src/systems/spellcraft/counter.ts`: they read a counter and a signature of any school. |
+| `wordBonusFor`, `WORD_POWER_PER_LEVEL` | `grammar.ts`. `composeArcane` keeps the `levels` argument. |
 | The arcane case of `specForSource` and of `spellKey` | Registered with `spellcraft` (`registerSchool('arcane')`). |
 
 Waits for step 3 (the arcane port):
@@ -42,11 +42,23 @@ Waits for step 3 (the arcane port):
 ### Why nothing ported now is rewritten then
 
 - `composeArcane(words, levels?)` has the old signature. Step 3 passes the
-  speaker's word levels through `specFor` of the school registry.
+  speaker's word levels from `resolveSpell` of `spellcraft`, the one place a
+  spell is read in the caster's hands.
 - The legality checks call the parser and the composer; they do not change
   them.
 - No state: this system's slice is empty. Step 3 adds the novelty ledger
   and the word unlocks with a version bump.
+
+### How the code was ported
+
+`grammar.ts` is written by `scripts/port-arcane.py`: it copies the code of
+the named line ranges of the old `systems/arcane.ts`, drops the old
+comments, changes the imports and one text lookup, and adds new comments.
+The parser and the composer are therefore the old statements, unchanged.
+Run it again only against the old file it was written from.
+
+Content: `content/arcane_words.json` (40 words), written by
+`node scripts/convert-content.mjs arcane_words`.
 
 ### No rolls
 

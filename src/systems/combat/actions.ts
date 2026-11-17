@@ -153,7 +153,18 @@ export interface PickedActive {
 }
 
 export interface PlayerActionKind {
-  /** The ids of this kind the player has, beyond the explicit order (known techniques, prepared spells). */
+  /**
+   * Where the ids of this kind stand among those the player did not order.
+   * The old `activeRotation` appended the gene active (10), skill actives
+   * (20), known techniques (30), prepared spells (40) and ability actions
+   * (50), in that order. Default 100; ties keep registration order.
+   */
+  rank?: number;
+  /**
+   * The ids of this kind the player has now (known techniques, prepared
+   * spells). An id of this kind in the explicit order that is not among them
+   * is inert: it is left out of the rotation.
+   */
   known(ctx: ActionCtx): string[];
   /**
    * The active when it can be used now for `slot`, else null. The cooldown
@@ -187,9 +198,9 @@ export function playerActionHandler(id: string): PlayerActionKind | undefined {
   return best === undefined ? undefined : PLAYER_KINDS.get(best);
 }
 
-/** Every registered player kind, in registration order. */
-export function playerActionKinds(): IterableIterator<[string, PlayerActionKind]> {
-  return PLAYER_KINDS.entries();
+/** Every registered player kind, by rank, then in registration order. */
+export function playerActionKinds(): [string, PlayerActionKind][] {
+  return [...PLAYER_KINDS.entries()].sort((a, b) => (a[1].rank ?? 100) - (b[1].rank ?? 100));
 }
 
 /** Tests only: drop a registered kind. */

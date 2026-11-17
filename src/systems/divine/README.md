@@ -55,6 +55,21 @@ heat strike of 1.2 with a 60% chance of `on_fire`). They resolve through
 the monster kind `cast` of `spellcraft`. With no kin standing,
 `mud_poultice` is passed over and the supply is not spent.
 
+### Content
+
+Written by `node scripts/convert-content.mjs miracles deities deity_tags`:
+30 miracles, 11 deities, 44 deity tags.
+
+- Three old deity tag ids hold a space (`goblin pantheon`, `foai pantheon`,
+  `yolixoch pantheon`). A record id here is the slug; the field `tag` is the
+  old id, which deities and relation rules name. `DEITY_TAGS` is keyed by
+  `tag`.
+- Seven miracles of the old data are stated with an empty spell name and a
+  cooldown of 0 (`tuigamalas_mighty_stick`, `spear_and_fang`, `atomic_state`,
+  `desired_sound`, `fourth_fire`, `fourth_twice`, `fourth_crush`), and
+  `sproutbringer` with a cooldown of 0. They are ported as they are; the
+  schema of a stated spell allows both.
+
 ## Skip reasons
 
 None: this system has no command, no request and no tick.

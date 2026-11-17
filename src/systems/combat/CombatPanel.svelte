@@ -121,11 +121,14 @@
           </div>
           <div class="bar-row">
             <span class="bar thin"><span class="fill action" style:width={share(enemy.bar, 1)}></span></span>
+            <span class="act" data-testid="enemy-action-{slot}" title={enemy.action?.name ?? ''}
+              >{enemy.action ? `${enemy.action.icon} ${enemy.action.name}` : ''}</span
+            >
           </div>
         {:else}
           <div class="head"><span class="name dim">{slot === 0 ? 'Centre slot' : `Slot ${slot + 1}`}</span></div>
           <div class="bar-row"><span class="bar"></span><span class="num dim">empty</span></div>
-          <div class="bar-row"><span class="bar thin"></span></div>
+          <div class="bar-row"><span class="bar thin"></span><span class="act"></span></div>
         {/if}
       </li>
     {/each}
@@ -310,6 +313,20 @@
     flex: none;
   }
 
+  /* What the monster last did. The box is always there, so a name appearing moves nothing. */
+  .act {
+    flex: 0 0 65%;
+    height: 1.25rem;
+    min-width: 0;
+    overflow: hidden;
+    color: var(--color-text-dim);
+    font-size: var(--text-sm);
+    line-height: 1.25rem;
+    text-align: right;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   .head {
     display: flex;
     align-items: baseline;
@@ -358,7 +375,7 @@
 
     .enemy {
       gap: 0;
-      height: 3.5rem;
+      height: 3.75rem;
       padding: var(--space-1) var(--space-2);
     }
 
@@ -366,8 +383,9 @@
       height: 1rem;
     }
 
-    .enemy .bar-row:last-child {
-      height: 0.75rem;
+    .act {
+      height: 1rem;
+      line-height: 1rem;
     }
 
     .head {

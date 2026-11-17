@@ -1286,8 +1286,16 @@ export function activeRotation(ctx: C, order: readonly string[]): string[] {
   const add = (id: string) => {
     if (!out.includes(id)) out.push(id);
   };
-  for (const id of order) add(id);
-  for (const [, kind] of playerActionKinds()) for (const id of kind.known(ctx as ActionCtx)) add(id);
+  const kinds = playerActionKinds();
+  const known = new Map(kinds.map(([, kind]) => [kind, kind.known(ctx as ActionCtx)]));
+  for (const id of order) {
+    // A stale id of a registered kind (a spell stood down, a technique not
+    // known) is inert. An id of no registered kind stays, so the pick reports it.
+    const kind = playerActionHandler(id);
+    if (kind && !known.get(kind)!.includes(id)) continue;
+    add(id);
+  }
+  for (const [, kind] of kinds) for (const id of known.get(kind)!) add(id);
   return out;
 }
 

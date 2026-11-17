@@ -74,9 +74,9 @@ Monster (`registerMonsterAction('technique')`):
   the monster stands (`Enemy.position`, absent is neutral). A monster reads
   the declared ways only: it has no ledger. An unknown technique id is
   refused with a reason.
-- `shape`: name, icon, `damageMult`, `hits`, `inflicts`, `cooldown`, the
-  exit `to`, and `watchKey`. The move's `damageType` is not handed to the
-  monster's blow: the old enemy phase read the kit's type only.
+- `shape`: name, icon, `damageMult`, `damageType` (the blow is thrown as
+  the move's type when it names one, else as the kit's), `hits`, `inflicts`,
+  `cooldown`, the exit `to`, and `watchKey`.
 - The tick does the rest (port 4): the clock stamp with the default of 60
   ticks, the displaced exit, the feed line, the blow.
 
@@ -112,6 +112,72 @@ Makes: `combat/add-buff`, `combat/move-player`, `combat/stamp-cooldown`,
 `resources/spend-now`. Emits `log/feed`, `attributes/grant-xp`,
 `skills/grant-xp`.
 
+### Changed while building
+
+- The player's position outside a fight is neutral (`playerPosition` of
+  combat). The source `martial/position` reads that, so closing a fight
+  touches it only when the player was not standing neutral. Measured: a
+  touch at every close cost 3,600 ms over 8 hours of floor 1 fights.
+- `entriesOf`, `moveOf` and `exitOf` are in `index.ts`, not in files of
+  their own.
+
+## Files
+
+| File | Holds |
+|---|---|
+| `defs.ts` | The three registries, their schemas, the record types, `TECHNIQUES`, `POSITIONS`. |
+| `index.ts` | The ways in, the move, the gates, the three registrations with combat, the position source, the declaration. |
+| `content/` | `techniques.json` (29), `positions.json` (7), `fork_archetypes.json` (8). Written by `node scripts/convert-content.mjs positions fork_archetypes techniques`. |
+
+In the JSON a technique's `from` is a list of ways (`{ any: true }` or
+`{ at: [...] }`, each with an optional trigger) and `mastery` is a list
+keyed by `tier`: the kernel schema has no union and no map. A trigger
+condition's value is a string.
+
 ## Skip reasons
 
-Filled in with the code.
+All through `combat/rotation`, once per fight, entry and reason.
+
+- A monster's entry: no technique has the id.
+- The player's `technique:<id>`: no technique has the id; the technique is
+  not known; it needs a grounded, an impaled or a sheathed weapon (weapon
+  states: step 3); it needs a readied spell (step 3); its move changes a
+  weapon state or readies or delivers a spell (step 3).
+
+Not a skip, the ordinary rhythm of a fight: the clock, the position, a
+trigger that does not hold, the weapon family not in hand, the slot (a
+strike is not picked for the buff slot), an interception the pool cannot pay
+for.
+
+## Old rules ported as they are
+
+- `goblin_raid_leader` (floor 4) has the rotation Pocket Sand, Dirty Stab,
+  Gather. Dirty Stab starts from `extended`; nothing in that rotation exits
+  to `extended`, and a displacement lands on `off_balance` only. The entry
+  cannot fire.
+- `hobgoblin` (floors 5, 6) has the rotation Hamstring, Dirty Stab, Lunge,
+  Gather, Pocket Sand. Hamstring and Lunge both start from `coiled` and
+  Hamstring is asked first; Pocket Sand is asked last. Each of the two
+  fires only while the entry asked before it is on its clock. At the
+  hobgoblin's own pace neither fired in 6,000 ticks at levels 6, 10 and 14;
+  both fire for a hobgoblin given +1.5 attack speed
+  (`tests/monsterActions.test.ts`).
+- A monster reads no trigger and no weapon family: only the declared
+  positions and the clock.
+- A monster's technique is stamped, and its watch counter bumped, only when
+  the blow was not dodged, shrouded, walled or parried: the stamp is after
+  those rolls in the enemy phase.
+- The answer of a counter does not write `outgoing.kills` and, as in port 4,
+  is recorded by `combat/damage-enemy` in `outgoing.damage`.
+- The incoming multiplier of a position is read with `|| 1`: a multiplier of
+  0 would read as none. The dodge multiplier keeps an explicit 0. No record
+  has an incoming multiplier of 0.
+
+## Differences from the old build
+
+- The answer of a counter lands through `combat/damage-enemy`, so the
+  target's conditions are told of the damage (`enemyTookDamage`) and
+  `combat/hit` is emitted. The old `fireCounter` took the HP off directly.
+- A defensive form's clock is stamped by the tick before the form runs; the
+  old buff slot stamped it after the buff and the stamina. Nothing reads the
+  clock in between.

@@ -87,12 +87,13 @@ describe('the player kind technique:', () => {
     expect(entry.damage?.steps.some((s) => s.label === 'Gather' && s.mult === TECHNIQUES.gather.move.damageMult)).toBe(true);
   });
 
-  it('a technique that is not known is not picked', () => {
+  it('a technique that is not known is inert in the saved order', () => {
     const g = arena(5);
     g.dispatch(setRotation({ order: ['technique:gather'] }));
     for (let i = 0; i < 400; i++) g.tick();
     expect(texts(g).some((t) => t.includes('Gather strikes'))).toBe(false);
-    expect(skipsOf(g, 'combat/rotation').some((r) => r.includes('the technique is not known'))).toBe(true);
+    // The old `activeRotation` left a stale id out; it is not a skip.
+    expect(skipsOf(g, 'combat/rotation')).toEqual([]);
   });
 
   it('standing off balance raises incoming damage through the hook stat, and the plain swing returns to neutral', () => {

@@ -24,7 +24,7 @@ import { ask, makeGame, setMods, slice } from './helpers';
  *
  * Left behind, for the ports of the systems they need: queasy through food
  * (cooking, consumables), Iron Stomach (titles), overgrowth through forced
- * healing (combat), tag resistances and the damage slices of monsters
+ * healing (ported in spine port 5: tests/overgrowth.test.ts), tag resistances and the damage slices of monsters
  * (combat), monster penetration and its lint (combat, world).
  */
 
@@ -219,8 +219,7 @@ describe('queasy, overgrowth and proliferating are resisted through poison', () 
   it.todo('refuse-grade food is thinned by poison resistance, because it is done to the eater (cooking, consumables)');
   it.todo('the Scorched Mess, which grants Queasy outright, is thinned the same way (cooking, consumables)');
   it.todo('nourishment is still not resisted: a dish’s own grants land in full (cooking, consumables)');
-  it.todo('overgrowth lands thinned on a poison-resistant monster, and its escalation is not billed again (port 5 or arcane: `healEnemy`, the forced healing of a working)');
-  it.todo('a monster at 100% poison resistance cannot be overgrown, though forced healing still heals (port 5 or arcane: `healEnemy`, the forced healing of a working)');
+  // Ported in tests/overgrowth.test.ts (spine port 5): the two cases of overgrowth through forced healing (`healEnemy`).
 });
 
 describe('immunity stated by another system (the old `TitleDef.immune`)', () => {

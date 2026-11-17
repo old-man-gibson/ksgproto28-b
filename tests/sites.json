@@ -619,5 +619,61 @@
       "capShare": 1
     },
     "forced": true
+  },
+  "f6_tunnels": {
+    "id": "f6_tunnels",
+    "name": "The Tunnels",
+    "encounters": [
+      {
+        "monsterId": "goblin",
+        "weight": 40,
+        "level": [
+          10,
+          12
+        ]
+      },
+      {
+        "monsterId": "hobgoblin",
+        "weight": 30,
+        "level": [
+          10,
+          12
+        ]
+      },
+      {
+        "monsterId": "goblin_firetongue",
+        "weight": 15,
+        "level": [
+          10,
+          12
+        ]
+      },
+      {
+        "monsterId": "goblin_witch_doctor",
+        "weight": 15,
+        "level": [
+          10,
+          12
+        ]
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 50
+      },
+      {
+        "size": 2,
+        "weight": 30
+      },
+      {
+        "size": 3,
+        "weight": 20
+      }
+    ],
+    "dynamicLevel": {
+      "factor": 1,
+      "capShare": 1
+    }
   }
 }

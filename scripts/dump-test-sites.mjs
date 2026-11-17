@@ -32,6 +32,8 @@ const SPOTS = [
   'the_cages',
   'f1_storerooms',
   'f6_great_hall',
+  // Spine port 5: the floor 6 table with both casters, for the fourth 8-hour budget.
+  'f6_tunnels',
 ];
 
 const entry = path.join(os.tmpdir(), `ksgb-sites-entry-${process.pid}.ts`);

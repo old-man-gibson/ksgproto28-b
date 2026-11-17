@@ -523,7 +523,8 @@ describe('rotation kinds are registered, not coded', () => {
 
   it('a player working takes the place of the swing and lands through combat/damage-enemy', () => {
     registerPlayerAction('grimoire:', {
-      known: () => [],
+      // The kind has the id: an id of the saved order its kind does not have is inert.
+      known: () => ['grimoire:1'],
       pick: (_ctx, id, slot, fight) =>
         slot === 'attack'
           ? {

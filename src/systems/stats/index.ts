@@ -33,6 +33,8 @@ export function statOf(ctx: Reads, key: StatKey, entity?: string, variant?: stri
 }
 
 const BLOCKS = new WeakMap<ReadonlyMap<string, number>, DerivedStats>();
+/** The kernel ids of the stat keys, in key order: built once, not per block. */
+const STAT_IDS: readonly string[] = STAT_KEYS.map((key) => STATS_PREFIX + key);
 
 /**
  * The whole stat block of an entity. The object is shared by every caller
@@ -43,7 +45,7 @@ export function statBlockOf(ctx: Reads, entity?: string, variant?: string): Read
   let block = BLOCKS.get(table);
   if (!block) {
     block = {} as DerivedStats;
-    for (const key of STAT_KEYS) block[key] = table.get(STATS_PREFIX + key)!;
+    for (let i = 0; i < STAT_KEYS.length; i++) block[STAT_KEYS[i]] = table.get(STAT_IDS[i])!;
     BLOCKS.set(table, block);
   }
   return block;

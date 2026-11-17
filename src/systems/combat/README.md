@@ -52,7 +52,7 @@ When it leaves the fight this system emits `statuses/forget` and calls
 
 | Field | Holds |
 |---|---|
-| `fight` | The live fight or null. Old `state.combat`: `enemies` (5 slots), `playerBar`, `momentum`, `position`, `cooldowns`, `events`, `forced`, `prevented`, `introTicks`, `reported`. |
+| `fight` | The live fight or null. Old `state.combat`: `enemies` (5 slots), `playerBar`, `momentum`, `position`, `cooldowns`, `events`, `forced`, `prevented`, `introTicks`, `reported`, and since version 2 `buffs`. |
 | `site` | The encounter site fights are rolled from, or null. Old `SPOTS[state.spot]`, as far as combat read it. |
 | `hunting` | The hunt loop is on: a fight is rolled when the respawn timer runs out. |
 | `respawnTimer` | Ticks until the next roll. |
@@ -225,8 +225,8 @@ rule; roll the next fight from the site when `hunting`.
 
 - `combat/sizeRank` was dropped: `items` already holds the body's size.
 - `combat/incantFillMult` is named `combat/barFillMult`.
-- `combat/heal-enemy` is not declared. It arrives with the system that
-  forces healing on a monster (port 5 or arcane).
+- `combat/heal-enemy` was not declared in port 4. Port 5 declares it
+  ("Port 5 design").
 - `combat/set-rotation`, `combat/stamp-action` and `combat/close-ledger`
   were added.
 - `resources/heal-now` is declared in `resources` and not used here yet.
@@ -300,6 +300,34 @@ the overgrowth ledger that `healEnemy` wrote on a status instance.
 `pickActive(ctx, 'buff')` stamps the clock of the active it performs, as
 the old buff slot did for a spell and for a defensive form.
 
+### Port 5: changed while building
+
+- `registerInterception(key, handler)` and `registerBlowRider(key, handler)`
+  take a key, so a test can drop what it registered (`unregisterHook`).
+- `registerTriggerSubject` is in `triggers.ts`.
+- `combat/attack-retaliation` was added: the cost of attacking under the
+  player's conditions, for a working that takes the swing's place. The old
+  `castCraftedAttack` called `applyRetaliation` itself.
+- `combat/hurt-enemy` takes `outgoing?`: a backlash is written to the
+  ledger, a spill is not, as in the old code.
+- Two sources were added. `combat/buffs` states the buffs of the fight on
+  the player, labelled `Buff: <name>`. `combat/position` states nothing: it
+  is the change counter of the player's position, for a source of another
+  system that reads it through `dependsOn`.
+- `playerPosition(state)`: the position of the open fight, neutral with
+  none. A fight starts neutral, so the position source is touched only when
+  the position changes. A touch at every close of a fight rebuilt the
+  player's stat block once per fight: 8 hours of floor 1 fights went from
+  4,000 ms to 7,600 ms until this was changed.
+- `Enemy.lastAction` is shown by the view for 30 ticks
+  (`ACTION_SHOWN_TICKS`) as `EnemyView.action`. The panel has a box for it
+  beside the enemy's action bar; the box is there with or without a name,
+  so nothing moves. On a phone an enemy row is 3.75rem high (was 3.5rem).
+- The tick reads the player's stat block again after a buff-slot active
+  ran: a buff or a new position changes it.
+- `statBlockOf` of `stats` builds the stat ids once, not per block: measured
+  on the floor 6 run, 13,100 ms to 11,500 ms.
+
 ## Old to new
 
 | Old `combat.ts` | Lines | Here |
@@ -342,15 +370,16 @@ Other old files: `ledger.ts` is `ledger.ts` whole. `huntrest.ts`:
 | Old part | Attaches through |
 |---|---|
 | Floating weapons, telekinesis | A system with its own tick, ordered before combat, calling `combat/damage-enemy`. The swing already reads `handSwingShare` of `items`. `landGraze` takes the share. |
-| Player techniques, the six monster techniques | `registerPlayerAction('technique:')`, `registerMonsterAction('technique')`; hook stats `combat/positionDodgeMult`, `combat/positionIncomingMult`; `fight.position`, `Enemy.position`. |
-| Counter techniques (`pickCounter`, `fireCounter`) | Needs a hook inside the incoming blow that this port does not have. `fight.prevented` and the `onHit` stamp are kept for it. Listed under "Open for the martial port". |
-| Crafted spells, monster workings, `castCraftedAttack` | `registerPlayerAction('grimoire:')`, `registerMonsterAction('cast')`, `combat/damage-enemy`, `combat/stamp-action`, `resources/hit`. |
-| Counterspells | Hears `combat/attack` and the workings of its own kind; arcane port. |
+| Player techniques, monster techniques | Ported in spine port 5 by `src/systems/martial`: `registerPlayerAction('technique:')`, `registerMonsterAction('technique')`, the source `martial/position` on the two position hook stats. Learning and mastery are step 3. |
+| Counter techniques (`pickCounter`, `fireCounter`) | Ported in spine port 5 by `src/systems/martial` through `registerInterception`. |
+| Crafted spells, monster workings, `castCraftedAttack`, `castCraftedSelf`, `healEnemy` | Ported in spine port 5 by `src/systems/spellcraft`: `registerPlayerAction('grimoire:')`, `registerMonsterAction('cast')`, `combat/land-slices`, `combat/heal-enemy`. The book's writing side is step 3. |
+| Counterspells | Ported in spine port 5 in `src/systems/spellcraft/cast.ts`. |
+| The refuting body (`refuteCast`, `isSealed`) | `registerRefuter` of `spellcraft`; mutagens port. |
 | Facet ability strikes and actions | `combat/damage-enemy`, `combat/bar-filled`, `combat/hit`, `registerPlayerAction('facet:')`. |
 | Gene abilities, incantation, tongues | A player kind for the gene active; `combat/barFillMult`. |
-| Coatings (`spendCoating`) | Hears `combat/hit` of kind `attack`; alchemy port. Its per-hit slices need a hook inside the blow: listed with the counters. |
+| Coatings (`spendCoating`) | `registerBlowRider`: `perHit` for the typed slices of each hit, `afterBlow` for the conditions and the "used up" line; alchemy port. A test registers one. |
 | Statues and rubble, `standAside` | No monster of floors 0 to 6 has the rule. A statue condition on an enemy is reported once through the skip log. |
-| Skill actives (`strike`, `spell`, `buff`), combat buffs | No skill record in the registry is an active. A player kind for skill ids when one exists. |
+| Skill actives (`strike`, `spell`, `buff`) | No skill record in the registry is an active. A player kind for skill ids when one exists. Combat buffs exist since port 5 (`combat/add-buff`). |
 | The approach (`pendingApproach`) | The world port applies it after `combat/fight-started`, or through a field of `combat/start-forced`. |
 | Practice shaping (`practiceXp`) | `skills` and `attributes` have no hook for shaping a grant by the receiving level. A fight against training equipment pays unshaped XP. |
 | Toll golem reward and spell reactions, wards, festival, sea | Not ported. The 30-tick address of the toll golem is ported (`introTicks`). |
@@ -367,8 +396,16 @@ Other old files: `ledger.ts` is `ledger.ts` whole. `huntrest.ts`:
 - `combat/set-rotation`: the order is not a list of ids.
 - `combat/start-forced`, `combat/start-staged`: a site or member issue, as
   for `combat/hunt`; a staged fight needs a member.
-- `combat/damage-enemy`, `combat/stamp-action`: no enemy has the entity id.
-- `combat/rotation`: no system has registered the action kind.
+- `combat/damage-enemy`, `combat/stamp-action`, `combat/heal-enemy`,
+  `combat/land-slices`, `combat/hurt-enemy`: no enemy has the entity id (for
+  `damage-enemy` and `land-slices`: no living enemy).
+- `combat/add-buff`, `combat/move-player`, `combat/stamp-cooldown`,
+  `combat/mark-event`: no fight is open.
+- `combat/set-trigger`: the rotation id is empty; the id has no trigger to
+  remove; the trigger is not an object.
+- `combat/rotation`: no system has registered the action kind; a monster's
+  entry whose supply is spent; a reason the kind gave (listed in the README
+  of `martial` and of `spellcraft`). One line per fight, entry and reason.
 - `combat/encounter`: a line needs the sky (world port).
 - `combat/statue`: an enemy holds a statue condition.
 - `combat/close-ledger`: no ledger is open.
@@ -453,7 +490,10 @@ skip.
 - A monster's graze that takes the player to 0 HP does not end the fight:
   the enemy phase stops, and the defeat follows on the next blow that lands.
   No monster record has the `graze` stat.
-- The task text counted 146 monsters; the old registry holds 131.
+- The task text counted 146 monsters; the old registry holds 131. Counted
+  in port 5: `MONSTERS` of the old `data/monsters.data.ts` has 131 keys and
+  all 131 are in `monsters.json`. The file holds 146 lines with an `id:`
+  field: the 131 monsters, 7 tiers, 4 modifier tiers and 4 rarities.
 - The survey in `docs/SPINE.md` section 1 counted two monster spell
   sentences on floors 0 to 6. The old data also gives `goblin_witch_doctor`
   (floor 6) three divine workings.

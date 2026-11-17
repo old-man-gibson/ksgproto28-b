@@ -791,6 +791,7 @@ registerMonsterAction('cast', {
 });
 
 registerPlayerAction(GRIMOIRE_PREFIX, {
+  rank: 40,
   // Prepared spells ride the rotation; a spell that is not prepared is not offered.
   known: (ctx) =>
     ctx

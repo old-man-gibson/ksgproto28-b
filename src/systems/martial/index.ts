@@ -192,6 +192,8 @@ registerMonsterAction('technique', {
       name: def.name,
       icon: def.icon,
       ...(move.damageMult !== undefined ? { damageMult: move.damageMult } : {}),
+      // The old enemy phase threw the blow as `move.damageType ?? kit.damageType`.
+      ...(move.damageType ? { damageType: move.damageType } : {}),
       ...(move.hits !== undefined ? { hits: move.hits } : {}),
       ...(move.inflicts ? { inflicts: move.inflicts } : {}),
       // The old enemy phase stamped `tech.move.cooldown ?? 60`; every record has a cooldown.
@@ -229,6 +231,7 @@ function gate(ctx: ActionCtx, def: TechniqueDef, held: Held, fight: DeepReadonly
 }
 
 registerPlayerAction(PREFIX, {
+  rank: 30,
   known: (ctx) => knownTechniques(ctx.read(martial)).map((t) => `${PREFIX}${t.id}`),
   pick(ctx, id, slot, fight) {
     const def = TECHNIQUES[id.slice(PREFIX.length)];

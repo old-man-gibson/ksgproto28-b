@@ -27,11 +27,12 @@ Ported now (spine port 5):
 | `SpellSpec`, `SpellStrike`, `SpellCounter`, `SpellSource`, `CraftedSpell` | `types.ts` |
 | `specForSource`, `spellKey`, the spec cache, the faded inscription | `spec.ts`, over a registry of schools (`registerSchool`). This folder imports no school. |
 | `workingSignature`, `leadingElement`, `undoWorking` | `spec.ts` |
-| `castMonsterWorking`, `resolveMonsterWorking` | `monster.ts`: monster kind `cast`, registered with combat. One kind for every school. |
+| `castMonsterWorking`, `resolveMonsterWorking` | `cast.ts`: monster kind `cast`, registered with combat. One kind for every school. |
 | Cast branch of `pickMonsterAction` | `available` of that kind: a counterspell is never a turn's action; a working for kin only with no kin standing; a mind in debt; a sealed working. |
-| `castCraftedAttack`, `castCraftedSelf`, `miracleSynergy`, `anyAfflicted`, `applySelfRiders` | `player.ts`: player kind `grimoire:`, registered with combat. |
+| `castCraftedAttack`, `castCraftedSelf`, `miracleSynergy`, `anyAfflicted`, `applySelfRiders` | `cast.ts`: player kind `grimoire:`, registered with combat. |
 | Grimoire branch of `pickActive` | `pick` of that kind. |
-| `pickCounterspell`, `springCounterspell`, `answerPlayerWorking`, `springEnemyCounter`, `counterPayload`, `layBurn` | `counter.ts` |
+| `pickCounterspell`, `springCounterspell`, `answerPlayerWorking`, `springEnemyCounter`, `counterPayload`, `layBurn` | `cast.ts` |
+| `counterEfficiency`, `matchCeiling`, the undo constants, `OTHERS_POWER` (old `arcane.ts`) | `counter.ts`: they read a `SpellCounter` and a signature, whatever school made them. |
 | `findSpell`, `preparedSpells` | Reads of the slice. |
 
 Waits for step 3 (the arcane, divine and psionic ports):
@@ -39,9 +40,10 @@ Waits for step 3 (the arcane, divine and psionic ports):
 - Writing the book: `addSpell`, `forgetSpell`, `renameSpell`, `setPrepared`,
   `preparedCap`, the deity conflict at preparation, `hasSpell`.
 - The reading in the caster's hands (`resolveSpellFor`: word levels for an
-  arcane sentence, the gear bias for a psionic shape). A school may register
-  `specFor`; no school does in this port, so the bare reading is used, as
-  the old code did for a speaker with no word levels.
+  arcane sentence, the gear bias for a psionic shape). `resolveSpell` in
+  `cast.ts` is the one place the player's spell is read; it returns the bare
+  reading, which is what the old code gave a speaker with no word levels.
+  Step 3 adds the school's contextual reading there.
 - Casting outside a fight (`castUtility`).
 - Word XP for a cast (`grantCastWordXp`): the arcane port hears
   `spellcraft/cast`.
@@ -75,7 +77,7 @@ Waits for step 3 (the arcane, divine and psionic ports):
 
 ### Schools
 
-`registerSchool(school, { spec(source), relation?(a, b), key?(source) })`.
+`registerSchool(school, { key(source), spec(source), relation?(a, b) })`.
 
 - `spec` composes a source to a `SpellSpec`, or null for a source that no
   longer resolves (the faded inscription: no strikes, 1 mana, 200 ticks).
@@ -129,6 +131,73 @@ They replace the direct calls of the old code into systems that are not
 ported: `noteTollSpell`, `reactTollGolem`, `facetSignal('miracleCast')`,
 `grantCastWordXp`, `onCritLanded`.
 
+### Changed while building
+
+- The monster and player resolutions and the counterspells are one file,
+  `cast.ts`: each calls the others.
+- `counterEfficiency` and its constants are in `counter.ts` here, not in
+  `arcane`: `cast.ts` reads them and this folder imports no school.
+- `spellcraft/strike-landed` carries `defId`.
+- Two requests of this system to itself were added for its own slice:
+  `spellcraft/note-casting` and `spellcraft/note-miracle`.
+
+## Files
+
+| File | Holds |
+|---|---|
+| `types.ts` | `SpellSpec` and its parts, `SpellSource`, `CraftedSpell`, `spellSpecSchema` for a spell stated in content. |
+| `spec.ts` | The school registry, `specForSource`, `spellKey`, `sourceIssue`, the signature, `undoWorking`. |
+| `counter.ts` | `counterEfficiency` and its constants. |
+| `state.ts` | The slice, the two events, the requests to itself, the refuter registry. |
+| `cast.ts` | The resolutions, the counterspells, the two registrations with combat. |
+| `index.ts` | The declaration and the two trigger subjects `enemy.castSchool`, `enemy.castElement`. |
+
 ## Skip reasons
 
-Filled in with the code.
+All through `combat/rotation`, once per fight, entry and reason.
+
+- A monster's cast entry: no system has registered the school; the source
+  does not resolve to a spell; the working is for its kin only and no kin is
+  standing; its mind is in debt; the working is sealed for this fight.
+- The player's `grimoire:<uid>`: the spell is sealed for this fight; the
+  school is not registered or the source does not resolve; a condition
+  blocks casting; not enough mana; not enough focus.
+
+Not a skip: the clock, a counterspell waiting for a casting, a spell that is
+not prepared, the slot.
+
+## Old rules ported as they are
+
+- The damage of the player's working is not written to the fight ledger's
+  `outgoing`. The old `castCraftedAttack` called `noteOutgoing` for the
+  graft harvest only; a weapon blow writes its damage. The spill of a
+  working is not written either.
+- The spill of a working takes HP off the flanker and tells its conditions
+  nothing.
+- A monster's working is not dodged, shrouded, walled or parried, and the
+  player's bracing does not apply to it (`incomingSlice` with no bonus
+  armour).
+- A strike of a monster's working is rounded with a floor of 1 per landing,
+  so the three hits of Vermin Swarm deal at least 1 each.
+- `afflicts` of a monster's working are applied after the check that the
+  player still stands; riders of a strike before it.
+- Miracle synergy records the cast also when nothing resonates, so a
+  neutral or hostile miracle between two friendly ones breaks the chain.
+- The feed line of `empowered` and of `transfers` says "poison" whatever
+  conditions the spell names.
+- A cast's XP is not paid when the per-attack retaliation of a condition
+  leaves the player at 0 HP.
+
+## Differences from the old build
+
+- A spell that cannot be paid for, that a condition blocks or that is
+  sealed is reported in the skip log. The old build passed it over silently
+  (`docs/PITFALLS.md` section 6).
+- The dead are swept by the tick after the handler returns, not inside the
+  cast. A counterspell's payload that kills is processed at the same point
+  of the tick as the old sweep that followed it.
+- The player's own burn from "undo me" and a monster's burn go through
+  `statuses/apply` with `resist: true`; a monster always resists, as before.
+- `noteTollSpell`, `reactTollGolem`, `facetSignal`, `grantCastWordXp` and
+  `onCritLanded` are not called: their systems hear `spellcraft/cast`,
+  `spellcraft/strike-landed` and `combat/hit` when they are ported.
