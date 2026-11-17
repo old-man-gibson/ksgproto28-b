@@ -26,7 +26,6 @@ import {
   namedFact,
   scaleFact,
   statBlockOf,
-  statMod,
   statOf,
   styleFact,
   type AttributeId,
