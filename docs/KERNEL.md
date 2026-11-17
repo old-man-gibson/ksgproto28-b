@@ -32,7 +32,8 @@ slice type.
 | `initial()` | A new slice. Must be JSON. |
 | `migrations` | Step N takes slice data from version N to N + 1. Imported from `./migrations`. |
 | `stats` | Derived values the system owns, each with a base. Ids start with `<id>/`. |
-| `modifiers` | Modifier sources. Ids start with `<id>/`. |
+| `modifiers` | Modifier sources. Ids start with `<id>/`. A source may list `dependsOn`. |
+| `resolve(ctx)` | Optional. Computes every stat under `<id>/` that has no base (section 6). |
 | `tick(ctx)` | Runs once per tick. |
 | `commands` | `handle(commandDef, (ctx, payload) => result)`. Types start with `<id>/`. |
 | `events` | `on(eventDef, (ctx, event) => void)`. Any system's events. |
@@ -51,10 +52,13 @@ The context (`ctx`) given to `tick`, command handlers and event handlers:
 | `tick` | Current tick number. |
 | `rng` | The seeded generator: `next()`, `int(n)`, `chance(p)`. |
 | `content` | `all<T>(registry)`, `get<T>(registry, id)`. |
-| `derived(stat)` | A derived value. |
+| `derived(stat, entity?, variant?)` | A derived value. `entity` defaults to the player. |
+| `stats(entity?, variant?)` | Every derived value of an entity, as a read-only map. |
+| `modifiers(entity?)` | Every modifier collected for an entity, read-only. |
 | `read(otherSystem)` | Another system's slice, read-only. |
 | `emit(event, payload, source?)` | Queue an event. `source` defaults to the system id. |
-| `touch(sourceId)` | Bump a modifier source's change counter. |
+| `touch(sourceId, entity?)` | Bump a modifier source's change counter, for every entity or for one. |
+| `dropEntity(entity)` | Forget the derived values of an entity that no longer exists. |
 | `skip(action, reason)` | Log an action that did not happen, outside a command. |
 
 ## 3. State and commands
@@ -112,9 +116,9 @@ The context (`ctx`) given to `tick`, command handlers and event handlers:
 
 ## 6. Derived values
 
-- A stat's value is `(base + sum of add modifiers) * product of mult modifiers`.
-- A modifier source is `{ id, collect(ctx) => Modifier[] }`. `collect` reads
-  state and content. It may not read derived values.
+- A modifier source is `{ id, dependsOn?, collect(ctx) => Modifier[] }`.
+  `collect` reads state and content, and `ctx.entity`. It may not read
+  derived values.
 - Each source has a change counter. The cache key is built from the counters
   of every registered source. There is no list to maintain: a new source is
   in the key because it is registered.
@@ -123,6 +127,54 @@ The context (`ctx`) given to `tick`, command handlers and event handlers:
 - `kernel.staleStats()` recomputes everything without the cache and returns
   the stats that differ. An empty list means no `touch` is missing. Call it in
   the tests of every system that has a source.
+
+Entities:
+
+- A derived value belongs to an entity. The player is `PLAYER` (`'player'`),
+  the default of every read. Any other id is an entity too: a monster in a
+  fight is one. The kernel does not know what an entity is; the system that
+  owns it does.
+- A source is collected once per entity. `collect` returns the modifiers of
+  `ctx.entity`, and an empty list for an entity it has nothing to say about.
+  The player and a monster go through the same sources, the same cache and
+  the same resolver.
+- `ctx.touch(sourceId)` bumps the source for every entity.
+  `ctx.touch(sourceId, entity)` bumps it for one entity; the others keep
+  their cache.
+- An entity gets its record on first read or touch. `ctx.dropEntity(entity)`
+  removes the record when the entity is gone (a monster dies). The player
+  cannot be dropped. A load drops every entity but the player; their values
+  are rebuilt on first read from the loaded state.
+- `staleStats()` checks every entity that has a record. A stale stat of
+  another entity is reported as `<entity> <stat>`. `kernel.entities()` lists
+  the entities that have a record.
+
+How a value is computed:
+
+- **Default formula.** A stat a system declares in `stats` with a base is
+  `(base + sum of add modifiers) * product of mult modifiers`.
+- **Resolver.** A system that declares `resolve(ctx)` computes every stat
+  under `<id>/` that has no base. It gets `ctx.mods`, every modifier
+  collected for the entity from every source in source order, and returns a
+  record of stat id to value. Every returned id starts with `<id>/`.
+- A modifier may carry more fields than `stat`, `kind` and `value` (a label,
+  a gate, an origin). The kernel passes them through; the resolver reads them.
+- A modifier must target a declared stat, or a target under the prefix of a
+  system with a resolver. Any other target throws. A target under a
+  resolver's prefix is the resolver's to check.
+- **Variant.** `derived(stat, entity, variant)` asks the resolver for a
+  second block from the same collected modifiers. The variant is an opaque
+  string the resolver defines; `''` is the plain block. Variants are cached
+  with the entity and rebuilt with it. The default formula ignores the
+  variant.
+
+Dependencies between sources:
+
+- A source whose `collect` reads another system's slice lists the sources of
+  that system that cover what it reads: `dependsOn: ['resources/locks']`. A
+  touch of a listed source touches the dependent source in the same call.
+- The kernel throws at creation on a dependency that names no registered
+  source, and on a cycle.
 
 ## 7. Events
 
@@ -150,8 +202,10 @@ The context (`ctx`) given to `tick`, command handlers and event handlers:
   cannot be created, `src/ui/catchup.ts` calls `catchUp` on the main thread.
 - Offline time is capped at 8 hours (`OFFLINE_CAP_MS`).
 - `tests/runner.test.ts` checks that catch-up equals running in place, and
-  sets a budget of 2,000 ms for 8 hours (288,000 ticks) with the toy system.
-  Lower or raise the budget as real systems land; do not delete the test.
+  sets a budget of 2,000 ms for 8 hours (288,000 ticks). Measured with the
+  systems of spine port 1: 470 to 530 ms alone, up to 840 ms inside the full
+  test run (the toy system alone took about 60 ms). Lower or raise the budget
+  as real systems land; do not delete the test.
 
 ## 9. Content
 
@@ -210,7 +264,8 @@ The context (`ctx`) given to `tick`, command handlers and event handlers:
 2. Add what the system needs, in the same folder:
    - commands: `defineCommand`, `handle`;
    - events: `defineEvent`, `on`, `ctx.emit`;
-   - stats and modifier sources, with `ctx.touch` at every change;
+   - stats and modifier sources, with `ctx.touch` at every change, and
+     `dependsOn` on a source that reads another system's slice;
    - `tick`;
    - content: `content/<registry>.json`, a schema, `registry(...)`;
    - `view` and its type.
@@ -221,6 +276,8 @@ The context (`ctx`) given to `tick`, command handlers and event handlers:
    no `:global`.
 6. Add tests under `tests/`. Use `runHeadless` for anything that takes time.
    Assert `kernel.staleStats()` is empty if the system has a modifier source.
+   A system that owns entities calls `ctx.dropEntity` when one is gone; its
+   tests assert that `kernel.entities()` holds no dead entity.
 7. Run `npm run verify`. Open the panel in a browser at desktop width and at
    phone width.
 
@@ -288,3 +345,41 @@ point. Each took the simpler option.
 19. **Ports.** Dev server 5600, preview 5601, both strict. Port 5173 belongs
     to the old repository.
 20. **Line endings.** `.gitattributes` sets LF for all text files.
+21. **Stats per entity (spine port 1).** A derived value is read for an
+    entity, the player by default. Alternative: a second stat table inside
+    the combat system for monsters. That would give monsters a second code
+    path for modifiers, cache and the stale check, which the monster-side
+    parity law of the old build forbids. The entity is a plain string id, so
+    the kernel needs no registry of entities and no list to maintain.
+22. **Entity records are made on first use and dropped by the owner.** An
+    entity other than the player lives for one fight. The system that owns it
+    calls `ctx.dropEntity`. Not dropping leaks a cache record; it does not
+    give a wrong value. A load drops all of them.
+23. **Resolvers.** The old stat pipeline is not `(base + add) * mult`: bases
+    depend on attributes, attack speed converges, values are clamped, and one
+    layer of modifiers is scaled by other stats. A system may therefore
+    declare `resolve`, which computes its whole block from the collected
+    modifiers. Alternative: make every stat a small formula with declared
+    dependencies. That would spread one ordered pipeline over 67 declarations
+    and make "same order as the old code" unreadable. The default formula
+    stays for stats that are plain numbers.
+24. **Modifiers carry extra fields.** The kernel type has `stat`, `kind` and
+    `value`. A source returns objects with more fields and the kernel passes
+    them through. The resolver owns their meaning.
+25. **Variants.** A read may name a variant: a second block from the same
+    collected modifiers, for the old target-gated bonuses (a bonus against
+    beasts). Alternative: one entity per pair of player and target, which
+    would collect every source again per target.
+26. **Source dependencies.** A source may read another system's slice. That
+    system cannot touch a source it does not know. Alternative: an event
+    from one system to the other, which arrives after the current handler
+    returns and leaves the stat stale until then. `dependsOn` makes the touch
+    reach the dependent source in the same call.
+27. **Requests are events.** A system that wants another system to change
+    emits an event the other system declares and subscribes to
+    (`counters/bump`, `skills/grant-xp`, `resources/heal`). The kernel has no
+    call from one system into another that returns a value. A caller that
+    needs the result (what an exertion bought, what a heal restored) reads it
+    from the event the other system emits afterwards. Combat will need some
+    of these results inside one handler; spine port 4 decides whether the
+    kernel gets a synchronous request.

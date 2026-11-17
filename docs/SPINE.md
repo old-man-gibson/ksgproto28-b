@@ -58,10 +58,10 @@ One session per port, one at a time. Each port follows section 5 of
 
 | Port | Systems | Old files (under `src/core/systems/`) |
 |---|---|---|
-| 1 | Counters and conditions, log, clock, character: attributes, skills, levels, resources, derived stats; entity stats in the kernel | `ledger`, `conditions`, `log`, `clock`, `progression`, `attributes`, `skills`, `levels`, `resources`, `stamina`, `health`, `derived` |
+| 1 | Counters and conditions, log, clock, character: attributes, skills, levels, resources, derived stats; entity stats in the kernel | counter half of `achievements`, `conditions`, `log`, `clock`, `progression`, `attributes`, `skills`, `levels`, `resources`, `stamina`, `health`, `derived` |
 | 2 | Statuses | `statuses`, `conditionHarm` |
 | 3 | Items: inventory, equipment, wield, materials, gold, drop tables | `inventory`, `equipment`, `wield`, `stash`, drop code in `combat.ts:1586-1700` |
-| 4 | Combat core: spawn, rotation, player attack, enemy attack, dodge, parry, typed damage, kill and defeat events | `combat.ts`, `monsterStats`, `huntrest` |
+| 4 | Combat core: spawn, rotation, player attack, enemy attack, dodge, parry, typed damage, kill and defeat events, the fight ledger | `combat.ts`, `monsterStats`, `huntrest`, `ledger` |
 | 5 | Monster techniques (6) and monster spell casts (2 sentences) | `combat.ts:2224-2539`, the needed part of `martial` and `arcane` |
 | 6 | World: areas, spots, activities, travel and map, ladder gates, Threshold jobs, weather and exposure, knockout return | `locations`, `actions`, `mapped`, `towers`, `ladder`, `weather`, `exposure`, `knockoutReturn`, `safety` |
 | 7 | Quests, shops, floor 0, prestige; John port and parity run; offline budget | `quests`, `shops`, `tutorial`, `prestige`, `legacy` |
@@ -95,3 +95,45 @@ left behind.
 
 | Port | Old file | New system | Tests ported | Left behind |
 |---|---|---|---|---|
+| 1 | `systems/achievements.ts` (counters only: `bumpStat`, `raiseStat`, `setStat`) | `counters` | `tests/counters.test.ts` (new: the old build had no counter test) | Achievement tiers; the bumps on kill, arrival and defeat |
+| 1 | `systems/conditions.ts` | `counters` (`conditions.ts`) | Condition cases of old `attributes.test.ts` and `superattrs.test.ts`, in `counters.test.ts` | Nothing: all seven kinds. `equippedTag`, `quest` and `boon` read facts the later ports state |
+| 1 | `systems/ledger.ts` | Not ported. It is the fight ledger, not the counters | Transcript cases of old `ledger.test.ts`, in `log.test.ts` | The whole file, to port 4 |
+| 1 | `systems/log.ts`, `text/log.ts` | `log` | `log.test.ts`: rendering, grouping, feed, floating runs, hunt lines, templates | Log is stored during catch-up; cases that need statuses, activities or combat; `logtext.test.ts` call-site scan; the other templates of `text/log.text.ts` |
+| 1 | `systems/clock.ts`, calendar part of `data/climate.data.ts` | `clock` | `clock.test.ts`, whole | Weather and climate tables; the starting spot assertion |
+| 1 | `systems/progression.ts`, `data/progression.data.ts` | `progression` | Curve cases of old `skills.test.ts`, in `skills.test.ts` | Nothing |
+| 1 | `systems/derived.ts` | `stats` (pipeline, breakdowns); cache and fingerprint replaced by the kernel | `derivedcache.test.ts`, `attributes.test.ts` (old `attackspeed.test.ts`, stat cases of old `breakdown.test.ts`) | Every modifier source of an unported system (list in `src/systems/stats/README.md`); cache cases on forged items, festival bonus, cooked statuses, condition decay; damage breakdowns |
+| 1 | `systems/attributes.ts`, `data/attributes.data.ts` | `attributes` (training), `stats` (effective attributes, modifier foundations) | `attributes.test.ts` | `equip`, `unequip`, `canEquip`; practice shaping; the XP router |
+| 1 | `systems/skills.ts`, `data/skills.data.ts` | `skills` | `skills.test.ts` | Kills spraying XP; the bestiary payout; speechcraft through quests; switching style by command; practice shaping |
+| 1 | `systems/levels.ts`, `data/levels.data.ts` | `levels` | `levels.test.ts`, with `encounterLevel` from old `desert.test.ts` and `rewardLevel` from old `dynamicLevels.test.ts` | `dynamicLevelBonus`, `checkFloorClears`, `syncBandPositions`; what pays level XP; Head Start; the old save migration |
+| 1 | `systems/resources.ts`, `systems/stamina.ts`, `systems/health.ts`, `data/resources.data.ts`, `checkResourceLocks` of `game.ts` | `resources` | `resources.test.ts` (old `regen.test.ts`, `stamina.test.ts`) | Pace per activity and `combatRegenMult`; the condition and ledger observers of heal and damage; exertion in a fight; upkeep per swing |
+
+Port 1 notes:
+
+- Mapping is not one folder per old file. `stamina` and `health` are files of
+  `resources`. `derived` and the modifier half of `attributes` are `stats`.
+  `conditions` is a file of `counters`. The 16-file import cycle is gone: no
+  system folder imports a folder that imports it. `clock`, `counters`,
+  `progression` and `stats` import no system. `log` imports `clock`.
+  `attributes` imports `counters`, `progression`, `stats`. `levels` and
+  `resources` import `log`, `stats`. `skills` imports `counters`, `log`,
+  `progression`, `stats`.
+- Content: every registry these systems own was converted whole with
+  `scripts/convert-content.mjs`: `skills` (94), `skill_categories`,
+  `attributes`, `attribute_training`, `progressions`, `xp_bases`, `xp_rates`,
+  `resources`, `months`, `weekdays`, `holy_days`, `moons`, `moon_phases`.
+  Text templates: only the keys these systems fire.
+- A later port plugs into the stat pipeline with a modifier source of its
+  own. `src/systems/stats/README.md` lists, per old read of an unported
+  system, what that system returns. `src/systems/resources/README.md` lists
+  the hook stats that replace the status queries of the pools.
+- Kernel changes: `docs/KERNEL.md` section 6 and decisions 21 to 27.
+- Open for port 4: old monsters have their own base formulas
+  (`monsterStats.ts`: HP is `12 + 7 x CON`). The kernel path is shared now;
+  the resolver in `stats` runs the player formulas for every entity until
+  port 4 adds the monster formulas.
+- Open for port 4: combat needs the result of an exertion, a heal and a hit
+  inside one handler. They are events now (decision 27).
+- Old content that looks like a tuning experiment and was ported as it is:
+  Intelligence training has three hand-written milestones (+1 Skill XP at
+  level 5, which doubles skill XP; +2 INT at 7; +10% INT and +10% Max Mana at
+  10) where the other five attributes use the standard list.
