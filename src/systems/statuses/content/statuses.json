@@ -1,0 +1,2239 @@
+[
+  {
+    "id": "toll_steam",
+    "name": "Steam-blinded",
+    "icon": "♨️",
+    "art": "mist",
+    "unresistable": "environmental: a phase of the Toll Collector's fight",
+    "stacking": {
+      "mode": "highest",
+      "cap": 1,
+      "refreshDuration": true
+    },
+    "missChance": 0.5,
+    "desc": "Applied to the Toll Collector by a heat spell. Its attacks have a 50% chance to miss for 8 seconds. Another heat spell resets the timer without adding to the effect.",
+    "duration": 80
+  },
+  {
+    "id": "toll_ice",
+    "name": "Ice-locked Joints",
+    "icon": "🧊",
+    "unresistable": "environmental: a phase of the Toll Collector's fight",
+    "stacking": {
+      "mode": "highest",
+      "cap": 1,
+      "refreshDuration": true
+    },
+    "mods": [
+      {
+        "stat": "dodge",
+        "op": "mult",
+        "value": -1
+      },
+      {
+        "stat": "armor",
+        "op": "mult",
+        "value": -0.75
+      }
+    ],
+    "desc": "Applied to the Toll Collector by a cold spell. Its dodge is 0 and its armor is reduced by 75% for 8 seconds. Another cold spell resets the timer without adding to the effect.",
+    "duration": 80
+  },
+  {
+    "id": "toll_overdrive",
+    "name": "Stamping Overdrive",
+    "icon": "⚡",
+    "unresistable": "environmental: a phase of the Toll Collector's fight",
+    "stacking": {
+      "mode": "highest",
+      "cap": 1,
+      "refreshDuration": true
+    },
+    "mods": [
+      {
+        "stat": "attackSpeed",
+        "op": "mult",
+        "value": 0.65
+      }
+    ],
+    "bar": {
+      "onFill": {
+        "type": "lightning",
+        "flat": 12
+      }
+    },
+    "desc": "Applied to the Toll Collector by a lightning spell. Its attack speed is +65% for 8 seconds, and it takes 12 lightning damage each time its action bar fills. Another lightning spell resets the timer without adding to the effect.",
+    "duration": 80
+  },
+  {
+    "id": "eyeless",
+    "name": "Eyeless",
+    "icon": "🕳️",
+    "art": "zero",
+    "hidden": true,
+    "stacking": {
+      "mode": "highest",
+      "cap": 1
+    },
+    "removal": [
+      {
+        "on": "combatEnd",
+        "effect": "remove"
+      }
+    ],
+    "desc": "Cannot be Dazzled or Blinded. No other effect."
+  },
+  {
+    "id": "refutation",
+    "name": "Refutation",
+    "icon": "🚫",
+    "stacking": {
+      "mode": "highest",
+      "cap": 1
+    },
+    "mods": [
+      {
+        "stat": "ward",
+        "op": "add",
+        "value": 40
+      },
+      {
+        "stat": "ward",
+        "op": "add",
+        "value": 1.5,
+        "fromStat": "spellPower"
+      }
+    ],
+    "desc": "Ward absorbs a flat 40 damage from each hit after resistances, plus 1.5 per point of spell power, for 15 seconds. Anything that strikes you in melee takes 6 piercing damage and is Punctured.",
+    "duration": 150,
+    "retaliate": {
+      "type": "piercing",
+      "flat": 6,
+      "onContact": true,
+      "hits": "attacker",
+      "inflicts": [
+        {
+          "id": "punctured",
+          "intensity": 1
+        }
+      ]
+    }
+  },
+  {
+    "id": "knitting",
+    "name": "Knitting",
+    "icon": "🩹",
+    "art": "mend",
+    "hidden": true,
+    "stacking": {
+      "mode": "highest",
+      "cap": 1
+    },
+    "blockedBy": [
+      "doused"
+    ],
+    "removal": [
+      {
+        "on": "damageTaken",
+        "damageTypes": [
+          "heat",
+          "acid"
+        ],
+        "effect": "remove",
+        "becomes": "doused"
+      }
+    ],
+    "desc": "Health regenerates. Heat or acid damage removes it and applies Doused for 4 seconds."
+  },
+  {
+    "id": "doused",
+    "name": "Doused",
+    "icon": "💢",
+    "art": "anger",
+    "unresistable": "ruled no resistance (2026-10-24)",
+    "stacking": {
+      "mode": "highest",
+      "cap": 1
+    },
+    "mods": [
+      {
+        "stat": "hpRegen",
+        "op": "mult",
+        "value": -1
+      }
+    ],
+    "desc": "Health regeneration is zero for 4 seconds. Knitting cannot return until it ends.",
+    "duration": 40
+  },
+  {
+    "id": "corroded",
+    "name": "Corroded",
+    "icon": "🧪",
+    "element": "acid",
+    "escalatesTo": "melting",
+    "stacking": {
+      "mode": "sum",
+      "cap": 6,
+      "onCap": "escalate"
+    },
+    "mods": [
+      {
+        "stat": "armor",
+        "op": "mult",
+        "value": -0.12
+      }
+    ],
+    "desc": "Armour is reduced by 12% per point of corrosion for 25 seconds. Doses add; at 6 it escalates to Melting.",
+    "duration": 250
+  },
+  {
+    "id": "melting",
+    "name": "Melting",
+    "icon": "🫗",
+    "art": "water",
+    "element": "acid",
+    "baseForm": "corroded",
+    "stacking": {
+      "mode": "highest",
+      "cap": 4
+    },
+    "mods": [
+      {
+        "stat": "armor",
+        "op": "mult",
+        "value": -1
+      },
+      {
+        "stat": "resBludgeoning",
+        "op": "add",
+        "value": -0.12
+      },
+      {
+        "stat": "resHeat",
+        "op": "add",
+        "value": -0.12
+      },
+      {
+        "stat": "resCold",
+        "op": "add",
+        "value": -0.12
+      }
+    ],
+    "desc": "Armour gives nothing for 15 seconds. Bludgeoning, heat and cold resistance each drop by 12%.",
+    "duration": 150
+  },
+  {
+    "id": "poison",
+    "name": "Poisoned",
+    "icon": "🤢",
+    "art": "venom",
+    "element": "poison",
+    "escalatesTo": "rotting",
+    "stacking": {
+      "mode": "highest",
+      "cap": 4,
+      "onCap": "escalate"
+    },
+    "removal": [
+      {
+        "on": "cure",
+        "tag": "poison",
+        "effect": "remove"
+      }
+    ],
+    "dot": {
+      "type": "poison",
+      "flat": 0.05
+    },
+    "mods": [
+      {
+        "stat": "staminaRegen",
+        "op": "mult",
+        "value": -0.2
+      }
+    ],
+    "desc": "Deals 0.05 poison damage per tick per intensity for 30 seconds and cuts stamina regeneration by 20%. Only a stronger dose replaces it; at intensity 4 it escalates to Rotting. A poison cure (a Mendroot Salve) removes it.",
+    "duration": 300
+  },
+  {
+    "id": "rotting",
+    "name": "Rotting",
+    "icon": "🦠",
+    "art": "plague",
+    "element": "poison",
+    "baseForm": "poison",
+    "stacking": {
+      "mode": "highest"
+    },
+    "removal": [
+      {
+        "on": "cure",
+        "tag": "poison",
+        "effect": "deescalate"
+      }
+    ],
+    "dot": {
+      "type": "poison",
+      "flat": 0.12
+    },
+    "mods": [
+      {
+        "stat": "staminaRegen",
+        "op": "mult",
+        "value": -0.35
+      }
+    ],
+    "ceilingFromSpend": {
+      "resource": "stamina",
+      "share": 0.5,
+      "max": 0.6
+    },
+    "expiresTo": "rot_recovery",
+    "desc": "Deals 0.12 poison damage per tick per intensity for 45 seconds and cuts stamina regeneration by 35%. Half of every stamina spend is also removed from maximum stamina, up to 60%. When it ends the lost maximum returns slowly (Wasted). A poison cure (a Mendroot Salve) reduces it to Poisoned.",
+    "duration": 450
+  },
+  {
+    "id": "rot_recovery",
+    "name": "Wasted",
+    "icon": "🩹",
+    "art": "mend",
+    "stacking": {
+      "mode": "highest"
+    },
+    "ceilingDecay": 0.0008,
+    "hidden": true,
+    "desc": "Maximum stamina removed by Rotting returns over time, about 20 seconds for a full 60% loss."
+  },
+  {
+    "id": "on_fire",
+    "name": "On Fire",
+    "icon": "🔥",
+    "element": "heat",
+    "escalatesTo": "blazing",
+    "stacking": {
+      "mode": "absorb",
+      "absorb": 0.5,
+      "cap": 5,
+      "onCap": "escalate"
+    },
+    "dot": {
+      "type": "heat",
+      "flat": 0.4
+    },
+    "desc": "Deals 0.4 heat damage per tick per intensity for 8 seconds. A new flame adds half its intensity to the existing one without resetting the timer. At intensity 5 it escalates to Blazing.",
+    "duration": 80
+  },
+  {
+    "id": "blazing",
+    "name": "Blazing",
+    "icon": "🔥",
+    "element": "heat",
+    "baseForm": "on_fire",
+    "stacking": {
+      "mode": "absorb",
+      "absorb": 0.25
+    },
+    "dot": {
+      "type": "heat",
+      "flat": 0.9
+    },
+    "healCap": 0.5,
+    "expiresTo": "blaze_burn",
+    "desc": "Deals 0.9 heat damage per tick per intensity for 4 seconds. Healing can restore at most half of what it burns. When it ends it becomes Seared.",
+    "duration": 40
+  },
+  {
+    "id": "blaze_burn",
+    "name": "Seared",
+    "icon": "🩸",
+    "element": "heat",
+    "stacking": {
+      "mode": "highest"
+    },
+    "healCap": 0.5,
+    "removal": [
+      {
+        "on": "heal",
+        "healKinds": [
+          "rest",
+          "salve",
+          "spell"
+        ],
+        "effect": "remove"
+      }
+    ],
+    "desc": "Healing can restore at most half of what the blaze burned. No timer. Removed by rest, a salve, or a healing spell."
+  },
+  {
+    "id": "sweltering",
+    "name": "Sweltering",
+    "icon": "🥵",
+    "art": "fire",
+    "element": "heat",
+    "stacking": {
+      "mode": "sum",
+      "cap": 6
+    },
+    "ceilings": [
+      {
+        "resource": "stamina",
+        "per": 0.05,
+        "max": 0.3
+      }
+    ],
+    "desc": "Maximum stamina: -5% per point of intensity, up to -30%. Duration: 30 seconds, renewed by each dose. Doses add up to 6; it does not escalate. Source: a heatwave under an open sky.",
+    "duration": 300
+  },
+  {
+    "id": "chilled",
+    "name": "Chilled",
+    "icon": "🥶",
+    "art": "ice",
+    "element": "cold",
+    "escalatesTo": "frozen",
+    "stacking": {
+      "mode": "sum",
+      "cap": 1,
+      "onCap": "escalate"
+    },
+    "mods": [
+      {
+        "stat": "speed",
+        "op": "mult",
+        "value": -0.4
+      }
+    ],
+    "damp": {
+      "slot": "weapon",
+      "per": 0.5,
+      "max": 0.6
+    },
+    "blockedBy": [
+      "frozen"
+    ],
+    "desc": "Speed is reduced by 40% and weapon bonuses by 50% per intensity (up to 60%) for 20 seconds. Doses add; past intensity 1 it escalates to Frozen.",
+    "duration": 200
+  },
+  {
+    "id": "frozen",
+    "name": "Frozen",
+    "icon": "🧊",
+    "element": "cold",
+    "baseForm": "chilled",
+    "stacking": {
+      "mode": "highest"
+    },
+    "mods": [
+      {
+        "stat": "speed",
+        "op": "mult",
+        "value": -0.95
+      },
+      {
+        "stat": "resBludgeoning",
+        "op": "add",
+        "value": -0.5
+      }
+    ],
+    "removal": [
+      {
+        "on": "damageTaken",
+        "effect": "remove"
+      }
+    ],
+    "desc": "Speed is reduced by 95% and bludgeoning resistance by 50% for 3 seconds. Any damage taken removes it.",
+    "duration": 30
+  },
+  {
+    "id": "rattled",
+    "name": "Rattled",
+    "icon": "🫨",
+    "art": "dizzy",
+    "element": "bludgeoning",
+    "stacking": {
+      "mode": "highest"
+    },
+    "mods": [
+      {
+        "stat": "speed",
+        "op": "mult",
+        "value": -1
+      }
+    ],
+    "removal": [
+      {
+        "on": "barFill",
+        "effect": "remove"
+      },
+      {
+        "on": "combatEnd",
+        "effect": "remove"
+      }
+    ],
+    "desc": "Slowed until its next action. Lost speed is the share of its blow that Heavy stance cut, times 2/3."
+  },
+  {
+    "id": "petrified",
+    "name": "Petrified",
+    "icon": "🗿",
+    "art": "stone",
+    "unresistable": "a statue: the Stone already decided it",
+    "stacking": {
+      "mode": "highest"
+    },
+    "blocks": [
+      "swing",
+      "spell",
+      "attack"
+    ],
+    "mods": [
+      {
+        "stat": "speed",
+        "op": "mult",
+        "value": -1
+      }
+    ],
+    "statue": {
+      "rocks": 1,
+      "burst": 0,
+      "chunks": 0.5,
+      "xp": 0.5
+    },
+    "desc": "Cannot act. Lasts 3 s. Broken before then, it throws its max HP as rocks at the enemies behind it. Gives 50% of its gold as Stone Chunks and 50% XP.",
+    "duration": 30
+  },
+  {
+    "id": "petrified_rubble",
+    "name": "Petrified",
+    "icon": "🗿",
+    "art": "stone",
+    "unresistable": "a statue: the Stone already decided it",
+    "stacking": {
+      "mode": "highest"
+    },
+    "blocks": [
+      "swing",
+      "spell",
+      "attack"
+    ],
+    "mods": [
+      {
+        "stat": "speed",
+        "op": "mult",
+        "value": -1
+      }
+    ],
+    "statue": {
+      "rocks": 1,
+      "burst": 0.5,
+      "chunks": 0,
+      "xp": 0.5
+    },
+    "desc": "Cannot act. Lasts 3 s. Broken before then, it throws its max HP as rocks at the enemies behind it. Unbroken, it bursts for half that. Gives no gold and 50% XP.",
+    "duration": 30
+  },
+  {
+    "id": "petrified_standing",
+    "name": "Petrified",
+    "icon": "🗿",
+    "art": "stone",
+    "unresistable": "a statue: the Stone already decided it",
+    "stacking": {
+      "mode": "highest"
+    },
+    "blocks": [
+      "swing",
+      "spell",
+      "attack"
+    ],
+    "mods": [
+      {
+        "stat": "speed",
+        "op": "mult",
+        "value": -1
+      }
+    ],
+    "statue": {
+      "rocks": 0,
+      "burst": 0,
+      "chunks": 0.5,
+      "xp": 0.5,
+      "stands": true
+    },
+    "desc": "Cannot act. Stays until the fight ends. Your attacks skip it. Throws no rocks. Gives 50% of its gold as Stone Chunks and 50% XP when the fight ends."
+  },
+  {
+    "id": "bleeding",
+    "name": "Bleeding",
+    "icon": "🩸",
+    "element": "slashing",
+    "escalatesTo": "lacerated",
+    "stacking": {
+      "mode": "count",
+      "cap": 5,
+      "onCap": "escalate"
+    },
+    "removal": [
+      {
+        "on": "heal",
+        "healKinds": [
+          "rest",
+          "salve",
+          "spell"
+        ],
+        "effect": "remove"
+      },
+      {
+        "on": "cure",
+        "tag": "bleed",
+        "effect": "remove"
+      }
+    ],
+    "dot": {
+      "type": "slashing",
+      "flat": 0.08,
+      "currentHp": 0.0015,
+      "fromPeak": [
+        "currentHp"
+      ],
+      "outOfCombat": 0.3
+    },
+    "desc": "Deals 0.08 slashing damage per tick plus 0.15% of current health, at 30% rate out of combat. No timer. Each cut is its own stack; at 5 it escalates to Lacerated. Removed only by rest, a salve, a healing spell, or a bleed cure (a Mendroot Salve)."
+  },
+  {
+    "id": "lacerated",
+    "name": "Lacerated",
+    "icon": "🔪",
+    "art": "cut",
+    "element": "slashing",
+    "baseForm": "bleeding",
+    "stacking": {
+      "mode": "count",
+      "cap": 5
+    },
+    "removal": [
+      {
+        "on": "heal",
+        "healKinds": [
+          "rest",
+          "salve",
+          "spell"
+        ],
+        "effect": "deescalate"
+      }
+    ],
+    "dot": {
+      "type": "slashing",
+      "maxHp": 0.002,
+      "outOfCombat": 0.3
+    },
+    "ceilings": [
+      {
+        "resource": "hp",
+        "per": 0.04,
+        "max": 0.3
+      }
+    ],
+    "desc": "Deals 0.2% of maximum health per tick as slashing damage (30% rate out of combat) and reduces maximum health by 4% per stack, up to 30%. No timer. Rest, a salve (a Mendroot Salve included), or a healing spell reduces it to Bleeding; a second treatment closes that."
+  },
+  {
+    "id": "concussed",
+    "name": "Concussed",
+    "icon": "💫",
+    "art": "dizzy",
+    "element": "bludgeoning",
+    "escalatesTo": "dazed",
+    "stacking": {
+      "mode": "highest",
+      "cap": 3,
+      "onCap": "escalate"
+    },
+    "blocks": [
+      "spell"
+    ],
+    "missChance": 0.12,
+    "removal": [
+      {
+        "on": "heal",
+        "healKinds": [
+          "rest",
+          "salve",
+          "spell"
+        ],
+        "effect": "reduce",
+        "amount": 0.4
+      }
+    ],
+    "desc": "Spells cannot be cast and attacks have a 12% miss chance per intensity, for 25 seconds. Rest, a salve, or a healing spell reduces its intensity by 40%. At intensity 3 it escalates to Dazed.",
+    "duration": 250
+  },
+  {
+    "id": "dazed",
+    "name": "Dazed",
+    "icon": "😵",
+    "art": "dizzy",
+    "element": "bludgeoning",
+    "baseForm": "concussed",
+    "stacking": {
+      "mode": "count",
+      "cap": 4
+    },
+    "blocks": [
+      "spell",
+      "attack"
+    ],
+    "bar": {
+      "skip": 1
+    },
+    "removal": [
+      {
+        "on": "barFill",
+        "effect": "unstack"
+      },
+      {
+        "on": "combatEnd",
+        "effect": "remove"
+      }
+    ],
+    "desc": "Spells and attacks cannot be taken. Each stack skips one completed action and is spent by it. Ends with the fight."
+  },
+  {
+    "id": "punctured",
+    "name": "Punctured",
+    "icon": "🕳️",
+    "art": "zero",
+    "element": "piercing",
+    "escalatesTo": "perforated",
+    "stacking": {
+      "mode": "sum",
+      "cap": 3,
+      "onCap": "escalate"
+    },
+    "costMult": {
+      "resource": "stamina",
+      "per": 0.25,
+      "max": 1
+    },
+    "ceilingPerTick": {
+      "resource": "stamina",
+      "per": 0.0004,
+      "max": 0.05
+    },
+    "desc": "Stamina costs rise by 25% per point (up to double). Each tick it is held, maximum stamina is reduced by another 0.04% (0.4% per second), up to 5%. Lasts 40 seconds. Doses add; at 3 it escalates to Perforated.",
+    "duration": 400
+  },
+  {
+    "id": "perforated",
+    "name": "Perforated",
+    "icon": "🫗",
+    "art": "water",
+    "element": "piercing",
+    "color": "#c2504f",
+    "baseForm": "punctured",
+    "stacking": {
+      "mode": "count",
+      "cap": 5
+    },
+    "forceStyle": "balanced",
+    "blocksRegen": [
+      "stamina"
+    ],
+    "ceilings": [
+      {
+        "resource": "stamina",
+        "per": 0.05,
+        "max": 0.4
+      }
+    ],
+    "desc": "Stamina does not regenerate, maximum stamina is reduced by 5% per stack (up to 40%), and the stance is forced to Balanced. Lasts 60 seconds.",
+    "duration": 600
+  },
+  {
+    "id": "jolted",
+    "name": "Jolted",
+    "icon": "⚡",
+    "element": "lightning",
+    "escalatesTo": "shocked",
+    "stacking": {
+      "mode": "absorb",
+      "absorb": 1,
+      "cap": 6,
+      "onCap": "escalate",
+      "escalateFrom": 2
+    },
+    "bar": {
+      "onFill": {
+        "type": "lightning",
+        "flat": 1.2
+      }
+    },
+    "dropWeaponBelow": 0.5,
+    "removal": [
+      {
+        "on": "damageTaken",
+        "effect": "reduce",
+        "amount": 0.5
+      }
+    ],
+    "desc": "Deals 1.2 lightning damage per intensity each time your action bar fills, for 20 seconds. Below 50% health you drop your weapon. Taking damage halves its intensity. Past intensity 2 each new dose may escalate it to Shocked; at 6 it does.",
+    "duration": 200
+  },
+  {
+    "id": "shocked",
+    "name": "Shocked",
+    "icon": "🌩️",
+    "element": "lightning",
+    "baseForm": "jolted",
+    "stacking": {
+      "mode": "absorb",
+      "absorb": 1
+    },
+    "bar": {
+      "reverse": true,
+      "onDeplete": {
+        "type": "lightning",
+        "flat": 2.5
+      }
+    },
+    "removal": [
+      {
+        "on": "barDeplete",
+        "effect": "remove"
+      },
+      {
+        "on": "combatEnd",
+        "effect": "remove"
+      }
+    ],
+    "desc": "The action bar drains instead of filling. When it empties, the bearer takes 2.5 lightning damage per intensity and the condition ends. Ends with the fight."
+  },
+  {
+    "id": "shardbound",
+    "name": "Shardbound",
+    "icon": "🪨",
+    "element": "earth",
+    "escalatesTo": "shardbloom",
+    "stacking": {
+      "mode": "sum",
+      "cap": 4,
+      "onCap": "escalate"
+    },
+    "desc": "Deals 0.8 piercing damage per intensity to the bearer each time they attack or are struck in melee, for 30 seconds. Doses add; at 4 it escalates to Shardbloom.",
+    "duration": 300,
+    "retaliate": {
+      "type": "piercing",
+      "flat": 0.8,
+      "onAttack": true,
+      "onContact": true
+    }
+  },
+  {
+    "id": "shardbloom",
+    "name": "Shardbloom",
+    "icon": "💎",
+    "art": "gem",
+    "element": "earth",
+    "baseForm": "shardbound",
+    "stacking": {
+      "mode": "sum",
+      "cap": 6
+    },
+    "desc": "Deals 0.4 piercing damage per intensity to the bearer each time they attack or are struck in melee, and applies a Shard Cut each time. Lasts 25 seconds.",
+    "duration": 250,
+    "retaliate": {
+      "type": "piercing",
+      "flat": 0.4,
+      "onAttack": true,
+      "onContact": true,
+      "inflicts": [
+        {
+          "id": "shard_bleed",
+          "intensity": 2
+        }
+      ]
+    }
+  },
+  {
+    "id": "shard_bleed",
+    "name": "Shard Cut",
+    "icon": "🩸",
+    "element": "slashing",
+    "stacking": {
+      "mode": "count",
+      "cap": 8
+    },
+    "dot": {
+      "type": "slashing",
+      "flat": 0.3,
+      "currentHp": 0.001,
+      "fromPeak": [
+        "currentHp"
+      ]
+    },
+    "desc": "Deals 0.3 slashing damage per tick plus 0.1% of current health, for 4 seconds. Stacks up to 8 and never escalates.",
+    "duration": 40
+  },
+  {
+    "id": "wet",
+    "name": "Wet",
+    "icon": "💧",
+    "element": "water",
+    "escalatesTo": "soaked",
+    "stacking": {
+      "mode": "sum",
+      "cap": 5,
+      "onCap": "escalate"
+    },
+    "mods": [
+      {
+        "stat": "resHeat",
+        "op": "add",
+        "value": 0.08
+      },
+      {
+        "stat": "resLightning",
+        "op": "add",
+        "value": -0.06
+      },
+      {
+        "stat": "resCold",
+        "op": "add",
+        "value": -0.06
+      },
+      {
+        "stat": "resPoison",
+        "op": "add",
+        "value": -0.04
+      }
+    ],
+    "removal": [
+      {
+        "on": "damageTaken",
+        "damageTypes": [
+          "heat"
+        ],
+        "effect": "unstack"
+      }
+    ],
+    "desc": "Heat resistance +8%; lightning and cold resistance -6%; poison resistance -4%. Lasts 30 seconds. Doses add; at 5 it escalates to Soaked. Heat damage removes one stack.",
+    "duration": 300
+  },
+  {
+    "id": "soaked",
+    "name": "Soaked",
+    "icon": "🌊",
+    "art": "water",
+    "element": "water",
+    "baseForm": "wet",
+    "stacking": {
+      "mode": "highest"
+    },
+    "converts": [
+      {
+        "from": "poison",
+        "to": "rotting",
+        "ratio": 0.6666666666666666
+      }
+    ],
+    "amplifies": [
+      {
+        "id": "chilled",
+        "mult": 3
+      }
+    ],
+    "capOverrides": [
+      {
+        "id": "jolted",
+        "cap": 3
+      }
+    ],
+    "removal": [
+      {
+        "on": "damageTaken",
+        "damageTypes": [
+          "heat",
+          "poison",
+          "lightning",
+          "cold"
+        ],
+        "after": 3,
+        "effect": "remove"
+      }
+    ],
+    "desc": "Heat resistance is set to 80% (or raised by 10% if it is already 80% or more). Lightning, cold and poison resistance are set to -50%. Chill lands at triple intensity, and Jolted escalates at intensity 3. When Soaked first lands, any Poison already on the bearer becomes Rotting at 2/3 of its intensity. Lasts 60 seconds or until the bearer takes 3 hits of heat, poison, lightning or cold damage.",
+    "duration": 600,
+    "overrideRes": [
+      {
+        "type": "heat",
+        "to": 0.8,
+        "bonusIfMet": 0.1
+      },
+      {
+        "type": "lightning",
+        "to": -0.5
+      },
+      {
+        "type": "cold",
+        "to": -0.5
+      },
+      {
+        "type": "poison",
+        "to": -0.5
+      }
+    ]
+  },
+  {
+    "id": "buffeted",
+    "name": "Buffeted",
+    "icon": "🍃",
+    "art": "gust",
+    "element": "wind",
+    "color": "#8fc8b0",
+    "escalatesTo": "unfooted",
+    "stacking": {
+      "mode": "sum",
+      "cap": 5,
+      "onCap": "escalate"
+    },
+    "displaces": {
+      "to": "off_balance",
+      "chancePer": 0.12
+    },
+    "decayWithDuration": true,
+    "desc": "Each point gives a 12% chance that a technique ends off balance instead of at its exit position, fading as the 12-second timer runs down. Doses add; at 5 it escalates to Unfooted. A plain swing still resets to neutral.",
+    "duration": 120
+  },
+  {
+    "id": "unfooted",
+    "name": "Unfooted",
+    "icon": "💨",
+    "element": "wind",
+    "color": "#5fa88c",
+    "baseForm": "buffeted",
+    "stacking": {
+      "mode": "sum",
+      "cap": 4
+    },
+    "displaces": {
+      "to": "off_balance",
+      "always": true
+    },
+    "desc": "Every technique ends off balance instead of at its exit position, for 20 seconds. A plain swing still resets to neutral.",
+    "duration": 200
+  },
+  {
+    "id": "seeded",
+    "name": "Seeded",
+    "icon": "🌱",
+    "element": "poison",
+    "color": "#7fa650",
+    "escalatesTo": "rootbound",
+    "stacking": {
+      "mode": "sum",
+      "cap": 6,
+      "onCap": "escalate"
+    },
+    "tends": {
+      "growPerSecond": 0.15,
+      "prunePerHit": 0.5,
+      "prunedBy": [
+        "piercing"
+      ],
+      "fedBy": [
+        "water"
+      ],
+      "feedPerHit": 1
+    },
+    "grafts": {
+      "except": [
+        "seeded",
+        "rootbound"
+      ],
+      "cap": 6,
+      "harvest": {
+        "on": [
+          "heat"
+        ],
+        "type": "heat",
+        "perIntensity": 4
+      }
+    },
+    "removal": [
+      {
+        "on": "damageTaken",
+        "damageTypes": [
+          "heat"
+        ],
+        "effect": "remove"
+      }
+    ],
+    "desc": "No effect on landing. Its intensity rises 0.15 per second during a fight, and at 6 it becomes Rootbound. Each hit the bearer takes lowers its intensity by 0.5 (by 1 if the hit is piercing); each water hit raises it by 1. It records the intensity of every other condition applied to the bearer (up to 6 per condition). Heat damage removes it and deals 4 heat damage per recorded intensity.",
+    "duration": 600
+  },
+  {
+    "id": "rootbound",
+    "name": "Rootbound",
+    "icon": "🌳",
+    "art": "seed",
+    "element": "poison",
+    "color": "#4d7a2e",
+    "baseForm": "seeded",
+    "stacking": {
+      "mode": "sum",
+      "cap": 5
+    },
+    "mods": [
+      {
+        "stat": "speed",
+        "op": "mult",
+        "value": -0.2
+      },
+      {
+        "stat": "dodge",
+        "op": "add",
+        "value": -0.08
+      }
+    ],
+    "tends": {
+      "growPerSecond": 0.08,
+      "prunePerHit": 0.25,
+      "prunedBy": [
+        "piercing"
+      ],
+      "fedBy": [
+        "water"
+      ],
+      "feedPerHit": 0.5
+    },
+    "grafts": {
+      "except": [
+        "seeded",
+        "rootbound"
+      ],
+      "cap": 6,
+      "spreadShare": 0.25,
+      "spreadEvery": 30,
+      "harvest": {
+        "on": [
+          "heat"
+        ],
+        "type": "heat",
+        "perIntensity": 7
+      }
+    },
+    "removal": [
+      {
+        "on": "damageTaken",
+        "damageTypes": [
+          "heat"
+        ],
+        "effect": "remove"
+      }
+    ],
+    "desc": "Speed -20%, dodge -8%. Every 3 seconds, 25% of the recorded conditions are applied to every other enemy in the fight. Its intensity rises 0.08 per second during a fight; each hit the bearer takes lowers it by 0.25 (by 0.5 if piercing) and each water hit raises it by 0.5. Lasts 45 seconds. Heat damage removes it and deals 7 heat damage per recorded intensity.",
+    "duration": 450
+  },
+  {
+    "id": "overgrowth",
+    "name": "Overgrown",
+    "icon": "🌿",
+    "art": "seed",
+    "element": "poison",
+    "escalatesTo": "proliferating",
+    "stacking": {
+      "mode": "highest"
+    },
+    "mods": [
+      {
+        "stat": "speed",
+        "op": "mult",
+        "value": -0.15
+      },
+      {
+        "stat": "dodge",
+        "op": "add",
+        "value": -0.05
+      }
+    ],
+    "surplus": {
+      "escalateAt": 0.5,
+      "decayShare": 0.002
+    },
+    "desc": "Applied when you heal an enemy with a spell: the full amount healed is added to its surplus, whether or not it was wounded. Speed -15%, dodge -5%. The surplus shrinks by about 2% of itself every second. At surplus equal to 50% of its maximum health it escalates to Proliferating."
+  },
+  {
+    "id": "proliferating",
+    "name": "Proliferating",
+    "icon": "🧬",
+    "art": "seed",
+    "element": "poison",
+    "baseForm": "overgrowth",
+    "stacking": {
+      "mode": "highest"
+    },
+    "mods": [
+      {
+        "stat": "speed",
+        "op": "mult",
+        "value": -0.3
+      },
+      {
+        "stat": "dodge",
+        "op": "add",
+        "value": -0.1
+      }
+    ],
+    "surplus": {
+      "detonateAt": 1,
+      "detonateType": "poison",
+      "detonateShare": 0.5,
+      "decayShare": 0.001
+    },
+    "desc": "Speed -30%, dodge -10%. The surplus shrinks by about 1% of itself every second. At surplus equal to 100% of its maximum health it bursts: the bearer takes the whole surplus as damage, and every other enemy takes half of it as poison damage."
+  },
+  {
+    "id": "magnetized",
+    "name": "Magnetized",
+    "icon": "🧲",
+    "art": "spark",
+    "element": "piercing",
+    "color": "#7ab0d8",
+    "escalatesTo": "magnet_lock",
+    "stacking": {
+      "mode": "sum",
+      "cap": 6,
+      "onCap": "escalate"
+    },
+    "magnetism": {
+      "dodgeIgnore": 0.1,
+      "alwaysHit": [
+        "lightning"
+      ],
+      "critChancePer": 0.05,
+      "critTypes": [
+        "piercing"
+      ]
+    },
+    "mods": [
+      {
+        "stat": "dodge",
+        "op": "add",
+        "value": -0.03
+      }
+    ],
+    "desc": "Each point gives attacks a 10% chance to ignore the bearer’s dodge, and lowers its dodge by 3%. Lightning attacks always ignore its dodge. Piercing attacks gain 5% crit chance per point. Lasts 10 seconds. Doses add; at 6 it escalates to Magnet-Locked.",
+    "duration": 100
+  },
+  {
+    "id": "magnet_lock",
+    "name": "Magnet-Locked",
+    "icon": "🧲",
+    "art": "spark",
+    "element": "piercing",
+    "color": "#5591e0",
+    "baseForm": "magnetized",
+    "stacking": {
+      "mode": "sum",
+      "cap": 5
+    },
+    "magnetism": {
+      "nullifyDodge": true,
+      "alwaysHit": [
+        "lightning"
+      ],
+      "critChancePer": 0.05,
+      "critTypes": [
+        "piercing"
+      ],
+      "critDamagePerStack": 0.35
+    },
+    "desc": "Dodge does not apply at all. Lightning attacks cannot miss them. Piercing attacks gain 5% crit chance per stack, and the next critical hit deals +35% damage per stack. Lasts 15 seconds.",
+    "duration": 150
+  },
+  {
+    "blockedBy": [
+      "eyeless"
+    ],
+    "id": "dazzled",
+    "name": "Dazzled",
+    "icon": "😑",
+    "art": "eye",
+    "element": "light",
+    "escalatesTo": "blinded",
+    "stacking": {
+      "mode": "extend",
+      "cap": 4,
+      "onCap": "escalate"
+    },
+    "missChance": 0.08,
+    "mods": [
+      {
+        "stat": "dodge",
+        "op": "add",
+        "value": -0.05
+      }
+    ],
+    "desc": "Attacks have an 8% miss chance per intensity and dodge is reduced by 5%. Lasts 6 seconds; a second flash extends the timer. At 4 it escalates to Blinded.",
+    "duration": 60
+  },
+  {
+    "blockedBy": [
+      "eyeless"
+    ],
+    "id": "blinded",
+    "name": "Blinded",
+    "icon": "🙈",
+    "art": "eye_red",
+    "element": "light",
+    "color": "#e8e3c0",
+    "baseForm": "dazzled",
+    "stacking": {
+      "mode": "highest"
+    },
+    "disadvantage": true,
+    "mods": [
+      {
+        "stat": "dodge",
+        "op": "add",
+        "value": -0.25
+      }
+    ],
+    "desc": "Every attack rolls to hit twice and keeps the worse result. Dodge is reduced by 25%. Lasts 25 seconds.",
+    "duration": 250
+  },
+  {
+    "id": "tainted",
+    "name": "Tainted",
+    "icon": "🌑",
+    "element": "dark",
+    "color": "#7a5c9e",
+    "escalatesTo": "corrupted",
+    "stacking": {
+      "mode": "sum",
+      "cap": 5,
+      "onCap": "escalate"
+    },
+    "decayWithDuration": true,
+    "mods": [
+      {
+        "stat": "resSlashing",
+        "op": "add",
+        "value": -0.05
+      },
+      {
+        "stat": "resPiercing",
+        "op": "add",
+        "value": -0.05
+      },
+      {
+        "stat": "resBludgeoning",
+        "op": "add",
+        "value": -0.05
+      },
+      {
+        "stat": "resHeat",
+        "op": "add",
+        "value": -0.05
+      },
+      {
+        "stat": "resCold",
+        "op": "add",
+        "value": -0.05
+      },
+      {
+        "stat": "resPoison",
+        "op": "add",
+        "value": -0.05
+      },
+      {
+        "stat": "resArcane",
+        "op": "add",
+        "value": -0.05
+      },
+      {
+        "stat": "resLightning",
+        "op": "add",
+        "value": -0.05
+      },
+      {
+        "stat": "resEarth",
+        "op": "add",
+        "value": -0.05
+      },
+      {
+        "stat": "resWind",
+        "op": "add",
+        "value": -0.05
+      },
+      {
+        "stat": "resWater",
+        "op": "add",
+        "value": -0.05
+      },
+      {
+        "stat": "resLight",
+        "op": "add",
+        "value": -0.1
+      },
+      {
+        "stat": "resDark",
+        "op": "add",
+        "value": -0.1
+      }
+    ],
+    "resFloor": {
+      "base": -0.25,
+      "perStack": 0.05
+    },
+    "desc": "All resistances are reduced by 5% per stack, light and dark by 10%. Its penalty cannot push a resistance below -25% (a further -5% for each stack past the first); a resistance already lower is left as it is. Weakens as the 45-second timer runs down. Doses add; at 5 it escalates to Corrupted.",
+    "duration": 450
+  },
+  {
+    "id": "corrupted",
+    "name": "Corrupted",
+    "icon": "👁️",
+    "art": "eye",
+    "element": "dark",
+    "color": "#5b3a8c",
+    "baseForm": "tainted",
+    "stacking": {
+      "mode": "sum",
+      "cap": 10
+    },
+    "ceilings": [
+      {
+        "resource": "spirit",
+        "per": 0.1,
+        "max": 1
+      },
+      {
+        "resource": "hp",
+        "per": 0.05,
+        "max": 0.6
+      },
+      {
+        "resource": "stamina",
+        "per": 0.05,
+        "max": 0.6
+      },
+      {
+        "resource": "mana",
+        "per": 0.05,
+        "max": 0.6
+      }
+    ],
+    "fatalOnEmpty": {
+      "resource": "spirit",
+      "retains": 0.5
+    },
+    "removal": [
+      {
+        "on": "cure",
+        "tag": "cleansing",
+        "effect": "remove"
+      }
+    ],
+    "desc": "Each stack reduces maximum spirit by 10% and maximum health, stamina and mana by 5% (up to 60%). Up to 10 stacks. No timer; only a cleansing removes it. If spirit reaches zero you are defeated and wake with half of it."
+  },
+  {
+    "id": "manaburn",
+    "name": "Manaburn",
+    "icon": "🔯",
+    "art": "arcane",
+    "element": "arcane",
+    "color": "#d648c8",
+    "stacking": {
+      "mode": "absorb",
+      "absorb": 1,
+      "cap": 8
+    },
+    "drains": {
+      "resource": "mana",
+      "ofMax": 0.01
+    },
+    "negativeHeadroom": {
+      "resource": "mana",
+      "base": 1,
+      "perStack": 0.25
+    },
+    "detonate": {
+      "type": "arcane",
+      "ofDebt": 1,
+      "bypassRes": 0.8
+    },
+    "desc": "Drains 1% of maximum mana per tick until mana equal to its intensity has been drained, then it ends. Mana can go below zero, down to -100% of maximum mana plus a further -25% for each stack past the first. When mana reaches that limit, it deals arcane damage equal to the mana debt, ignoring 80% of arcane resistance, and ends. No timer."
+  },
+  {
+    "id": "well_fed",
+    "name": "Well Fed",
+    "icon": "🍲",
+    "art": "stew",
+    "color": "#c98a3c",
+    "stacking": {
+      "mode": "highest"
+    },
+    "restores": [
+      {
+        "resource": "hp",
+        "ofMax": 0.0006
+      }
+    ],
+    "mods": [
+      {
+        "stat": "maxHp",
+        "op": "add",
+        "value": 8
+      },
+      {
+        "stat": "staminaRegen",
+        "op": "mult",
+        "value": 0.1
+      }
+    ],
+    "desc": "Restores 0.06% of maximum health per tick, +8 maximum health and +10% stamina regeneration for 10 minutes.",
+    "duration": 6000
+  },
+  {
+    "id": "steady_hand",
+    "name": "Steady Hand",
+    "icon": "🍢",
+    "art": "skewer",
+    "color": "#7ab0d8",
+    "stacking": {
+      "mode": "highest"
+    },
+    "mods": [
+      {
+        "stat": "crit",
+        "op": "add",
+        "value": 0.03
+      },
+      {
+        "stat": "parry",
+        "op": "add",
+        "value": 0.02
+      }
+    ],
+    "desc": "+3% crit and +2% parry for 8 minutes.",
+    "duration": 4800
+  },
+  {
+    "id": "clear_headed",
+    "name": "Clear-Headed",
+    "icon": "🍵",
+    "art": "tea",
+    "color": "#8f7ad8",
+    "stacking": {
+      "mode": "highest"
+    },
+    "restores": [
+      {
+        "resource": "mana",
+        "ofMax": 0.001
+      }
+    ],
+    "mods": [
+      {
+        "stat": "spellPower",
+        "op": "mult",
+        "value": 0.08
+      },
+      {
+        "stat": "skillXp",
+        "op": "mult",
+        "value": 0.05
+      }
+    ],
+    "desc": "Restores 0.1% of maximum mana per tick, +8% spell power and +5% skill experience for 8 minutes.",
+    "duration": 4800
+  },
+  {
+    "id": "stoked",
+    "name": "Stoked",
+    "icon": "🥩",
+    "art": "meat",
+    "color": "#d9692c",
+    "stacking": {
+      "mode": "highest"
+    },
+    "mods": [
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": 0.05
+      },
+      {
+        "stat": "critDamage",
+        "op": "add",
+        "value": 0.05
+      }
+    ],
+    "desc": "+5% damage and +0.05 critical damage multiplier per intensity, for 5 minutes. Granted by Seared Stew.",
+    "duration": 3000
+  },
+  {
+    "id": "steeped",
+    "name": "Steeped",
+    "icon": "🫖",
+    "art": "pot",
+    "color": "#6f9a58",
+    "stacking": {
+      "mode": "highest"
+    },
+    "mods": [
+      {
+        "stat": "resPoison",
+        "op": "add",
+        "value": 0.25
+      },
+      {
+        "stat": "resAcid",
+        "op": "add",
+        "value": 0.1
+      }
+    ],
+    "desc": "+25% poison resistance and +10% acid resistance per intensity, for 10 minutes. Granted by Steeped Broth. Poison or acid resistance of 100% or more stops those conditions from landing; damage resistance still stops at its cap.",
+    "duration": 6000
+  },
+  {
+    "id": "queasy",
+    "name": "Queasy",
+    "icon": "🤮",
+    "art": "venom",
+    "element": "poison",
+    "color": "#6f8a3c",
+    "stacking": {
+      "mode": "highest"
+    },
+    "dot": {
+      "type": "poison",
+      "flat": 0.03
+    },
+    "mods": [
+      {
+        "stat": "staminaRegen",
+        "op": "mult",
+        "value": -0.25
+      }
+    ],
+    "removal": [
+      {
+        "on": "heal",
+        "healKinds": [
+          "rest"
+        ],
+        "effect": "remove"
+      }
+    ],
+    "desc": "Deals 0.03 poison damage per tick and cuts stamina regeneration by 25% for 90 seconds. Rest removes it.",
+    "duration": 900
+  },
+  {
+    "id": "frosted",
+    "name": "Frosted",
+    "icon": "🧊",
+    "color": "#7ab0d8",
+    "stacking": {
+      "mode": "highest"
+    },
+    "mods": [
+      {
+        "stat": "resCold",
+        "op": "add",
+        "value": 0.2
+      },
+      {
+        "stat": "resHeat",
+        "op": "add",
+        "value": 0.1
+      }
+    ],
+    "desc": "+20% cold resistance and +10% heat resistance per intensity. Lasts as long as the Elixir. Granted by Frostmoss.",
+    "duration": 450
+  },
+  {
+    "id": "concealed",
+    "name": "Concealed",
+    "icon": "🌚",
+    "art": "gloom",
+    "color": "#9aa4b0",
+    "stacking": {
+      "mode": "highest"
+    },
+    "incomingMissChance": 0.1,
+    "mods": [
+      {
+        "stat": "dodge",
+        "op": "add",
+        "value": 0.03
+      }
+    ],
+    "desc": "Attacks against you have a 10% chance to miss and you gain +3% dodge, per intensity. Lasts as long as the Elixir. Granted by Gloomcap.",
+    "duration": 450
+  },
+  {
+    "id": "invigorated",
+    "name": "Invigorated",
+    "icon": "🌡️",
+    "art": "fire",
+    "color": "#c94f4f",
+    "stacking": {
+      "mode": "highest"
+    },
+    "mods": [
+      {
+        "stat": "staminaRegen",
+        "op": "mult",
+        "value": 0.25
+      }
+    ],
+    "desc": "+25% stamina regeneration per intensity. Lasts as long as the Elixir. Granted by Bloodwort.",
+    "duration": 450
+  },
+  {
+    "id": "unfolded",
+    "name": "Unfolded",
+    "icon": "📐",
+    "art": "arcane",
+    "unresistable": "ruled no resistance (2026-10-24)",
+    "color": "#8f7ad8",
+    "stacking": {
+      "mode": "highest"
+    },
+    "mods": [
+      {
+        "stat": "resSlashing",
+        "op": "add",
+        "value": -0.12
+      },
+      {
+        "stat": "resPiercing",
+        "op": "add",
+        "value": -0.12
+      },
+      {
+        "stat": "resBludgeoning",
+        "op": "add",
+        "value": -0.12
+      },
+      {
+        "stat": "resArcane",
+        "op": "add",
+        "value": -0.15
+      }
+    ],
+    "desc": "Slashing, piercing and bludgeoning resistance -12%; arcane resistance -15%. Lasts 15 seconds.",
+    "duration": 150
+  },
+  {
+    "id": "folded_space",
+    "name": "Folded Space",
+    "icon": "📄",
+    "art": "arcane",
+    "color": "#8f7ad8",
+    "stacking": {
+      "mode": "highest"
+    },
+    "mods": [
+      {
+        "stat": "dodge",
+        "op": "add",
+        "value": 0.12
+      }
+    ],
+    "desc": "+12% dodge for 40 seconds.",
+    "duration": 400
+  },
+  {
+    "id": "ximas_rime",
+    "name": "Xima's Rime",
+    "icon": "❄️",
+    "color": "#7ab0d8",
+    "stacking": {
+      "mode": "highest"
+    },
+    "mods": [
+      {
+        "stat": "resHeat",
+        "op": "add",
+        "value": 0.12
+      },
+      {
+        "stat": "resCold",
+        "op": "add",
+        "value": 0.12
+      },
+      {
+        "stat": "resLightning",
+        "op": "add",
+        "value": 0.12
+      }
+    ],
+    "desc": "+12% heat, cold and lightning resistance for 60 seconds. Granted by Xima.",
+    "duration": 600
+  },
+  {
+    "id": "blood_communion",
+    "name": "Blood Communion",
+    "icon": "🩸",
+    "color": "#c94f4f",
+    "stacking": {
+      "mode": "highest"
+    },
+    "invertsDots": [
+      "bleeding",
+      "lacerated"
+    ],
+    "mods": [
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": 0.08
+      }
+    ],
+    "desc": "Bleeding and Lacerated ticks heal you instead of damaging you. +8% damage. Lasts 60 seconds.",
+    "duration": 600
+  },
+  {
+    "id": "honor_bound",
+    "name": "Honor Bound",
+    "icon": "⚔️",
+    "color": "#e8b84b",
+    "stacking": {
+      "mode": "highest"
+    },
+    "pacifiesFlankers": true,
+    "mods": [
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": 0.1
+      }
+    ],
+    "desc": "Enemies other than your target do not attack. +10% damage. Lasts 20 seconds.",
+    "duration": 200
+  },
+  {
+    "id": "veiled",
+    "name": "Veiled",
+    "icon": "🎭",
+    "art": "gloom",
+    "color": "#9aa4b0",
+    "stacking": {
+      "mode": "highest"
+    },
+    "incomingMissChance": 0.12,
+    "desc": "Attacks against you have a 12% chance to miss, for 30 seconds.",
+    "duration": 300
+  },
+  {
+    "id": "night_shroud",
+    "name": "Night Shroud",
+    "icon": "🌑",
+    "color": "#5b4a6e",
+    "stacking": {
+      "mode": "highest"
+    },
+    "incomingMissChance": 0.12,
+    "desc": "Attacks against you have a 12% chance to miss, for 30 seconds.",
+    "duration": 300
+  },
+  {
+    "id": "unravelling",
+    "name": "Unravelling",
+    "icon": "🧵",
+    "art": "arcane",
+    "element": "arcane",
+    "color": "#8f7ad8",
+    "escalatesTo": "manaburn",
+    "stacking": {
+      "mode": "sum",
+      "cap": 3,
+      "onCap": "escalate",
+      "escalateMult": 8
+    },
+    "mods": [
+      {
+        "stat": "resArcane",
+        "op": "add",
+        "value": -0.08
+      },
+      {
+        "stat": "spellPower",
+        "op": "mult",
+        "value": -0.05
+      },
+      {
+        "stat": "manaRegen",
+        "op": "mult",
+        "value": -0.15
+      }
+    ],
+    "desc": "Arcane resistance -8%, spell power -5% and mana regeneration -15% per stack, for 20 seconds. At 3 stacks it becomes Manaburn at 8 times the intensity.",
+    "duration": 200
+  },
+  {
+    "id": "kinetic_bulwark",
+    "name": "Kinetic Bulwark",
+    "icon": "🛡️",
+    "color": "#9aa4b0",
+    "stacking": {
+      "mode": "highest"
+    },
+    "blocksRanged": {
+      "except": [
+        "light"
+      ]
+    },
+    "desc": "Blocks all ranged attacks except light, for 25 seconds.",
+    "duration": 250
+  },
+  {
+    "id": "psionic_haste",
+    "name": "Kinetic Haste",
+    "icon": "💨",
+    "color": "#f2d024",
+    "stacking": {
+      "mode": "highest"
+    },
+    "mods": [
+      {
+        "stat": "speed",
+        "op": "mult",
+        "value": 0.03
+      },
+      {
+        "stat": "travelSpeed",
+        "op": "mult",
+        "value": 0.03
+      }
+    ],
+    "desc": "+3% speed and +3% travel speed per intensity, for 20 seconds. Speed covers attacks, crafting and every activity.",
+    "duration": 200
+  },
+  {
+    "id": "psionic_bracing",
+    "name": "Braced",
+    "icon": "💢",
+    "art": "anger",
+    "color": "#e05555",
+    "stacking": {
+      "mode": "highest"
+    },
+    "mods": [
+      {
+        "stat": "armor",
+        "op": "add",
+        "value": 1
+      }
+    ],
+    "desc": "+1 armour per intensity, for 20 seconds.",
+    "duration": 200
+  },
+  {
+    "id": "psionic_root",
+    "name": "Rooted",
+    "icon": "🪨",
+    "color": "#9aa4b0",
+    "stacking": {
+      "mode": "highest"
+    },
+    "mods": [
+      {
+        "stat": "resBludgeoning",
+        "op": "add",
+        "value": 0.02
+      }
+    ],
+    "amplifies": [
+      {
+        "id": "dazed",
+        "mult": 0.5
+      },
+      {
+        "id": "concussed",
+        "mult": 0.5
+      }
+    ],
+    "desc": "+2% bludgeoning resistance per intensity, for 20 seconds. Dazed and Concussed land at half intensity.",
+    "duration": 200
+  },
+  {
+    "id": "psionic_foresight",
+    "name": "Foresight",
+    "icon": "📍",
+    "art": "eye",
+    "color": "#8f7ad8",
+    "stacking": {
+      "mode": "highest"
+    },
+    "incomingMissChance": 0.03,
+    "desc": "Attacks against you have a 3% chance to miss per intensity, for 20 seconds.",
+    "duration": 200
+  },
+  {
+    "id": "psionic_compression",
+    "name": "Compressed",
+    "icon": "🌀",
+    "art": "force",
+    "unresistable": "ruled no resistance (2026-10-24)",
+    "color": "#5591e0",
+    "stacking": {
+      "mode": "highest"
+    },
+    "mods": [
+      {
+        "stat": "speed",
+        "op": "mult",
+        "value": -0.02
+      }
+    ],
+    "desc": "Speed -2% per intensity, for 20 seconds.",
+    "duration": 200
+  },
+  {
+    "id": "psionic_read",
+    "name": "Read",
+    "icon": "🔍",
+    "art": "eye",
+    "unresistable": "ruled no resistance (2026-10-24)",
+    "color": "#8f7ad8",
+    "stacking": {
+      "mode": "highest"
+    },
+    "mods": [
+      {
+        "stat": "dodge",
+        "op": "add",
+        "value": -0.02
+      },
+      {
+        "stat": "parry",
+        "op": "add",
+        "value": -0.02
+      }
+    ],
+    "desc": "Dodge -2% and parry -2% per intensity, for 20 seconds.",
+    "duration": 200
+  },
+  {
+    "id": "psionic_wide_sight",
+    "name": "Wide Sight",
+    "icon": "👁️",
+    "art": "eye",
+    "color": "#5591e0",
+    "stacking": {
+      "mode": "highest"
+    },
+    "mods": [
+      {
+        "stat": "resSlashing",
+        "op": "add",
+        "value": 0.012
+      },
+      {
+        "stat": "resPiercing",
+        "op": "add",
+        "value": 0.012
+      },
+      {
+        "stat": "resBludgeoning",
+        "op": "add",
+        "value": 0.012
+      }
+    ],
+    "desc": "+1.2% slashing, piercing and bludgeoning resistance per intensity, for 20 seconds.",
+    "duration": 200
+  },
+  {
+    "id": "artisans_cunning",
+    "name": "Artisan's Cunning",
+    "icon": "🔨",
+    "art": "crush",
+    "color": "#c98a3c",
+    "stacking": {
+      "mode": "highest"
+    },
+    "mods": [
+      {
+        "stat": "craftSpeed",
+        "op": "mult",
+        "value": 0.15
+      },
+      {
+        "stat": "loot",
+        "op": "mult",
+        "value": 0.08
+      }
+    ],
+    "desc": "+15% craft speed and +8% loot for 120 seconds.",
+    "duration": 1200
+  },
+  {
+    "id": "flat_footed",
+    "name": "Flat-Footed",
+    "icon": "😦",
+    "art": "anger",
+    "unresistable": "state: caught off guard, not an element",
+    "color": "#c9a13c",
+    "stacking": {
+      "mode": "highest"
+    },
+    "damp": {
+      "stats": [
+        "dodge",
+        "parry"
+      ],
+      "kinds": [
+        "item",
+        "affix",
+        "rune",
+        "handBonus",
+        "buff",
+        "status"
+      ],
+      "per": 1,
+      "max": 1
+    },
+    "removal": [
+      {
+        "on": "barFill",
+        "after": 2,
+        "effect": "remove"
+      }
+    ],
+    "desc": "Dodge and parry from gear, affixes, runes, hand bonuses, buffs and conditions do not apply; skill and title bonuses still do. Ends after your next two completed actions.",
+    "duration": 600
+  },
+  {
+    "id": "surprised",
+    "name": "Surprised",
+    "icon": "😲",
+    "art": "anger",
+    "unresistable": "state: caught off guard, not an element",
+    "color": "#e0a855",
+    "stacking": {
+      "mode": "highest"
+    },
+    "incomingBite": 0.3,
+    "opensTempo": true,
+    "removal": [
+      {
+        "on": "damageTaken",
+        "after": 1,
+        "effect": "remove"
+      },
+      {
+        "on": "barFill",
+        "after": 2,
+        "effect": "remove"
+      }
+    ],
+    "desc": "The next hit to land deals 30% more damage per intensity, then the surprise is spent. A fight opening on surprised enemies starts your action bar nearly full. Fades after two of their actions.",
+    "duration": 600
+  },
+  {
+    "id": "skewered",
+    "name": "Skewered",
+    "icon": "🗡️",
+    "art": "pierce",
+    "element": "piercing",
+    "color": "#c2504f",
+    "stacking": {
+      "mode": "highest",
+      "cap": 1
+    },
+    "mods": [
+      {
+        "stat": "speed",
+        "op": "mult",
+        "value": -0.05
+      },
+      {
+        "stat": "dodge",
+        "op": "mult",
+        "value": -0.15
+      }
+    ],
+    "expireDamage": {
+      "type": "piercing",
+      "flat": 12
+    },
+    "desc": "Speed -5% and dodge -15% for 10 seconds. If the timer runs out, the bearer takes 12 piercing damage per intensity; if it is removed early, no damage is dealt.",
+    "duration": 100
+  },
+  {
+    "id": "fasting",
+    "name": "Fasting",
+    "icon": "🕳️",
+    "art": "zero",
+    "unresistable": "unique: Anupama's rule, not an affliction",
+    "hidden": true,
+    "stacking": {
+      "mode": "highest",
+      "cap": 1
+    },
+    "blocks": [
+      "swing"
+    ],
+    "removal": [
+      {
+        "on": "combatEnd",
+        "effect": "remove"
+      }
+    ],
+    "desc": "Plain weapon swings cannot be used. Spells, techniques and abilities still can. Ends with the fight."
+  },
+  {
+    "id": "hunger_anupama",
+    "name": "Hunger",
+    "icon": "🕳️",
+    "art": "zero",
+    "element": "dark",
+    "stacking": {
+      "mode": "sum"
+    },
+    "dot": {
+      "type": "dark",
+      "flat": 0.05,
+      "pierce": 0.5
+    },
+    "removal": [
+      {
+        "on": "combatEnd",
+        "effect": "remove"
+      }
+    ],
+    "desc": "Deals 0.05 dark damage per tick per intensity; half of it ignores resistance. No cap on stacks. Each application refreshes the 15-second timer. Ends with the fight.",
+    "duration": 150
+  },
+  {
+    "id": "weight_of_hunger",
+    "name": "The Weight of Hunger",
+    "icon": "⚖️",
+    "art": "scales",
+    "element": "dark",
+    "stacking": {
+      "mode": "highest"
+    },
+    "mods": [
+      {
+        "stat": "speed",
+        "op": "mult",
+        "value": -1
+      }
+    ],
+    "removal": [
+      {
+        "on": "barFill",
+        "effect": "remove"
+      },
+      {
+        "on": "combatEnd",
+        "effect": "remove"
+      }
+    ],
+    "desc": "Speed is reduced by intensity, to at most 3 times slower. Ends when your action bar fills, or after 3 seconds.",
+    "duration": 30
+  }
+]

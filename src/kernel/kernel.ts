@@ -9,7 +9,17 @@ import { cloneJson, deepFreeze, isRecord, type DeepReadonly, type Json } from '.
 import { KERNEL_SLICE_VERSION, kernelMigrations } from './migrations';
 import { createRng, normalizeSeed } from './rng';
 import { checkEnvelope, migrateEntry, SAVE_FORMAT, type SaveEnvelope } from './save';
-import type { AnySystem, Command, CommandResult, Ctx, EventDef, GameEvent, Modifier, SystemDef } from './system';
+import type {
+  AnySystem,
+  Command,
+  CommandResult,
+  Ctx,
+  EventDef,
+  GameEvent,
+  Modifier,
+  RequestDef,
+  SystemDef,
+} from './system';
 
 export interface KernelSlice {
   tick: number;
@@ -89,6 +99,9 @@ export interface Kernel {
 /** Events delivered in one drain before the kernel assumes a loop. */
 const MAX_EVENTS_PER_DRAIN = 100_000;
 
+/** Requests nested inside one another before the kernel assumes a loop. */
+const MAX_REQUEST_DEPTH = 32;
+
 export function orderSystems(systems: readonly AnySystem[]): AnySystem[] {
   const seen = new Set<string>();
   for (const system of systems) {
@@ -144,6 +157,23 @@ export function createKernel(options: KernelOptions): Kernel {
     modifiers: (entity: string = PLAYER) => derived.modifiers(entity),
   };
 
+  // Requests: a call from one system into another that returns a value. The
+  // answer runs at once, with the answering system's context.
+  const requestHandlers = new Map<string, { system: AnySystem; handle: (ctx: Ctx<any>, payload: any) => any }>();
+  let requestDepth = 0;
+  const request = <P, R>(def: RequestDef<P, R>, payload: P): R => {
+    const entry = requestHandlers.get(def.type);
+    if (!entry) throw new Error(`no system answers the request "${def.type}"`);
+    if (requestDepth >= MAX_REQUEST_DEPTH)
+      throw new Error(`more than ${MAX_REQUEST_DEPTH} nested requests; last type "${def.type}"`);
+    requestDepth++;
+    try {
+      return entry.handle(contexts.get(entry.system.id)!, payload) as R;
+    } finally {
+      requestDepth--;
+    }
+  };
+
   // One context per system, built once. The getters read the current state
   // object, so a context stays valid after `load` replaces the state.
   const contexts = new Map<string, Ctx<any>>();
@@ -163,6 +193,7 @@ export function createKernel(options: KernelOptions): Kernel {
       emit: <P>(event: EventDef<P>, payload: P, source?: string) => {
         queue.push({ type: event.type, source: source ?? id, tick: state.kernel.tick, payload });
       },
+      request,
       touch: (sourceId, entity) => derived.touch(sourceId, entity),
       dropEntity: (entity) => derived.dropEntity(entity),
       skip: (action, reason) => logSkip(id, action, reason),
@@ -188,6 +219,11 @@ export function createKernel(options: KernelOptions): Kernel {
     for (const handler of system.commands ?? []) {
       // defineSystem already checked that the type starts with the system id.
       commandHandlers.set(handler.command.type, { system, handle: handler.handle });
+    }
+    for (const handler of system.requests ?? []) {
+      if (requestHandlers.has(handler.request.type))
+        throw new Error(`request "${handler.request.type}" is answered twice`);
+      requestHandlers.set(handler.request.type, { system, handle: handler.handle });
     }
     for (const handler of system.events ?? []) {
       const list = subscribers.get(handler.event.type) ?? [];

@@ -76,6 +76,34 @@ export function on<S, P>(event: EventDef<P>, fn: (ctx: Ctx<S>, event: GameEvent<
   return { event, handle: fn };
 }
 
+// ---- requests ----
+
+/**
+ * A request type, its payload type and its result type. A request is a call
+ * from one system into another that returns a value inside the caller's
+ * handler. See docs/KERNEL.md section 7a.
+ */
+export interface RequestDef<P, R> {
+  readonly type: string;
+  /** Type markers only. Never set. */
+  readonly __payload?: P;
+  readonly __result?: R;
+}
+
+export function defineRequest<P = void, R = void>(type: string): RequestDef<P, R> {
+  return { type };
+}
+
+export interface RequestHandler<S> {
+  readonly request: RequestDef<any, any>;
+  handle(ctx: Ctx<S>, payload: any): any;
+}
+
+/** Declare the answer to a request. The function runs with the answering system's context. */
+export function answer<S, P, R>(request: RequestDef<P, R>, fn: (ctx: Ctx<S>, payload: P) => R): RequestHandler<S> {
+  return { request, handle: fn };
+}
+
 // ---- derived values ----
 
 /**
@@ -154,6 +182,12 @@ export interface Ctx<S> extends DerivedReads {
   /** Queue an event. Delivery happens after the current handler returns. */
   emit<P>(event: EventDef<P>, payload: P, source?: string): void;
   /**
+   * Ask the system that declares `request` and get its answer now, inside
+   * this handler. The answering system changes its own slice only. Events it
+   * emits are queued like any other.
+   */
+  request<P, R>(request: RequestDef<P, R>, payload: P): R;
+  /**
    * Bump the change counter of a modifier source. Call it when its inputs
    * change. With an entity, only that entity's values are rebuilt.
    */
@@ -188,6 +222,8 @@ export interface SystemDef<S, V = unknown> {
   tick?(ctx: Ctx<S>): void;
   commands?: CommandHandler<S>[];
   events?: EventHandler<S>[];
+  /** Answers to requests. Types start with `<system id>/`. One answer per type. */
+  requests?: RequestHandler<S>[];
   /** Registry name to registry. Names are unique across the game. */
   content?: Record<string, RegistryDef>;
   /** What the UI sees of this system. Must return new objects, never the slice. */
@@ -225,6 +261,7 @@ export function defineSystem<S, V = unknown>(def: SystemDef<S, V>): SystemDef<S,
   owned('stat', Object.keys(def.stats ?? {}));
   owned('modifier source', (def.modifiers ?? []).map((m) => m.id));
   owned('command', (def.commands ?? []).map((c) => c.command.type));
+  owned('request', (def.requests ?? []).map((r) => r.request.type));
   return def;
 }
 

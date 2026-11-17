@@ -110,7 +110,39 @@ const JOBS = [
     module: 'src/core/data/climate.data.ts',
     pick: (m) => m.MOON_PHASES,
   },
+  {
+    name: 'statuses',
+    out: 'statuses/content/statuses.json',
+    module: 'src/core/data/statuses.data.ts',
+    pick: (m) => Object.values(m.STATUSES).map(statusRecord),
+  },
 ];
+
+/** `duration: 'permanent'` of an application becomes `permanent: true`: the schema has no union. */
+function statusApplication(app) {
+  const { duration, ...rest } = app;
+  return duration === 'permanent' ? { ...rest, permanent: true } : { ...rest, duration };
+}
+
+/**
+ * One status record in the JSON form:
+ * - `duration: null` (no timer) is written as an absent `duration`;
+ * - `overrideRes`, a map keyed by damage type, becomes a list in key order;
+ * - an application inside `retaliate.inflicts` goes through `statusApplication`.
+ */
+function statusRecord(def) {
+  const { duration, overrideRes, retaliate, ...rest } = def;
+  return {
+    ...rest,
+    ...(duration === null ? {} : { duration }),
+    ...(overrideRes
+      ? { overrideRes: Object.entries(overrideRes).map(([type, spec]) => ({ type, ...spec })) }
+      : {}),
+    ...(retaliate
+      ? { retaliate: { ...retaliate, ...(retaliate.inflicts ? { inflicts: retaliate.inflicts.map(statusApplication) } : {}) } }
+      : {}),
+  };
+}
 
 async function load(module) {
   const outfile = path.join(os.tmpdir(), `ksgb-convert-${process.pid}-${slug(module)}.mjs`);
