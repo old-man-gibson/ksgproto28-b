@@ -219,8 +219,8 @@ describe('queasy, overgrowth and proliferating are resisted through poison', () 
   it.todo('refuse-grade food is thinned by poison resistance, because it is done to the eater (cooking, consumables)');
   it.todo('the Scorched Mess, which grants Queasy outright, is thinned the same way (cooking, consumables)');
   it.todo('nourishment is still not resisted: a dish’s own grants land in full (cooking, consumables)');
-  it.todo('overgrowth lands thinned on a poison-resistant monster, and its escalation is not billed again (port 4: `healEnemy`)');
-  it.todo('a monster at 100% poison resistance cannot be overgrown, though forced healing still heals (port 4: `healEnemy`)');
+  it.todo('overgrowth lands thinned on a poison-resistant monster, and its escalation is not billed again (port 5 or arcane: `healEnemy`, the forced healing of a working)');
+  it.todo('a monster at 100% poison resistance cannot be overgrown, though forced healing still heals (port 5 or arcane: `healEnemy`, the forced healing of a working)');
 });
 
 describe('immunity stated by another system (the old `TitleDef.immune`)', () => {
@@ -254,8 +254,8 @@ describe('a condition’s damage ticks shed what a blow of the same type would',
     expect(resistBlock({ resSlashing: -0.5, resistCap: 0.75 }).slashing).toBeCloseTo(-0.5);
   });
 
-  it.todo('a monster’s resistance comes from its tags, not only from what its def declares (port 4)');
-  it.todo('elemental resistance counts for the elemental types, as it does for a blow (port 4: `monsterSlice`)');
-  it.todo('is the figure monsterSlice stacks, for every type and a spread of bodies (port 4)');
-  it.todo('is the figure incomingSlice stacks for the real player, every type (port 4)');
+  // Ported in tests/combatStatuses.test.ts (spine port 4): a monster’s resistance comes from its tags, not only from what its def declares
+  // Ported in tests/combatStatuses.test.ts (spine port 4): elemental resistance counts for the elemental types, as it does for a blow
+  // Ported in tests/combatStatuses.test.ts (spine port 4): is the figure monsterSlice stacks, for every type and a spread of bodies
+  // Ported in tests/combatStatuses.test.ts (spine port 4): is the figure incomingSlice stacks for the real player, every type
 });

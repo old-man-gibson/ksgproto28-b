@@ -25,12 +25,12 @@ import { ask, emit, makeGame, setMods, slice } from './helpers';
  * inside a kill. Ported cases:
  * - the method-drop cases of the old tests/desert.test.ts ("method drops and
  *   the killing blow"), with the two tables of that test written here, since
- *   the monster registry arrives with port 4;
+ *   the monster registry arrived later, with spine port 4;
  * - the drop-table checks of the old tests/content.test.ts, as
  *   `dropTableIssues`.
  * The other cases are new and call the `loot/roll` request directly.
  *
- * Left behind, as `it.todo`: the cases that need a kill in a fight (port 4).
+ * The case that needs a kill in a fight is in `tests/combatStatuses.test.ts`.
  */
 
 /** The mummy of floor 18 (old data/monsters.data.ts `ph_mummy`). */
@@ -92,7 +92,7 @@ describe('method drops and the killing blow', () => {
     }
   });
 
-  it.todo('damage over time sets lastHit to its type (combat: port 4)');
+  // Ported in tests/combatStatuses.test.ts (spine port 4): damage over time sets lastHit to its type
 
   it('a kill by an unmatched type banks no drought miss for the keyed row', () => {
     // Quicksilver (6%) is keyed to bludgeoning, the boss token (10%) to

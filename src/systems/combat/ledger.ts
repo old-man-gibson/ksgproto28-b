@@ -7,6 +7,7 @@
  * time. One rollup is committed when the fight ends.
  */
 import type { DeepReadonly } from '../../kernel';
+import { STATUSES } from '../statuses';
 import type { CombatState, Enemy, FightLedger, FightOutcome, LedgerSource, NotebookEntry } from './types';
 
 /** How many fights the notebook keeps. */
@@ -98,6 +99,12 @@ export function noteIncoming(
 ): void {
   if (amount <= 0) return;
   bump(ensureLedger(state, now).incoming, src, amount);
+}
+
+/** A condition's damage, named from the registry. */
+export function noteConditionDamage(state: CombatState, now: number, id: string, amount: number): void {
+  const def = STATUSES[id];
+  noteIncoming(state, now, { key: `cond:${id}`, label: def?.name ?? id, icon: def?.icon ?? '☠️' }, amount);
 }
 
 /** Damage that never reached the player, and how it was stopped. */

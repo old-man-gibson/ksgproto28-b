@@ -385,7 +385,7 @@ describe('Anupama: the fast', () => {
     expect(has(g, 'weight_of_hunger')).toBe(false);
   });
 
-  it.todo('a monster wears what it IS from the moment it spawns (port 4: `MonsterDef.wears`, spawn)');
+  // Ported in tests/combatStatuses.test.ts (spine port 4): a monster wears what it IS from the moment it spawns
 
   it('fasting refuses the plain blow without touching what is deliberate', () => {
     const g = fresh();
@@ -534,7 +534,7 @@ describe('conditions on the other side of the fight', () => {
 });
 
 describe('afflictions in a real fight', () => {
-  it.todo('fighting things that burn you leaves you burning (port 4: combat; the spot is shelved content)');
+  // Ported in tests/combatStatuses.test.ts (spine port 4): fighting things that burn you leaves you burning
 });
 
 describe('conditions that stop you doing things', () => {
@@ -662,8 +662,8 @@ describe("the action bar is not the player's alone", () => {
     expect(ask(g, statusBarDamage, { entity: e, when: 'onFill' })[0].amount).toBeCloseTo(2.4);
   });
 
-  it.todo('a shocked enemy runs its bar backwards instead of filling it (port 4: the enemy bar)');
-  it.todo('and a shock finally has a way OFF an enemy short of the fight ending (port 4: the enemy bar)');
+  // Ported in tests/combatStatuses.test.ts (spine port 4): a shocked enemy runs its bar backwards instead of filling it
+  // Ported in tests/combatStatuses.test.ts (spine port 4): and a shock finally has a way OFF an enemy short of the fight ending
 });
 
 describe('conditions that strike back', () => {
@@ -965,8 +965,8 @@ describe('flat-footed', () => {
 });
 
 describe('the end of a fight lets go of what only a fight could shed', () => {
-  it.todo('being knocked out sheds conditions the action bar was the only cure for (port 4: `combatEnd` on defeat)');
-  it.todo('winning does the same — a daze you never worked off does not follow you out (port 4: `combatEnd` on a win)');
+  // Ported in tests/combatStatuses.test.ts (spine port 4): being knocked out sheds conditions the action bar was the only cure for
+  // Ported in tests/combatStatuses.test.ts (spine port 4): winning does the same — a daze you never worked off does not follow you out
 
   // The status half: the hook combat will send when a fight ends.
   it('the end of a fight removes what names `combatEnd`', () => {
@@ -981,7 +981,7 @@ describe('the end of a fight lets go of what only a fight could shed', () => {
 
 describe('a knockout is a floor, not a step you can fall through twice', () => {
   it.todo('a rot that outlives the fight cannot knock you out while you are down (port 6: the knockout)');
-  it.todo('it does not overwrite the summary of the fight that actually felled you (port 4: the fight ledger)');
+  // Ported in tests/combatStatuses.test.ts (spine port 4): it does not overwrite the summary of the fight that actually felled you
   it.todo('you still come round once the rot has run its course (port 6: the knockout)');
 });
 
@@ -1192,7 +1192,7 @@ describe('removal that answers to how HARD, not how often', () => {
 });
 
 describe('a monster hears the type it was actually hit with', () => {
-  it.todo('never reports a slice key as a damage type (port 4: `enemyTookDamage`)');
+  // Ported in tests/combatStatuses.test.ts (spine port 4): never reports a slice key as a damage type
 });
 
 describe('conditions are resisted on APPLICATION, not only on their damage', () => {
@@ -1398,8 +1398,8 @@ describe('immunity: resistance of 1, or a status that grants it', () => {
     expect(apply(g, metal, { id: 'bleeding', intensity: 1 }, 'a blade')!.intensity).toBeCloseTo(APPLICATION_FLOOR);
   });
 
-  it.todo('every species that declares resistance 1 or more is immune to that element’s conditions (port 4: monsters)');
-  it.todo('a species whose TAGS give it resistance 1 is immune with nothing declared (port 4: `TAG_RESISTANCES`)');
+  // Ported in tests/combatStatuses.test.ts (spine port 4): every species that declares resistance 1 or more is immune to that element’s conditions
+  // Ported in tests/combatStatuses.test.ts (spine port 4): a species whose TAGS give it resistance 1 is immune with nothing declared
 
   it('a condition that dictates the resistance can take a declared 1 away', () => {
     const g = fresh(53);

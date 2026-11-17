@@ -45,8 +45,8 @@ import { ask, equip, giveItem, makeGame, patch, slice, unequip } from './helpers
  * the body with the `items/set-bearer` request, which is what the mutagens
  * port will call.
  *
- * Left behind, as `it.todo`: the cases that need a fight (port 4) or a
- * combat style (the styles port).
+ * The cases that need a fight are in `tests/combatStatuses.test.ts`. Left
+ * behind, as `it.todo`: the cases that need a combat style (the styles port).
  */
 
 /** A character strong enough for every requirement in this file, with an empty pack. */
@@ -453,7 +453,7 @@ describe('hand bonuses', () => {
 });
 
 describe('parrying in a fight', () => {
-  it.todo('turns blows aside and answers them, without spending the action bar (combat: port 4)');
+  // Ported in tests/combatStatuses.test.ts (spine port 4): turns blows aside and answers them, without spending the action bar
 });
 
 describe('the parry line', () => {
@@ -490,8 +490,8 @@ describe('the parry line', () => {
 
   it.todo('Destreza and Bolognese supplant the two defensive stances (styles)');
   it.todo('a fencing stance buys parry with breath, and never past the cap (styles)');
-  it.todo('Deflection manifests from fighting with a parrying tool — any stance (combat: port 4)');
-  it.todo('Bolognese manifests by bracing behind a sword and buckler (combat: port 4)');
+  // Ported in tests/combatStatuses.test.ts (spine port 4): Deflection manifests from fighting with a parrying tool — any stance
+  it.todo('Bolognese manifests by bracing behind a sword and buckler (styles: a school takes the stance slot)');
 
   it('the riposte answers for whatever the stat says, not a constant', () => {
     const kernel = fighter();

@@ -49,7 +49,16 @@ import {
   type HitKind,
   type StagedMember,
 } from './engine';
-import { dropFight, endFight, isKept, keepFight, noteHealed, noteHealRefused, noteIncoming } from './ledger';
+import {
+  dropFight,
+  endFight,
+  isKept,
+  keepFight,
+  noteConditionDamage,
+  noteHealed,
+  noteHealRefused,
+  noteIncoming,
+} from './ledger';
 import { migrations } from './migrations';
 import { combatText, TEXT } from './text';
 import type { CombatState, EncounterSite, Enemy, FightLedger, HuntRest, StyleState } from './types';
@@ -337,10 +346,7 @@ export default defineSystem<CombatState, CombatView>({
     }),
     on(conditionDamage, (ctx, { payload }) => {
       if (payload.entity !== PLAYER) return;
-      for (const h of payload.hits) {
-        const def = STATUSES[h.id];
-        noteIncoming(ctx.state, now(ctx), { key: `cond:${h.id}`, label: def?.name ?? h.id, icon: def?.icon ?? '☠️' }, h.amount);
-      }
+      for (const h of payload.hits) noteConditionDamage(ctx.state, now(ctx), h.id, h.amount);
     }),
     on(playerHealed, (ctx, { payload }) => {
       noteHealed(ctx.state, now(ctx), payload.kind, payload.healed);
