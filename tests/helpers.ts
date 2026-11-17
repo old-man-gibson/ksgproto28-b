@@ -19,6 +19,7 @@ import {
   type SystemDef,
 } from '../src/kernel';
 import { systems } from '../src/systems';
+import { equipItem, unequipSlot, type ItemInstance, type ItemsState, type SlotId } from '../src/systems/items';
 
 export const ROOT = path.resolve(fileURLToPath(new URL('.', import.meta.url)), '..');
 
@@ -158,4 +159,30 @@ export function exists(file: string): boolean {
 /** Source text with comments removed, for import and identifier scans. */
 export function stripComments(source: string): string {
   return source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
+}
+
+// ---- items ----
+
+/**
+ * Put an item in the pack, the way an old test pushed one into
+ * `state.inventory`: a new uid, no rune slots unless given, no roll.
+ */
+export function giveItem(kernel: Kernel, defId: string, opts: Partial<ItemInstance> = {}): ItemInstance {
+  let item!: ItemInstance;
+  patch(kernel, (slices) => {
+    const state = slices.items as ItemsState;
+    state.uidCounter += 1;
+    item = { uid: state.uidCounter, defId, slots: 0, runes: [], ...opts };
+    state.inventory.push(item);
+  });
+  return item;
+}
+
+/** Equip from the pack. Returns the command result. */
+export function equip(kernel: Kernel, uid: number, slot?: SlotId) {
+  return kernel.dispatch(equipItem({ uid, slot }));
+}
+
+export function unequip(kernel: Kernel, slot: SlotId) {
+  return kernel.dispatch(unequipSlot({ slot }));
 }

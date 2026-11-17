@@ -1,0 +1,10 @@
+{
+  "counts": {
+    "slime_gel": 7,
+    "hardwood": 2
+  },
+  "stock": {
+    "common_herb": { "e": 5, "c": 3 },
+    "warm_slime_gel": { "a": 2 }
+  }
+}

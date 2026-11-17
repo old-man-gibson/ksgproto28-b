@@ -1,0 +1,57 @@
+[
+  {
+    "id": "sharp",
+    "name": "Sharp",
+    "mods": [
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": 0.1
+      }
+    ]
+  },
+  {
+    "id": "sturdy",
+    "name": "Sturdy",
+    "mods": [
+      {
+        "stat": "maxHp",
+        "op": "add",
+        "value": 12
+      }
+    ]
+  },
+  {
+    "id": "swift",
+    "name": "Swift",
+    "mods": [
+      {
+        "stat": "attackSpeed",
+        "op": "mult",
+        "value": 0.08
+      }
+    ]
+  },
+  {
+    "id": "lucky",
+    "name": "Lucky",
+    "mods": [
+      {
+        "stat": "loot",
+        "op": "mult",
+        "value": 0.08
+      }
+    ]
+  },
+  {
+    "id": "warded",
+    "name": "Warded",
+    "mods": [
+      {
+        "stat": "armor",
+        "op": "add",
+        "value": 3
+      }
+    ]
+  }
+]

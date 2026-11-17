@@ -1,0 +1,2464 @@
+[
+  {
+    "id": "biomatter",
+    "name": "Mutagenic Biomatter",
+    "icon": "🩸",
+    "value": 6,
+    "craftTags": [
+      "biomatter"
+    ],
+    "desc": "Bulk input for refining, fusing and body swaps at the geneshaping bench. Ungraded. Four spool into one Histone Spool."
+  },
+  {
+    "id": "histone",
+    "name": "Histone Spool",
+    "icon": "🧵",
+    "value": 14,
+    "craftTags": [
+      "histone"
+    ],
+    "desc": "Spent to coil a new chromosome connection at the geneshaping bench; the cost rises with the connection length. Spooled from biomatter, slime gel or bone dust. Ungraded."
+  },
+  {
+    "id": "slime_gel",
+    "name": "Slime Gel",
+    "icon": "🫧",
+    "value": 2,
+    "desc": "Dropped by slimes. Six spool into one Histone Spool. Otherwise sold."
+  },
+  {
+    "id": "warm_slime_gel",
+    "name": "Warm Slime Gel",
+    "icon": "🔥",
+    "value": 5,
+    "craftTags": [
+      "inlay",
+      "gel"
+    ],
+    "graded": true,
+    "desc": "Rune inlay. Weapon: +2 heat damage. Armor: +5% heat resistance. Accessory: +4% heat resistance. Dropped by warm slimes."
+  },
+  {
+    "id": "chilled_slime_gel",
+    "name": "Chilled Slime Gel",
+    "icon": "🧊",
+    "value": 5,
+    "craftTags": [
+      "inlay",
+      "gel"
+    ],
+    "graded": true,
+    "desc": "Rune inlay. Weapon: +2 cold damage. Armor: +5% cold resistance. Accessory: +4% cold resistance. Dropped by cold slimes."
+  },
+  {
+    "id": "charged_slime_gel",
+    "name": "Charged Slime Gel",
+    "icon": "⚡",
+    "value": 9,
+    "craftTags": [
+      "inlay",
+      "gel"
+    ],
+    "graded": true,
+    "desc": "Rune inlay. Weapon: +6% of damage as lightning. Armor: +5% lightning resistance. Accessory: +2% speed. Dropped by charged slimes."
+  },
+  {
+    "id": "luminous_slime_gel",
+    "name": "Luminous Slime Gel",
+    "icon": "🔆",
+    "value": 14,
+    "craftTags": [
+      "inlay",
+      "gel"
+    ],
+    "graded": true,
+    "desc": "Rune inlay. Weapon: +3 light damage. Armor: +6% dark resistance. Accessory: +5% light resistance. Dropped by luminous slimes."
+  },
+  {
+    "id": "void_slime_gel",
+    "name": "Void Slime Gel",
+    "icon": "🌑",
+    "value": 18,
+    "desc": "Dropped by void slimes. No crafting use yet. Sells for 18 gold."
+  },
+  {
+    "id": "slime_core",
+    "name": "Slime Core",
+    "icon": "🔮",
+    "value": 45,
+    "desc": "Dropped by slimes and slime bosses. No crafting use yet. Sells for 45 gold."
+  },
+  {
+    "id": "ruined_fur",
+    "name": "Ruined Fur",
+    "icon": "🧶",
+    "value": 1
+  },
+  {
+    "id": "torn_fur",
+    "name": "Torn Fur",
+    "icon": "🧵",
+    "value": 3
+  },
+  {
+    "id": "pristine_fur",
+    "name": "Pristine Fur",
+    "icon": "✨",
+    "value": 12
+  },
+  {
+    "id": "common_herb",
+    "name": "Common Herb",
+    "icon": "🌿",
+    "value": 2,
+    "craftTags": [
+      "herb",
+      "ingredient",
+      "raw"
+    ],
+    "graded": true,
+    "desc": "Raw herb. Gathered from herb beds. Eight go into a Herbal Charm; also a raw cooking ingredient."
+  },
+  {
+    "id": "hardwood",
+    "name": "Hardwood",
+    "icon": "🪵",
+    "value": 4,
+    "craftTags": [
+      "wood"
+    ],
+    "smith": {
+      "rho": 0.4,
+      "hard": 1,
+      "tough": 0.45,
+      "springy": true,
+      "unitCells": 4,
+      "label": "Hardwood"
+    }
+  },
+  {
+    "id": "raw_meat",
+    "name": "Raw Meat",
+    "icon": "🥩",
+    "value": 3,
+    "craftTags": [
+      "meat",
+      "ingredient",
+      "raw",
+      "whole"
+    ],
+    "graded": true
+  },
+  {
+    "id": "iron_scrap",
+    "name": "Iron Scrap",
+    "icon": "🔩",
+    "value": 2,
+    "desc": "Three smelt into one Iron Ingot at a forge."
+  },
+  {
+    "id": "iron_ingot",
+    "name": "Iron Ingot",
+    "icon": "🧱",
+    "value": 8,
+    "craftTags": [
+      "metal",
+      "iron"
+    ],
+    "smith": {
+      "rho": 1,
+      "hard": 1,
+      "tough": 1,
+      "unitCells": 6,
+      "label": "Iron"
+    },
+    "desc": "Smithing stock. Smelted from 3 Iron Scrap. The anvil spends it at 6 cells of metal per ingot."
+  },
+  {
+    "id": "boss_token",
+    "name": "Boss Token",
+    "icon": "🪙",
+    "value": 100,
+    "desc": "Dropped by bosses. No use yet. Sells for 100 gold."
+  },
+  {
+    "id": "ridge_amber",
+    "name": "Ridge Amber",
+    "icon": "🟠",
+    "value": 70,
+    "desc": "Dropped by some monsters of the Malgeri Mountains. No use yet. Sells for 70 gold."
+  },
+  {
+    "id": "runestone_blank",
+    "name": "Blank Runestone",
+    "icon": "⬜",
+    "value": 12,
+    "craftTags": [
+      "runestone"
+    ],
+    "graded": true,
+    "desc": "Base slab for the rune bench. Graded: the stone grade sets how strongly the carved pattern works."
+  },
+  {
+    "id": "gold_leaf",
+    "name": "Gold Leaf",
+    "icon": "🟡",
+    "value": 30,
+    "craftTags": [
+      "inlay",
+      "precious"
+    ],
+    "graded": true,
+    "desc": "Rune inlay. Weapon: +3% damage. Armor: +8 max HP. Accessory: +5% gold gain."
+  },
+  {
+    "id": "cut_garnet",
+    "name": "Cut Garnet",
+    "icon": "🔴",
+    "value": 45,
+    "craftTags": [
+      "gem"
+    ],
+    "graded": true,
+    "desc": "Rune gem. Weapon: +2% crit. Armor: +3 armor. Accessory: +10% crit damage. Up to two gems per rune."
+  },
+  {
+    "id": "ochre_pigment",
+    "name": "Ochre Pigment",
+    "icon": "🟠",
+    "value": 8,
+    "craftTags": [
+      "pigment"
+    ],
+    "graded": true,
+    "desc": "Rune pigment. Weapon: +1.5 damage. Armor: +1.5 armor. Accessory: +2% loot."
+  },
+  {
+    "id": "verdigris_pigment",
+    "name": "Verdigris Pigment",
+    "icon": "🟢",
+    "value": 18,
+    "craftTags": [
+      "pigment"
+    ],
+    "graded": true,
+    "desc": "Rune pigment. Weapon: +2 poison damage. Armor: +5% poison resistance. Accessory: +4% poison resistance."
+  },
+  {
+    "id": "bone_dust",
+    "name": "Bone Dust",
+    "icon": "🦴",
+    "value": 6,
+    "craftTags": [
+      "inlay",
+      "bone"
+    ],
+    "graded": true,
+    "desc": "Rune inlay. Armor: +5 max HP. Accessory: +3% dark resistance. Three also spool into one Histone Spool."
+  },
+  {
+    "id": "raw_sapphire",
+    "name": "Raw Sapphire",
+    "icon": "🔵",
+    "value": 60,
+    "craftTags": [
+      "gem"
+    ],
+    "graded": true,
+    "desc": "Rune gem. Weapon: +3 spell power. Armor: +4 max mana. Accessory: +0.05 mana regen. Up to two gems per rune."
+  },
+  {
+    "id": "bronze_chisel",
+    "name": "Bronze Chisel",
+    "icon": "🔨",
+    "value": 40,
+    "craftTags": [
+      "carving",
+      "tool"
+    ],
+    "graded": true,
+    "desc": "Carving tool. Not consumed. Lowers the chance the slab splits; scales with the tool grade. Does not change the rune."
+  },
+  {
+    "id": "steel_burin",
+    "name": "Steel Burin",
+    "icon": "🖊️",
+    "value": 140,
+    "craftTags": [
+      "carving",
+      "tool"
+    ],
+    "graded": true,
+    "desc": "Carving tool. Not consumed. Lowers the chance the slab splits; scales with the tool grade. Does not change the rune."
+  },
+  {
+    "id": "wild_onion",
+    "name": "Wild Onion",
+    "icon": "🧅",
+    "value": 2,
+    "craftTags": [
+      "vegetable",
+      "ingredient",
+      "raw",
+      "whole"
+    ],
+    "graded": true,
+    "desc": "Raw vegetable. Gathered. Whole, so it can be cut on the Cutting Board before cooking."
+  },
+  {
+    "id": "river_fish",
+    "name": "River Fish",
+    "icon": "🐟",
+    "value": 4,
+    "craftTags": [
+      "fish",
+      "meat",
+      "ingredient",
+      "raw",
+      "whole"
+    ],
+    "graded": true,
+    "desc": "Raw fish; counts as meat. Whole, so it can be cut on the Cutting Board before cooking."
+  },
+  {
+    "id": "cave_mushroom",
+    "name": "Cave Mushroom",
+    "icon": "🍄",
+    "value": 5,
+    "craftTags": [
+      "mushroom",
+      "vegetable",
+      "ingredient",
+      "raw",
+      "whole"
+    ],
+    "graded": true,
+    "desc": "Raw mushroom; counts as a vegetable. Whole, so it can be cut on the Cutting Board before cooking."
+  },
+  {
+    "id": "rock_salt",
+    "name": "Rock Salt",
+    "icon": "🧂",
+    "value": 3,
+    "craftTags": [
+      "seasoning",
+      "ingredient",
+      "raw"
+    ],
+    "graded": true,
+    "desc": "Raw seasoning. Sits outside the stove timeline, so simmer time does not change what it adds."
+  },
+  {
+    "id": "rough_flour",
+    "name": "Rough Flour",
+    "icon": "🌾",
+    "value": 2,
+    "craftTags": [
+      "grain",
+      "ingredient",
+      "raw"
+    ],
+    "graded": true,
+    "desc": "Raw grain. Two measures make a Rustic Loaf."
+  },
+  {
+    "id": "forest_berries",
+    "name": "Forest Berries",
+    "icon": "🫐",
+    "value": 3,
+    "craftTags": [
+      "fruit",
+      "ingredient",
+      "raw"
+    ],
+    "graded": true,
+    "desc": "Raw fruit. Cooking ingredient for the hot benches and the counter."
+  },
+  {
+    "id": "bird_egg",
+    "name": "Bird Egg",
+    "icon": "🥚",
+    "value": 3,
+    "craftTags": [
+      "egg",
+      "ingredient",
+      "raw"
+    ],
+    "graded": true,
+    "desc": "Raw egg. Gathered from nests. Cooking ingredient."
+  },
+  {
+    "id": "wild_honey",
+    "name": "Wild Honey",
+    "icon": "🍯",
+    "value": 6,
+    "craftTags": [
+      "sweet",
+      "seasoning",
+      "ingredient",
+      "raw"
+    ],
+    "graded": true,
+    "desc": "Raw sweet seasoning. Sits outside the stove timeline, so simmer time does not change what it adds."
+  },
+  {
+    "id": "hearty_stew",
+    "name": "Hearty Stew",
+    "icon": "🍲",
+    "value": 14,
+    "graded": true,
+    "consumable": {
+      "food": true,
+      "useVerb": "Ate",
+      "grants": [
+        {
+          "id": "well_fed",
+          "intensity": 1
+        }
+      ],
+      "signature": [
+        {
+          "id": "stoked",
+          "intensity": 0.5
+        }
+      ]
+    },
+    "desc": "Eat: Well Fed ×1 for 10 minutes (+8 max HP, +10% stamina regen, slow HP restore). Signature, after 100 cooks: also Stoked ×0.5."
+  },
+  {
+    "id": "skewered_fish",
+    "name": "Skewered Fish",
+    "icon": "🍢",
+    "value": 12,
+    "craftTags": [
+      "filling",
+      "ingredient",
+      "cooked"
+    ],
+    "graded": true,
+    "consumable": {
+      "food": true,
+      "useVerb": "Ate",
+      "grants": [
+        {
+          "id": "steady_hand",
+          "intensity": 1
+        }
+      ],
+      "signature": [
+        {
+          "id": "well_fed",
+          "intensity": 0.5
+        }
+      ]
+    },
+    "desc": "Eat: Steady Hand ×1 for 8 minutes (+3% crit, +2% parry). Cooked filling; can go onto the Cold Counter as an ingredient. Signature, after 100 cooks: also Well Fed ×0.5."
+  },
+  {
+    "id": "seared_steak",
+    "name": "Seared Steak",
+    "icon": "🥩",
+    "value": 15,
+    "craftTags": [
+      "filling",
+      "ingredient",
+      "cooked"
+    ],
+    "graded": true,
+    "consumable": {
+      "food": true,
+      "useVerb": "Ate",
+      "grants": [
+        {
+          "id": "well_fed",
+          "intensity": 1
+        },
+        {
+          "id": "steady_hand",
+          "intensity": 0.5
+        }
+      ],
+      "signature": [
+        {
+          "id": "stoked",
+          "intensity": 0.5
+        }
+      ]
+    },
+    "desc": "Eat: Well Fed ×1 and Steady Hand ×0.5. Cooked filling; can go onto the Cold Counter as an ingredient. Signature, after 100 cooks: also Stoked ×0.5."
+  },
+  {
+    "id": "charred_roots",
+    "name": "Charred Roots",
+    "icon": "🍠",
+    "value": 10,
+    "craftTags": [
+      "ingredient",
+      "cooked"
+    ],
+    "graded": true,
+    "consumable": {
+      "food": true,
+      "useVerb": "Ate",
+      "grants": [
+        {
+          "id": "well_fed",
+          "intensity": 0.75
+        }
+      ],
+      "signature": [
+        {
+          "id": "steady_hand",
+          "intensity": 0.5
+        }
+      ]
+    },
+    "desc": "Eat: Well Fed ×0.75. Cooked; can go onto the Cold Counter as an ingredient. Signature, after 100 cooks: also Steady Hand ×0.5."
+  },
+  {
+    "id": "rustic_loaf",
+    "name": "Rustic Loaf",
+    "icon": "🍞",
+    "value": 10,
+    "craftTags": [
+      "bread",
+      "ingredient",
+      "cooked"
+    ],
+    "graded": true,
+    "consumable": {
+      "food": true,
+      "useVerb": "Ate",
+      "grants": [
+        {
+          "id": "well_fed",
+          "intensity": 0.6
+        }
+      ],
+      "signature": [
+        {
+          "id": "clear_headed",
+          "intensity": 0.5
+        }
+      ]
+    },
+    "desc": "Eat: Well Fed ×0.6. Cooked bread; the base ingredient for Cold Counter dishes. Signature, after 100 cooks: also Clear-Headed ×0.5."
+  },
+  {
+    "id": "berry_pie",
+    "name": "Berry Pie",
+    "icon": "🥧",
+    "value": 18,
+    "graded": true,
+    "consumable": {
+      "food": true,
+      "useVerb": "Ate",
+      "grants": [
+        {
+          "id": "well_fed",
+          "intensity": 1
+        }
+      ],
+      "signature": [
+        {
+          "id": "clear_headed",
+          "intensity": 0.5
+        }
+      ]
+    },
+    "desc": "Eat: Well Fed ×1 for 10 minutes (+8 max HP, +10% stamina regen, slow HP restore). Signature, after 100 cooks: also Clear-Headed ×0.5."
+  },
+  {
+    "id": "honey_cake",
+    "name": "Honey Cake",
+    "icon": "🍰",
+    "value": 28,
+    "graded": true,
+    "consumable": {
+      "food": true,
+      "useVerb": "Ate",
+      "grants": [
+        {
+          "id": "clear_headed",
+          "intensity": 1
+        },
+        {
+          "id": "well_fed",
+          "intensity": 0.5
+        }
+      ],
+      "signature": [
+        {
+          "id": "steady_hand",
+          "intensity": 0.5
+        }
+      ]
+    },
+    "desc": "Eat: Clear-Headed ×1 (+8% spell power, +5% skill XP, slow mana restore) and Well Fed ×0.5. Signature, after 100 cooks: also Steady Hand ×0.5."
+  },
+  {
+    "id": "hearty_sandwich",
+    "name": "Hearty Sandwich",
+    "icon": "🥪",
+    "value": 24,
+    "graded": true,
+    "consumable": {
+      "food": true,
+      "useVerb": "Ate",
+      "grants": [
+        {
+          "id": "well_fed",
+          "intensity": 1
+        },
+        {
+          "id": "steady_hand",
+          "intensity": 0.75
+        }
+      ],
+      "signature": [
+        {
+          "id": "stoked",
+          "intensity": 0.5
+        }
+      ]
+    },
+    "desc": "Eat: Well Fed ×1 and Steady Hand ×0.75 (+3% crit, +2% parry at full strength). Signature, after 100 cooks: also Stoked ×0.5."
+  },
+  {
+    "id": "forest_salad",
+    "name": "Forest Salad",
+    "icon": "🥗",
+    "value": 12,
+    "graded": true,
+    "consumable": {
+      "food": true,
+      "useVerb": "Ate",
+      "grants": [
+        {
+          "id": "clear_headed",
+          "intensity": 0.5
+        },
+        {
+          "id": "well_fed",
+          "intensity": 0.5
+        }
+      ],
+      "signature": [
+        {
+          "id": "steeped",
+          "intensity": 0.5
+        }
+      ]
+    },
+    "desc": "Eat: Clear-Headed ×0.5 and Well Fed ×0.5. Signature, after 100 cooks: also Steeped ×0.5."
+  },
+  {
+    "id": "mushroom_broth",
+    "name": "Mushroom Broth",
+    "icon": "🍵",
+    "value": 16,
+    "graded": true,
+    "consumable": {
+      "food": true,
+      "useVerb": "Drank",
+      "grants": [
+        {
+          "id": "clear_headed",
+          "intensity": 1
+        }
+      ],
+      "signature": [
+        {
+          "id": "steeped",
+          "intensity": 0.5
+        }
+      ]
+    },
+    "desc": "Drink: Clear-Headed ×1 for 8 minutes (+8% spell power, +5% skill XP, slow mana restore). Signature, after 100 cooks: also Steeped ×0.5."
+  },
+  {
+    "id": "herb_rubbed_meat",
+    "name": "Herb-Rubbed Meat",
+    "icon": "🍖",
+    "value": 16,
+    "graded": true,
+    "consumable": {
+      "food": true,
+      "useVerb": "Ate",
+      "restore": [
+        {
+          "resource": "hp",
+          "ofMax": 0.15
+        }
+      ],
+      "grants": [
+        {
+          "id": "well_fed",
+          "intensity": 1
+        }
+      ],
+      "signature": [
+        {
+          "id": "clear_headed",
+          "intensity": 0.5
+        }
+      ]
+    },
+    "desc": "Eat: restores 15% of max HP at once, then Well Fed ×1. Learned dish: any meat + any herb on the Cooking Stove. Signature, after 100 cooks: also Clear-Headed ×0.5."
+  },
+  {
+    "id": "fish_onion_pot",
+    "name": "Fish and Onion Pot",
+    "icon": "🐟",
+    "value": 22,
+    "graded": true,
+    "consumable": {
+      "food": true,
+      "useVerb": "Ate",
+      "grants": [
+        {
+          "id": "well_fed",
+          "intensity": 1
+        },
+        {
+          "id": "steady_hand",
+          "intensity": 0.75
+        }
+      ],
+      "signature": [
+        {
+          "id": "clear_headed",
+          "intensity": 0.5
+        }
+      ]
+    },
+    "desc": "Eat: Well Fed ×1 and Steady Hand ×0.75. Learned dish: any fish + any vegetable on the Cooking Stove. Signature, after 100 cooks: also Clear-Headed ×0.5."
+  },
+  {
+    "id": "lectory_porridge",
+    "name": "Lectory Porridge",
+    "icon": "🥣",
+    "value": 30,
+    "graded": true,
+    "consumable": {
+      "food": true,
+      "useVerb": "Ate",
+      "grants": [
+        {
+          "id": "clear_headed",
+          "intensity": 1.5
+        },
+        {
+          "id": "well_fed",
+          "intensity": 0.5
+        }
+      ],
+      "signature": [
+        {
+          "id": "steady_hand",
+          "intensity": 0.5
+        }
+      ]
+    },
+    "desc": "Eat: Clear Headed ×1.5 (spell power, skill XP, slow mana restore) and Well Fed ×0.5. Learned dish: any grain + any sweet ingredient on the Cooking Stove. Signature, after 100 cooks: also Steady Hand ×0.5."
+  },
+  {
+    "id": "seared_stew",
+    "name": "Seared Stew",
+    "icon": "🍛",
+    "value": 18,
+    "graded": true,
+    "consumable": {
+      "food": true,
+      "useVerb": "Ate",
+      "grants": [
+        {
+          "id": "stoked",
+          "intensity": 1
+        }
+      ],
+      "signature": [
+        {
+          "id": "well_fed",
+          "intensity": 0.5
+        }
+      ]
+    },
+    "desc": "Eat: Stoked ×1 for 5 minutes (+5% damage, +0.05 critical damage multiplier). Learned dish: any meat + any vegetable on the Cooking Stove, with the meat cooking for under 6 units. Signature, after 100 cooks: also Well Fed ×0.5."
+  },
+  {
+    "id": "braised_meat",
+    "name": "Braised Meat",
+    "icon": "🍗",
+    "value": 20,
+    "graded": true,
+    "consumable": {
+      "food": true,
+      "useVerb": "Ate",
+      "grants": [
+        {
+          "id": "well_fed",
+          "intensity": 1.5,
+          "duration": 9000
+        }
+      ],
+      "signature": [
+        {
+          "id": "steady_hand",
+          "intensity": 0.5
+        }
+      ]
+    },
+    "desc": "Eat: Well Fed ×1.5 for 15 minutes (+12 max HP, +15% stamina regen, slow HP restore). Learned dish: any meat + any vegetable on the Cooking Stove, with the meat cooking for 14 units or more. Signature, after 100 cooks: also Steady Hand ×0.5."
+  },
+  {
+    "id": "steeped_broth",
+    "name": "Steeped Broth",
+    "icon": "🫖",
+    "value": 20,
+    "graded": true,
+    "consumable": {
+      "food": true,
+      "useVerb": "Drank",
+      "grants": [
+        {
+          "id": "steeped",
+          "intensity": 1
+        }
+      ],
+      "signature": [
+        {
+          "id": "clear_headed",
+          "intensity": 0.5
+        }
+      ]
+    },
+    "desc": "Drink: Steeped ×1 for 10 minutes (+25% poison resistance, +10% acid resistance). Learned dish: any mushroom + any herb on the Cooking Stove, with the herb cooking for 8 units or more. Signature, after 100 cooks: also Clear-Headed ×0.5."
+  },
+  {
+    "id": "recipe_herb_rubbed_meat",
+    "name": "Recipe: Herb-Rubbed Meat",
+    "icon": "📜",
+    "value": 15,
+    "consumable": {
+      "useVerb": "Read",
+      "teaches": "herb_rubbed_meat"
+    },
+    "desc": "Read to learn Herb-Rubbed Meat: any meat + any herb on the Cooking Stove. Consumed when read. Sold at the Larder Door."
+  },
+  {
+    "id": "recipe_fish_onion_pot",
+    "name": "Recipe: Fish and Onion Pot",
+    "icon": "📜",
+    "value": 30,
+    "consumable": {
+      "useVerb": "Read",
+      "teaches": "fish_onion_pot"
+    },
+    "desc": "Read to learn Fish and Onion Pot: any fish + any vegetable on the Cooking Stove. Consumed when read. Sold at the Larder Door."
+  },
+  {
+    "id": "recipe_lectory_porridge",
+    "name": "Recipe: Lectory Porridge",
+    "icon": "📜",
+    "value": 60,
+    "consumable": {
+      "useVerb": "Read",
+      "teaches": "lectory_porridge"
+    },
+    "desc": "Read to learn Lectory Porridge: any grain + any sweet ingredient (flour and honey) on the Cooking Stove. Consumed when read. Found only while reading in the Reading Hall."
+  },
+  {
+    "id": "recipe_seared_stew",
+    "name": "Recipe: Seared Stew (meat under 6)",
+    "icon": "📜",
+    "value": 20,
+    "consumable": {
+      "useVerb": "Read",
+      "teaches": "seared_stew"
+    },
+    "desc": "Read to learn Seared Stew: any meat + any vegetable on the Cooking Stove. The meat must cook under 6 units: put it in midway on a Quick simmer. Outside that window the same ingredients make Hearty Stew. Consumed when read. Sold at the Larder Door."
+  },
+  {
+    "id": "recipe_braised_meat",
+    "name": "Recipe: Braised Meat (meat 14 or more)",
+    "icon": "📜",
+    "value": 25,
+    "consumable": {
+      "useVerb": "Read",
+      "teaches": "braised_meat"
+    },
+    "desc": "Read to learn Braised Meat: any meat + any vegetable on the Cooking Stove. The meat must cook 14 units or more: put it in first on a Long braise. Outside that window the same ingredients make Hearty Stew. Consumed when read. Sold at the Larder Door."
+  },
+  {
+    "id": "recipe_steeped_broth",
+    "name": "Recipe: Steeped Broth (herb 8 or more)",
+    "icon": "📜",
+    "value": 25,
+    "consumable": {
+      "useVerb": "Read",
+      "teaches": "steeped_broth"
+    },
+    "desc": "Read to learn Steeped Broth: any mushroom + any herb on the Cooking Stove. The herb must cook 8 units or more: put it in first, on any simmer. Outside that window the same ingredients make Mushroom Broth. Consumed when read. Sold at the Larder Door."
+  },
+  {
+    "id": "word_slip_stone",
+    "name": "Word Slip: Stone",
+    "icon": "📝",
+    "value": 40,
+    "consumable": {
+      "useVerb": "Read",
+      "unlocksWord": "stone"
+    },
+    "desc": "Read to learn the arcane word stone, outside the starting lexicon. Castable once Arcana reaches its level. Consumed when read."
+  },
+  {
+    "id": "votive_token",
+    "name": "Votive Token",
+    "icon": "🕯️",
+    "value": 25,
+    "consumable": {
+      "useVerb": "Offer",
+      "votive": true
+    },
+    "desc": "Offer for favor. The first token offered gives +2 favor with every god you know and +2 starting favor with any god you meet later. Each later token gives 1 unassigned favor, placed on a god of your choice on the Divine tab."
+  },
+  {
+    "id": "drill_manual_riposte",
+    "name": "Drill Manual: Riposte",
+    "icon": "📘",
+    "value": 40,
+    "consumable": {
+      "useVerb": "Study",
+      "teachesTechnique": "riposte"
+    },
+    "desc": "Study to learn Riposte in canonical form, or to perfect a rough one. Consumed when studied."
+  },
+  {
+    "id": "chancery_price_seal",
+    "name": "Chancery Price Seal",
+    "icon": "🔏",
+    "value": 50,
+    "consumable": {
+      "useVerb": "Register",
+      "stamps": "flag:chancery_seal"
+    },
+    "desc": "Register for a standing 10% discount at every counter in Threshold, never below what an item resells for. Consumed when registered."
+  },
+  {
+    "id": "unclaimed_case_file",
+    "name": "Unclaimed Case File",
+    "icon": "📁",
+    "value": 20,
+    "consumable": {
+      "useVerb": "Read",
+      "stamps": "flag:assize_case_file"
+    },
+    "desc": "An Assize case file nobody collected. Read it. Consumed when read."
+  },
+  {
+    "id": "smiths_pattern_bronze",
+    "name": "Smith's Pattern: Bronze",
+    "icon": "📐",
+    "value": 45,
+    "consumable": {
+      "useVerb": "Study",
+      "stamps": "flag:pattern_bronze"
+    },
+    "desc": "Study to add the copper, tin and bronze ingot recipes to the Forges. A piece forged at the anvil with a bronze head carries +15% Acuity and +10% Coherence. Consumed when studied."
+  },
+  {
+    "id": "travelers_ration",
+    "name": "Traveler's Ration",
+    "icon": "🥖",
+    "value": 8,
+    "graded": true,
+    "consumable": {
+      "food": true,
+      "useVerb": "Ate",
+      "grants": [
+        {
+          "id": "well_fed",
+          "intensity": 0.5
+        }
+      ],
+      "signature": [
+        {
+          "id": "steady_hand",
+          "intensity": 0.5
+        }
+      ]
+    },
+    "desc": "Eat: Well Fed ×0.5. Signature, after 100 cooks: also Steady Hand ×0.5."
+  },
+  {
+    "id": "feast_platter",
+    "name": "Feast Platter",
+    "icon": "🍖",
+    "value": 60,
+    "graded": true,
+    "consumable": {
+      "food": true,
+      "useVerb": "Feasted on",
+      "restore": [
+        {
+          "resource": "hp",
+          "ofMax": 0.25
+        }
+      ],
+      "grants": [
+        {
+          "id": "well_fed",
+          "intensity": 2
+        },
+        {
+          "id": "steady_hand",
+          "intensity": 1.5
+        }
+      ],
+      "signature": [
+        {
+          "id": "stoked",
+          "intensity": 0.5
+        }
+      ]
+    },
+    "desc": "Eat: restores 25% of max HP at once, plus Well Fed ×2 and Steady Hand ×1.5. Signature, after 100 cooks: also Stoked ×0.5."
+  },
+  {
+    "id": "scorched_mess",
+    "name": "Scorched Mess",
+    "icon": "🥘",
+    "value": 1,
+    "graded": true,
+    "consumable": {
+      "food": true,
+      "useVerb": "Choked down",
+      "grants": [
+        {
+          "id": "queasy",
+          "intensity": 1
+        }
+      ]
+    },
+    "desc": "A failed cook. Eat: Queasy for 90 seconds (poison damage over time, -25% stamina regen). Clears on rest."
+  },
+  {
+    "id": "healing_salve",
+    "name": "Healing Salve",
+    "icon": "🧴",
+    "value": 25,
+    "graded": true,
+    "consumable": {
+      "useVerb": "Applied",
+      "restore": [
+        {
+          "resource": "hp",
+          "flat": 25,
+          "ofMax": 0.1
+        }
+      ],
+      "cooldown": 100
+    },
+    "desc": "Apply: restores 25 HP plus 10% of max HP at once. Counts as treatment, so it closes wounds only treatment closes. Has a cooldown."
+  },
+  {
+    "id": "spring_water",
+    "name": "Spring Water",
+    "icon": "💧",
+    "value": 2,
+    "craftTags": [
+      "reagent",
+      "menstruum"
+    ],
+    "graded": true,
+    "desc": "Alembic base: water. Elixir when calm, Draught when roused. Holds up to 8 potency."
+  },
+  {
+    "id": "pressed_oil",
+    "name": "Pressed Oil",
+    "icon": "🫙",
+    "value": 8,
+    "craftTags": [
+      "reagent",
+      "menstruum"
+    ],
+    "graded": true,
+    "desc": "Alembic base: oil. Salve when calm, weapon Oil when roused. Holds up to 6 potency."
+  },
+  {
+    "id": "grain_spirit",
+    "name": "Grain Spirit",
+    "icon": "🍶",
+    "value": 14,
+    "craftTags": [
+      "reagent",
+      "menstruum"
+    ],
+    "graded": true,
+    "desc": "Alembic base: spirit. Fume when calm, Flask when roused. Holds up to 5 potency and adds 0.5 volatility. Alchemy 4."
+  },
+  {
+    "id": "emberbloom",
+    "name": "Emberbloom",
+    "icon": "🌺",
+    "value": 9,
+    "craftTags": [
+      "reagent",
+      "herb",
+      "essence"
+    ],
+    "graded": true,
+    "desc": "Alembic essence: Ember (heat). Inflicts On Fire in a Flask or Oil. No effect in drinkable forms."
+  },
+  {
+    "id": "frostmoss",
+    "name": "Frostmoss",
+    "icon": "🧊",
+    "value": 9,
+    "craftTags": [
+      "reagent",
+      "herb",
+      "essence"
+    ],
+    "graded": true,
+    "desc": "Alembic essence: Rime (cold). Inflicts Chilled in a Flask, Fume or Oil; grants Xima's Rime in an Elixir."
+  },
+  {
+    "id": "nightcap",
+    "name": "Nightcap",
+    "icon": "🍄",
+    "value": 12,
+    "craftTags": [
+      "reagent",
+      "essence"
+    ],
+    "graded": true,
+    "desc": "Alembic essence: Venom (poison). Inflicts Poisoned in a Flask, Fume or Oil. Alchemy 3."
+  },
+  {
+    "id": "gloomcap",
+    "name": "Gloomcap",
+    "icon": "🌚",
+    "value": 20,
+    "craftTags": [
+      "reagent",
+      "essence"
+    ],
+    "graded": true,
+    "desc": "Alembic essence: Gloom (dark). Inflicts Dazzled in a Flask, Fume or Oil; grants Veiled in an Elixir. Alchemy 6."
+  },
+  {
+    "id": "mendroot",
+    "name": "Mendroot",
+    "icon": "🌱",
+    "value": 7,
+    "craftTags": [
+      "reagent",
+      "herb",
+      "essence"
+    ],
+    "graded": true,
+    "desc": "Alembic essence: Mending. Restores HP in a Draught or Salve; grants Well Fed in an Elixir; a Salve of it cures poison and bleed."
+  },
+  {
+    "id": "bloodwort",
+    "name": "Bloodwort",
+    "icon": "🌡️",
+    "value": 11,
+    "craftTags": [
+      "reagent",
+      "herb",
+      "essence"
+    ],
+    "graded": true,
+    "desc": "Alembic essence: Vigor. Restores stamina in a Draught or Salve; grants Blood Communion in an Elixir. Alchemy 5."
+  },
+  {
+    "id": "thunderbloom",
+    "name": "Thunderbloom",
+    "icon": "⚡",
+    "value": 26,
+    "craftTags": [
+      "reagent",
+      "herb",
+      "essence"
+    ],
+    "graded": true,
+    "desc": "Alembic essence: Storm (lightning). Inflicts Jolted in a Flask, Fume or Oil; restores mana in a Draught or Salve; grants Clear-Headed in an Elixir. Alchemy 9."
+  },
+  {
+    "id": "quicksilver",
+    "name": "Quicksilver",
+    "icon": "🪙",
+    "value": 18,
+    "craftTags": [
+      "reagent",
+      "operator"
+    ],
+    "graded": true,
+    "desc": "Alembic operator: volatility +1.3. Roused is 1.0 or more. Alchemy 2."
+  },
+  {
+    "id": "fixing_salt",
+    "name": "Fixing Salt",
+    "icon": "🧂",
+    "value": 6,
+    "craftTags": [
+      "reagent",
+      "operator"
+    ],
+    "graded": true,
+    "desc": "Alembic operator: sets volatility to 0.15; each point removed adds 50% duration (45 seconds base, cap 150). No effect on a calm brew."
+  },
+  {
+    "id": "brimstone",
+    "name": "Brimstone",
+    "icon": "🟡",
+    "value": 16,
+    "craftTags": [
+      "reagent",
+      "operator"
+    ],
+    "graded": true,
+    "desc": "Alembic operator: if volatility is at least 1.2, potency ×1.55. If not, final potency ×0.82. Alchemy 7."
+  },
+  {
+    "id": "bone_ash",
+    "name": "Bone Ash",
+    "icon": "🦴",
+    "value": 10,
+    "craftTags": [
+      "reagent",
+      "operator"
+    ],
+    "graded": true,
+    "desc": "Alembic operator: removes the weakest essence added before it; the other essences' effects ×1.5 and potency ×1.25. Alchemy 4."
+  },
+  {
+    "id": "green_vitriol",
+    "name": "Green Vitriol",
+    "icon": "🧪",
+    "value": 30,
+    "craftTags": [
+      "reagent",
+      "operator"
+    ],
+    "graded": true,
+    "desc": "Alembic operator: armour pierce +22%, potency ×1.25, final potency ×0.88. Alchemy 11."
+  },
+  {
+    "id": "iron_pot",
+    "name": "Iron Pot",
+    "icon": "🍯",
+    "value": 35,
+    "craftTags": [
+      "cookware",
+      "tool"
+    ],
+    "graded": true,
+    "desc": "Cookware for the Cooking Stove tool slot. Not consumed. Sits outside the stove timeline."
+  },
+  {
+    "id": "copper_ore",
+    "name": "Copper Ore",
+    "icon": "📦",
+    "value": 2,
+    "craftTags": [],
+    "graded": false,
+    "desc": "Three smelt into one Copper Ingot at a forge."
+  },
+  {
+    "id": "copper_ingot",
+    "name": "Copper Ingot",
+    "icon": "🧱",
+    "value": 5,
+    "desc": "Smithing stock. Smelted from 3 Copper Ore. Four plus one Tin Ingot make a Bronze Ingot."
+  },
+  {
+    "id": "tin_ingot",
+    "name": "Tin Ingot",
+    "icon": "🧱",
+    "value": 5,
+    "desc": "Smithing stock. Smelted from 3 Tin Ore. One plus four Copper Ingots make a Bronze Ingot."
+  },
+  {
+    "id": "tin_ore",
+    "name": "Tin Ore",
+    "icon": "📦",
+    "value": 2,
+    "craftTags": [],
+    "graded": false,
+    "desc": "Three smelt into one Tin Ingot at a forge."
+  },
+  {
+    "id": "bronze_ingot",
+    "name": "Bronze Ingot",
+    "icon": "🧱",
+    "value": 5,
+    "craftTags": [
+      "metal",
+      "bronze"
+    ],
+    "smith": {
+      "rho": 1.1,
+      "hard": 0.9,
+      "tough": 0.9,
+      "unitCells": 6,
+      "label": "Bronze",
+      "mods": [
+        {
+          "value": 0.15,
+          "stat": "psiAcuity",
+          "op": "mult"
+        },
+        {
+          "value": 0.1,
+          "stat": "psiCoherence",
+          "op": "mult"
+        }
+      ]
+    },
+    "desc": "Smithing stock. Made from 4 Copper Ingots and 1 Tin Ingot. A piece forged at the anvil with a bronze head carries +15% Acuity and +10% Coherence."
+  },
+  {
+    "id": "leather",
+    "name": "Leather",
+    "icon": "📦",
+    "value": 0,
+    "craftTags": [
+      "leather"
+    ],
+    "graded": false,
+    "smith": {
+      "rho": 0.3,
+      "hard": 0,
+      "tough": 0.5,
+      "unitCells": 3,
+      "label": "Leather"
+    },
+    "desc": "Leatherworking stock, tanned from fur (4 ruined furs per piece; better fur yields more). The anvil spends it as straps and cords: 3 cells per leather."
+  },
+  {
+    "id": "ship_cannon",
+    "name": "Ship’s Cannon",
+    "icon": "💣",
+    "value": 40,
+    "desc": "Fitted in the hold while carried: on the harbor band’s waters each one adds a volley to your battery on every leg a cannonball loads them. Up to 4 count. Never spent. Made at the quay on floor 11 from 6 iron ingots."
+  },
+  {
+    "id": "cannonball",
+    "name": "Cannonball",
+    "icon": "⚫",
+    "value": 2,
+    "desc": "Battery shot. One is spent each convoy leg you are present for, if a cannon is carried, and loads every cannon. Made at the quay on floor 11, 3 from 1 iron ingot."
+  },
+  {
+    "id": "powder_charge",
+    "name": "Powder Charge",
+    "icon": "🧨",
+    "value": 10,
+    "desc": "Battery powder. One is spent each convoy leg you are present for: +1 hit, which multiplies the volleys. Made at the quay on floor 11, 2 from 3 biomatter and 1 iron scrap."
+  },
+  {
+    "id": "pilot_passage",
+    "name": "Pilot’s Passage",
+    "icon": "🧭",
+    "value": 150,
+    "desc": "The receipt for a pilot on floor 13. Buying it opens the Pilot’s Channel into the blockade, where the blockaders are caught Surprised. Sold by the pilot at the Last Port."
+  },
+  {
+    "id": "port_clearance",
+    "name": "Port Clearance",
+    "icon": "📃",
+    "value": 400,
+    "desc": "Papers for the closed port on floor 14, bought from the harbor master on floor 13. The merchants’ factor takes it for Clear the Closed Port. Merchants only."
+  },
+  {
+    "id": "raw_meat_sliced",
+    "name": "Sliced Raw Meat",
+    "icon": "🥩",
+    "value": 4,
+    "desc": "Raw Meat, sliced. Its grade is the cut grade, not the ingredient's grade. The grade sets what share of the ingredient's contribution reaches the dish (Divine: all of it).",
+    "craftTags": [
+      "meat",
+      "ingredient",
+      "raw",
+      "sliced",
+      "prepped"
+    ],
+    "graded": true
+  },
+  {
+    "id": "raw_meat_diced",
+    "name": "Diced Raw Meat",
+    "icon": "🥩",
+    "value": 4,
+    "desc": "Raw Meat, diced. Its grade is the cut grade, not the ingredient's grade. The grade sets what share of the ingredient's contribution reaches the dish (Divine: all of it).",
+    "craftTags": [
+      "meat",
+      "ingredient",
+      "raw",
+      "diced",
+      "prepped"
+    ],
+    "graded": true
+  },
+  {
+    "id": "raw_meat_julienned",
+    "name": "Julienned Raw Meat",
+    "icon": "🥩",
+    "value": 4,
+    "desc": "Raw Meat, julienned. Its grade is the cut grade, not the ingredient's grade. The grade sets what share of the ingredient's contribution reaches the dish (Divine: all of it).",
+    "craftTags": [
+      "meat",
+      "ingredient",
+      "raw",
+      "julienned",
+      "prepped"
+    ],
+    "graded": true
+  },
+  {
+    "id": "wild_onion_sliced",
+    "name": "Sliced Wild Onion",
+    "icon": "🧅",
+    "value": 3,
+    "desc": "Wild Onion, sliced. Its grade is the cut grade, not the ingredient's grade. The grade sets what share of the ingredient's contribution reaches the dish (Divine: all of it).",
+    "craftTags": [
+      "vegetable",
+      "ingredient",
+      "raw",
+      "sliced",
+      "prepped"
+    ],
+    "graded": true
+  },
+  {
+    "id": "wild_onion_diced",
+    "name": "Diced Wild Onion",
+    "icon": "🧅",
+    "value": 3,
+    "desc": "Wild Onion, diced. Its grade is the cut grade, not the ingredient's grade. The grade sets what share of the ingredient's contribution reaches the dish (Divine: all of it).",
+    "craftTags": [
+      "vegetable",
+      "ingredient",
+      "raw",
+      "diced",
+      "prepped"
+    ],
+    "graded": true
+  },
+  {
+    "id": "wild_onion_julienned",
+    "name": "Julienned Wild Onion",
+    "icon": "🧅",
+    "value": 3,
+    "desc": "Wild Onion, julienned. Its grade is the cut grade, not the ingredient's grade. The grade sets what share of the ingredient's contribution reaches the dish (Divine: all of it).",
+    "craftTags": [
+      "vegetable",
+      "ingredient",
+      "raw",
+      "julienned",
+      "prepped"
+    ],
+    "graded": true
+  },
+  {
+    "id": "river_fish_sliced",
+    "name": "Sliced River Fish",
+    "icon": "🐟",
+    "value": 5,
+    "desc": "River Fish, sliced. Its grade is the cut grade, not the ingredient's grade. The grade sets what share of the ingredient's contribution reaches the dish (Divine: all of it).",
+    "craftTags": [
+      "fish",
+      "meat",
+      "ingredient",
+      "raw",
+      "sliced",
+      "prepped"
+    ],
+    "graded": true
+  },
+  {
+    "id": "river_fish_diced",
+    "name": "Diced River Fish",
+    "icon": "🐟",
+    "value": 5,
+    "desc": "River Fish, diced. Its grade is the cut grade, not the ingredient's grade. The grade sets what share of the ingredient's contribution reaches the dish (Divine: all of it).",
+    "craftTags": [
+      "fish",
+      "meat",
+      "ingredient",
+      "raw",
+      "diced",
+      "prepped"
+    ],
+    "graded": true
+  },
+  {
+    "id": "river_fish_julienned",
+    "name": "Julienned River Fish",
+    "icon": "🐟",
+    "value": 5,
+    "desc": "River Fish, julienned. Its grade is the cut grade, not the ingredient's grade. The grade sets what share of the ingredient's contribution reaches the dish (Divine: all of it).",
+    "craftTags": [
+      "fish",
+      "meat",
+      "ingredient",
+      "raw",
+      "julienned",
+      "prepped"
+    ],
+    "graded": true
+  },
+  {
+    "id": "cave_mushroom_sliced",
+    "name": "Sliced Cave Mushroom",
+    "icon": "🍄",
+    "value": 6,
+    "desc": "Cave Mushroom, sliced. Its grade is the cut grade, not the ingredient's grade. The grade sets what share of the ingredient's contribution reaches the dish (Divine: all of it).",
+    "craftTags": [
+      "mushroom",
+      "vegetable",
+      "ingredient",
+      "raw",
+      "sliced",
+      "prepped"
+    ],
+    "graded": true
+  },
+  {
+    "id": "cave_mushroom_diced",
+    "name": "Diced Cave Mushroom",
+    "icon": "🍄",
+    "value": 6,
+    "desc": "Cave Mushroom, diced. Its grade is the cut grade, not the ingredient's grade. The grade sets what share of the ingredient's contribution reaches the dish (Divine: all of it).",
+    "craftTags": [
+      "mushroom",
+      "vegetable",
+      "ingredient",
+      "raw",
+      "diced",
+      "prepped"
+    ],
+    "graded": true
+  },
+  {
+    "id": "cave_mushroom_julienned",
+    "name": "Julienned Cave Mushroom",
+    "icon": "🍄",
+    "value": 6,
+    "desc": "Cave Mushroom, julienned. Its grade is the cut grade, not the ingredient's grade. The grade sets what share of the ingredient's contribution reaches the dish (Divine: all of it).",
+    "craftTags": [
+      "mushroom",
+      "vegetable",
+      "ingredient",
+      "raw",
+      "julienned",
+      "prepped"
+    ],
+    "graded": true
+  },
+  {
+    "id": "slime_gene",
+    "name": "Slime Gene",
+    "icon": "🟢",
+    "value": 35,
+    "desc": "Main gene. Slot it into the centromere on the Chromosome tab to take on this body; swapping costs biomatter. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "gene"
+    ],
+    "graded": true
+  },
+  {
+    "id": "slimer_gene",
+    "name": "Slimer Gene",
+    "icon": "🟩",
+    "value": 51,
+    "desc": "Main gene. Slot it into the centromere on the Chromosome tab to take on this body; swapping costs biomatter. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "gene"
+    ],
+    "graded": true
+  },
+  {
+    "id": "slimest_gene",
+    "name": "Slimest Gene",
+    "icon": "💚",
+    "value": 84,
+    "desc": "Main gene. Slot it into the centromere on the Chromosome tab to take on this body; swapping costs biomatter. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "gene"
+    ],
+    "graded": true
+  },
+  {
+    "id": "slime_guardian_gene",
+    "name": "Slime Guardian Gene",
+    "icon": "🛡️",
+    "value": 128,
+    "desc": "Main gene. Slot it into the centromere on the Chromosome tab to take on this body; swapping costs biomatter. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "gene"
+    ],
+    "graded": true
+  },
+  {
+    "id": "slime_golem_gene",
+    "name": "Slime Golem Gene",
+    "icon": "🗿",
+    "value": 128,
+    "desc": "Main gene. Slot it into the centromere on the Chromosome tab to take on this body; swapping costs biomatter. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "gene"
+    ],
+    "graded": true
+  },
+  {
+    "id": "slime_king_gene",
+    "name": "Slime King Gene",
+    "icon": "👑",
+    "value": 195,
+    "desc": "Main gene. Slot it into the centromere on the Chromosome tab to take on this body; swapping costs biomatter. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "gene"
+    ],
+    "graded": true
+  },
+  {
+    "id": "fire_slime_gene",
+    "name": "Fire Slime Gene",
+    "icon": "🔴",
+    "value": 35,
+    "desc": "Main gene. Slot it into the centromere on the Chromosome tab to take on this body; swapping costs biomatter. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "gene"
+    ],
+    "graded": true
+  },
+  {
+    "id": "flame_slime_gene",
+    "name": "Flame Slime Gene",
+    "icon": "🟥",
+    "value": 51,
+    "desc": "Main gene. Slot it into the centromere on the Chromosome tab to take on this body; swapping costs biomatter. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "gene"
+    ],
+    "graded": true
+  },
+  {
+    "id": "blaze_slime_gene",
+    "name": "Blaze Slime Gene",
+    "icon": "🔥",
+    "value": 84,
+    "desc": "Main gene. Slot it into the centromere on the Chromosome tab to take on this body; swapping costs biomatter. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "gene"
+    ],
+    "graded": true
+  },
+  {
+    "id": "troll",
+    "name": "Troll Gene",
+    "icon": "🧌",
+    "value": 45,
+    "desc": "Main gene. Slot it into the centromere on the Chromosome tab to take on this body; swapping costs biomatter. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "gene"
+    ],
+    "graded": true
+  },
+  {
+    "id": "rock_giant",
+    "name": "Rock Giant Gene",
+    "icon": "🪨",
+    "value": 45,
+    "desc": "Main gene. Slot it into the centromere on the Chromosome tab to take on this body; swapping costs biomatter. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "gene"
+    ],
+    "graded": true
+  },
+  {
+    "id": "hill_giant",
+    "name": "Hill Giant Gene",
+    "icon": "⛰️",
+    "value": 70,
+    "desc": "Main gene. Slot it into the centromere on the Chromosome tab to take on this body; swapping costs biomatter. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "gene"
+    ],
+    "graded": true
+  },
+  {
+    "id": "forest_giant",
+    "name": "Forest Giant Gene",
+    "icon": "🌲",
+    "value": 70,
+    "desc": "Main gene. Slot it into the centromere on the Chromosome tab to take on this body; swapping costs biomatter. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "gene"
+    ],
+    "graded": true
+  },
+  {
+    "id": "jotunn",
+    "name": "Jötunn Gene",
+    "icon": "🏔️",
+    "value": 120,
+    "desc": "Main gene. Slot it into the centromere on the Chromosome tab to take on this body; swapping costs biomatter. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "gene"
+    ],
+    "graded": true
+  },
+  {
+    "id": "fomorian",
+    "name": "Fomorian Gene",
+    "icon": "🔱",
+    "value": 120,
+    "desc": "Main gene. Slot it into the centromere on the Chromosome tab to take on this body; swapping costs biomatter. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "gene"
+    ],
+    "graded": true
+  },
+  {
+    "id": "storm_giant",
+    "name": "Storm Giant Gene",
+    "icon": "🌩️",
+    "value": 220,
+    "desc": "Main gene. Slot it into the centromere on the Chromosome tab to take on this body; swapping costs biomatter. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "gene"
+    ],
+    "graded": true
+  },
+  {
+    "id": "balor",
+    "name": "Balor Gene",
+    "icon": "👁️",
+    "value": 270,
+    "desc": "Main gene. Slot it into the centromere on the Chromosome tab to take on this body; swapping costs biomatter. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "gene"
+    ],
+    "graded": true
+  },
+  {
+    "id": "surtr",
+    "name": "Surtr Gene",
+    "icon": "🗡️",
+    "value": 420,
+    "desc": "Main gene. Slot it into the centromere on the Chromosome tab to take on this body; swapping costs biomatter. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "gene"
+    ],
+    "graded": true
+  },
+  {
+    "id": "wyrmling",
+    "name": "Wyrmling Gene",
+    "icon": "🦎",
+    "value": 43,
+    "desc": "Main gene. Slot it into the centromere on the Chromosome tab to take on this body; swapping costs biomatter. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "gene"
+    ],
+    "graded": true
+  },
+  {
+    "id": "drake",
+    "name": "Drake Gene",
+    "icon": "🐉",
+    "value": 60,
+    "desc": "Main gene. Slot it into the centromere on the Chromosome tab to take on this body; swapping costs biomatter. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "gene"
+    ],
+    "graded": true
+  },
+  {
+    "id": "wyvern",
+    "name": "Wyvern Gene",
+    "icon": "🐲",
+    "value": 90,
+    "desc": "Main gene. Slot it into the centromere on the Chromosome tab to take on this body; swapping costs biomatter. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "gene"
+    ],
+    "graded": true
+  },
+  {
+    "id": "dragon",
+    "name": "Dragon Gene",
+    "icon": "🔥",
+    "value": 143,
+    "desc": "Main gene. Slot it into the centromere on the Chromosome tab to take on this body; swapping costs biomatter. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "gene"
+    ],
+    "graded": true
+  },
+  {
+    "id": "dvibahu",
+    "name": "Dvibāhu Gene",
+    "icon": "🫱",
+    "value": 40,
+    "desc": "Main gene. Slot it into the centromere on the Chromosome tab to take on this body; swapping costs biomatter. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "gene"
+    ],
+    "graded": true
+  },
+  {
+    "id": "asura",
+    "name": "Asura Gene",
+    "icon": "🙌",
+    "value": 105,
+    "desc": "Main gene. Slot it into the centromere on the Chromosome tab to take on this body; swapping costs biomatter. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "gene"
+    ],
+    "graded": true
+  },
+  {
+    "id": "asurendra_tarunavak",
+    "name": "Tarunavāk, of Sixteen Tongues",
+    "icon": "🗣️",
+    "value": 370,
+    "desc": "Main gene. Slot it into the centromere on the Chromosome tab to take on this body; swapping costs biomatter. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "gene"
+    ],
+    "graded": true
+  },
+  {
+    "id": "asurendra_vashkara",
+    "name": "Vashkāra of the Unheld Blades",
+    "icon": "🌀",
+    "value": 370,
+    "desc": "Main gene. Slot it into the centromere on the Chromosome tab to take on this body; swapping costs biomatter. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "gene"
+    ],
+    "graded": true
+  },
+  {
+    "id": "asurendra_anupama",
+    "name": "Anupama, Fasting Amidst Sinners",
+    "icon": "🕳️",
+    "value": 370,
+    "desc": "Main gene. Slot it into the centromere on the Chromosome tab to take on this body; swapping costs biomatter. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "gene"
+    ],
+    "graded": true
+  },
+  {
+    "id": "asurendra_niraksha",
+    "name": "Nirākṣa who Swallowed His Eyes",
+    "icon": "🕳️",
+    "value": 370,
+    "desc": "Main gene. Slot it into the centromere on the Chromosome tab to take on this body; swapping costs biomatter. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "gene"
+    ],
+    "graded": true
+  },
+  {
+    "id": "asurendra_kritavya",
+    "name": "Kritavya, Refuter of Creation",
+    "icon": "🚫",
+    "value": 370,
+    "desc": "Main gene. Slot it into the centromere on the Chromosome tab to take on this body; swapping costs biomatter. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "gene"
+    ],
+    "graded": true
+  },
+  {
+    "id": "chill",
+    "name": "Chill Mutation",
+    "icon": "❄️",
+    "value": 15,
+    "desc": "Mutagen. Place it in a socket on the Chromosome tab; its effect is routed along the connections to the centromere. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "ember",
+    "name": "Ember Mutation",
+    "icon": "🔥",
+    "value": 15,
+    "desc": "Mutagen. Place it in a socket on the Chromosome tab; its effect is routed along the connections to the centromere. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "crystal",
+    "name": "Crystal Mutation",
+    "icon": "💎",
+    "value": 15,
+    "desc": "Mutagen. Place it in a socket on the Chromosome tab; its effect is routed along the connections to the centromere. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "tainting",
+    "name": "Tainting Mutation",
+    "icon": "🧪",
+    "value": 15,
+    "desc": "Mutagen. Place it in a socket on the Chromosome tab; its effect is routed along the connections to the centromere. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "resonance",
+    "name": "Resonant Mutation",
+    "icon": "📡",
+    "value": 15,
+    "desc": "Mutagen. Place it in a socket on the Chromosome tab; its effect is routed along the connections to the centromere. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "catalyst",
+    "name": "Catalytic Mutation",
+    "icon": "⚗️",
+    "value": 15,
+    "desc": "Mutagen. Place it in a socket on the Chromosome tab; its effect is routed along the connections to the centromere. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "elastic",
+    "name": "Elastic Mutation",
+    "icon": "🫧",
+    "value": 15,
+    "desc": "Mutagen. Place it in a socket on the Chromosome tab; its effect is routed along the connections to the centromere. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "bouncing",
+    "name": "Bouncing Mutation",
+    "icon": "🎾",
+    "value": 15,
+    "desc": "Mutagen. Place it in a socket on the Chromosome tab; its effect is routed along the connections to the centromere. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "vigorous",
+    "name": "Vigorous Mutation",
+    "icon": "💗",
+    "value": 15,
+    "desc": "Mutagen. Place it in a socket on the Chromosome tab; its effect is routed along the connections to the centromere. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "studious",
+    "name": "Studious Mutation",
+    "icon": "📘",
+    "value": 15,
+    "desc": "Mutagen. Place it in a socket on the Chromosome tab; its effect is routed along the connections to the centromere. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "fleet",
+    "name": "Fleet Mutation",
+    "icon": "💨",
+    "value": 15,
+    "desc": "Mutagen. Place it in a socket on the Chromosome tab; its effect is routed along the connections to the centromere. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "searing_edge",
+    "name": "Searing Edge",
+    "icon": "☄️",
+    "value": 15,
+    "desc": "Mutagen. Place it in a socket on the Chromosome tab; its effect is routed along the connections to the centromere. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "kindling_brand",
+    "name": "Kindling Brand",
+    "icon": "🕯️",
+    "value": 15,
+    "desc": "Mutagen. Place it in a socket on the Chromosome tab; its effect is routed along the connections to the centromere. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "rime_edge",
+    "name": "Rime Edge",
+    "icon": "🧊",
+    "value": 15,
+    "desc": "Mutagen. Place it in a socket on the Chromosome tab; its effect is routed along the connections to the centromere. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "frostbite_brand",
+    "name": "Frostbite Brand",
+    "icon": "🥶",
+    "value": 15,
+    "desc": "Mutagen. Place it in a socket on the Chromosome tab; its effect is routed along the connections to the centromere. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "storm_edge",
+    "name": "Storm Edge",
+    "icon": "🌩️",
+    "value": 15,
+    "desc": "Mutagen. Place it in a socket on the Chromosome tab; its effect is routed along the connections to the centromere. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "arcing_brand",
+    "name": "Arcing Brand",
+    "icon": "🔌",
+    "value": 15,
+    "desc": "Mutagen. Place it in a socket on the Chromosome tab; its effect is routed along the connections to the centromere. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "grounding",
+    "name": "Grounding Mutation",
+    "icon": "🧲",
+    "value": 15,
+    "desc": "Mutagen. Place it in a socket on the Chromosome tab; its effect is routed along the connections to the centromere. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "grit_edge",
+    "name": "Grit Edge",
+    "icon": "⛰️",
+    "value": 15,
+    "desc": "Mutagen. Place it in a socket on the Chromosome tab; its effect is routed along the connections to the centromere. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "tremor_brand",
+    "name": "Tremor Brand",
+    "icon": "🌋",
+    "value": 15,
+    "desc": "Mutagen. Place it in a socket on the Chromosome tab; its effect is routed along the connections to the centromere. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "bedrock",
+    "name": "Bedrock Mutation",
+    "icon": "🪨",
+    "value": 15,
+    "desc": "Mutagen. Place it in a socket on the Chromosome tab; its effect is routed along the connections to the centromere. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "gale_edge",
+    "name": "Gale Edge",
+    "icon": "🌬️",
+    "value": 15,
+    "desc": "Mutagen. Place it in a socket on the Chromosome tab; its effect is routed along the connections to the centromere. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "buffet_brand",
+    "name": "Buffet Brand",
+    "icon": "🍃",
+    "value": 15,
+    "desc": "Mutagen. Place it in a socket on the Chromosome tab; its effect is routed along the connections to the centromere. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "streamlined",
+    "name": "Streamlined Mutation",
+    "icon": "🪶",
+    "value": 15,
+    "desc": "Mutagen. Place it in a socket on the Chromosome tab; its effect is routed along the connections to the centromere. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "tide_edge",
+    "name": "Tide Edge",
+    "icon": "🌊",
+    "value": 15,
+    "desc": "Mutagen. Place it in a socket on the Chromosome tab; its effect is routed along the connections to the centromere. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "drench_brand",
+    "name": "Drench Brand",
+    "icon": "💦",
+    "value": 15,
+    "desc": "Mutagen. Place it in a socket on the Chromosome tab; its effect is routed along the connections to the centromere. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "sealskin",
+    "name": "Sealskin Mutation",
+    "icon": "🦭",
+    "value": 15,
+    "desc": "Mutagen. Place it in a socket on the Chromosome tab; its effect is routed along the connections to the centromere. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "thorn_edge",
+    "name": "Thorn Edge",
+    "icon": "🌵",
+    "value": 15,
+    "desc": "Mutagen. Place it in a socket on the Chromosome tab; its effect is routed along the connections to the centromere. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "seeding_brand",
+    "name": "Seeding Brand",
+    "icon": "🌱",
+    "value": 15,
+    "desc": "Mutagen. Place it in a socket on the Chromosome tab; its effect is routed along the connections to the centromere. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "barkskin",
+    "name": "Barkskin Mutation",
+    "icon": "🪵",
+    "value": 15,
+    "desc": "Mutagen. Place it in a socket on the Chromosome tab; its effect is routed along the connections to the centromere. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "runic_edge",
+    "name": "Runic Edge",
+    "icon": "🔮",
+    "value": 15,
+    "desc": "Mutagen. Place it in a socket on the Chromosome tab; its effect is routed along the connections to the centromere. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "unravelling_brand",
+    "name": "Unravelling Brand",
+    "icon": "🌀",
+    "value": 15,
+    "desc": "Mutagen. Place it in a socket on the Chromosome tab; its effect is routed along the connections to the centromere. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "warded",
+    "name": "Warded Mutation",
+    "icon": "📿",
+    "value": 15,
+    "desc": "Mutagen. Place it in a socket on the Chromosome tab; its effect is routed along the connections to the centromere. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "radiant_edge",
+    "name": "Radiant Edge",
+    "icon": "🌟",
+    "value": 15,
+    "desc": "Mutagen. Place it in a socket on the Chromosome tab; its effect is routed along the connections to the centromere. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "dazzle_brand",
+    "name": "Dazzle Brand",
+    "icon": "🔆",
+    "value": 15,
+    "desc": "Mutagen. Place it in a socket on the Chromosome tab; its effect is routed along the connections to the centromere. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "gleam",
+    "name": "Gleam Mutation",
+    "icon": "🪞",
+    "value": 15,
+    "desc": "Mutagen. Place it in a socket on the Chromosome tab; its effect is routed along the connections to the centromere. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "umbral_edge",
+    "name": "Umbral Edge",
+    "icon": "🌘",
+    "value": 15,
+    "desc": "Mutagen. Place it in a socket on the Chromosome tab; its effect is routed along the connections to the centromere. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "taint_brand",
+    "name": "Tainting Brand",
+    "icon": "🌑",
+    "value": 15,
+    "desc": "Mutagen. Place it in a socket on the Chromosome tab; its effect is routed along the connections to the centromere. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "nightsight",
+    "name": "Nightsight Mutation",
+    "icon": "🦇",
+    "value": 15,
+    "desc": "Mutagen. Place it in a socket on the Chromosome tab; its effect is routed along the connections to the centromere. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "venom_edge",
+    "name": "Venom Edge",
+    "icon": "🐍",
+    "value": 15,
+    "desc": "Mutagen. Place it in a socket on the Chromosome tab; its effect is routed along the connections to the centromere. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "miasma_brand",
+    "name": "Miasma Brand",
+    "icon": "☠️",
+    "value": 15,
+    "desc": "Mutagen. Place it in a socket on the Chromosome tab; its effect is routed along the connections to the centromere. Grade sets its strength and capacity cost.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "vuln_cold",
+    "name": "Cold Vulnerability",
+    "icon": "🧬",
+    "value": 40,
+    "desc": "Fused mutagen. Place it in a socket on the Chromosome tab: it changes one of your weaknesses to the damage type in its name, same size.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "vuln_heat",
+    "name": "Heat Vulnerability",
+    "icon": "🧬",
+    "value": 40,
+    "desc": "Fused mutagen. Place it in a socket on the Chromosome tab: it changes one of your weaknesses to the damage type in its name, same size.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "vuln_light",
+    "name": "Light Vulnerability",
+    "icon": "🧬",
+    "value": 40,
+    "desc": "Fused mutagen. Place it in a socket on the Chromosome tab: it changes one of your weaknesses to the damage type in its name, same size.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "vuln_poison",
+    "name": "Poison Vulnerability",
+    "icon": "🧬",
+    "value": 40,
+    "desc": "Fused mutagen. Place it in a socket on the Chromosome tab: it changes one of your weaknesses to the damage type in its name, same size.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "vuln_lightning",
+    "name": "Lightning Vulnerability",
+    "icon": "🧬",
+    "value": 40,
+    "desc": "Fused mutagen. Place it in a socket on the Chromosome tab: it changes one of your weaknesses to the damage type in its name, same size.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "vuln_earth",
+    "name": "Earth Vulnerability",
+    "icon": "🧬",
+    "value": 40,
+    "desc": "Fused mutagen. Place it in a socket on the Chromosome tab: it changes one of your weaknesses to the damage type in its name, same size.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "vuln_wind",
+    "name": "Wind Vulnerability",
+    "icon": "🧬",
+    "value": 40,
+    "desc": "Fused mutagen. Place it in a socket on the Chromosome tab: it changes one of your weaknesses to the damage type in its name, same size.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "vuln_water",
+    "name": "Water Vulnerability",
+    "icon": "🧬",
+    "value": 40,
+    "desc": "Fused mutagen. Place it in a socket on the Chromosome tab: it changes one of your weaknesses to the damage type in its name, same size.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "vuln_acid",
+    "name": "Acid Vulnerability",
+    "icon": "🧬",
+    "value": 40,
+    "desc": "Fused mutagen. Place it in a socket on the Chromosome tab: it changes one of your weaknesses to the damage type in its name, same size.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "vuln_arcane",
+    "name": "Arcane Vulnerability",
+    "icon": "🧬",
+    "value": 40,
+    "desc": "Fused mutagen. Place it in a socket on the Chromosome tab: it changes one of your weaknesses to the damage type in its name, same size.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "vuln_dark",
+    "name": "Dark Vulnerability",
+    "icon": "🧬",
+    "value": 40,
+    "desc": "Fused mutagen. Place it in a socket on the Chromosome tab: it changes one of your weaknesses to the damage type in its name, same size.",
+    "craftTags": [
+      "mutagen"
+    ],
+    "graded": true
+  },
+  {
+    "id": "vuln",
+    "name": "Vulnerability Nuclease",
+    "icon": "🧬",
+    "value": 60,
+    "desc": "Changes the element of a weak point on the gene: a negative resistance, or an element that stops a conferred effect (heat and acid stop the Troll Gene’s regeneration), becomes the element of the mutation fused into the nuclease. Weak points change in the order they are listed on the card, using the routes nearest the main gene first. Amounts do not change. Drops from undead.",
+    "craftTags": [
+      "nuclease"
+    ]
+  }
+]

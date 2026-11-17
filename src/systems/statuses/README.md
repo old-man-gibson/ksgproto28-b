@@ -122,7 +122,12 @@ differ from the old literals: an absent `duration` is the old `null`;
 
 Fields that point at registries not ported yet are plain strings, not
 references: `forceStyle` (combat styles), `displaces.to` (martial
-positions), `damp.slot` (equipment slots), `art`.
+positions), `art`.
+
+`damp.slot` is an equipment slot. Slots are a fixed list in the `items`
+system (`SLOT_IDS`), not a registry, so the field is an enum of that list
+and not a reference (spine port 3). No status field points at an item or a
+material.
 
 ## Skip reasons
 

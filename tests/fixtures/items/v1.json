@@ -1,0 +1,63 @@
+{
+  "uidCounter": 7,
+  "inventory": [
+    {
+      "uid": 1,
+      "defId": "rusty_sword",
+      "slots": 1,
+      "runes": []
+    },
+    {
+      "uid": 5,
+      "defId": "leather_vest",
+      "slots": 2,
+      "runes": [],
+      "affix": {
+        "name": "Sturdy",
+        "mods": [
+          {
+            "stat": "maxHp",
+            "op": "add",
+            "value": 12
+          }
+        ]
+      }
+    },
+    {
+      "uid": 7,
+      "defId": "oak_club",
+      "slots": 0,
+      "runes": [],
+      "size": "large"
+    }
+  ],
+  "equipment": {
+    "weapon": {
+      "uid": 3,
+      "defId": "iron_sword",
+      "slots": 2,
+      "runes": []
+    },
+    "chest": {
+      "uid": 4,
+      "defId": "cloth_tunic",
+      "slots": 0,
+      "runes": []
+    }
+  },
+  "runes": {
+    "minor_rune_might": 2
+  },
+  "stash": [
+    {
+      "uid": 2,
+      "defId": "festival_regalia",
+      "slots": 0,
+      "runes": []
+    }
+  ],
+  "bearer": {
+    "grants": [],
+    "size": "medium"
+  }
+}

@@ -1,0 +1,14 @@
+[
+  {
+    "id": "hunt_material",
+    "text": "{icon} {name}{grade}"
+  },
+  {
+    "id": "discarded_stack",
+    "text": "Discarded {icon} {grade}{name} ×{qty}."
+  },
+  {
+    "id": "discarded_units",
+    "text": "Discarded {units} {noun}{plural}."
+  }
+]

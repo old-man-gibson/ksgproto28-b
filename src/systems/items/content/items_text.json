@@ -1,0 +1,30 @@
+[
+  {
+    "id": "equipped",
+    "text": "Equipped {icon} {item}{note}."
+  },
+  {
+    "id": "equip_note",
+    "text": ": {note}"
+  },
+  {
+    "id": "requirements_unmet",
+    "text": "Requirements not met for {icon} {item}."
+  },
+  {
+    "id": "wrong_slot",
+    "text": "{icon} {item} cannot be held there."
+  },
+  {
+    "id": "stash_taken",
+    "text": "🏰 Taken from the stronghold stash: {icon} {name}. The next prestige returns it there."
+  },
+  {
+    "id": "rune_found",
+    "text": "{icon} Rune found: {name}{qty}"
+  },
+  {
+    "id": "times",
+    "text": " ×{qty}"
+  }
+]

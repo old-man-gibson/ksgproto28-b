@@ -116,6 +116,43 @@ const JOBS = [
     module: 'src/core/data/statuses.data.ts',
     pick: (m) => Object.values(m.STATUSES).map(statusRecord),
   },
+  {
+    name: 'items',
+    out: 'items/content/items.json',
+    module: 'src/core/data/items.data.ts',
+    // The `forged:<class>` stubs are generated from the item classes of
+    // modular smithing. They arrive with that system.
+    pick: (m) => Object.values(m.ITEMS).filter((def) => !def.id.startsWith('forged:')),
+  },
+  {
+    name: 'affixes',
+    out: 'items/content/affixes.json',
+    module: 'src/core/data/items.data.ts',
+    // The old list has no ids. The id is the name in lower case; the order of
+    // the list is the order the drop code indexes.
+    pick: (m) => m.AFFIXES.map((affix) => ({ id: slug(affix.name), ...affix })),
+  },
+  {
+    name: 'runes',
+    out: 'items/content/runes.json',
+    module: 'src/core/data/runes.data.ts',
+    // The catalogue only. Patterns, adornments and named runes are parts of
+    // runecarving and arrive with it.
+    pick: (m) => Object.values(m.RUNES).map(runeRecord),
+  },
+  {
+    name: 'materials',
+    out: 'materials/content/materials.json',
+    module: 'src/core/data/materials.data.ts',
+    pick: (m) => Object.values(m.MATERIALS),
+  },
+  {
+    name: 'quality_tiers',
+    out: 'materials/content/quality_tiers.json',
+    module: 'src/core/data/quality.data.ts',
+    // Worst to best: the order of the list is the order of the scale.
+    pick: (m) => m.QUALITY_ORDER.map((id) => m.QUALITY_TIERS[id]),
+  },
 ];
 
 /** `duration: 'permanent'` of an application becomes `permanent: true`: the schema has no union. */
@@ -142,6 +179,12 @@ function statusRecord(def) {
       ? { retaliate: { ...retaliate, ...(retaliate.inflicts ? { inflicts: retaliate.inflicts.map(statusApplication) } : {}) } }
       : {}),
   };
+}
+
+/** `effects`, a map keyed by rune context, becomes a list in key order: the schema has no map. */
+function runeRecord(def) {
+  const { effects, ...rest } = def;
+  return { ...rest, effects: Object.entries(effects).map(([context, effect]) => ({ context, ...effect })) };
 }
 
 async function load(module) {

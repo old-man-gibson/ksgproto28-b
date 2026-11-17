@@ -1,0 +1,1466 @@
+[
+  {
+    "id": "rusty_sword",
+    "name": "Rusty Sword",
+    "icon": "🗡️",
+    "art": "item_rusty_sword",
+    "slot": "weapon",
+    "wield": "one_handed",
+    "tags": [
+      "sword",
+      "metal"
+    ],
+    "mods": [
+      {
+        "stat": "damage",
+        "op": "add",
+        "value": 3
+      }
+    ],
+    "value": 5,
+    "desc": "One-handed sword. +3 Damage."
+  },
+  {
+    "id": "old_hammer",
+    "name": "Old Hammer",
+    "icon": "🔨",
+    "art": "item_old_hammer",
+    "slot": "weapon",
+    "wield": "one_handed",
+    "tags": [
+      "blunt",
+      "iron"
+    ],
+    "mods": [
+      {
+        "stat": "damage",
+        "op": "add",
+        "value": 5
+      },
+      {
+        "stat": "attackSpeed",
+        "op": "mult",
+        "value": -0.12
+      }
+    ],
+    "value": 6,
+    "desc": "One-handed hammer. +5 Damage, −12% Attack Speed."
+  },
+  {
+    "id": "oak_club",
+    "name": "Oak Club",
+    "icon": "🏏",
+    "art": "item_club",
+    "slot": "weapon",
+    "wield": "one_handed",
+    "tags": [
+      "blunt",
+      "wood"
+    ],
+    "mods": [
+      {
+        "stat": "damage",
+        "op": "add",
+        "value": 5
+      },
+      {
+        "stat": "attackSpeed",
+        "op": "mult",
+        "value": -0.1
+      }
+    ],
+    "value": 8,
+    "desc": "One-handed blunt weapon. +5 Damage, -10% Attack Speed."
+  },
+  {
+    "id": "jotunshamarr",
+    "name": "Jötun's Hammer",
+    "icon": "🏏",
+    "art": "item_jotunshamarr",
+    "slot": "weapon",
+    "wield": "two_handed",
+    "tags": [
+      "blunt",
+      "iron"
+    ],
+    "mods": [
+      {
+        "stat": "damage",
+        "op": "add",
+        "value": 35
+      },
+      {
+        "stat": "attackSpeed",
+        "op": "mult",
+        "value": -0.24
+      }
+    ],
+    "value": 800,
+    "desc": "Two-handed blunt weapon. +35 Damage, -24% Attack Speed."
+  },
+  {
+    "id": "iron_sword",
+    "name": "Iron Sword",
+    "icon": "⚔️",
+    "art": "item_sword",
+    "slot": "weapon",
+    "wield": "one_handed",
+    "tags": [
+      "sword",
+      "metal"
+    ],
+    "mods": [
+      {
+        "stat": "damage",
+        "op": "add",
+        "value": 7
+      },
+      {
+        "stat": "crit",
+        "op": "add",
+        "value": 0.02
+      }
+    ],
+    "value": 40,
+    "desc": "One-handed sword. +7 Damage, +2% Crit."
+  },
+  {
+    "id": "wolf_fang_blade",
+    "name": "Wolf-Fang Blade",
+    "icon": "🐺",
+    "art": "item_wolf_fang",
+    "slot": "weapon",
+    "wield": "one_handed",
+    "tags": [
+      "sword",
+      "beast"
+    ],
+    "mods": [
+      {
+        "stat": "damage",
+        "op": "add",
+        "value": 10
+      },
+      {
+        "stat": "attackSpeed",
+        "op": "mult",
+        "value": 0.1
+      }
+    ],
+    "value": 120,
+    "desc": "One-handed sword. +10 Damage, +10% Attack Speed."
+  },
+  {
+    "id": "old_spear",
+    "name": "Old Spear",
+    "icon": "🔱️",
+    "art": "item_spear",
+    "slot": "weapon",
+    "wield": "two_handed",
+    "tags": [
+      "spear",
+      "wood"
+    ],
+    "mods": [
+      {
+        "stat": "damage",
+        "op": "add",
+        "value": 7
+      },
+      {
+        "stat": "armor",
+        "op": "add",
+        "value": 2
+      }
+    ],
+    "value": 40,
+    "desc": "Two-handed spear. +7 Damage, +2 Armor."
+  },
+  {
+    "id": "cloth_tunic",
+    "name": "Cloth Tunic",
+    "icon": "👕",
+    "art": "item_tunic",
+    "slot": "chest",
+    "tags": [
+      "cloth"
+    ],
+    "mods": [
+      {
+        "stat": "armor",
+        "op": "add",
+        "value": 2
+      }
+    ],
+    "value": 4
+  },
+  {
+    "id": "leather_vest",
+    "name": "Leather Vest",
+    "icon": "🦺",
+    "art": "item_vest",
+    "slot": "chest",
+    "tags": [
+      "leather"
+    ],
+    "mods": [
+      {
+        "stat": "armor",
+        "op": "add",
+        "value": 5
+      },
+      {
+        "stat": "maxHp",
+        "op": "add",
+        "value": 15
+      }
+    ],
+    "value": 35
+  },
+  {
+    "id": "spider_silk_garb",
+    "name": "Spider-Silk Garb",
+    "icon": "🕸️",
+    "art": "item_silk_garb",
+    "slot": "chest",
+    "tags": [
+      "cloth",
+      "silk"
+    ],
+    "mods": [
+      {
+        "stat": "armor",
+        "op": "add",
+        "value": 4
+      },
+      {
+        "stat": "dodge",
+        "op": "add",
+        "value": 0.06
+      },
+      {
+        "stat": "spellPower",
+        "op": "mult",
+        "value": 0.1
+      }
+    ],
+    "value": 150,
+    "desc": "Chest slot, cloth. +4 Armor, +6% Dodge, +10% Spell Power."
+  },
+  {
+    "id": "lucky_charm",
+    "name": "Lucky Charm",
+    "icon": "🍀",
+    "art": "item_lucky_charm",
+    "slot": "accessory",
+    "tags": [
+      "trinket"
+    ],
+    "mods": [
+      {
+        "stat": "loot",
+        "op": "mult",
+        "value": 0.15
+      }
+    ],
+    "value": 60
+  },
+  {
+    "id": "hawk_feather_band",
+    "name": "Hawk-Feather Band",
+    "icon": "🪶",
+    "art": "item_feather_band",
+    "slot": "accessory",
+    "tags": [
+      "trinket"
+    ],
+    "mods": [
+      {
+        "stat": "dodge",
+        "op": "add",
+        "value": 0.04
+      },
+      {
+        "stat": "attackSpeed",
+        "op": "mult",
+        "value": 0.08
+      }
+    ],
+    "value": 90
+  },
+  {
+    "id": "oak_staff",
+    "name": "Oak Staff",
+    "icon": "🪄",
+    "art": "item_staff",
+    "slot": "weapon",
+    "wield": "two_handed",
+    "tags": [
+      "staff",
+      "wood",
+      "magic"
+    ],
+    "mods": [
+      {
+        "stat": "int",
+        "op": "add",
+        "value": 2
+      },
+      {
+        "stat": "damage",
+        "op": "add",
+        "value": 2
+      },
+      {
+        "stat": "spellPower",
+        "op": "add",
+        "value": 4
+      }
+    ],
+    "value": 15,
+    "desc": "Two-handed staff. +2 INT, +2 Damage, +4 Spell Power."
+  },
+  {
+    "id": "hunting_bow",
+    "name": "Hunting Bow",
+    "icon": "🏹",
+    "art": "item_bow",
+    "slot": "weapon",
+    "wield": "two_handed",
+    "tags": [
+      "bow",
+      "ranged",
+      "wood"
+    ],
+    "mods": [
+      {
+        "stat": "dex",
+        "op": "add",
+        "value": 2
+      },
+      {
+        "stat": "damage",
+        "op": "add",
+        "value": 4
+      },
+      {
+        "stat": "crit",
+        "op": "add",
+        "value": 0.02
+      }
+    ],
+    "value": 18,
+    "desc": "Two-handed ranged weapon. +2 DEX, +4 Damage, +2% Crit."
+  },
+  {
+    "id": "iron_dagger",
+    "name": "Iron Dagger",
+    "icon": "🔪",
+    "art": "item_dagger",
+    "slot": "weapon",
+    "wield": "light",
+    "tags": [
+      "dagger",
+      "metal"
+    ],
+    "mods": [
+      {
+        "stat": "dex",
+        "op": "add",
+        "value": 2
+      },
+      {
+        "stat": "damage",
+        "op": "add",
+        "value": 2
+      },
+      {
+        "stat": "attackSpeed",
+        "op": "mult",
+        "value": 0.08
+      },
+      {
+        "stat": "crit",
+        "op": "add",
+        "value": 0.03
+      }
+    ],
+    "value": 22,
+    "desc": "Light dagger. +2 DEX, +2 Damage, +8% Attack Speed, +3% Crit."
+  },
+  {
+    "id": "antipattern_bracers",
+    "name": "Antipattern Bracers",
+    "icon": "🥊",
+    "art": "item_bracers_antipattern",
+    "slot": "hands",
+    "tags": [
+      "antipattern",
+      "metal"
+    ],
+    "mods": [
+      {
+        "stat": "str",
+        "op": "add",
+        "value": 1
+      },
+      {
+        "stat": "armor",
+        "op": "add",
+        "value": 6
+      },
+      {
+        "stat": "psiAcuity",
+        "op": "mult",
+        "value": -0.35
+      },
+      {
+        "stat": "psiCoherence",
+        "op": "mult",
+        "value": -0.35
+      },
+      {
+        "stat": "psiPurchase",
+        "op": "mult",
+        "value": -0.25
+      }
+    ],
+    "value": 90,
+    "desc": "Hands slot, metal. +1 STR, +6 Armor. Lowers the wearer's own psionic quantities: -35% Acuity, -35% Coherence, -25% Purchase. The penalty costs nothing to a character who shapes no workings."
+  },
+  {
+    "id": "ember_knife",
+    "name": "Ember Knife",
+    "icon": "🗡️",
+    "art": "item_ember_knife",
+    "slot": "weapon",
+    "wield": "light",
+    "tags": [
+      "dagger",
+      "fire",
+      "magic"
+    ],
+    "mods": [
+      {
+        "stat": "dex",
+        "op": "add",
+        "value": 2
+      },
+      {
+        "stat": "damage",
+        "op": "add",
+        "value": 5
+      },
+      {
+        "stat": "attackSpeed",
+        "op": "mult",
+        "value": 0.1
+      }
+    ],
+    "value": 135,
+    "bonusDamage": {
+      "type": "heat",
+      "value": 4
+    },
+    "desc": "Light dagger. +2 DEX, +5 Damage, +10% Attack Speed, +4 heat damage per hit."
+  },
+  {
+    "id": "steel_greatsword",
+    "name": "Steel Greatsword",
+    "icon": "⚔️",
+    "art": "item_greatsword",
+    "slot": "weapon",
+    "wield": "two_handed",
+    "tags": [
+      "greatsword",
+      "metal",
+      "twoHanded"
+    ],
+    "mods": [
+      {
+        "stat": "str",
+        "op": "add",
+        "value": 3
+      },
+      {
+        "stat": "damage",
+        "op": "add",
+        "value": 14
+      },
+      {
+        "stat": "attackSpeed",
+        "op": "mult",
+        "value": -0.15
+      },
+      {
+        "stat": "critDamage",
+        "op": "mult",
+        "value": 0.1
+      }
+    ],
+    "value": 140,
+    "requirements": [
+      {
+        "type": "attr",
+        "attr": "str",
+        "level": 12
+      }
+    ],
+    "desc": "Two-handed sword. +3 STR, +14 Damage, -15% Attack Speed, +10% Crit Damage. Requires STR 12."
+  },
+  {
+    "id": "wooden_shield",
+    "name": "Wooden Shield",
+    "icon": "🛡️",
+    "art": "item_shield",
+    "slot": "offhand",
+    "wield": "offhand",
+    "tags": [
+      "shield",
+      "wood",
+      "light shield"
+    ],
+    "mods": [
+      {
+        "stat": "armor",
+        "op": "add",
+        "value": 4
+      },
+      {
+        "stat": "maxHp",
+        "op": "add",
+        "value": 8
+      }
+    ],
+    "value": 12,
+    "desc": "Offhand light shield. +4 Armor, +8 Max HP."
+  },
+  {
+    "id": "warden_buckler",
+    "name": "Warden’s Buckler",
+    "icon": "🔰",
+    "art": "item_buckler",
+    "slot": "offhand",
+    "wield": "offhand",
+    "tags": [
+      "shield",
+      "buckler",
+      "parrying",
+      "metal"
+    ],
+    "mods": [
+      {
+        "stat": "armor",
+        "op": "add",
+        "value": 8
+      },
+      {
+        "stat": "dodge",
+        "op": "add",
+        "value": 0.03
+      }
+    ],
+    "value": 160,
+    "requirements": [
+      {
+        "type": "attr",
+        "attr": "dex",
+        "level": 8
+      }
+    ],
+    "mainHand": {
+      "mods": [
+        {
+          "stat": "damage",
+          "op": "add",
+          "value": 3
+        },
+        {
+          "stat": "parry",
+          "op": "add",
+          "value": 0.04
+        }
+      ],
+      "desc": "Punched forward: +3 Damage, +4% Parry"
+    },
+    "offHand": {
+      "mods": [
+        {
+          "stat": "parry",
+          "op": "add",
+          "value": 0.03
+        }
+      ],
+      "desc": "Held back: +3% Parry"
+    },
+    "desc": "Offhand buckler. +8 Armor, +3% Dodge. Requires DEX 8. Counts as a shield and a parrying tool, so it trains Shield Combat and Deflection. No penalty in the main hand."
+  },
+  {
+    "id": "rapier",
+    "name": "Rapier",
+    "icon": "🤺",
+    "art": "item_rapier",
+    "slot": "weapon",
+    "wield": "one_handed",
+    "tags": [
+      "sword",
+      "rapier",
+      "parrying",
+      "metal"
+    ],
+    "mods": [
+      {
+        "stat": "damage",
+        "op": "add",
+        "value": 6
+      },
+      {
+        "stat": "crit",
+        "op": "add",
+        "value": 0.04
+      },
+      {
+        "stat": "attackSpeed",
+        "op": "mult",
+        "value": 0.1
+      },
+      {
+        "stat": "parry",
+        "op": "add",
+        "value": 0.03
+      }
+    ],
+    "value": 140,
+    "requirements": [
+      {
+        "type": "attr",
+        "attr": "dex",
+        "level": 12
+      }
+    ],
+    "desc": "One-handed parrying sword. +6 Damage, +4% Crit, +10% Attack Speed, +3% Parry. Requires DEX 12. A Parrying Dagger in the off hand gains extra bonuses beside it."
+  },
+  {
+    "id": "parrying_dagger",
+    "name": "Parrying Dagger",
+    "icon": "🗝️",
+    "art": "item_parrying_dagger",
+    "slot": "offhand",
+    "wield": "offhand",
+    "tags": [
+      "dagger",
+      "parrying",
+      "metal"
+    ],
+    "mods": [
+      {
+        "stat": "parry",
+        "op": "add",
+        "value": 0.04
+      },
+      {
+        "stat": "damage",
+        "op": "add",
+        "value": 1
+      }
+    ],
+    "value": 130,
+    "requirements": [
+      {
+        "type": "attr",
+        "attr": "dex",
+        "level": 10
+      }
+    ],
+    "offHand": {
+      "pairedWith": "rapier",
+      "mods": [
+        {
+          "stat": "parry",
+          "op": "add",
+          "value": 0.05
+        },
+        {
+          "stat": "crit",
+          "op": "add",
+          "value": 0.02
+        },
+        {
+          "stat": "riposte",
+          "op": "add",
+          "value": 0.1
+        }
+      ],
+      "desc": "Paired with a rapier: +5% Parry, +2% Crit, +10% Riposte"
+    },
+    "desc": "Offhand parrying dagger. +4% Parry, +1 Damage. Requires DEX 10. Gains extra bonuses when a rapier is in the main hand."
+  },
+  {
+    "id": "leather_cap",
+    "name": "Leather Cap",
+    "icon": "🧢",
+    "art": "item_cap",
+    "slot": "head",
+    "tags": [
+      "leather"
+    ],
+    "mods": [
+      {
+        "stat": "armor",
+        "op": "add",
+        "value": 2
+      },
+      {
+        "stat": "dodge",
+        "op": "add",
+        "value": 0.02
+      }
+    ],
+    "value": 6,
+    "desc": "Head slot, leather. +2 Armor, +2% Dodge."
+  },
+  {
+    "id": "leather_jerkin",
+    "name": "Leather Jerkin",
+    "icon": "🦺",
+    "art": "item_jerkin",
+    "slot": "chest",
+    "tags": [
+      "leather"
+    ],
+    "mods": [
+      {
+        "stat": "armor",
+        "op": "add",
+        "value": 6
+      },
+      {
+        "stat": "dodge",
+        "op": "add",
+        "value": 0.03
+      }
+    ],
+    "value": 20,
+    "desc": "Chest slot, leather. +6 Armor, +3% Dodge."
+  },
+  {
+    "id": "iron_breastplate",
+    "name": "Iron Breastplate",
+    "icon": "🎽",
+    "art": "item_breastplate",
+    "slot": "chest",
+    "tags": [
+      "metal",
+      "heavy"
+    ],
+    "mods": [
+      {
+        "stat": "con",
+        "op": "add",
+        "value": 1
+      },
+      {
+        "stat": "armor",
+        "op": "add",
+        "value": 14
+      },
+      {
+        "stat": "attackSpeed",
+        "op": "mult",
+        "value": -0.05
+      }
+    ],
+    "value": 85,
+    "requirements": [
+      {
+        "type": "attr",
+        "attr": "str",
+        "level": 8
+      }
+    ],
+    "desc": "Chest slot, heavy metal. +1 CON, +14 Armor, -5% Attack Speed. Requires STR 8."
+  },
+  {
+    "id": "iron_gauntlets",
+    "name": "Iron Gauntlets",
+    "icon": "🧤",
+    "art": "item_gauntlets",
+    "slot": "hands",
+    "tags": [
+      "metal",
+      "heavy"
+    ],
+    "mods": [
+      {
+        "stat": "str",
+        "op": "add",
+        "value": 1
+      },
+      {
+        "stat": "armor",
+        "op": "add",
+        "value": 4
+      }
+    ],
+    "value": 14,
+    "desc": "Hands slot, heavy metal. +1 STR, +4 Armor."
+  },
+  {
+    "id": "scout_bracers",
+    "name": "Scout Bracers",
+    "icon": "🥊",
+    "art": "item_bracers",
+    "slot": "hands",
+    "tags": [
+      "leather"
+    ],
+    "mods": [
+      {
+        "stat": "attackSpeed",
+        "op": "mult",
+        "value": 0.06
+      },
+      {
+        "stat": "dodge",
+        "op": "add",
+        "value": 0.03
+      }
+    ],
+    "value": 28,
+    "desc": "Hands slot, leather. +6% Attack Speed, +3% Dodge."
+  },
+  {
+    "id": "soldier_greaves",
+    "name": "Soldier Greaves",
+    "icon": "🦵",
+    "art": "item_greaves",
+    "slot": "legs",
+    "tags": [
+      "metal",
+      "heavy"
+    ],
+    "mods": [
+      {
+        "stat": "armor",
+        "op": "add",
+        "value": 10
+      },
+      {
+        "stat": "maxHp",
+        "op": "add",
+        "value": 10
+      }
+    ],
+    "value": 55,
+    "desc": "Legs slot, heavy metal. +10 Armor, +10 Max HP."
+  },
+  {
+    "id": "leather_boots",
+    "name": "Leather Boots",
+    "icon": "🥾",
+    "art": "item_boots",
+    "slot": "feet",
+    "tags": [
+      "leather"
+    ],
+    "mods": [
+      {
+        "stat": "dodge",
+        "op": "add",
+        "value": 0.05
+      },
+      {
+        "stat": "travelSpeed",
+        "op": "mult",
+        "value": 0.08
+      }
+    ],
+    "value": 16,
+    "desc": "Feet slot, leather. +5% Dodge, +8% Travel Speed."
+  },
+  {
+    "id": "spellwoven_cloak",
+    "name": "Spellwoven Cloak",
+    "icon": "🧣",
+    "art": "item_cloak_spellwoven",
+    "slot": "back",
+    "tags": [
+      "cloth",
+      "magic"
+    ],
+    "mods": [
+      {
+        "stat": "int",
+        "op": "add",
+        "value": 2
+      },
+      {
+        "stat": "dodge",
+        "op": "add",
+        "value": 0.06
+      },
+      {
+        "stat": "armor",
+        "op": "add",
+        "value": 3
+      }
+    ],
+    "value": 120,
+    "desc": "Back slot, cloth. +2 INT, +6% Dodge, +3 Armor."
+  },
+  {
+    "id": "apprentice_ring",
+    "name": "Apprentice’s Ring",
+    "icon": "💍",
+    "art": "item_ring",
+    "slot": "accessory",
+    "tags": [
+      "trinket",
+      "magic"
+    ],
+    "mods": [
+      {
+        "stat": "spellPower",
+        "op": "add",
+        "value": 3
+      },
+      {
+        "stat": "skillXp",
+        "op": "mult",
+        "value": 0.04
+      }
+    ],
+    "value": 25,
+    "desc": "Accessory. +3 Spell Power, +4% Skill XP."
+  },
+  {
+    "id": "pilgrim_amulet",
+    "name": "Pilgrim Amulet",
+    "icon": "📿",
+    "art": "item_amulet",
+    "slot": "accessory",
+    "tags": [
+      "trinket"
+    ],
+    "mods": [
+      {
+        "stat": "maxHp",
+        "op": "add",
+        "value": 12
+      },
+      {
+        "stat": "travelSpeed",
+        "op": "mult",
+        "value": 0.05
+      }
+    ],
+    "value": 32,
+    "desc": "Accessory. +12 Max HP, +5% Travel Speed."
+  },
+  {
+    "id": "katana",
+    "name": "Katana",
+    "icon": "🗡️",
+    "art": "item_katana",
+    "slot": "weapon",
+    "wield": "one_handed",
+    "tags": [
+      "sword",
+      "katana",
+      "metal"
+    ],
+    "mods": [
+      {
+        "stat": "damage",
+        "op": "add",
+        "value": 6
+      },
+      {
+        "stat": "crit",
+        "op": "add",
+        "value": 0.03
+      },
+      {
+        "stat": "attackSpeed",
+        "op": "mult",
+        "value": 0.05
+      }
+    ],
+    "value": 100,
+    "requirements": [
+      {
+        "type": "attr",
+        "attr": "dex",
+        "level": 8
+      }
+    ],
+    "desc": "One-handed katana; levels Swordsmanship. +6 Damage, +3% Crit, +5% Attack Speed. Requires DEX 8."
+  },
+  {
+    "id": "uchigatana",
+    "name": "Uchigatana",
+    "icon": "🗡️",
+    "art": "item_uchigatana",
+    "slot": "weapon",
+    "wield": "one_handed",
+    "tags": [
+      "sword",
+      "katana",
+      "metal"
+    ],
+    "mods": [
+      {
+        "stat": "damage",
+        "op": "add",
+        "value": 9
+      },
+      {
+        "stat": "crit",
+        "op": "add",
+        "value": 0.04
+      },
+      {
+        "stat": "attackSpeed",
+        "op": "mult",
+        "value": 0.08
+      }
+    ],
+    "value": 180,
+    "requirements": [
+      {
+        "type": "attr",
+        "attr": "dex",
+        "level": 10
+      }
+    ],
+    "desc": "One-handed katana; levels Swordsmanship. +9 Damage, +4% Crit, +8% Attack Speed. Requires DEX 10."
+  },
+  {
+    "id": "moonlit_katana",
+    "name": "Moonlit Katana",
+    "icon": "🌙",
+    "art": "item_moonlit_katana",
+    "slot": "weapon",
+    "wield": "one_handed",
+    "tags": [
+      "sword",
+      "katana",
+      "metal"
+    ],
+    "mods": [
+      {
+        "stat": "damage",
+        "op": "add",
+        "value": 14
+      },
+      {
+        "stat": "crit",
+        "op": "add",
+        "value": 0.08
+      },
+      {
+        "stat": "critDamage",
+        "op": "mult",
+        "value": 0.2
+      },
+      {
+        "stat": "attackSpeed",
+        "op": "mult",
+        "value": 0.1
+      }
+    ],
+    "value": 400,
+    "requirements": [
+      {
+        "type": "skill",
+        "id": "swordsmanship",
+        "level": 20
+      }
+    ],
+    "desc": "One-handed katana; levels Swordsmanship. +14 Damage, +8% Crit, +20% Crit Damage, +10% Attack Speed. Requires Swordsmanship 20."
+  },
+  {
+    "id": "herbal_charm",
+    "name": "Herbal Charm",
+    "icon": "🌿",
+    "art": "item_herbal_charm",
+    "slot": "accessory",
+    "tags": [
+      "trinket",
+      "herbal"
+    ],
+    "mods": [
+      {
+        "stat": "resPoison",
+        "op": "add",
+        "value": 0.15
+      },
+      {
+        "stat": "loot",
+        "op": "mult",
+        "value": 0.05
+      }
+    ],
+    "value": 45,
+    "desc": "Accessory. +15% Poison Resistance, +5% Loot."
+  },
+  {
+    "id": "wolf_cloak",
+    "name": "Wolf Cloak",
+    "icon": "🧥",
+    "art": "item_cloak_wolf",
+    "slot": "back",
+    "tags": [
+      "leather",
+      "fur"
+    ],
+    "mods": [
+      {
+        "stat": "resSlashing",
+        "op": "add",
+        "value": 0.12
+      },
+      {
+        "stat": "dodge",
+        "op": "add",
+        "value": 0.03
+      },
+      {
+        "stat": "maxHp",
+        "op": "add",
+        "value": 10
+      }
+    ],
+    "value": 110,
+    "desc": "Back slot, fur. +12% Slashing Resistance, +3% Dodge, +10 Max HP."
+  },
+  {
+    "id": "bronze_dagger",
+    "name": "Bronze Dagger",
+    "icon": "🔪",
+    "art": "item_bronze_dagger",
+    "slot": "weapon",
+    "tags": [
+      "dagger",
+      "bronze",
+      "metal"
+    ],
+    "value": 22,
+    "mods": [
+      {
+        "value": 2,
+        "stat": "dex",
+        "op": "add"
+      },
+      {
+        "value": 1,
+        "stat": "damage",
+        "op": "add"
+      },
+      {
+        "value": 0.09,
+        "stat": "attackSpeed",
+        "op": "mult"
+      },
+      {
+        "value": 0.03,
+        "stat": "crit",
+        "op": "add"
+      },
+      {
+        "value": 0.15,
+        "stat": "psiAcuity",
+        "op": "mult"
+      },
+      {
+        "value": 0.1,
+        "stat": "psiCoherence",
+        "op": "mult"
+      }
+    ],
+    "wield": "light",
+    "desc": "Light bronze dagger. +2 DEX, +1 Damage, +9% Attack Speed, +3% Crit. Raises the wielder's psionic quantities: +15% Acuity, +10% Coherence."
+  },
+  {
+    "id": "tower_shield",
+    "name": "Tower Shield",
+    "icon": "🛡️",
+    "art": "item_tower_shield",
+    "slot": "offhand",
+    "tags": [
+      "wood",
+      "tower shield",
+      "shield"
+    ],
+    "value": 18,
+    "mods": [
+      {
+        "value": 7,
+        "stat": "armor",
+        "op": "add"
+      },
+      {
+        "value": -0.15,
+        "stat": "speed",
+        "op": "mult"
+      },
+      {
+        "value": 0.06,
+        "stat": "armor",
+        "op": "mult"
+      }
+    ],
+    "wield": "offhand",
+    "desc": "Offhand shield. +7 Armor, +6% Armor, -15% Speed."
+  },
+  {
+    "id": "festival_laurel",
+    "name": "Festival Laurel",
+    "icon": "🏅",
+    "art": "item_laurel",
+    "slot": "accessory",
+    "tags": [
+      "trinket"
+    ],
+    "mods": [
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": 0.08
+      },
+      {
+        "stat": "maxHp",
+        "op": "mult",
+        "value": 0.08
+      }
+    ],
+    "value": 400,
+    "desc": "Accessory. The Vermin Festival pays it to the first royale won in a run. +8% Damage, +8% Max HP."
+  },
+  {
+    "id": "festival_regalia",
+    "name": "Festival Regalia",
+    "icon": "👑",
+    "art": "item_regalia",
+    "slot": "accessory",
+    "tags": [
+      "trinket"
+    ],
+    "mods": [
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": 0.15
+      },
+      {
+        "stat": "maxHp",
+        "op": "mult",
+        "value": 0.15
+      },
+      {
+        "stat": "attackSpeed",
+        "op": "mult",
+        "value": 0.05
+      }
+    ],
+    "value": 1500,
+    "keep": true,
+    "desc": "Accessory, taken from a festival token. +15% Damage, +15% Max HP, +5% Attack Speed. Kept in the stronghold stash: every prestige returns it there, wherever it is."
+  },
+  {
+    "id": "festival_spear",
+    "name": "Festival Spear",
+    "icon": "🔱️",
+    "art": "item_spear_gold",
+    "slot": "weapon",
+    "wield": "two_handed",
+    "tags": [
+      "spear",
+      "wood"
+    ],
+    "mods": [
+      {
+        "stat": "damage",
+        "op": "add",
+        "value": 10
+      },
+      {
+        "stat": "armor",
+        "op": "add",
+        "value": 3
+      }
+    ],
+    "value": 90,
+    "desc": "Two-handed spear, lent by a weapon cache on the Vermin Festival’s royale field and taken back when the attempt ends. One step above the Old Spear. +10 Damage, +3 Armor."
+  },
+  {
+    "id": "festival_greatsword",
+    "name": "Festival Greatsword",
+    "icon": "⚔️",
+    "art": "item_greatsword_gold",
+    "slot": "weapon",
+    "wield": "two_handed",
+    "tags": [
+      "greatsword",
+      "metal",
+      "twoHanded"
+    ],
+    "mods": [
+      {
+        "stat": "str",
+        "op": "add",
+        "value": 3
+      },
+      {
+        "stat": "damage",
+        "op": "add",
+        "value": 18
+      },
+      {
+        "stat": "attackSpeed",
+        "op": "mult",
+        "value": -0.14
+      },
+      {
+        "stat": "critDamage",
+        "op": "mult",
+        "value": 0.12
+      }
+    ],
+    "value": 260,
+    "requirements": [
+      {
+        "type": "attr",
+        "attr": "str",
+        "level": 12
+      }
+    ],
+    "desc": "Two-handed sword, lent by a weapon cache on the royale field and taken back when the attempt ends. One step above the Steel Greatsword. +3 STR, +18 Damage, -14% Attack Speed, +12% Crit Damage. Requires STR 12."
+  },
+  {
+    "id": "festival_staff",
+    "name": "Festival Staff",
+    "icon": "🪄",
+    "art": "item_staff_gold",
+    "slot": "weapon",
+    "wield": "two_handed",
+    "tags": [
+      "staff",
+      "wood",
+      "magic"
+    ],
+    "mods": [
+      {
+        "stat": "int",
+        "op": "add",
+        "value": 3
+      },
+      {
+        "stat": "damage",
+        "op": "add",
+        "value": 3
+      },
+      {
+        "stat": "spellPower",
+        "op": "add",
+        "value": 7
+      }
+    ],
+    "value": 45,
+    "desc": "Two-handed staff, lent by a weapon cache on the royale field and taken back when the attempt ends. One step above the Oak Staff. +3 INT, +3 Damage, +7 Spell Power."
+  },
+  {
+    "id": "festival_bow",
+    "name": "Festival Bow",
+    "icon": "🏹",
+    "art": "item_bow_gold",
+    "slot": "weapon",
+    "wield": "two_handed",
+    "tags": [
+      "bow",
+      "ranged",
+      "wood"
+    ],
+    "mods": [
+      {
+        "stat": "dex",
+        "op": "add",
+        "value": 3
+      },
+      {
+        "stat": "damage",
+        "op": "add",
+        "value": 6
+      },
+      {
+        "stat": "crit",
+        "op": "add",
+        "value": 0.03
+      }
+    ],
+    "value": 50,
+    "desc": "Two-handed bow, lent by a weapon cache on the royale field and taken back when the attempt ends. One step above the Hunting Bow. +3 DEX, +6 Damage, +3% Crit."
+  },
+  {
+    "id": "festival_dagger",
+    "name": "Festival Dagger",
+    "icon": "🔪",
+    "art": "item_dagger_gold",
+    "slot": "weapon",
+    "wield": "light",
+    "tags": [
+      "dagger",
+      "metal"
+    ],
+    "mods": [
+      {
+        "stat": "dex",
+        "op": "add",
+        "value": 3
+      },
+      {
+        "stat": "damage",
+        "op": "add",
+        "value": 4
+      },
+      {
+        "stat": "attackSpeed",
+        "op": "mult",
+        "value": 0.1
+      },
+      {
+        "stat": "crit",
+        "op": "add",
+        "value": 0.04
+      }
+    ],
+    "value": 60,
+    "desc": "Light dagger, lent by a weapon cache on the royale field and taken back when the attempt ends. One step above the Iron Dagger. +3 DEX, +4 Damage, +10% Attack Speed, +4% Crit."
+  },
+  {
+    "id": "festival_mace",
+    "name": "Festival Mace",
+    "icon": "🔨",
+    "art": "item_mace_gold",
+    "slot": "weapon",
+    "wield": "one_handed",
+    "tags": [
+      "blunt",
+      "iron"
+    ],
+    "mods": [
+      {
+        "stat": "damage",
+        "op": "add",
+        "value": 8
+      },
+      {
+        "stat": "attackSpeed",
+        "op": "mult",
+        "value": -0.12
+      }
+    ],
+    "value": 40,
+    "desc": "One-handed mace, lent by a weapon cache on the royale field and taken back when the attempt ends. One step above the Old Hammer. +8 Damage, -12% Attack Speed."
+  }
+]

@@ -10,6 +10,7 @@
  *   `duration: 'permanent'`.
  */
 import { registry, s, type RecordOf } from '../../kernel';
+import { SLOT_IDS } from '../items';
 import { RESOURCE_IDS, type ResourceId } from '../resources';
 import { ATTRIBUTE_IDS, DAMAGE_TYPES, MOD_ORIGIN_KINDS, modifierSchema, type ContentMod, type DamageType } from '../stats';
 import statusesData from './content/statuses.json';
@@ -168,7 +169,7 @@ const statuses = registry(
       s.object({
         kinds: s.optional(s.array(s.enum(MOD_ORIGIN_KINDS))),
         stats: s.optional(s.array(s.string())),
-        slot: s.optional(s.string({ help: 'Equipment slot id.' })),
+        slot: s.optional(s.enum(SLOT_IDS, { help: 'Only modifiers of the piece in this equipment slot.' })),
         per: s.number(),
         max: s.optional(s.number()),
       }),

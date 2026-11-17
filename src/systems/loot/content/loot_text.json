@@ -1,0 +1,6 @@
+[
+  {
+    "id": "loot_item",
+    "text": "📦 Loot: {icon} {item}"
+  }
+]

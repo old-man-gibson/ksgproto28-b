@@ -1,0 +1,452 @@
+[
+  {
+    "id": "minor_rune_might",
+    "name": "Minor Rune of Might",
+    "icon": "🔺",
+    "art": "rune_tiwaz",
+    "value": 25,
+    "desc": "Socketable rune. Weapon: +4 Damage. Armor: +2 Armor. Accessory: +2% Damage.",
+    "effects": [
+      {
+        "context": "weapon",
+        "mods": [
+          {
+            "stat": "damage",
+            "op": "add",
+            "value": 4
+          }
+        ]
+      },
+      {
+        "context": "armor",
+        "mods": [
+          {
+            "stat": "armor",
+            "op": "add",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "context": "accessory",
+        "mods": [
+          {
+            "stat": "damage",
+            "op": "mult",
+            "value": 0.02
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "greater_rune_might",
+    "name": "Greater Rune of Might",
+    "icon": "🔻",
+    "art": "rune_uruz",
+    "value": 90,
+    "desc": "Socketable rune. Weapon: +9 Damage and +3% Damage. Armor: +5 Armor. Accessory: +5% Damage.",
+    "effects": [
+      {
+        "context": "weapon",
+        "mods": [
+          {
+            "stat": "damage",
+            "op": "add",
+            "value": 9
+          },
+          {
+            "stat": "damage",
+            "op": "mult",
+            "value": 0.03
+          }
+        ]
+      },
+      {
+        "context": "armor",
+        "mods": [
+          {
+            "stat": "armor",
+            "op": "add",
+            "value": 5
+          }
+        ]
+      },
+      {
+        "context": "accessory",
+        "mods": [
+          {
+            "stat": "damage",
+            "op": "mult",
+            "value": 0.05
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "minor_rune_vitality",
+    "name": "Minor Rune of Vitality",
+    "icon": "🟢",
+    "art": "rune_wunjo",
+    "value": 25,
+    "desc": "Socketable rune. Weapon: +10 Max HP. Armor: +25 Max HP. Accessory: +3% Max HP.",
+    "effects": [
+      {
+        "context": "weapon",
+        "mods": [
+          {
+            "stat": "maxHp",
+            "op": "add",
+            "value": 10
+          }
+        ]
+      },
+      {
+        "context": "armor",
+        "mods": [
+          {
+            "stat": "maxHp",
+            "op": "add",
+            "value": 25
+          }
+        ]
+      },
+      {
+        "context": "accessory",
+        "mods": [
+          {
+            "stat": "maxHp",
+            "op": "mult",
+            "value": 0.03
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "greater_rune_vitality",
+    "name": "Greater Rune of Vitality",
+    "icon": "💚",
+    "art": "rune_algiz",
+    "value": 90,
+    "desc": "Socketable rune. Weapon: +25 Max HP. Armor: +60 Max HP and +3% Max HP. Accessory: +6% Max HP and +0.4 HP Regen.",
+    "effects": [
+      {
+        "context": "weapon",
+        "mods": [
+          {
+            "stat": "maxHp",
+            "op": "add",
+            "value": 25
+          }
+        ]
+      },
+      {
+        "context": "armor",
+        "mods": [
+          {
+            "stat": "maxHp",
+            "op": "add",
+            "value": 60
+          },
+          {
+            "stat": "maxHp",
+            "op": "mult",
+            "value": 0.03
+          }
+        ]
+      },
+      {
+        "context": "accessory",
+        "mods": [
+          {
+            "stat": "maxHp",
+            "op": "mult",
+            "value": 0.06
+          },
+          {
+            "stat": "hpRegen",
+            "op": "add",
+            "value": 0.4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "gale_rune",
+    "name": "Gale Rune",
+    "icon": "🌬️",
+    "art": "rune_ansuz",
+    "value": 120,
+    "desc": "Socketable rune. Weapon: Sidestep becomes Flash Step with 55% of its cooldown. Armor: +3% Dodge. Accessory: +2% Speed.",
+    "effects": [
+      {
+        "context": "weapon",
+        "techniqueMods": [
+          {
+            "technique": "sidestep",
+            "rename": "Flash Step",
+            "cooldownMult": 0.55
+          }
+        ]
+      },
+      {
+        "context": "armor",
+        "mods": [
+          {
+            "stat": "dodge",
+            "op": "add",
+            "value": 0.03
+          }
+        ]
+      },
+      {
+        "context": "accessory",
+        "mods": [
+          {
+            "stat": "speed",
+            "op": "mult",
+            "value": 0.02
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "earthbind_rune",
+    "name": "Earthbind Rune",
+    "icon": "⛰️",
+    "art": "rune_othila",
+    "value": 130,
+    "desc": "Socketable rune. Weapon: Thrust becomes Rooted Thrust and exits into the coiled position. Armor: +5% Armor. Accessory: +5% Earth Resistance.",
+    "effects": [
+      {
+        "context": "weapon",
+        "techniqueMods": [
+          {
+            "technique": "thrust",
+            "rename": "Rooted Thrust",
+            "exitTo": "coiled"
+          }
+        ]
+      },
+      {
+        "context": "armor",
+        "mods": [
+          {
+            "stat": "armor",
+            "op": "mult",
+            "value": 0.05
+          }
+        ]
+      },
+      {
+        "context": "accessory",
+        "mods": [
+          {
+            "stat": "resEarth",
+            "op": "add",
+            "value": 0.05
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "umbral_rune",
+    "name": "Umbral Rune",
+    "icon": "🌑",
+    "art": "rune_broken",
+    "value": 140,
+    "desc": "Socketable rune. Weapon: Riposte deals x1.1 damage and its Honed fork offers Sweeping; +3 dark damage per hit. Armor: +8% Dark Resistance. Accessory: +2% Crit.",
+    "effects": [
+      {
+        "context": "weapon",
+        "techniqueMods": [
+          {
+            "technique": "riposte",
+            "damageMult": 1.1,
+            "grantsFork": "sweep"
+          }
+        ],
+        "bonusDamage": {
+          "type": "dark",
+          "value": 3
+        }
+      },
+      {
+        "context": "armor",
+        "mods": [
+          {
+            "stat": "resDark",
+            "op": "add",
+            "value": 0.08
+          }
+        ]
+      },
+      {
+        "context": "accessory",
+        "mods": [
+          {
+            "stat": "crit",
+            "op": "add",
+            "value": 0.02
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "minor_rune_thunder",
+    "name": "Minor Rune of Thunder",
+    "icon": "⚡",
+    "art": "rune_sowilo",
+    "value": 40,
+    "desc": "Socketable rune. Weapon: +3 lightning damage per hit. Armor: +6% Lightning Resistance. Accessory: +3 Spell Power.",
+    "effects": [
+      {
+        "context": "weapon",
+        "bonusDamage": {
+          "type": "lightning",
+          "value": 3
+        }
+      },
+      {
+        "context": "armor",
+        "mods": [
+          {
+            "stat": "resLightning",
+            "op": "add",
+            "value": 0.06
+          }
+        ]
+      },
+      {
+        "context": "accessory",
+        "mods": [
+          {
+            "stat": "spellPower",
+            "op": "add",
+            "value": 3
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "greater_rune_thunder",
+    "name": "Greater Rune of Thunder",
+    "icon": "🌩️",
+    "art": "rune_plain",
+    "value": 140,
+    "desc": "Socketable rune. Weapon: +12% of damage dealt as lightning. Armor: +10% Lightning Resistance. Accessory: +8% Spell Power.",
+    "effects": [
+      {
+        "context": "weapon",
+        "bonusDamagePct": {
+          "type": "lightning",
+          "value": 0.12
+        }
+      },
+      {
+        "context": "armor",
+        "mods": [
+          {
+            "stat": "resLightning",
+            "op": "add",
+            "value": 0.1
+          }
+        ]
+      },
+      {
+        "context": "accessory",
+        "mods": [
+          {
+            "stat": "spellPower",
+            "op": "mult",
+            "value": 0.08
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "minor_rune_frost",
+    "name": "Minor Rune of Frost",
+    "icon": "❄️",
+    "art": "rune_ingwaz",
+    "value": 40,
+    "desc": "Socketable rune. Weapon: +3 cold damage per hit. Armor: +6% Cold Resistance. Accessory: +2% Crit.",
+    "effects": [
+      {
+        "context": "weapon",
+        "bonusDamage": {
+          "type": "cold",
+          "value": 3
+        }
+      },
+      {
+        "context": "armor",
+        "mods": [
+          {
+            "stat": "resCold",
+            "op": "add",
+            "value": 0.06
+          }
+        ]
+      },
+      {
+        "context": "accessory",
+        "mods": [
+          {
+            "stat": "crit",
+            "op": "add",
+            "value": 0.02
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "rune_swiftness",
+    "name": "Rune of Swiftness",
+    "icon": "🌀",
+    "art": "rune_laguz",
+    "value": 60,
+    "desc": "Socketable rune. Weapon: +4% Attack Speed. Armor: +2% Speed. Accessory: +3% Speed.",
+    "effects": [
+      {
+        "context": "weapon",
+        "mods": [
+          {
+            "stat": "attackSpeed",
+            "op": "mult",
+            "value": 0.04
+          }
+        ]
+      },
+      {
+        "context": "armor",
+        "mods": [
+          {
+            "stat": "speed",
+            "op": "mult",
+            "value": 0.02
+          }
+        ]
+      },
+      {
+        "context": "accessory",
+        "mods": [
+          {
+            "stat": "speed",
+            "op": "mult",
+            "value": 0.03
+          }
+        ]
+      }
+    ]
+  }
+]
