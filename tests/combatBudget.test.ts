@@ -20,6 +20,8 @@ import { equip, makeGame, setMods } from './helpers';
 /**
  * Measured on 2026-11-17: 3,931 ms alone, 7,126 ms inside the full test run
  * (three 8-hour runs in parallel workers), for 9,673 kills and no defeat.
+ * Spine port 5, same day: 4,104 ms alone, 8,781 ms inside the full run, the
+ * same 9,673 kills.
  */
 const FIGHT_EIGHT_HOUR_BUDGET_MS = 12000;
 const TICKS = 288_000;
@@ -28,8 +30,9 @@ const floorOne: EncounterSite = { ...SITES.f1_storerooms, fightLimit: undefined 
 
 /**
  * Spine port 5: the Tunnels of floor 6 (goblin, hobgoblin, firetongue, witch
- * doctor, groups of up to three). Budget set from the measurement in
- * docs/KERNEL.md section 8.
+ * doctor, groups of up to three). Measured on 2026-11-17: 11,500 to 12,400 ms
+ * alone, 11,700 ms inside the full test run, for 11,231 kills, 1 defeat,
+ * 1,954 casts and 1,615 techniques (docs/KERNEL.md section 8).
  */
 const CASTER_EIGHT_HOUR_BUDGET_MS = 20000;
 const floorSix: EncounterSite = { ...SITES.f6_tunnels };

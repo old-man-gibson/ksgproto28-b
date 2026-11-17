@@ -18,13 +18,19 @@ Content in the stretch (approximate counts):
 |---|---|---|
 | Areas | 7, plus Threshold | `data/locations.data.ts` |
 | Spots | 53, plus 9 job spots | `data/locations.data.ts` |
-| Monsters | 24 of 146 | `data/monsters.data.ts` |
+| Monsters | 24 of 131 | `data/monsters.data.ts` |
 | Gear | 10 drops, 5 rack items, 1 starting item | `data/items.data.ts` |
 | Materials | 9 | `data/materials.data.ts` |
 | Statuses inflicted by monsters | 4 (punctured, bleeding, concussed, wet) | `data/statuses.data.ts` |
 | Monster techniques | 6 | martial data |
 | Monster spell sentences | 2 (`goblin_firetongue`) | monster data |
+| Monster divine workings | 3 (`goblin_witch_doctor`: `mud_poultice` with 2 uses, `vermin_swarm`, `cinder_curse`) | monster data, `MIRACLES` |
 | Quests | 3 | `data/quests.data.ts` |
+
+The monster count was first written as 146. The old `MONSTERS` table has 131
+records. `data/monsters.data.ts` holds 146 lines with an `id:` field: the 131
+monsters, 7 tiers, 4 modifier tiers and 4 rarities. Counted in port 5; no
+record was dropped.
 
 ## 2. Parity target
 
@@ -62,7 +68,7 @@ One session per port, one at a time. Each port follows section 5 of
 | 2 | Statuses | `statuses`, `conditionHarm` |
 | 3 | Items: inventory, equipment, wield, materials, gold, drop tables | `inventory`, `equipment`, `wield`, `stash`, drop code in `combat.ts:1586-1700` |
 | 4 | Combat core: spawn, rotation, player attack, enemy attack, dodge, parry, typed damage, kill and defeat events, the fight ledger | `combat.ts`, `monsterStats`, `huntrest`, `ledger` |
-| 5 | Monster techniques (6) and monster spell casts (2 sentences) | `combat.ts:2224-2539`, the needed part of `martial` and `arcane` |
+| 5 | Monster techniques (6), monster spell casts (2 sentences), monster divine workings (3); the part of the martial, arcane and divine engines that executes an action in a fight, for both sides | `combat.ts:2095-2845` and `3106-3520`, the execution half of `martial`, `arcane`, `spellcraft`, `divine`, `deities`, `triggers` |
 | 6 | World: areas, spots, activities, travel and map, ladder gates, Threshold jobs, weather and exposure, knockout return | `locations`, `actions`, `mapped`, `towers`, `ladder`, `weather`, `exposure`, `knockoutReturn`, `safety` |
 | 7 | Quests, shops, floor 0, prestige; John port and parity run; offline budget | `quests`, `shops`, `tutorial`, `prestige`, `legacy` |
 
@@ -126,6 +132,13 @@ left behind.
 | 4 | `combatRegenMult` of `systems/actions.ts`; the fight half of `tickPlayerStatuses` (a condition finishes the player in a fight) | `resources` (`pace.inCombat`, slice version 2), `combat` (`fallToCondition`) | In `combatSystem.test.ts` | Pace per activity (port 6) |
 | 4 | Kill and defeat listeners of `systems/achievements.ts`; the kill listener of `systems/levels.ts`; `dynamicLevelBonus` of `systems/levels.ts` | `combat` (`onKill`, `onDefeat`, `spawn.ts`) | `hunters.test.ts`, `dynamicLevels.test.ts` | `checkFloorClears` (port 6) |
 | 4 | Cases ports 1 to 3 left tagged port 4 | `combat` | `tests/combatStatuses.test.ts`: 17 cases under their old names, from `statuses.test.ts` (10), `conditionResist.test.ts` (4), `loot.test.ts` (1), `wield.test.ts` (2) | 3 retagged: forced healing of a monster (2, port 5 or arcane: `healEnemy`), a school taking a stance slot (1, styles) |
+| 5 | `data/martial.data.ts` (`TECHNIQUES`, `POSITIONS`, `FORK_ARCHETYPES`); execution half of `systems/martial.ts` (`declaredEntries`, `declaredPositions`, `techniqueEntries`, `openEntry`, `resolvedMove`, `techniqueExit`, `techniqueArmed`, `weaponStateGate`, `positionIncomingMult`, `positionDodgeMult`, `watchStatKey`); technique branches of `pickActive`, `pickMonsterAction` and the buff slot; `pickCounter`, `fireCounter` | `martial` | `tests/martial.test.ts`: 31 of the old 96 cases, under the old names; `tests/goblins.test.ts`: 6 of 9; `tests/monsterActions.test.ts`, `tests/playerActions.test.ts` (new) | 68 cases as `it.todo` tagged step 3: learning, eligibility and teachers (14), mastery (7), drilling (2), slots and the bench (7), forks (4), weapon states (7), rune surgery (4), readied spells (6), the planner, the position graph and `techniqueStatus` (10), `recordExecution` halves (3), watch-learning (4); 4 old save migrations |
+| 5 | `systems/triggers.ts` (`evaluateTrigger`, the subjects) | `combat` (`triggers.ts`) | In `tests/martial.test.ts`, `tests/antimagic.test.ts`, `tests/playerActions.test.ts` | The picker of the rotation screen (`options`, `visible`, `describeCondition`); `style.active` and `style.selected` read one style id until the styles port |
+| 5 | `ARCANE_WORDS` of `data/spellcraft.data.ts`; `parseSentence`, `composeArcane`, `splitWordId`, `displayWord`, the tuning constants of `systems/arcane.ts` | `arcane` (`grammar.ts`, written by `scripts/port-arcane.py`) | `tests/spellcraft.test.ts` ("arcane syntax", "cut, crush and pierce as verbs"), `tests/antimagic.test.ts` (undo, with, the signature) | `checkSentence`, word unlocks and levels, mastery, word skills and word XP, inscription: `it.todo` tagged step 3 arcane (7) |
+| 5 | `specForSource`, `spellKey`, `workingSignature`, `leadingElement`, `undoWorking` of `systems/spellcraft.ts`; `castMonsterWorking`, `resolveMonsterWorking`, `castCraftedSelf`, `castCraftedAttack`, miracle synergy, the counterspell functions, the cast branches of `pickActive` and `pickMonsterAction` of `systems/combat.ts`; `counterEfficiency` of `systems/arcane.ts` | `spellcraft` | `tests/spellcraft.test.ts`: 72 of the old 124 cases; `tests/antimagic.test.ts`: 35 of 35 | The book's writing side, the prepared cap, `resolveSpellFor`, `castUtility`: `it.todo` tagged step 3 spellcraft (5); the psionic school (35); 2 old save migrations; the refuting body (`registerRefuter`, mutagens) |
+| 5 | `MIRACLES` of `data/spellcraft.data.ts`, `data/deities.data.ts`, `miracleSpec` of `systems/divine.ts`, `deityRelation` of `systems/deities.ts` | `divine` | In `tests/spellcraft.test.ts` ("the pantheon", "miracle mechanics", content), `tests/goblins.test.ts` | Favour, receiving a miracle, the pantheon shelf, the veto at preparation: `it.todo` tagged step 3 divine (6) |
+| 5 | `healEnemy` of `systems/combat.ts`; the landing of `castCraftedAttack`; `c.buffs`; `setPosition`; `state.skillTriggers` | `combat` (slice version 2: `fight.buffs`, `triggers`, `Enemy.lastAction`; requests `heal-enemy`, `land-slices`, `hurt-enemy`, `add-buff`, `move-player`, `stamp-cooldown`, `mark-event`, `take-prevented`, `attack-retaliation`; `registerInterception`, `registerBlowRider`) | `tests/overgrowth.test.ts`: the 2 cases port 4 retagged; the overgrowth cases of `tests/spellcraft.test.ts` | Nothing |
+| 5 | `tests/band2.test.ts` | Not ported: floors, spots and the John climb | `tests/band2.test.ts`: 5 `it.todo` (3 port 6, 2 port 7) | The whole file |
 
 Port 1 notes:
 
@@ -313,3 +326,79 @@ Port 4 notes:
 - Old rules that look like bugs and were ported as they are: listed under
   "Old rules ported as they are" in `src/systems/combat/README.md` and
   `src/systems/monsters/README.md`.
+
+Port 5 notes:
+
+- Four system folders: `martial`, `spellcraft`, `arcane`, `divine`. Each
+  README has a section "Design", written and committed before the code
+  (`81eb1d1`), that states the cut: what of the old engine is ported now,
+  what waits for step 3, and why the ported part is not rewritten then.
+- The cut, in one line each. Martial: the registries and the execution of a
+  technique for both sides, with the ledger read but never written.
+  Arcane: the whole grammar engine and the whole word registry; legality,
+  mastery, word skills and inscription wait. Spellcraft: the resolution of
+  a spell for both sides and the counterspells; the book's writing side
+  waits. Divine: the miracle and deity registries and the relation between
+  deities; favour and learning wait.
+- Imports: `martial` imports `attributes`, `combat`, `counters`, `items`,
+  `log`, `resources`, `skills`, `stats`, `statuses`. `spellcraft` imports
+  `attributes`, `clock`, `combat`, `log`, `mercy`, `monsters`, `resources`,
+  `skills`, `stats`, `statuses`. `arcane` imports `spellcraft`, `stats`,
+  `statuses`. `divine` imports `spellcraft`. `combat` imports none of the
+  four. No folder imports a folder that imports it.
+- No kernel change. Combat's extension points changed; the list is in
+  `src/systems/combat/README.md` "Port 5 design" and "Port 5: changed while
+  building". The combat slice is at version 2, with a migration step and a
+  fixture. `statuses` gained the request `statuses/surplus`.
+- A kind may refuse an entry with a reason. The reason is in the skip log
+  once per fight, entry and reason (`combat/rotation`). The old build passed
+  such an entry over silently.
+- `activeRotation` of port 4 was corrected to the old rule: ids the player
+  did not order follow by kind (techniques before spells), and an id of the
+  saved order that its kind no longer has is left out.
+- Content: `techniques` (29), `positions` (7), `fork_archetypes` (8),
+  `arcane_words` (40), `miracles` (30), `deities` (11), `deity_tags` (44).
+- The six monsters: `tests/monsterActions.test.ts` runs each in a seeded
+  fight. Every entry fires except three that the old data does not let
+  fire: Dirty Stab of `goblin_raid_leader` (nothing in its rotation exits to
+  `extended`), and Lunge and Pocket Sand of `hobgoblin` at its own pace
+  (each is asked after an entry for the same position that is always
+  ready). A hobgoblin given attack speed fires all five.
+- Measured on 2026-11-17, same machine: `docs/KERNEL.md` section 8. The
+  three budgets of ports 1 to 4 are unchanged. The new floor 6 run takes
+  11,500 to 12,400 ms alone.
+- Panel: the enemy slot shows the last action of the monster beside its
+  action bar for 3 seconds, in a box that is always there. Checked on the
+  dev server (port 5600, parchment theme). At 1280 pixels wide: a fight
+  led by `goblin_warchief`, one by `goblin_firetongue`, one by
+  `goblin_witch_doctor`; the rectangles of the status line, the bars, the
+  first and the last slot, the log and the action box were sampled every
+  50 ms and each had one value; no console error. At 375 pixels wide: the
+  `goblin_warchief` fight, whose group held a witch doctor (Gather, Heavy
+  Blow, Mud Poultice shown), same sampling, no horizontal scroll, no
+  console error. The fights led by the firetongue and by the witch doctor
+  were not seen at 375 pixels: the browser pane was hidden and the frame
+  loop did not run.
+- Open for port 6: nothing new from this port. `tests/band2.test.ts` holds
+  3 `it.todo` for the floors and spots of band 2. A witch doctor casts Mud
+  Poultice whenever kin stands, also when the kin is unhurt, and a
+  firetongue's cast is not dodged: the knockout of port 6 meets both on
+  floors 5 and 6.
+- Open for port 7: the John port can now meet the real floor 4 to 6
+  monsters. The offline budget: 8 hours at a floor 6 table cost 12 seconds,
+  of which about 5 are stat table builds; per-stat dependency tracking or a
+  cheaper monster stat block (kernel decision 4) is the place to look.
+  `tests/band2.test.ts` holds 2 `it.todo` for the John climb.
+- Open for step 3: every `it.todo` tagged `step 3` in `tests/martial.test.ts`,
+  `tests/goblins.test.ts`, `tests/spellcraft.test.ts`. Per system, the list
+  under "Waits for step 3" in its README. The points step 3 extends without
+  an edit elsewhere: `moveOf`, `entriesOf`, `exitOf`, `weaponStateGate` and
+  the ledger of `martial`; `resolveSpell` and the book of `spellcraft`;
+  `registerSchool('psionic')`; `registerRefuter`; `registerBlowRider`; the
+  events `spellcraft/cast` and `spellcraft/strike-landed`. `psionic_slime`
+  and every other monster with a psionic rotation swing plainly until the
+  psionic school is registered; each entry is in the skip log with the
+  reason.
+- Old rules that look like bugs and were ported as they are: listed under
+  "Old rules ported as they are" in the README of `martial` and of
+  `spellcraft`, and in `src/systems/divine/README.md` "Content".

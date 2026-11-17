@@ -252,6 +252,23 @@ An answer returns copies, never a reference into its slice.
   kills; budget 12,000 ms. Each budget test sets its own time limit above
   its budget, so the budget is what fails and not the test runner's default
   of 5,000 ms.
+- Spine port 5 (techniques, casts, workings), measured on 2026-11-17, same
+  machine. No fight, no condition: 918 ms alone, 1,348 ms inside the full
+  test run. With a bleed held: 3,650 ms alone, 5,718 ms inside the full
+  run. Floor 1 fights: 4,104 ms alone, 8,781 ms inside the full run, the
+  same 9,673 kills. The three budgets are unchanged. A fourth run in
+  `tests/combatBudget.test.ts`: 8 hours at the Tunnels of floor 6 (goblin,
+  hobgoblin, firetongue, witch doctor, groups of up to three) with a
+  character the probe makes fit for the floor: 11,500 to 12,400 ms alone,
+  11,700 ms inside the full run, for 11,231 kills, 1 defeat, 1,954 casts
+  and 1,615 techniques; budget 20,000 ms. A profile of that run puts about
+  5 of 13.8 seconds in building stat tables (`build` of the kernel cache,
+  `tableOf` and `computeBlock` of `stats`, `statBlockOf`): a group of up to
+  three monsters is three entities to build, and each condition landing on
+  either side rebuilds a block. The casts and the techniques are not in the
+  first 30 entries of the profile. Decision 4 (one cache for all stats)
+  left per-stat dependency tracking until a measurement asked for it; this
+  one does. It is listed for port 7 in `docs/SPINE.md`.
 
 ## 9. Content
 
