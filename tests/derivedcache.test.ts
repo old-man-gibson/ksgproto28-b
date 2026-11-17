@@ -19,7 +19,8 @@ import {
   vsVariant,
   wieldTagFact,
 } from '../src/systems/stats';
-import { emit, makeGame, patch, setMods } from './helpers';
+import { applyStatus, heldOf, STATUSES, type StatusesState } from '../src/systems/statuses';
+import { ask, emit, makeGame, patch, setMods, slice } from './helpers';
 
 /**
  * Port of the old tests/derivedcache.test.ts. Its intent: identical inputs
@@ -32,10 +33,9 @@ import { emit, makeGame, patch, setMods } from './helpers';
  * buff or a condition, the same modifiers come from the test-only probe.
  *
  * Left behind, for the ports of the systems they need:
- * - forged pieces (assembly), the festival bonus (prestige), cooked statuses
- *   and Cooking's food milestones over a cooked dish (statuses, cooking);
- * - "a decaying condition and the cache": the per-tick decay of a held
- *   condition and the rebuild count under a gale (statuses, weather);
+ * - forged pieces (assembly), the festival bonus (prestige), Cooking's food
+ *   milestones over a cooked dish (cooking);
+ * - the rebuild count under a gale on the open ridge (weather);
  * - the long fight of the sweep. The sweep here runs every request these
  *   systems accept instead.
  */
@@ -249,4 +249,112 @@ describe('derived-stats cache', () => {
     expect(Object.keys(state.skills.skills).length).toBeGreaterThan(3);
     expect(state.attributes.attrs.str.level).toBeGreaterThan(10);
   }, 60000);
+});
+
+// ---- conditions, from the statuses system (spine port 2) ----
+
+const dose = (kernel: Kernel, id: string, intensity: number, source = 'test', resist = false) =>
+  ask(kernel, applyStatus, { entity: PLAYER, app: { id, intensity }, source, resist });
+const holds = (kernel: Kernel, id: string) =>
+  heldOf(slice<StatusesState>(kernel, 'statuses')).some((h) => h.id === id);
+
+describe('conditions and the cache', () => {
+  it('invalidates on a condition and follows its decay', () => {
+    const kernel = makeGame();
+    // Any real condition with mods will do.
+    const withMods = Object.values(STATUSES).find((s) => s.mods?.length && s.duration);
+    expect(withMods).toBeTruthy();
+    const before = statBlockOf(kernel);
+    dose(kernel, withMods!.id, 2);
+    const afflicted = statBlockOf(kernel);
+    expect(afflicted).not.toBe(before);
+    matchesFresh(kernel);
+    sound(kernel);
+  });
+
+  it('invalidates on a cooked status and its grade, resistance past the cap included', () => {
+    // Steeped Broth: resPoison +0.25 per intensity, and a Divine broth is 4:
+    // 1.0 before the cap, which condition immunity reads.
+    const kernel = makeGame();
+    const before = { ...statBlockOf(kernel) };
+    dose(kernel, 'steeped', 1, 'a broth');
+    const fair = statBlockOf(kernel);
+    expect(fair.resPoison).toBeCloseTo(before.resPoison + 0.25);
+    matchesFresh(kernel);
+
+    dose(kernel, 'steeped', 4, 'a broth');
+    const divine = statBlockOf(kernel);
+    expect(divine).not.toBe(fair);
+    expect(divine.resPoison).toBeCloseTo(0.75); // the damage cap
+    matchesFresh(kernel);
+    // The immunity test sees the 1.0 under the cap.
+    expect(dose(kernel, 'poison', 1, 'a fang', true)).toBeNull();
+    sound(kernel);
+  });
+});
+
+/**
+ * A condition with `decayWithDuration` has a different effective intensity
+ * on every tick it is held. The source is touched for it only when the
+ * source reads that intensity (`sourceSignature` in the statuses engine, the
+ * old `statBlockIntensity`).
+ */
+describe('a decaying condition and the cache', () => {
+  const DECAYING = Object.values(STATUSES).filter((s) => s.decayWithDuration);
+  const reads = (s: (typeof DECAYING)[number]) =>
+    (s.mods?.length ?? 0) > 0 || !!s.damp || !!s.resFloor || !!s.attrCeiling || (s.ceilings?.length ?? 0) > 0;
+
+  /**
+   * Hold `id` on an idle character until it expires, checking for stale
+   * stats on every tick. Returns the number of distinct blocks served from
+   * the first tick after the dose to the end, and the ticks it ran.
+   */
+  function life(id: string, doses: number[]): { blocks: number; ticks: number } {
+    const kernel = makeGame({ seed: 21 });
+    for (const intensity of doses) dose(kernel, id, intensity);
+    expect(holds(kernel, id)).toBe(true);
+    let last = statBlockOf(kernel);
+    sound(kernel);
+    let blocks = 1;
+    let ticks = 0;
+    for (; holds(kernel, id) && ticks < 20_000; ticks++) {
+      kernel.tick();
+      const cur = statBlockOf(kernel);
+      expect(kernel.staleStats(), `${id} at tick ${ticks}`).toEqual([]);
+      if (cur !== last) {
+        blocks++;
+        last = cur;
+      }
+    }
+    expect(holds(kernel, id), `${id} ran out`).toBe(false);
+    return { blocks, ticks };
+  }
+
+  it('there are decaying conditions of both kinds to check', () => {
+    expect(DECAYING.some(reads)).toBe(true);
+    expect(DECAYING.some((s) => !reads(s))).toBe(true);
+  });
+
+  it('every decaying condition matches a fresh compute on every tick of its life', () => {
+    for (const def of DECAYING) life(def.id, [2, 1]);
+  });
+
+  it('a held tainted keeps its decay in the key: the block follows it down', () => {
+    const { blocks, ticks } = life('tainted', [2]);
+    expect(ticks).toBeGreaterThan(100);
+    // Its mods wane with its clock, so the block changes on most ticks of its life.
+    expect(blocks).toBeGreaterThan(ticks / 2);
+  });
+
+  it('a decaying condition with no field the stat block reads rebuilds nothing as it fades', () => {
+    for (const def of DECAYING.filter((s) => !reads(s))) {
+      const { blocks, ticks } = life(def.id, [2, 1]);
+      expect(ticks, def.id).toBeGreaterThan(100);
+      // The old build allowed two blocks: the dose, and the block after it
+      // was gone. Here the source returns nothing for it, so there is one.
+      expect(blocks, def.id).toBeLessThanOrEqual(2);
+    }
+  });
+
+  it.todo('under a gale on the open ridge: rebuilds on a minority of ticks (weather: the sky rules that dose buffeted)');
 });

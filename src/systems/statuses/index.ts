@@ -72,6 +72,7 @@ import {
   visibleStatuses,
   type BarDamage,
   type BearerEnv,
+  type ConditionResistance,
   type HeldList,
   type PoolHookIds,
   type StatusEventDetail,
@@ -306,6 +307,30 @@ function conditionResistanceOf(reads: Reads, entity: string, element: DamageType
   return (
     uncappedResistance(reads, RES_STAT_BY_TYPE[element], entity) +
     (ELEMENTAL_TYPES.has(element) ? statOf(reads, 'resElemental', entity) : 0)
+  );
+}
+
+/**
+ * How an entity stands against a condition, for a readout: the figures an
+ * application reads. The old `conditionResistance`. The applier's
+ * penetration is not counted.
+ */
+export function conditionReadout(
+  reads: Reads,
+  state: DeepReadonly<StatusesState>,
+  def: StatusDef,
+  entity: string = PLAYER,
+): ConditionResistance {
+  return engine.conditionResistance(
+    {
+      chance: () => false,
+      conditionResistance: (element) => conditionResistanceOf(reads, entity, element),
+      damageResistance: (type) => resistBlock(statBlockOf(reads, entity))[type],
+      contest: () => null,
+      outsideImmunity: (d) => outsideImmunity(reads, entity, d),
+    },
+    heldOf(state, entity),
+    def,
   );
 }
 

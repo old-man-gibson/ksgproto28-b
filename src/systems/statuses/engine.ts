@@ -552,17 +552,31 @@ function sourceReadsDecay(def: StatusDef): boolean {
   );
 }
 
+/** Whether the modifier source returns anything for a condition of this definition. */
+function sourceReads(def: StatusDef): boolean {
+  return (
+    sourceReadsDecay(def) ||
+    (def.overrideRes?.length ?? 0) > 0 ||
+    (def.blocksRegen?.length ?? 0) > 0 ||
+    !!def.costMult ||
+    !!def.negativeHeadroom ||
+    def.healCap !== undefined
+  );
+}
+
 /**
  * Everything of a held list that the modifier source reads, as one string.
- * `index.ts` touches the source when it changes. A decaying condition whose
- * effective intensity the source does not read (buffeted) adds nothing that
- * moves with its clock, so it rebuilds nothing as it fades. Port of the old
+ * `index.ts` touches the source when it changes. A condition the source
+ * returns nothing for (eyeless, buffeted) is not part of it, so it rebuilds
+ * nothing when it lands, fades or goes. Port of the old
  * `statBlockIntensity`, widened to the pool hooks, which are stats here.
  */
 export function sourceSignature(list: HeldList): string {
   let out = '';
   for (const held of list) {
     const def = STATUSES[held.id];
+    // A debt is read whatever the definition says: a successor inherits it.
+    if (!held.data?.debt && !(def && sourceReads(def))) continue;
     out += `${held.id}:${held.stacks}:${held.intensity}`;
     if (def?.decayWithDuration && sourceReadsDecay(def)) out += `:${effectiveIntensity(held)}`;
     if (held.data?.debt) out += `:d${held.data.debt}${held.debtPool ?? ''}`;

@@ -6,6 +6,7 @@
   import levels from '../levels';
   import resources, { setExerting } from '../resources';
   import skills, { type SkillNodeView } from '../skills';
+  import StatusList from '../statuses/StatusList.svelte';
   import attributes from './index';
 
   const attrs = $derived(viewOf(attributes));
@@ -85,6 +86,8 @@
     </Button>
     <span class="reason" role="status">{lastReason ?? ''}</span>
   </div>
+
+  <StatusList />
 
   <h2>Attributes</h2>
   <ul class="card list">
