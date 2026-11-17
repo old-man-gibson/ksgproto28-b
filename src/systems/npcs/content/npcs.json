@@ -1,0 +1,424 @@
+[
+  {
+    "id": "warden_of_the_foot",
+    "name": "The Warden of the Foot",
+    "icon": "🗝️",
+    "spotId": "ascent_foot",
+    "quests": [
+      "the_first_ascent"
+    ],
+    "desc": "Stands at the Foot of the Ascent. Gives the three starting quests: The First Ascent (floor 1, recommended first), then The Faces of Threshold and A Taste of Everything (town, optional).",
+    "dialogue": [
+      "Climb floor 1 first. What floor 0 gave you is enough for it.",
+      "The town can wait. Eight roads leave this door, one to each district gate, 1 s each.",
+      "A vendor charges you half again the price until you have spoken to them. The Faces of Threshold has you meet all eight trades.",
+      "The tower door is open now. Floor 1 has no gate; floor 2 needs 150 gold earned in total."
+    ]
+  },
+  {
+    "id": "master_smith",
+    "name": "Ferra Ostwind",
+    "icon": "⚒️",
+    "spotId": "the_forges",
+    "quests": [],
+    "shop": {
+      "name": "The Scrap Bin",
+      "lines": [
+        {
+          "kind": "material",
+          "id": "iron_scrap"
+        },
+        {
+          "kind": "material",
+          "id": "copper_ore"
+        },
+        {
+          "kind": "material",
+          "id": "tin_ore"
+        },
+        {
+          "kind": "material",
+          "id": "hardwood"
+        },
+        {
+          "kind": "material",
+          "id": "leather"
+        },
+        {
+          "kind": "material",
+          "id": "iron_ingot"
+        }
+      ]
+    },
+    "desc": "Smith at the Forges. Sells iron scrap, copper ore, tin ore, hardwood, leather and iron ingots at the Scrap Bin. The Forges hold the iron ingot recipe and an anvil.",
+    "dialogue": [
+      "I sell scrap, copper ore, tin ore, hardwood, leather and finished iron ingots.",
+      "The forge here smelts iron ingots, and the anvil forges them into weapons and armour. One ingot smelted counts for A Taste of Everything.",
+      "I sell no weapons. Pell Marrow at the Wrights’ Gate has the rack."
+    ]
+  },
+  {
+    "id": "head_chef",
+    "name": "Bryva Coll",
+    "icon": "👨‍🍳",
+    "spotId": "granary_kitchens",
+    "quests": [],
+    "shop": {
+      "name": "The Larder Door",
+      "lines": [
+        {
+          "kind": "material",
+          "id": "raw_meat"
+        },
+        {
+          "kind": "material",
+          "id": "river_fish"
+        },
+        {
+          "kind": "material",
+          "id": "wild_onion"
+        },
+        {
+          "kind": "material",
+          "id": "cave_mushroom"
+        },
+        {
+          "kind": "material",
+          "id": "rock_salt"
+        },
+        {
+          "kind": "material",
+          "id": "rough_flour"
+        },
+        {
+          "kind": "material",
+          "id": "bird_egg"
+        },
+        {
+          "kind": "material",
+          "id": "forest_berries"
+        },
+        {
+          "kind": "material",
+          "id": "wild_honey"
+        },
+        {
+          "kind": "material",
+          "id": "recipe_herb_rubbed_meat"
+        },
+        {
+          "kind": "material",
+          "id": "recipe_fish_onion_pot"
+        },
+        {
+          "kind": "material",
+          "id": "recipe_seared_stew"
+        },
+        {
+          "kind": "material",
+          "id": "recipe_braised_meat"
+        },
+        {
+          "kind": "material",
+          "id": "recipe_steeped_broth"
+        }
+      ]
+    },
+    "desc": "Cook in the Granary Kitchens. Sells raw ingredients at the Larder Door: meat, fish, onion, mushroom, salt, flour, egg, berries and honey, plus recipe cards for the stove. The kitchen holds a Cooking Stove.",
+    "dialogue": [
+      "Raw ingredients only at my door. Cooked dishes are on Orrin Tallow’s cart at the Granary Gate.",
+      "The stove is behind me. One dish cooked here counts for A Taste of Everything.",
+      "Scrub the Pans pays 10 gold per 20 s if you need coin.",
+      "Recipe cards at my door: Herb-Rubbed Meat, Fish and Onion Pot, Seared Stew, Braised Meat and Steeped Broth. Read one and the stove knows the dish.",
+      "Seared Stew, Braised Meat and Steeped Broth also need the meat or herb on the heat for a set time. The card says how long."
+    ]
+  },
+  {
+    "id": "row_alchemist",
+    "name": "Odri Venn",
+    "icon": "⚗️",
+    "spotId": "the_alembics",
+    "quests": [],
+    "shop": {
+      "name": "The Reagent Shelf",
+      "lines": [
+        {
+          "kind": "material",
+          "id": "spring_water"
+        },
+        {
+          "kind": "material",
+          "id": "pressed_oil"
+        },
+        {
+          "kind": "material",
+          "id": "grain_spirit"
+        },
+        {
+          "kind": "material",
+          "id": "common_herb"
+        },
+        {
+          "kind": "material",
+          "id": "mendroot"
+        },
+        {
+          "kind": "material",
+          "id": "bloodwort"
+        },
+        {
+          "kind": "material",
+          "id": "fixing_salt"
+        },
+        {
+          "kind": "material",
+          "id": "bone_ash"
+        },
+        {
+          "kind": "material",
+          "id": "brimstone"
+        }
+      ]
+    },
+    "desc": "Alchemist at the Alembics. Sells reagents at the Reagent Shelf: spring water, pressed oil, grain spirit, common herb, mendroot, bloodwort, fixing salt, bone ash and brimstone. The alchemy bench here brews by ordered sequence.",
+    "dialogue": [
+      "Reagents go into the alembic one at a time. The order you add them is the recipe.",
+      "The same reagents in a different order make a different brew.",
+      "I sell water, oil, spirit, herbs and salts. Brews you make yourself at the bench behind me; one bottled counts for A Taste of Everything."
+    ]
+  },
+  {
+    "id": "ward_outfitter",
+    "name": "Pell Marrow",
+    "icon": "🛡️",
+    "spotId": "wrights_gate",
+    "quests": [],
+    "shop": {
+      "name": "The Rack",
+      "lines": [
+        {
+          "kind": "item",
+          "id": "cloth_tunic"
+        },
+        {
+          "kind": "item",
+          "id": "leather_cap"
+        },
+        {
+          "kind": "item",
+          "id": "leather_vest"
+        },
+        {
+          "kind": "item",
+          "id": "leather_boots"
+        },
+        {
+          "kind": "item",
+          "id": "iron_gauntlets"
+        },
+        {
+          "kind": "item",
+          "id": "oak_club"
+        },
+        {
+          "kind": "item",
+          "id": "iron_dagger"
+        },
+        {
+          "kind": "item",
+          "id": "old_spear"
+        },
+        {
+          "kind": "item",
+          "id": "iron_sword"
+        },
+        {
+          "kind": "item",
+          "id": "hunting_bow"
+        },
+        {
+          "kind": "item",
+          "id": "oak_staff"
+        },
+        {
+          "kind": "item",
+          "id": "wooden_shield"
+        },
+        {
+          "kind": "item",
+          "id": "leather_jerkin",
+          "requires": [
+            {
+              "type": "stat",
+              "key": "boss:f1_toll_hall",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "kind": "item",
+          "id": "iron_breastplate",
+          "requires": [
+            {
+              "type": "stat",
+              "key": "boss:f1_toll_hall",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "kind": "item",
+          "id": "soldier_greaves",
+          "requires": [
+            {
+              "type": "stat",
+              "key": "boss:f1_toll_hall",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "kind": "item",
+          "id": "rapier",
+          "requires": [
+            {
+              "type": "stat",
+              "key": "boss:f1_toll_hall",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "kind": "item",
+          "id": "parrying_dagger",
+          "requires": [
+            {
+              "type": "stat",
+              "key": "boss:f1_toll_hall",
+              "value": 1
+            }
+          ]
+        }
+      ]
+    },
+    "desc": "Vendor at the Wrights’ Gate. The Rack sells cloth and leather armour, iron gauntlets, a wooden shield, and starter weapons. Four more lines (leather jerkin, iron breastplate, soldier greaves, rapier) unlock once the Toll Hall keeper is defeated.",
+    "dialogue": [
+      "Plain armour and starter weapons. Prices come off the item’s value, plus half again until we have spoken.",
+      "Armour: cloth tunic, leather cap, vest and boots, iron gauntlets, wooden shield. Weapons: oak club, iron dagger, old spear, iron sword, hunting bow, oak staff.",
+      "Defeat the keeper of the Toll Hall and four more lines come out: leather jerkin, iron breastplate, soldier greaves, rapier."
+    ]
+  },
+  {
+    "id": "row_apothecary",
+    "name": "Sister Nim",
+    "icon": "🩹",
+    "spotId": "alembic_row_gate",
+    "quests": [],
+    "shop": {
+      "name": "The Dispensary Hatch",
+      "lines": [
+        {
+          "kind": "material",
+          "id": "healing_salve"
+        },
+        {
+          "kind": "material",
+          "id": "mushroom_broth"
+        },
+        {
+          "kind": "material",
+          "id": "mendroot"
+        },
+        {
+          "kind": "material",
+          "id": "spring_water"
+        }
+      ]
+    },
+    "desc": "Vendor at the Retort Gate. The Dispensary Hatch sells healing salve, mushroom broth, mendroot and spring water.",
+    "dialogue": [
+      "I sell healing salve, mushroom broth, mendroot and spring water.",
+      "The Alembics are 1 s up the row. The alchemy bench and Odri Venn’s reagent shelf are there.",
+      "Buy before the climb. The only vendor in the tower is the quartermaster on floor 2."
+    ]
+  },
+  {
+    "id": "granary_provisioner",
+    "name": "Orrin Tallow",
+    "icon": "🧺",
+    "spotId": "granary_gate",
+    "quests": [],
+    "shop": {
+      "name": "The Cart",
+      "lines": [
+        {
+          "kind": "material",
+          "id": "travelers_ration"
+        },
+        {
+          "kind": "material",
+          "id": "rustic_loaf"
+        },
+        {
+          "kind": "material",
+          "id": "charred_roots"
+        },
+        {
+          "kind": "material",
+          "id": "skewered_fish"
+        },
+        {
+          "kind": "material",
+          "id": "hearty_stew"
+        },
+        {
+          "kind": "material",
+          "id": "hearty_sandwich"
+        },
+        {
+          "kind": "material",
+          "id": "seared_steak"
+        }
+      ]
+    },
+    "desc": "Vendor at the Granary Gate. The Cart sells cooked food: traveler’s ration, rustic loaf, charred roots, skewered fish, hearty stew, hearty sandwich and seared steak.",
+    "dialogue": [
+      "Rations, loaves, roots, fish, stew, sandwiches and steak. All cooked, all ready to eat.",
+      "Bryva Coll sells the raw ingredients in the Granary Kitchens, 1 s from here. Her stove cooks what my cart sells.",
+      "A stranger pays half again the price. Speaking to me once removes that."
+    ]
+  },
+  {
+    "id": "hall_quartermaster",
+    "name": "Quartermaster Pell",
+    "icon": "📦",
+    "spotId": "f2_stores",
+    "quests": [],
+    "shop": {
+      "name": "The Cage",
+      "lines": [
+        {
+          "kind": "material",
+          "id": "healing_salve"
+        },
+        {
+          "kind": "material",
+          "id": "mushroom_broth"
+        },
+        {
+          "kind": "material",
+          "id": "travelers_ration"
+        },
+        {
+          "kind": "material",
+          "id": "rustic_loaf"
+        }
+      ]
+    },
+    "desc": "Vendor in the Quartermaster’s Cage on floor 2. Sells healing salve, mushroom broth, traveler’s ration and rustic loaf.",
+    "dialogue": [
+      "Salve, broth, rations, bread. Tower prices.",
+      "The hall runs four stretches. The break room is behind the third, with chairs."
+    ]
+  }
+]

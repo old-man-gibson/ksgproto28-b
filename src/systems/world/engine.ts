@@ -708,6 +708,39 @@ export function retreatToSafety(ctx: W, reason: string, knockedOut: boolean): st
   return from;
 }
 
+/**
+ * Stand the player at a spot with no road walked: the activity, the journey
+ * and the plan stop. The skip of floor 0 (old `skipTutorial`): the spot is
+ * discovered and noted as a haven, the mapped region is revealed and
+ * `world/arrived` is sent. The start of a run (old `prestigeNow`,
+ * `newRun: true`): the spot is the only one discovered, the region is
+ * revealed, nothing is noted and no arrival is sent.
+ */
+export function placeAt(ctx: W, spotId: string, newRun: boolean): boolean {
+  const state = ctx.state;
+  if (!SPOTS[spotId]) return false;
+  const from = state.spot;
+  const hadActivity = state.activity;
+  if (combatOf(ctx).hunting) ctx.request(stopHuntLoop, undefined);
+  state.activity = null;
+  state.travel = null;
+  state.travelPlan = [];
+  state.travelIntent = null;
+  if (newRun) {
+    state.spot = spotId;
+    state.discovered = [spotId];
+  } else if (state.spot !== spotId) {
+    state.spot = spotId;
+    discover(ctx, spotId);
+    noteSafeSpot(ctx, spotId);
+  }
+  revealMapped(ctx);
+  syncPace(ctx);
+  if (hadActivity) ctx.emit(activityChanged, { spot: spotId, activity: null, kind: null });
+  if (!newRun) ctx.emit(arrived, { spot: spotId, from, ambushed: false });
+  return true;
+}
+
 /** Recovery is over. */
 export function recover(ctx: W): void {
   if (!ctx.state.recovering) return;

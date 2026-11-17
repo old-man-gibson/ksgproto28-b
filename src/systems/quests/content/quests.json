@@ -1,0 +1,21 @@
+[
+  {
+    "id": "the_first_ascent",
+    "name": "The First Ascent",
+    "giver": "warden_of_the_foot",
+    "objectives": [
+      {
+        "type": "stat",
+        "key": "boss:f1_toll_hall",
+        "value": 1,
+        "desc": "Recover the toll stamp from the collector"
+      }
+    ],
+    "rewards": {
+      "gold": 350,
+      "favor": 1,
+      "levelXp": 100
+    },
+    "desc": "Take the toll stamp from the Toll Collector on floor 1. Clear the Vermin Hall, find the clerk’s daybook in the Archive and the office key at reception, then visit the offices in the order the daybook gives. Reward: 350 gold, 100 level XP, 1 favor."
+  }
+]

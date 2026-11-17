@@ -72,7 +72,8 @@ describe('system folders', () => {
 
   it('the kernel-side files of a system do not import Svelte or the UI', () => {
     // Files reachable from index.ts run in the worker and in node.
-    const uiSide = (f: string) => f.endsWith('/panel.ts') || f === 'src/systems/panels.ts';
+    const uiSide = (f: string) =>
+      f.endsWith('/panel.ts') || f.endsWith('/overlay.ts') || f === 'src/systems/panels.ts' || f === 'src/systems/overlays.ts';
     for (const file of listFiles('src/systems').filter((f) => f.endsWith('.ts') && !uiSide(f))) {
       const source = stripComments(readText(file));
       expect(source, `${file} imports a Svelte file`).not.toMatch(/from\s+'[^']*\.svelte(\.ts)?'/);
@@ -88,7 +89,7 @@ describe('system folders', () => {
     for (const file of outside) {
       const source = stripComments(readText(file));
       for (const match of source.matchAll(/from\s+'([^']*systems\/[^']+)'/g)) {
-        expect(match[1], `${file} imports ${match[1]}`).toMatch(/systems\/(panels|index|[a-z0-9-]+)$/);
+        expect(match[1], `${file} imports ${match[1]}`).toMatch(/systems\/(panels|overlays|index|[a-z0-9-]+)$/);
       }
     }
   });

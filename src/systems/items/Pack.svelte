@@ -1,7 +1,7 @@
 <script lang="ts">
   import Button from '../../ui/components/Button.svelte';
   import { send, viewOf } from '../../ui/game.svelte';
-  import items, { arrangeInventory, equipItem, SORT_LABELS, SORT_MODES, type SlotId, type SortMode } from './index';
+  import items, { arrangeInventory, equipItem, sellItems, SORT_LABELS, SORT_MODES, type SlotId, type SortMode } from './index';
   import ItemFacts from './ItemFacts.svelte';
 
   // The pack: stacks of identical items, the facts of the selected one, where
@@ -20,6 +20,11 @@
 
   function equip(uid: number, slot: SlotId) {
     const result = send(equipItem({ uid, slot }));
+    lastReason = result.ok ? null : result.reason;
+  }
+
+  function sell(uids: number[]) {
+    const result = send(sellItems({ uids }));
     lastReason = result.ok ? null : result.reason;
   }
 </script>
@@ -67,6 +72,12 @@
     {@const item = selected.item}
     <div class="title">{item.icon} {item.name}</div>
     <ItemFacts facts={item.facts} />
+    <div class="option">
+      <Button onclick={() => sell([item.uid])}>Sell 1: {item.sell} g</Button>
+      {#if selected.items.length > 1}
+        <Button onclick={() => sell(selected.items.map((i) => i.uid))}>Sell {selected.items.length}</Button>
+      {/if}
+    </div>
     {#if !item.canEquip}
       <div class="warn">Requirements not met: {item.requires}</div>
     {/if}

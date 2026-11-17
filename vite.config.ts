@@ -14,17 +14,19 @@ export default defineConfig({
   preview: { port: 5601, strictPort: true },
   worker: { format: 'es' },
   test: {
-    // Two projects. `unit` is every test file but the offline budgets, in
-    // parallel workers. `budget` and `budget-world` are one budget file each: their cases
-    // measure wall-clock time, so they do not share the processor with other
-    // test files. `npm test` runs one project after the other.
+    // Four projects. `unit` is every test file but the offline budgets and
+    // the John climbs, in parallel workers. `budget` and `budget-world` are one
+    // budget file each: their cases measure wall-clock time, so they do not
+    // share the processor with other test files. `john` runs the headless
+    // climbs, whose load made timed unit cases time out when they ran in
+    // parallel. `npm test` runs one project after the other.
     projects: [
       {
         extends: true,
         test: {
           name: 'unit',
           include: ['tests/**/*.test.ts'],
-          exclude: ['tests/budgets.test.ts', 'tests/budgetsWorld.test.ts'],
+          exclude: ['tests/budgets.test.ts', 'tests/budgetsWorld.test.ts', 'tests/john.test.ts'],
           environment: 'node',
         },
       },
@@ -41,6 +43,14 @@ export default defineConfig({
         test: {
           name: 'budget-world',
           include: ['tests/budgetsWorld.test.ts'],
+          environment: 'node',
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: 'john',
+          include: ['tests/john.test.ts'],
           environment: 'node',
         },
       },

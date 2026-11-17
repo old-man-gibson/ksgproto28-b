@@ -1,5 +1,6 @@
 <script lang="ts">
   import { TPS } from '../kernel';
+  import { overlays } from '../systems/overlays';
   import { panels } from '../systems/panels';
   import Button from './components/Button.svelte';
   import DevLog from './DevLog.svelte';
@@ -70,6 +71,11 @@
       <div class="notice" role="status">{backupNote}</div>
     {/if}
 
+    {#each overlays.filter((o) => o.place === 'banner') as overlay (overlay.systemId)}
+      {@const Banner = overlay.component}
+      <Banner />
+    {/each}
+
     {#if active}
       {@const Panel = active.component}
       <Panel />
@@ -93,6 +99,11 @@
       </div>
     </div>
   {/if}
+
+  {#each overlays.filter((o) => o.place === 'modal') as overlay (overlay.systemId)}
+    {@const Modal = overlay.component}
+    <Modal />
+  {/each}
 
   {#if DEV}
     <DevLog />

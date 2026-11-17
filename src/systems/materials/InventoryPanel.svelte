@@ -1,9 +1,10 @@
 <script lang="ts">
-  import { viewOf } from '../../ui/game.svelte';
+  import Button from '../../ui/components/Button.svelte';
+  import { send, viewOf } from '../../ui/game.svelte';
   import gold from '../gold';
   import items from '../items';
   import Pack from '../items/Pack.svelte';
-  import materials from './index';
+  import materials, { sellStackable } from './index';
 
   // The inventory panel: gold, the pack (a component of the items system),
   // materials and the rune pile.
@@ -31,12 +32,20 @@
         <div class="row">
           <span class="name">{material.icon} {material.name}</span>
           <span class="num">×{whole(material.qty)}</span>
+          {#if material.grades.length === 0}
+            <Button onclick={() => send(sellStackable({ id: material.id, quality: 'c', qty: material.qty }))}>
+              Sell all: {whole(material.sell * material.qty)} g
+            </Button>
+          {/if}
         </div>
-        {#if material.grades.length > 0}
-          <div class="dim clip">
-            {#each material.grades as grade, i (grade.quality)}{i > 0 ? ', ' : ''}{grade.name} ×{grade.qty}{/each}
+        {#each material.grades as grade (grade.quality)}
+          <div class="row dim">
+            <span class="name">{grade.name} ×{grade.qty}</span>
+            <Button onclick={() => send(sellStackable({ id: material.id, quality: grade.quality, qty: grade.qty }))}>
+              Sell: {whole(grade.sell * grade.qty)} g
+            </Button>
           </div>
-        {/if}
+        {/each}
       </li>
     {:else}
       <li class="dim">None.</li>
@@ -104,8 +113,7 @@
     font-size: var(--text-lg);
   }
 
-  .name,
-  .clip {
+  .name {
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;

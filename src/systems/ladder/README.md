@@ -47,7 +47,7 @@ the ladder does not answer on it (floor 0).
 | Event | Direction | Does |
 |---|---|---|
 | `combat/kill`, `combat/fight-won` | heard | Check the clears |
-| `ladder/check` | heard | Check the clears. `world` sends it on every arrival; quests (port 7) send it on a turn-in |
+| `ladder/check` | heard | Check the clears. `world` sends it on every arrival. The old turn-in did not check the clears, and quests here do not send it |
 | `ladder/floor-cleared` `{ floor }` | emitted | A floor paid its clear this run |
 
 A clear, once per run and floor: the counter `level:floor:<id>` is set, the
@@ -62,10 +62,10 @@ None: this system has no command and no request.
 
 ## Left behind
 
-- `bandPassed`: no band is passed until prestige registers its read with
-  `registerBandPass` (port 7).
-- `floorReached` does not count floors a prestiged run has seen
-  (`prestige.floorsSeen`, port 7).
+- Spine port 7: `prestige` registers the band pass read
+  (`registerBandPass`). `floorReached` also counts a floor an earlier run
+  reached: the counter `legacy:floor_seen:<floor>` (`floorSeenKey`), which
+  prestige sets at the start of every run from its `floorsSeen` list.
 - The festival verdicts of the old ride gate (`shut`, `closed`, `forfeit`,
   `royale`) and `festivalLocked`: step 4.
 - `clearLapsed` (ward windows): step 4.

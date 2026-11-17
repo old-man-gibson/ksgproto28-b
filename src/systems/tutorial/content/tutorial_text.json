@@ -1,0 +1,26 @@
+[
+  {
+    "id": "tutorial_armed",
+    "text": "🎒 Taken from the rack and equipped: {list}."
+  },
+  {
+    "id": "tutorial_unarmed",
+    "text": "👊 Nothing taken from the rack. Fighting unarmed."
+  },
+  {
+    "id": "tutorial_stance",
+    "text": "🥋 Stance set: {icon} {name}. Change it on the Combat tab at any time."
+  },
+  {
+    "id": "tutorial_spell",
+    "text": "📖 \"{word}\" written into your grimoire and prepared. Intelligence 2: mana pool 2."
+  },
+  {
+    "id": "tutorial_skipped",
+    "text": "⏭️ Tutorial skipped. You stand at {icon} {name}."
+  },
+  {
+    "id": "tutorial_done",
+    "text": "✅ Tutorial complete. Its panels are on the Quests tab under Guide. Next: The First Ascent (floor 1), from the Warden of the Foot."
+  }
+]

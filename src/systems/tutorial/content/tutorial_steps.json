@@ -1,0 +1,59 @@
+[
+  {
+    "id": "arm",
+    "title": "Take a weapon",
+    "spot": "f0_cell",
+    "choice": "weapon",
+    "desc": "Take a weapon from the rack; it is equipped at once. Sword, dagger and hammer leave the off hand free for the shield; the spear needs both hands."
+  },
+  {
+    "id": "stance",
+    "title": "Pick a stance",
+    "spot": "f0_cell",
+    "choice": "stance",
+    "desc": "A stance adds modifiers to your fighting while it is held. Each stance’s modifiers are listed under the buttons. Neutral has none."
+  },
+  {
+    "id": "cellblock",
+    "title": "Leave the cell",
+    "spot": "f0_cellblock",
+    "desc": "Travel is done on the map. Select the marked ❓ pin in the corridor to open its card, then select the pin again to walk there; the road takes 2 s."
+  },
+  {
+    "id": "fight",
+    "title": "Fight the Cell Slime",
+    "spot": "f0_cellblock",
+    "desc": "Start ⚔️ Fight the Cell Slime. You swing each time your action bar fills; the slime hits for exactly 1."
+  },
+  {
+    "id": "field",
+    "title": "Go to the Field",
+    "spot": "f0_field",
+    "desc": "Kills pay XP and roll the monster’s loot; items and materials go to the Equipment tab. Select the marked ❓ pin in the yard, then select it again to walk there (3 s)."
+  },
+  {
+    "id": "spell",
+    "title": "Pick a spell",
+    "spot": "f0_field",
+    "choice": "spell",
+    "desc": "Pick a one-word arcane spell; it costs 2 mana. Taking it raises Intelligence to 2, and mana is 1 per point of Intelligence."
+  },
+  {
+    "id": "cast",
+    "title": "Cast it",
+    "spot": "f0_field",
+    "desc": "Start ⚔️ Fight in the Field and win once. A prepared spell casts itself on a swing when you have the mana."
+  },
+  {
+    "id": "gate",
+    "title": "Go to the Gate",
+    "spot": "f0_gate",
+    "desc": "Select the marked ❓ pin on the gate, then select it again to walk there (3 s). Past the Gate is Threshold, the city at the Foot of the Ascent."
+  },
+  {
+    "id": "leave",
+    "title": "Leave floor 0",
+    "spot": "ascent_foot",
+    "desc": "Select → Threshold beside the Gate (3 s); the road is one-way and floor 0 closes behind you. The Warden of the Foot gives the next step, the floor 1 quest The First Ascent."
+  }
+]

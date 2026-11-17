@@ -1,0 +1,10 @@
+[
+  {
+    "id": "common_times",
+    "text": " ×{qty}"
+  },
+  {
+    "id": "shops_bought",
+    "text": "Bought {icon} {name}{qty} for {total} gold."
+  }
+]

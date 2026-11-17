@@ -1,0 +1,6 @@
+[
+  {
+    "id": "prestige_boon_bought",
+    "text": "♻️ {icon} {name} rank {rank}: {cost} point{plural} spent."
+  }
+]

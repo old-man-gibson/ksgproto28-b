@@ -10,5 +10,13 @@
   {
     "id": "discarded_units",
     "text": "Discarded {units} {noun}{plural}."
+  },
+  {
+    "id": "sold_stack",
+    "text": "Sold {icon} {grade}{name} ×{qty} for {price} gold."
+  },
+  {
+    "id": "sold_units",
+    "text": "Sold {units} {noun}{plural} for {total} gold."
   }
 ]

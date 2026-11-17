@@ -197,7 +197,34 @@ export function createKernel(options: KernelOptions): Kernel {
       touch: (sourceId, entity) => derived.touch(sourceId, entity),
       dropEntity: (entity) => derived.dropEntity(entity),
       skip: (action, reason) => logSkip(id, action, reason),
+      endRun: () => {
+        runEnding = true;
+      },
     });
+  }
+
+  // A new run (decision 30). Asked for with `ctx.endRun()`, done after the
+  // command or tick step that asked has drained its events.
+  let runEnding = false;
+  function settleRun(): void {
+    while (runEnding) {
+      runEnding = false;
+      const before = state.slices;
+      const slices: Record<string, unknown> = {};
+      for (const system of systems) slices[system.id] = system.initial();
+      state = { kernel: state.kernel, slices };
+      queue.length = 0;
+      derived.touchAll();
+      const previous = <T>(system: SystemDef<T, any>): DeepReadonly<T> => {
+        if (!(system.id in before)) throw new Error(`system "${system.id}" is not part of this kernel`);
+        return before[system.id] as DeepReadonly<T>;
+      };
+      for (const system of systems) {
+        if (!system.newRun) continue;
+        system.newRun(contexts.get(system.id)!, previous);
+        drain();
+      }
+    }
   }
 
   // Registration. Everything below is read from the declarations.
@@ -257,6 +284,7 @@ export function createKernel(options: KernelOptions): Kernel {
     for (const system of ticking) {
       system.tick!(contexts.get(system.id)!);
       drain();
+      if (runEnding) settleRun();
     }
     state.kernel.tick++;
   }
@@ -300,6 +328,7 @@ export function createKernel(options: KernelOptions): Kernel {
   function replaceState(next: KernelState): void {
     state = next;
     queue.length = 0;
+    runEnding = false;
     derived.touchAll();
   }
 
@@ -321,6 +350,7 @@ export function createKernel(options: KernelOptions): Kernel {
       const result = entry.handle(contexts.get(entry.system.id)!, command.payload);
       if (!result.ok) logSkip(entry.system.id, command.type, result.reason);
       drain();
+      if (runEnding) settleRun();
       return result;
     },
 

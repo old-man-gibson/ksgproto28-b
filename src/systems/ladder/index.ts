@@ -212,11 +212,18 @@ export function hubStatus(r: R, band: BandDef): Exclude<RungStatus, 'cleared'> {
 }
 
 /**
- * The door of the rung was reached this run. The old read also counted floors
- * a prestiged run had seen (`prestige.floorsSeen`): port 7.
+ * The counter that says an earlier run reached a floor. The legacy block
+ * keeps the list (old `prestige.floorsSeen`); prestige sets one counter per
+ * floor at the start of every run.
+ */
+export const floorSeenKey = (floorId: string): string => `legacy:floor_seen:${floorId}`;
+
+/**
+ * The door of the rung was reached this run, or in a run that ended in a
+ * prestige. The old `floorReached`.
  */
 export function floorReached(r: R, floor: FloorDef): boolean {
-  return rungStatus(r, floor) !== 'sealed';
+  return r.counter(floorSeenKey(floor.id)) >= 1 || rungStatus(r, floor) !== 'sealed';
 }
 
 export function bandKnown(r: R, band: BandDef): boolean {

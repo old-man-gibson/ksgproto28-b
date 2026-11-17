@@ -52,6 +52,13 @@ For `knockout`, which needs the outcome inside its tick or handler:
 `world/start-activity`, `world/go`, `world/ride`, `world/retreat`,
 `world/recover`, `world/stay`.
 
+For `tutorial` and `prestige` (spine port 7): `world/place { spot, newRun }`
+(`placeAt`): stand the player at a spot with no road walked. Without
+`newRun` (the skip of floor 0): the spot is discovered, noted as a haven,
+the region revealed, and `world/arrived` sent. With `newRun` (the start of a
+run): the spot is the only one discovered, the region revealed, no haven
+noted, no arrival sent.
+
 ## Requests made
 
 `combat/set-hunt`, `combat/stop-hunt`, `combat/start-forced`,

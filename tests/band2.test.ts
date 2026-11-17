@@ -2,12 +2,13 @@
  * Port of the old `tests/band2.test.ts` (5 cases): band 2, floors 4 to 6,
  * prestige at the warchief, floor 0 behind every prestiged run.
  *
- * The structure cases read the floor and spot registries. The climb cases run
- * the John driver (`tests/john.ts` of the old repository), which arrives with
- * port 7: each is an `it.todo` under its old `describe` and name.
+ * The structure cases read the floor and spot registries. The two climb cases
+ * ("John through band 2") run the John driver and are in
+ * `tests/john.test.ts` since spine port 7.
  */
 import { describe, expect, it } from 'vitest';
 import { FLOORS } from '../src/systems/ladder';
+import { PRESTIGE_UNLOCK } from '../src/systems/prestige';
 import { SPOTS } from '../src/systems/world';
 
 const BAND_TWO = ['ascent_f4', 'ascent_f5', 'ascent_f6'];
@@ -15,10 +16,9 @@ const BOSS_ROOMS = new Set(['f4_ravine_floor', 'f5_back_door', 'f6_great_hall'])
 
 describe('band 2 structure', () => {
   it('prestige opens on the floor 6 clear: the warchief', () => {
-    // The old case was `expect(PRESTIGE_UNLOCK).toEqual(FLOORS.ascent_f6.clear)`.
-    // The prestige registry (`PRESTIGE_UNLOCK`) is port 7. The half that exists
-    // here: the clear of floor 6 is the kill of the warchief in the Great
-    // Hall, and the hall holds it as a `once` line.
+    expect(PRESTIGE_UNLOCK).toEqual(FLOORS.ascent_f6.clear);
+    // The clear of floor 6 is the kill of the warchief in the Great Hall, and
+    // the hall holds it as a `once` line.
     expect(FLOORS.ascent_f6.clear).toEqual([{ type: 'stat', key: 'slain:f6_great_hall:goblin_warchief', value: 1 }]);
     const lines = SPOTS.f6_great_hall.encounters ?? [];
     expect(lines.length).toBeGreaterThan(0);
@@ -57,8 +57,3 @@ describe('band 2 structure', () => {
   });
 });
 
-describe('John through band 2', () => {
-  it.todo('clears floor 6 inside 45 minutes of play (port 7: the John port)');
-
-  it.todo('knocks John down on the way, not out of the game (port 7: the John port)');
-});

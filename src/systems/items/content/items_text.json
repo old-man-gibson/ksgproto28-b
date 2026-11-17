@@ -26,5 +26,17 @@
   {
     "id": "times",
     "text": " ×{qty}"
+  },
+  {
+    "id": "sold_one",
+    "text": "Sold {item} for {total} gold."
+  },
+  {
+    "id": "sold_uniform",
+    "text": "Sold {item} ×{count} for {total} gold."
+  },
+  {
+    "id": "sold_mixed",
+    "text": "Sold {count} items for {total} gold."
   }
 ]

@@ -97,9 +97,10 @@ Sent: `resources/defeat`, `counters/bump`, `raise`, `set`, `clear`,
 - `f11_wall` and the festival floors are never targets. The wall id is kept
   in `NEVER_TARGET_SPOTS`; the festival check arrives with the festival.
 - A bench run or a performance ends the return: with those systems.
-- A prestige ends the return: port 7.
-- The defeat summary dialog: the view carries `defeatDialogDue`; no panel
-  opens it yet.
+- Spine port 7: a prestige ends the return, because the new run starts
+  this slice new (kernel decision 30). The defeat summary is the overlay
+  `DefeatDialog.svelte` (`overlay.ts`): it opens once per lost fight when
+  `defeatDialogDue` holds, and shows the combat system's `lastFight` ledger.
 
 ## Differences from the old build
 

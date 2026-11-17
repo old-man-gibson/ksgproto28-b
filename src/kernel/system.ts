@@ -196,7 +196,16 @@ export interface Ctx<S> extends DerivedReads {
   dropEntity(entity: string): void;
   /** Record an action that did not happen, outside a command. */
   skip(action: string, reason: string): void;
+  /**
+   * End the run. After the current command or tick step has drained its
+   * events, every slice starts new and each system's `newRun` runs. See
+   * docs/KERNEL.md decision 30.
+   */
+  endRun(): void;
 }
+
+/** Reads a slice as the run that just ended left it. Given to `newRun`. */
+export type PreviousRead = <T>(system: SystemDef<T, any>) => DeepReadonly<T>;
 
 // ---- the declaration ----
 
@@ -230,6 +239,12 @@ export interface SystemDef<S, V = unknown> {
   view?(ctx: ViewCtx<S>): V;
   /** Tick order: lower runs first. Ties run in id order. Default 0. */
   order?: number;
+  /**
+   * Runs after a new run has replaced every slice with `initial()`, in system
+   * order. `previous` reads any slice as the old run left it. A system copies
+   * here what it carries across a run.
+   */
+  newRun?(ctx: Ctx<S>, previous: PreviousRead): void;
 }
 
 const SYSTEM_ID = /^[a-z][a-z0-9-]*$/;

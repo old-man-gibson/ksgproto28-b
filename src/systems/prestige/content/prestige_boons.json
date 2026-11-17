@@ -1,0 +1,225 @@
+[
+  {
+    "id": "talent",
+    "name": "Talent",
+    "icon": "✨",
+    "cost": [
+      0,
+      2,
+      3,
+      4,
+      5
+    ],
+    "effect": {
+      "kind": "talent",
+      "rate": 0.0001
+    },
+    "auto": true,
+    "desc": "Every skill’s effects grow by 0.01% × rank × the skill’s highest level at any past prestige × prestiges performed."
+  },
+  {
+    "id": "endowment",
+    "name": "Endowment",
+    "icon": "💪",
+    "cost": [
+      0,
+      2,
+      3,
+      4,
+      5
+    ],
+    "effect": {
+      "kind": "endowment",
+      "rate": 0.0001
+    },
+    "auto": true,
+    "desc": "Every attribute grows by 0.01% × rank × its highest trained level at any past prestige × prestiges performed."
+  },
+  {
+    "id": "provisions",
+    "name": "Provisions",
+    "icon": "💰",
+    "cost": [
+      1,
+      1,
+      2,
+      2,
+      3
+    ],
+    "effect": {
+      "kind": "startGold",
+      "amount": 50
+    },
+    "desc": "+50 gold at the start of every run, per rank."
+  },
+  {
+    "id": "grimoire_page",
+    "name": "Grimoire page",
+    "icon": "📕",
+    "cost": [
+      2,
+      3
+    ],
+    "effect": {
+      "kind": "preparedPages",
+      "pages": 1
+    },
+    "desc": "+1 prepared spell, per rank."
+  },
+  {
+    "id": "technique_slot",
+    "name": "Technique slot",
+    "icon": "🥋",
+    "cost": [
+      2,
+      3
+    ],
+    "effect": {
+      "kind": "techniqueSlots",
+      "slots": 1
+    },
+    "desc": "+1 technique slot, per rank."
+  },
+  {
+    "id": "chronosense_ceiling",
+    "name": "Chronosense ceiling",
+    "icon": "🕰️",
+    "cost": [
+      1,
+      2,
+      2,
+      3
+    ],
+    "effect": {
+      "kind": "skillCap",
+      "skill": "chronosense",
+      "by": 5
+    },
+    "desc": "Chronosense can reach 5 levels higher, per rank."
+  },
+  {
+    "id": "weathersense_ceiling",
+    "name": "Weathersense ceiling",
+    "icon": "🌦️",
+    "cost": [
+      1,
+      2,
+      2,
+      3
+    ],
+    "effect": {
+      "kind": "skillCap",
+      "skill": "weathersense",
+      "by": 5
+    },
+    "desc": "Weathersense can reach 5 levels higher, per rank."
+  },
+  {
+    "id": "darkvision_ceiling",
+    "name": "Darkvision ceiling",
+    "icon": "🌑",
+    "cost": [
+      1,
+      2,
+      3
+    ],
+    "effect": {
+      "kind": "skillCap",
+      "skill": "darkvision",
+      "by": 10
+    },
+    "desc": "Darkvision can reach 10 levels higher, per rank."
+  },
+  {
+    "id": "foresight",
+    "name": "Foresight",
+    "icon": "🔭",
+    "cost": [
+      3
+    ],
+    "effect": {
+      "kind": "foresight"
+    },
+    "desc": "Locked skills and upcoming milestones are shown with their requirements at any progress. Without it they appear only at 90% of the requirement."
+  },
+  {
+    "id": "wayfinding",
+    "name": "Wayfinding",
+    "icon": "🧭",
+    "cost": [
+      2
+    ],
+    "effect": {
+      "kind": "wayfinding"
+    },
+    "desc": "Go buttons outside town: quest givers and objectives anywhere on the map, and a Trains at list on each skill and attribute with a button for every discovered place that trains it (that activity starts on arrival). Without it: town places have Go buttons on the Quests tab, and places you have worked at have a station in the Stations row above the map."
+  },
+  {
+    "id": "head_start",
+    "name": "Head Start",
+    "icon": "⏫",
+    "cost": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "effect": {
+      "kind": "startLevel",
+      "levels": 1
+    },
+    "desc": "Every run starts 1 character level higher, per rank: +1 to every attribute per level. Never lowers a level already reached."
+  },
+  {
+    "id": "city_key",
+    "name": "Key to the City",
+    "icon": "🗝️",
+    "cost": [
+      3
+    ],
+    "effect": {
+      "kind": "key"
+    },
+    "desc": "Opens band 3, the city (floors 7 to 10), on this run and every later one. Floors 1 to 6 must still be cleared first, or passed."
+  },
+  {
+    "id": "pass_lower",
+    "name": "Pass: the Lower Reaches",
+    "icon": "🎫",
+    "cost": [
+      10
+    ],
+    "effect": {
+      "kind": "bandPass",
+      "bandId": "ascent_lower"
+    },
+    "desc": "Floors 1 to 3 count as cleared on this run and every later one, so the climb starts at floor 4. Passed floors pay no clear XP and no harvest points."
+  },
+  {
+    "id": "pass_wilds",
+    "name": "Pass: the Wilds",
+    "icon": "🎟️",
+    "cost": [
+      20
+    ],
+    "effect": {
+      "kind": "bandPass",
+      "bandId": "ascent_middle"
+    },
+    "desc": "Floors 4 to 6 count as cleared on this run and every later one. Passed floors pay no clear XP and no harvest points. The warchief still waits on floor 6, and prestige opens only when it is killed."
+  },
+  {
+    "id": "cooks_notes",
+    "name": "Cook's Notes",
+    "icon": "📒",
+    "cost": [
+      1,
+      2
+    ],
+    "effect": {
+      "kind": "cookbook"
+    },
+    "desc": "The Cook’s Book resets with each run; the notes keep part of it. Rank 1: dishes you cooked 25 times keep their cook time shown. Rank 2: dishes you cooked 100 times also keep their Signature. The cook counts themselves still reset."
+  }
+]

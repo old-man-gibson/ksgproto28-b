@@ -166,9 +166,18 @@ Converted with `node scripts/convert-content.mjs items affixes runes`.
 
 ## Left behind
 
-- Selling (`sellItems`, `sellPrice`, `materialSellPrice`, the rune sale) and
-  spare marks (`beats`, `findSpares`, `tallySpares` of `gearCompare.ts`):
-  port 7, shops.
+- Spare marks (`beats`, `findSpares`, `tallySpares` of the old UI file
+  `gearCompare.ts`): the Sell spares toolbar, UI step.
+
+## Spine port 7
+
+- `items/sell { uids }` (old `sellItems`): one log line for the lot,
+  `gold/add` earned, socketed runes back to the pile. `sellPrice(item,
+  goldGain)` is exported; every pack row carries `sell`.
+- `items/equip-now { uid, slot? }`: the equip of the command as a request,
+  for the weapon rack of floor 0.
+- `newRun`: the stash a prestige keeps (`carriedStash` of the old run).
+- `items` now imports `gold`.
 - Festival tokens of the stash (`stashToken`, `spendToken`,
   `tokenTechniques`) and `applyFestivalLegacy`: the festival.
 - Loadouts (`state.loadouts`): not part of the listed files.

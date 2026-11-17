@@ -9,8 +9,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json",
-    "test": "vitest run --project unit && vitest run --project budget && vitest run --project budget-world",
-    "verify": "svelte-check --tsconfig ./tsconfig.json && vitest run --project unit && vitest run --project budget && vitest run --project budget-world && vite build"
+    "pacing": "vite-node scripts/pacing.ts",
+    "test": "vitest run --project unit && vitest run --project budget && vitest run --project budget-world && vitest run --project john",
+    "verify": "svelte-check --tsconfig ./tsconfig.json && vitest run --project unit && vitest run --project budget && vitest run --project budget-world && vitest run --project john && vite build"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^5.0.3",

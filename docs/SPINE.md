@@ -145,6 +145,14 @@ left behind.
 | 6 | `systems/weather.ts`, `systems/exposure.ts`, the weather tables of `data/climate.data.ts` | `weather` | `weather.test.ts` (10 of 10), `exposure.test.ts` (114, 10 `it.todo`), with "under a gale on the open ridge" of old `derivedcache.test.ts` | Weathersense, the forecast, the bestiary entries the calm opens, `world.sunlight` for Facet, floor 17 and `malgeri_range` (step 4) |
 | 6 | `tests/training.test.ts`, `tests/practice.test.ts`, `tests/completability.test.ts` | Not systems of this port | `training.test.ts` (1 of 12: the data of the Cages), `practice.test.ts` (1 of 13: the post on the Sand), `completability.test.ts` (5 of 5) | The keeper and the dare (step 3), practice shaping (step 3) |
 | 6 | `tests/sites.json`, `scripts/dump-test-sites.mjs` | Replaced | `tests/combatHelpers.ts` builds the site of every spot from the world registry | `tests/sitesOutside.json` keeps 6 tables of spots that are not here: the shelved countryside (2), the hold (3), floor 17 (1) |
+| 7 | `data/npcs.data.ts`, the talk half of `systems/quests.ts` | `npcs` | Talk cases in `tests/quests.test.ts` (new) | 12 of 20 people: the 6 system people of Threshold and floor 2 (step 3), the 6 of floors 11 to 20 (step 4) |
+| 7 | `systems/quests.ts`, `data/quests.data.ts`, `questLevelXp` | `quests` | `tests/quests.test.ts`: 11 (5 old cases on test-only copies of the shelved quests, 6 new), 3 `it.todo` | 12 of 13 quests; favour on turn-in, craft objectives, the questmaster achievement (step 3) |
+| 7 | `systems/shops.ts` | `shops` | `tests/shops.test.ts`: 10 of 10 | The counters of floors 11 to 20 |
+| 7 | Sale half of `systems/equipment.ts` (`sellItems`, `sellPrice`, `materialSellPrice`, `gradedUnitPrice`, `sellStackable`, `sellStackablesBatch`) | `items`, `materials` | `tests/selling.test.ts`: 6 of 6; the 3 sale `it.todo` of `tests/materials.test.ts` stay (their old cases are in `shops` and `selling` now) | Spare marks (UI step); the rune sale (runecarving) |
+| 7 | `systems/tutorial.ts`, `data/tutorial.data.ts` | `tutorial` | `tests/tutorial.test.ts`: 10 ported, 11 `it.todo` (stance and spell steps, step 3; 2 old migrations; the 5 cases of `tutorialfocus.test.ts`, UI step) | The stance and spell steps; `tutorialFocus` |
+| 7 | `systems/prestige.ts`, `systems/legacy.ts`, `data/prestige.data.ts` | `prestige` | `tests/prestige.test.ts`: 26 ported, 3 `it.todo` (prepared pages, step 3; 2 old migrations) | The stronghold and its automatic prestige, festival legacy, cookbook carry |
+| 7 | `createInitialState` as the start of a run | Kernel: `ctx.endRun`, `newRun` (decision 30) | `tests/newRun.test.ts` (new, 4) | Nothing |
+| 7 | `tests/john.ts`, `tests/john.test.ts`, `scripts/pacing.ts`, the 2 John cases of `tests/band2.test.ts` | `tests/john.ts` on `runHeadless` and commands; `scripts/pacing.ts` | `tests/john.test.ts`: 9 cases, 1 `it.todo` (a bound missed, measured value in the case); the vitest project `john` | Runs 2 and 3 (floors 7 to 20, step 4); the duel harness of "the archive's club"; the rack climbs' spell |
 
 Port 1 notes:
 
@@ -501,6 +509,64 @@ Port 6 notes:
   starts empty, as in the old build; `world` bumps `travel:trips` on every
   arrival; the world budgets are a vitest project of their own.
 
+Port 7 notes:
+
+- Five system folders: `npcs`, `quests`, `shops`, `tutorial`, `prestige`.
+  The design is section 8, written and committed before the code
+  (`81e363a`).
+- Imports: `npcs` imports `counters`, `log`, `skills`, `world`. `quests`
+  imports `combat`, `counters`, `gold`, `items`, `levels`, `log`,
+  `materials`, `npcs`, `skills`, `stats`, `world`. `shops` imports
+  `counters`, `gold`, `items`, `log`, `materials`, `npcs`, `skills`, `stats`,
+  `world`. `tutorial` imports `combat`, `counters`, `items`, `log`, `world`.
+  `prestige` imports `attributes`, `counters`, `gold`, `ladder`, `levels`,
+  `log`, `skills`, `stats`, `world`. `items` and `materials` now import
+  `gold`. No older folder imports a new one.
+- Kernel change: a new run (`docs/KERNEL.md` decision 30). Shell change:
+  overlays (decision 31). No slice of an earlier port changed shape; no
+  fixture of an earlier port changed. Earlier folders changed: `items`
+  (`items/sell`, `items/equip-now`, `sellPrice`, `newRun`), `materials`
+  (`materials/sell`, `materials/sell-batch`, the two price functions),
+  `world` (`world/place`), `ladder` (`floorSeenKey`), `weather` (`newRun`),
+  `knockout` (the defeat dialog overlay). Each README has the change.
+- Panels: "Quests" (people here, offered, active, done), "Shop", "Prestige".
+  Overlays: the floor 0 card (banner, `tutorial`), the defeat summary
+  (modal, `knockout`), the review after a prestige (modal, `prestige`). Sell
+  buttons in the pack and the material list.
+- Browser check, dev server (port 5600, parchment theme). The pane was
+  hidden, so the frame loop did not run; the game was advanced by loading
+  saves with an earlier `savedAt` (catch-up simulates the gap). Two saves
+  were made headless: a few seconds before a knockout that no return follows
+  (John seed 42, the floor 3 hearing room), and right after John's first
+  prestige. Seen: the floor 0 card with the rack and the shield choice, the
+  rack equip, the skip to the Foot, the warden's quest accepted, the
+  greeting, the Rack of the Wrights' Gate with stranger prices, the defeat
+  dialog (1280 and 375 px), the review with a boon bought and left (375 px).
+  Layout: the rectangles of the headings, lists, cards and buttons of the
+  Quests, Shop, Prestige and Combat panels were read at four moments of the
+  hearing room fight (1, 2.5, 4 and 5.5 s into the gap), at 1280 and at 375
+  px; each panel had one value at each width. No horizontal scroll, no
+  button under 44 px at 375, no console error. Not seen: light and dark
+  themes; a buy with gold in the purse (the shop test covers it); the
+  tutorial card during the slime fight.
+- John: section 9. The per-floor comparison and the tolerance.
+- Budgets: section 9.
+- Changed while building, against section 8: the floors-seen read is a
+  counter (`legacy:floor_seen:<floor>`) that prestige sets each run, not a
+  registered read, because the condition reader has no slice access;
+  `world/place` takes `newRun` (no arrival, no haven noted) for the start of
+  a run; the defeat dialog, the review and the floor 0 card are overlays,
+  not panel parts (decision 31); `tests/john.test.ts` runs as the vitest
+  project `john` after the budgets, because two parallel climbs made a timed
+  unit case of `tests/combatStatuses.test.ts` pass its 5 s limit; the spare
+  marks are the UI step's, not this port's.
+- Old data and old rules that look wrong and were ported as they are: the
+  floor 0 step texts name map pins and tabs of the old layout; the warden's
+  text names two quests and eight trades that are not here; boons whose
+  readers are not ported are sold (pages, technique slots, the city key,
+  Cook's Notes) and do nothing yet; `the_first_ascent` names a favour reward
+  that is not paid until divine favour is ported.
+
 ## 7. Port 6 design: the world
 
 Written before the code (2026-11-17). "Changed while building" at the end of
@@ -729,9 +795,9 @@ systems keep the rules.
   left it; then the events drain.
 - A system that carries something across a prestige says so in its own
   `newRun`: `prestige` (the legacy block), `items` (the stash, old
-  `carriedStash`), `weather` (the world seed and the first-calm flag),
-  `counters` is not touched by the kernel beyond the reset; `prestige` sets
-  the counters a run starts with.
+  `carriedStash`), `weather` (the world seed and the first-calm flag).
+  `counters` starts new like every slice; `prestige` sets the counters a
+  run starts with.
 
 ### 8.3 Slices
 
@@ -862,3 +928,129 @@ need no rack pick, and the 2 `it.todo` of `tests/band2.test.ts`.
 - The offline summary dialog (kills, gold, levels): UI step. Its two lines
   of port 6 (ladder end, first calm) are not lost here, because the log keeps
   lines during catch-up (`src/systems/log/README.md`).
+
+## 9. Parity and spine status
+
+Measured 2026-11-17 on the same machine.
+
+### 9.1 John, old and new
+
+Both builds: John skipping floor 0 (rusty sword left in the pack, no
+stance, no spell), seeds 42, 7 and 1234, floors 0 to 6. Old: `npm run
+pacing -- --through 6 --seeds 42,7,1234 --weapons skip` in `D:\ksgproto28`
+at `7c1267b`, nothing edited. New: `npm run pacing`. Game time per segment
+(the time the segment took, m:ss), as the old pacing table names them:
+
+| Floor | Old 42 | Old 7 | Old 1234 | Old mean | New 42 | New 7 | New 1234 | New mean | Difference |
+|---|---|---|---|---|---|---|---|---|---|
+| f1 vermin | 1:29 | 1:11 | 1:34 | 1:25 | 1:31 | 1:28 | 1:03 | 1:21 | -5% |
+| f1 | 2:24 | 2:29 | 2:18 | 2:24 | 1:31 | 2:29 | 3:28 | 2:29 | +4% |
+| f2 | 2:09 | 3:03 | 2:53 | 2:42 | 2:30 | 2:07 | 2:32 | 2:23 | -12% |
+| f3 gate | 4:47 | 3:19 | 4:03 | 4:03 | 3:21 | 4:04 | 4:04 | 3:50 | -5% |
+| f3 stairs | 1:22 | 1:12 | 1:16 | 1:17 | 1:17 | 1:15 | 1:20 | 1:17 | +1% |
+| f3 | 0:50 | 0:20 | 0:20 | 0:30 | 0:50 | 1:41 | 1:23 | 1:18 | +160% |
+| f4 | 8:44 | 5:07 | 7:28 | 7:06 | 8:01 | 5:03 | 5:54 | 6:19 | -11% |
+| f5 gate | 0:03 | 0:03 | 0:03 | 0:03 | 0:04 | 0:04 | 0:04 | 0:04 | +33% |
+| f5 | 1:00 | 1:32 | 0:38 | 1:03 | 1:01 | 0:42 | 1:03 | 0:55 | -13% |
+| f6 gate | 3:38 | 4:17 | 3:18 | 3:44 | 3:27 | 4:26 | 3:46 | 3:53 | +4% |
+| f6 | 0:15 | 0:19 | 0:21 | 0:18 | 0:19 | 0:33 | 0:51 | 0:34 | +87% |
+| Total to the warchief | 26:41 | 22:52 | 24:13 | 24:35 | 23:51 | 23:53 | 25:28 | 24:24 | -1% |
+
+Knockouts over the climb: old 26, 20, 21; new 24, 23, 24. Character level at
+the warchief: old 9, 8, 8; new 9, 8, 9. Gold earned: old 17,118, 10,357,
+9,498; new 8,905, 8,400, 10,250. Every new climb ends in the first
+prestige (harvest 10, 10 and 11 points) and the next run stands at the Foot.
+The full tables: `side-session-notes` of this session group,
+`spine-7-old-john-pacing.txt` and `spine-7-new-john-pacing.txt`.
+
+The two boss segments are slower here: the bureaucrat of floor 3 (new
+tries/lost 2/1, 4/3, 3/2; old 2/1, 1/0, 1/0) and the warchief (new 1/1,
+2/2, 3/2; old 1/0 each). The old John learns Gather and Lunge from floor 2's
+tutor; the tutor is step 3, so John here has no technique. The old John was
+run once more with the lessons turned off (a scratch script that bundles the
+old modules and replaces `Game.prototype.learnFromTeacher` with a no-op;
+nothing in the old repository was written): totals 23:22, 24:11, 24:05
+(mean 23:53), floor 3 boss 2/1, 2/1, 1/0, warchief 1/0, 1/0, 4/3. Without
+the techniques the old build loses boss fights the same way, and its total
+is 2% under the new one. The boss rows are a few fights each and swing with
+the seed; the gap is the missing techniques plus that noise, not a rule
+difference found.
+
+The gold earned differs most (old mean 12,324, new mean 9,185). The old
+seed 42 earns 17,118, most of it after floor 4. Not traced further. Gold
+pays nothing in the spine's gates past floor 3, and the harvest pays a gold
+point at 10,000.
+
+Tolerance proposed (not enforced by a test yet, the user decides): the total
+game time to the warchief within 15% of the old mean over the same three
+seeds; each segment longer than two minutes of old mean within 35%. Boss
+segments and gates under two minutes are reported, not held. Measured: total
+-1%; the long segments -12% to +4%. A step 3 port that adds the tutor
+should measure again against the old build with the lessons on.
+
+### 9.2 Offline budgets
+
+Measured inside `npm run verify` (each budget project runs alone, after the
+unit tests), same machine. Not fixed here; the catch-up session owns it.
+
+| Run of 8 hours | Port 6 | Port 7 | Budget |
+|---|---|---|---|
+| No fight, no condition | 1,231 to 1,242 ms | 1,391 ms | 3,000 ms |
+| A poison held | 4,952 to 5,003 ms | 5,242 ms | 8,000 ms |
+| Floor 1 table sent to combat (9,673 kills) | 5,237 to 5,368 ms | 5,694 ms | 12,000 ms |
+| Floor 6 Tunnels sent to combat (11,328 kills) | 14,368 to 14,899 ms | 15,551 ms | 20,000 ms |
+| World: hunt activity, floor 4 Woods Edge (9,834 kills, 4 knockouts) | 18,923 to 19,656 ms | 20,510 ms | 30,000 ms |
+| World: hunt activity, floor 6 Tunnels (11,360 kills, 1 knockout) | 18,608 to 19,636 ms | 20,374 ms | 30,000 ms |
+
+One measurement each; port 6 took two to three. The rise of 5 to 13% is
+within the spread port 5 saw between runs (11,500 to 13,200 ms on one case)
+and was not traced. What port 7 adds to a tick: nothing; no new system has a
+tick hook. To the player's stat table: two sources (`quests/done`,
+`prestige/legacy`), both empty on a first run. The kill events gain one
+subscriber (`quests`, which returns at once with no active kill objective).
+The old build took 3 to 5 s for the world runs.
+
+The John climbs are fast: 0.7 to 1.8 s of wall clock for 24 minutes of game
+time each (`scripts/pacing.ts` prints it).
+
+### 9.3 Spine status
+
+The spine runs: a new save plays floor 0, Threshold and floors 1 to 6, and
+the first prestige starts the second run at the Foot, by commands only
+(`tests/john.ts`). Every system folder has a README: 31 folders, the toy
+`counter` of the kernel step among them.
+
+What the catch-up session inherits:
+
+- The world budgets (20.4 and 20.5 s for 8 hours, old build 3 to 5 s). Known
+  contributors (port 6 notes): the player's stat table rebuilt whenever the
+  place darkness changes under an open sky (each game minute at night), and
+  `skills/check-discovery` sent every tick by the hunt activity. Kernel
+  decision 4 (one cache for all stats) is the place to look; the floor 6
+  table sent to combat directly spends about a third of its time building
+  stat tables (port 5 profile).
+
+What step 3 inherits (every `it.todo` tagged step 3, and per system the
+README's "Left behind"):
+
+- The six system people and their teaching (the hall tutor's Gather and
+  Lunge change John's boss fights: section 9.1), `faces_of_threshold` and
+  `a_taste_of_everything`, craft objectives, divine favour on turn-in.
+- The stance and spell steps of floor 0; the rack climbs of
+  `tests/john.test.ts` then take the spell as the old ones did.
+- Readers of the boons for grimoire pages, technique slots and Cook's Notes;
+  the bestiary and achievement harvest sources.
+- Every system of `docs/REBUILD.md` step 3, with the extension points each
+  README lists (martial, spellcraft, arcane, divine, combat).
+
+What step 4 inherits: bands 3 and up, floors 7 to 20, the city key's gate,
+the stronghold and its automatic prestige, runs 2 and 3 of John, the
+festival, the harbor, Weathersense.
+
+What the UI step inherits: the drawn map plan, the Stations row, the job
+strip and the rate chip, the offline summary dialog (its two lines are in
+the log already), spare marks (Sell spares), `tutorialFocus`, Wayfinding go
+links, Foresight in the skill view, the weather chip.
+
+Open finding: the gold earned by John is 25% under the old build over the
+same seeds (section 9.1); not traced.

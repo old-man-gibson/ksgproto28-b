@@ -41,6 +41,7 @@ slice type.
 | `content` | Registry name to `registry(schema, data, title)`. |
 | `view(ctx)` | What the UI reads. Returns new objects, never the slice. |
 | `order` | Tick order, lower first. Ties run in id order. Default 0. |
+| `newRun(ctx, previous)` | Optional. Runs after a new run replaced every slice (decision 30). `previous(system)` reads a slice as the old run left it. |
 
 `defineSystem` throws on a bad id, a missing or extra migration step, and a
 stat, source, command or request outside the system's namespace.
@@ -62,6 +63,7 @@ The context (`ctx`) given to `tick`, command handlers and event handlers:
 | `touch(sourceId, entity?)` | Bump a modifier source's change counter, for every entity or for one. |
 | `dropEntity(entity)` | Forget the derived values of an entity that no longer exists. |
 | `skip(action, reason)` | Log an action that did not happen, outside a command. |
+| `endRun()` | End the run: after the current command or tick step drains, every slice starts new and each `newRun` runs (decision 30). |
 
 ## 3. State and commands
 
@@ -335,6 +337,11 @@ An answer returns copies, never a reference into its slice.
   bar at the bottom. Touch targets are at least `--tap` (44 pixels) high.
 - A panel is `src/systems/<name>/panel.ts` default-exporting
   `{ systemId, title, component }`.
+- An overlay is `src/systems/<name>/overlay.ts` default-exporting
+  `{ systemId, place, component }` (decision 31). `src/systems/overlays.ts`
+  builds the list. The shell mounts every overlay on every view: a `banner`
+  above the panel, a `modal` over the page. The component reads the view and
+  decides when it shows.
 
 ## 12. Forge
 
@@ -495,3 +502,22 @@ point. Each took the simpler option.
     panel is in `attributes` and mounts `statuses/StatusList.svelte`, as it
     already imports the index of `resources`, `skills`, `levels` and
     `clock`. Adding the status list added two lines to that panel.
+30. **A new run (spine port 7).** A prestige replaces every slice but the
+    legacy. `ctx.endRun()` asks for it; after the asking command or tick step
+    has drained, the kernel replaces every slice with `initial()`, keeps the
+    tick and the generator, drops every entity but the player, touches every
+    source, then runs each system's `newRun(ctx, previous)` in system order
+    and drains. What carries is each system's own rule, in its own
+    `newRun`: `prestige` copies its slice (the legacy block) and sets the
+    counters a run starts with, `items` keeps the stash, `weather` keeps the
+    seed and the first-calm flag. Alternatives: (a) the prestige system
+    writes every slice (no system may write another's slice); (b) every
+    system hears a reset event and resets itself (every folder edited for
+    prestige, and a new system that forgets to listen keeps its run state).
+    `tests/newRun.test.ts`.
+31. **Overlays (spine port 7).** The shell shows one panel at a time. The
+    defeat summary, the review after a prestige and the floor 0 card must
+    show whatever panel is open, as the old `App.svelte` mounted them. A
+    folder may export `overlay.ts` beside `panel.ts`; the shell mounts the
+    list. Alternative: the shell imports the three components, which breaks
+    "the shell imports the kernel and the lists only".

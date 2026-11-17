@@ -19,9 +19,10 @@ import {
   type RecordOf,
   type Rng,
 } from '../../kernel';
+import { addGold } from '../gold';
 import { fillText, logLine, textSchema, type TextRecord } from '../log';
 import { RESOURCE_IDS } from '../resources';
-import { modifierSchema } from '../stats';
+import { modifierSchema, statOf } from '../stats';
 import { applicationSchema } from '../statuses';
 import materialsData from './content/materials.json';
 import materialsTextData from './content/materials_text.json';
@@ -290,6 +291,31 @@ export const discardStackable = defineCommand<{ id: string; quality: QualityTier
 /** Throw away every listed stack whole, with one log line. `noun` names the units in that line. */
 export const discardStackablesBatch = defineCommand<{ refs: StackRef[]; noun?: string }>('materials/discard-batch');
 
+/** Sell up to `qty` of a held stack. The old `sellStackable`. */
+export const sellStackable = defineCommand<{ id: string; quality: QualityTier; qty: number }>('materials/sell');
+
+/** Sell every listed stack whole, with one log line. The old `sellStackablesBatch`. */
+export const sellStackablesBatch = defineCommand<{ refs: StackRef[]; noun?: string }>('materials/sell-batch');
+
+// ---- prices ----
+
+/**
+ * Sell price of one unit of a plain material: its value times the gold gain,
+ * rounded, at least 1. The old `materialSellPrice`.
+ */
+export function materialSellPrice(materialId: string, goldGain: number): number {
+  return Math.max(1, Math.round((MATERIALS[materialId]?.value ?? 1) * goldGain));
+}
+
+/**
+ * Sell price of one unit at a grade. A plain material ignores the grade.
+ * Refuse still fetches a token coin. The old `gradedUnitPrice`.
+ */
+export function gradedUnitPrice(id: string, quality: QualityTier, goldGain: number): number {
+  const mult = isGraded(id) ? Math.max(0.1, qualityMult(quality)) : 1;
+  return Math.max(1, Math.round((MATERIALS[id]?.value ?? 1) * mult * goldGain));
+}
+
 // ---- view ----
 
 export interface MaterialRow {
@@ -299,8 +325,10 @@ export interface MaterialRow {
   value: number;
   /** Total units held. */
   qty: number;
-  /** Grades held, best first. Empty for a plain material. */
-  grades: { quality: QualityTier; name: string; qty: number }[];
+  /** What `materials/sell` pays for one unit of a plain material now. */
+  sell: number;
+  /** Grades held, best first, with the price of one unit. Empty for a plain material. */
+  grades: { quality: QualityTier; name: string; qty: number; sell: number }[];
 }
 
 export interface MaterialsView {
@@ -363,18 +391,65 @@ export default defineSystem<MaterialsState, MaterialsView>({
       });
       return OK;
     }),
+    handle(sellStackable, (ctx, { id, quality, qty }) => {
+      const removed = removeStack(ctx.state, id, quality, qty);
+      if (removed <= 0) return skipped(`no ${gradeLabel(id, quality)}${MATERIALS[id]?.name ?? id} is held`);
+      const price = gradedUnitPrice(id, quality, statOf(ctx, 'goldGain')) * removed;
+      ctx.request(addGold, { amount: price, earned: true });
+      const def = MATERIALS[id];
+      ctx.emit(logLine, {
+        msg: fillText(TEXT.sold_stack, {
+          icon: def?.icon ?? '',
+          grade: gradeLabel(id, quality),
+          name: def?.name ?? id,
+          qty: removed,
+          price,
+        }),
+        kind: 'item',
+      });
+      return OK;
+    }),
+    handle(sellStackablesBatch, (ctx, { refs, noun = 'item' }) => {
+      const goldGain = statOf(ctx, 'goldGain');
+      let total = 0;
+      let units = 0;
+      for (const { id, quality } of refs) {
+        const have = isGraded(id) ? stockOf(ctx.state, id, quality) : (ctx.state.counts[id] ?? 0);
+        const removed = removeStack(ctx.state, id, quality, have);
+        if (removed > 0) {
+          total += gradedUnitPrice(id, quality, goldGain) * removed;
+          units += removed;
+        }
+      }
+      if (units === 0) return skipped('none of the listed stacks is held');
+      ctx.request(addGold, { amount: total, earned: true });
+      ctx.emit(logLine, {
+        msg: fillText(TEXT.sold_units, { units, noun, plural: units === 1 ? '' : 's', total }),
+        kind: 'item',
+      });
+      return OK;
+    }),
   ],
 
-  view: ({ state }) => ({
-    held: MATERIAL_LIST.filter((m) => heldOf(state, m.id) > 0).map((m) => ({
-      id: m.id,
-      name: m.name,
-      icon: m.icon,
-      value: m.value,
-      qty: heldOf(state, m.id),
-      grades: m.graded
-        ? gradesHeld(state, m.id).map((g) => ({ ...g, name: QUALITY_TIERS[g.quality].name }))
-        : [],
-    })),
-  }),
+  view: (ctx) => {
+    const state = ctx.state;
+    const goldGain = statOf(ctx, 'goldGain');
+    return {
+      held: MATERIAL_LIST.filter((m) => heldOf(state, m.id) > 0).map((m) => ({
+        id: m.id,
+        name: m.name,
+        icon: m.icon,
+        value: m.value,
+        qty: heldOf(state, m.id),
+        sell: materialSellPrice(m.id, goldGain),
+        grades: m.graded
+          ? gradesHeld(state, m.id).map((g) => ({
+              ...g,
+              name: QUALITY_TIERS[g.quality].name,
+              sell: gradedUnitPrice(m.id, g.quality, goldGain),
+            }))
+          : [],
+      })),
+    };
+  },
 });

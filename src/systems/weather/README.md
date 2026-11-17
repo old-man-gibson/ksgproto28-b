@@ -124,7 +124,10 @@ the pools, the activity and the fight.
 - The header weather chip. The view carries `{ kind, icon, band, temp,
   darkness }`; kind, icon, band and temp are null under a roof, where the old
   chip showed `still`.
-- The offline summary line of the first calm: port 7.
+- The offline summary line of the first calm: the log keeps lines during
+  catch-up here, so the line is in the log; the summary dialog is the UI
+  step. Spine port 7: `newRun` carries the seed and the first-calm flag
+  across a prestige (old `prestigeNow`).
 
 ## Differences from the old build
 

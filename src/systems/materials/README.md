@@ -81,8 +81,16 @@ them:
 
 ## Left behind
 
-- Selling (`sellStackable`, `sellStackablesBatch`, `sellMaterial`,
-  `gradedUnitPrice`, `materialSellPrice`): port 7, shops.
+- `sellMaterial` (one whole plain stack): no caller; `materials/sell`
+  covers it.
+
+## Spine port 7
+
+`materials/sell { id, quality, qty }` and `materials/sell-batch { refs,
+noun }` (old `sellStackable`, `sellStackablesBatch`); skip reasons as the
+discards. `materialSellPrice` and `gradedUnitPrice` are exported; the view
+carries the price of one unit per row and per grade. `materials` now imports
+`gold`.
 - Using a consumable: the consumables and cooking ports.
 - Bench slots (`slotAccepts`, `usableIn`, placements): the disciplines port.
 - Gathering: the activity kind is in `world` (spine port 6). No spot of

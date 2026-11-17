@@ -1,0 +1,18 @@
+[
+  {
+    "id": "quests_completed",
+    "text": "🎉 Quest complete: {name}{rewards}"
+  },
+  {
+    "id": "quests_rewards",
+    "text": ": {list}"
+  },
+  {
+    "id": "quests_accepted",
+    "text": "📜 Quest accepted: {name}"
+  },
+  {
+    "id": "quests_ready",
+    "text": "📜 \"{name}\" complete. Return to {giver} at {spot}."
+  }
+]

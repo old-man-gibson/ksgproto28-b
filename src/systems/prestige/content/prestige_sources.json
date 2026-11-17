@@ -1,0 +1,54 @@
+[
+  {
+    "id": "floors",
+    "name": "Floors cleared",
+    "icon": "🗼",
+    "measure": "floors",
+    "per": 1,
+    "unit": "floor"
+  },
+  {
+    "id": "quests",
+    "name": "Quests completed",
+    "icon": "⭐",
+    "measure": "stat",
+    "key": "quests:completed",
+    "per": 2,
+    "unit": "quest"
+  },
+  {
+    "id": "bestiary",
+    "name": "Bestiary entries",
+    "icon": "📖",
+    "measure": "stat",
+    "key": "bestiary:entries",
+    "per": 5,
+    "unit": "entry"
+  },
+  {
+    "id": "skills",
+    "name": "Skill levels",
+    "icon": "📜",
+    "measure": "skillLevels",
+    "per": 25,
+    "unit": "level"
+  },
+  {
+    "id": "achievements",
+    "name": "Achievement tiers",
+    "icon": "🏆",
+    "measure": "achievements",
+    "per": 3,
+    "unit": "tier"
+  },
+  {
+    "id": "gold",
+    "name": "Gold earned",
+    "icon": "💰",
+    "measure": "stat",
+    "key": "gold:earned",
+    "per": 10000,
+    "growth": 10,
+    "unit": "gold"
+  }
+]

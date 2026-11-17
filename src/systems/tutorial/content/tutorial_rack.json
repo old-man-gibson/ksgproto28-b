@@ -1,0 +1,26 @@
+[
+  {
+    "id": "spear",
+    "item": "old_spear",
+    "hands": "two"
+  },
+  {
+    "id": "sword",
+    "item": "rusty_sword",
+    "hands": "one"
+  },
+  {
+    "id": "dagger",
+    "item": "iron_dagger",
+    "hands": "one"
+  },
+  {
+    "id": "hammer",
+    "item": "old_hammer",
+    "hands": "one"
+  },
+  {
+    "id": "unarmed",
+    "hands": "none"
+  }
+]

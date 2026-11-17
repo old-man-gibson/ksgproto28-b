@@ -388,6 +388,13 @@ const weather = defineSystem<WeatherState, WeatherView>({
   // Last: the old loop ran exposure after the pools, the activity and the fight.
   order: 20,
   initial: () => ({ seed: null, darkness: 0, eyeless: false }),
+  // A prestige keeps the world: the seed of the sky (old `next.createdAt =
+  // state.createdAt`), and the first calm once met, so its line fires once
+  // per save (old `prestigeNow`).
+  newRun: (ctx, previous) => {
+    ctx.state.seed = previous(weather).seed;
+    if (counterValue(previous(counters), CALM_SEEN_KEY) > 0) ctx.emit(raiseCounter, { key: CALM_SEEN_KEY, value: 1 });
+  },
   content: { terrains, sky_tables: skyTables, sky_rules: skyRules, weather_text: weatherText },
 
   modifiers: [

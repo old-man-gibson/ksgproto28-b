@@ -18,15 +18,17 @@ import {
   PLAYER,
   registry,
   skipped,
+  type CommandResult,
   type Ctx,
   type DeepReadonly,
   type DerivedReads,
   type SystemDef,
 } from '../../kernel';
 import counters, { conditionsMet, hasFlag } from '../counters';
+import { addGold } from '../gold';
 import { fillText, logLine, textSchema, type TextRecord } from '../log';
 import skills, { conditionReader, SKILL_LIST, skillLevel } from '../skills';
-import { armedFact, contentMod, factValue, statMod, wieldTagFact, type ModOrigin, type StatMod } from '../stats';
+import { armedFact, contentMod, factValue, statMod, statOf, wieldTagFact, type ModOrigin, type StatMod } from '../stats';
 import { compareToWorn, type DeltaLine } from './compare';
 import itemsTextData from './content/items_text.json';
 import {
@@ -314,6 +316,92 @@ export const unequipSlot = defineCommand<{ slot: SlotId }>('items/unequip');
 /** Take a kept item out of the stronghold stash into the pack, under a new uid. */
 export const takeFromStash = defineCommand<{ index: number }>('items/take-from-stash');
 
+/**
+ * Sell items from the pack as one transaction: one log line for the lot,
+ * `gold:earned` bumped by the take. Socketed runes go back to the pile. A
+ * uid no longer held is passed over. The old `sellItems`.
+ */
+export const sellItems = defineCommand<{ uids: number[] }>('items/sell');
+
+// ---- selling ----
+
+/**
+ * Charisma-aware sell price of one item: its worth times the seller's gold
+ * gain, rounded, at least 1. The old `sellPrice`. Callers rendering many rows
+ * pass the gold gain they already hold.
+ */
+export function sellPrice(item: DeepReadonly<Pick<ItemInstance, 'defId' | 'affix' | 'slots'>>, goldGain: number): number {
+  return Math.max(1, Math.round(itemValue(item as ItemInstance) * goldGain));
+}
+
+/** The old `saleMessage`: one line for the lot, naming a uniform stack. */
+function saleMessage(sold: readonly DeepReadonly<ItemInstance>[], total: number): string {
+  const first = sold[0];
+  if (sold.length === 1) return fillText(TEXT.sold_one, { item: itemName(first), total });
+  const uniform = sold.every((i) => itemName(i) === itemName(first));
+  return uniform
+    ? fillText(TEXT.sold_uniform, { item: itemName(first), count: sold.length, total })
+    : fillText(TEXT.sold_mixed, { count: sold.length, total });
+}
+
+/**
+ * Equip from the pack. The body of the command `items/equip` and of the
+ * request `items/equip-now`.
+ */
+function equipFromPack(ctx: Ctx<ItemsState>, uid: number, slot: SlotId | undefined): CommandResult {
+  const state = ctx.state;
+  const idx = state.inventory.findIndex((i) => i.uid === uid);
+  if (idx < 0) return skipped(`item ${uid} is not in the pack`);
+  const item = state.inventory[idx];
+  const def = itemDefOf(item);
+  if (!def) return skipped(`item "${item.defId}" has no definition`);
+  if (!canEquip(ctx, item)) {
+    logOf(ctx, 'requirements_unmet', { icon: def.icon, item: itemName(item) }, 'danger');
+    return skipped(`requirements not met for ${itemName(item)}: ${condsText(def.requirements)}`);
+  }
+  const target = slot ?? def.slot;
+  if (wieldScale(def, target) <= 0) {
+    logOf(ctx, 'wrong_slot', { icon: def.icon, item: itemName(item) }, 'danger');
+    return skipped(`${itemName(item)} cannot go in the slot "${target}"`);
+  }
+
+  state.inventory.splice(idx, 1);
+  const displaced: ItemInstance[] = [];
+  const takeOff = (s: SlotId) => {
+    const worn = state.equipment[s];
+    if (worn) {
+      displaced.push(worn);
+      delete state.equipment[s];
+    }
+  };
+  takeOff(target);
+  // Hands are a budget. What is held gives way, in hand order, until the
+  // newcomer fits: the same code for two arms or six, and for a grip
+  // that costs one arm or two.
+  if (HAND_SLOTS.includes(target)) {
+    const grants = grantsOf(state);
+    const available = armsFrom(grants);
+    const incoming = armCost(grants, def, target);
+    for (const other of HAND_SLOTS) {
+      if (other === target) continue;
+      if (armsUsed(state.equipment, grants) + incoming <= available) break;
+      takeOff(other);
+    }
+  }
+  state.equipment[target] = item;
+  state.inventory.push(...displaced);
+  ctx.touch(WORN_SOURCE);
+
+  const note = wieldNote(def, target);
+  logOf(
+    ctx,
+    'equipped',
+    { icon: def.icon, item: itemName(item), note: note ? fillText(TEXT.equip_note, { note }) : '' },
+    'item',
+  );
+  return OK;
+}
+
 // ---- requests ----
 
 /**
@@ -351,6 +439,13 @@ export const setBearer = defineRequest<Bearer, void>('items/set-bearer');
  */
 export const dropWorn = defineRequest<{ slot: SlotId }, string | null>('items/drop-worn');
 
+/**
+ * Equip an item from the pack, for a caller that needs the outcome in its own
+ * handler (the weapon rack of floor 0). The same rules and log line as the
+ * command `items/equip`. Answers whether it was equipped.
+ */
+export const equipNow = defineRequest<{ uid: number; slot?: SlotId }, boolean>('items/equip-now');
+
 // ---- view ----
 
 export interface ItemFact {
@@ -384,6 +479,8 @@ export interface ItemRow {
   rarity: RarityId;
   /** Worth before the seller's gold gain. */
   value: number;
+  /** What `items/sell` pays for it now. */
+  sell: number;
   category: string;
   facts: ItemFact[];
   canEquip: boolean;
@@ -479,6 +576,7 @@ function rowOf(
     ...(item.size ? { size: item.size } : {}),
     rarity: itemRarity(item),
     value: itemValue(item),
+    sell: sellPrice(item, statOf(ctx, 'goldGain')),
     category: itemCategory(item).label,
     facts: def ? factsOf(item, def, runesOpen) : [],
     canEquip: canEquip(ctx, item),
@@ -518,59 +616,7 @@ const system: SystemDef<ItemsState, ItemsView> = defineSystem<ItemsState, ItemsV
   ],
 
   commands: [
-    handle(equipItem, (ctx, { uid, slot }) => {
-      const state = ctx.state;
-      const idx = state.inventory.findIndex((i) => i.uid === uid);
-      if (idx < 0) return skipped(`item ${uid} is not in the pack`);
-      const item = state.inventory[idx];
-      const def = itemDefOf(item);
-      if (!def) return skipped(`item "${item.defId}" has no definition`);
-      if (!canEquip(ctx, item)) {
-        logOf(ctx, 'requirements_unmet', { icon: def.icon, item: itemName(item) }, 'danger');
-        return skipped(`requirements not met for ${itemName(item)}: ${condsText(def.requirements)}`);
-      }
-      const target = slot ?? def.slot;
-      if (wieldScale(def, target) <= 0) {
-        logOf(ctx, 'wrong_slot', { icon: def.icon, item: itemName(item) }, 'danger');
-        return skipped(`${itemName(item)} cannot go in the slot "${target}"`);
-      }
-
-      state.inventory.splice(idx, 1);
-      const displaced: ItemInstance[] = [];
-      const takeOff = (s: SlotId) => {
-        const worn = state.equipment[s];
-        if (worn) {
-          displaced.push(worn);
-          delete state.equipment[s];
-        }
-      };
-      takeOff(target);
-      // Hands are a budget. What is held gives way, in hand order, until the
-      // newcomer fits: the same code for two arms or six, and for a grip
-      // that costs one arm or two.
-      if (HAND_SLOTS.includes(target)) {
-        const grants = grantsOf(state);
-        const available = armsFrom(grants);
-        const incoming = armCost(grants, def, target);
-        for (const other of HAND_SLOTS) {
-          if (other === target) continue;
-          if (armsUsed(state.equipment, grants) + incoming <= available) break;
-          takeOff(other);
-        }
-      }
-      state.equipment[target] = item;
-      state.inventory.push(...displaced);
-      ctx.touch(WORN_SOURCE);
-
-      const note = wieldNote(def, target);
-      logOf(
-        ctx,
-        'equipped',
-        { icon: def.icon, item: itemName(item), note: note ? fillText(TEXT.equip_note, { note }) : '' },
-        'item',
-      );
-      return OK;
-    }),
+    handle(equipItem, (ctx, { uid, slot }) => equipFromPack(ctx, uid, slot)),
 
     handle(unequipSlot, (ctx, { slot }) => {
       const item = ctx.state.equipment[slot];
@@ -591,6 +637,27 @@ const system: SystemDef<ItemsState, ItemsView> = defineSystem<ItemsState, ItemsV
       ctx.state.inventory.push(taken);
       const def = itemDefOf(taken);
       logOf(ctx, 'stash_taken', { icon: def?.icon ?? '', name: def?.name ?? taken.defId }, 'item');
+      return OK;
+    }),
+
+    handle(sellItems, (ctx, { uids }) => {
+      const state = ctx.state;
+      const goldGain = statOf(ctx, 'goldGain');
+      const sold: ItemInstance[] = [];
+      let total = 0;
+      for (const uid of uids) {
+        const idx = state.inventory.findIndex((i) => i.uid === uid);
+        if (idx < 0) continue;
+        const item = state.inventory[idx];
+        total += sellPrice(item, goldGain);
+        state.inventory.splice(idx, 1);
+        // Socketed runes are pried out and kept: selling never destroys them.
+        for (const ref of item.runes ?? []) state.runes[ref] = (state.runes[ref] ?? 0) + 1;
+        sold.push(item);
+      }
+      if (sold.length === 0) return skipped('none of the listed items is in the pack');
+      ctx.request(addGold, { amount: total, earned: true });
+      ctx.emit(logLine, { msg: saleMessage(sold, total), kind: 'item' });
       return OK;
     }),
   ],
@@ -658,7 +725,14 @@ const system: SystemDef<ItemsState, ItemsView> = defineSystem<ItemsState, ItemsV
       ctx.state.bearer = { grants: [...grants], size };
       ctx.touch(WORN_SOURCE);
     }),
+    answer(equipNow, (ctx, { uid, slot }) => equipFromPack(ctx, uid, slot).ok),
   ],
+
+  // A prestige keeps the stronghold stash: keep-marked items come back to it
+  // from the pack and the worn gear (old `prestigeNow` with `carriedStash`).
+  newRun: (ctx, previous) => {
+    ctx.state.stash = carriedStash(previous(system));
+  },
 
   view: (ctx) => {
     const state = ctx.state;
