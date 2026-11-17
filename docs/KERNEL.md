@@ -279,6 +279,24 @@ An answer returns copies, never a reference into its slice.
   first 30 entries of the profile. Decision 4 (one cache for all stats)
   left per-stat dependency tracking until a measurement asked for it; this
   one does. It is listed for port 7 in `docs/SPINE.md`.
+- Spine port 6 (world, ladder, knockout, weather), measured on 2026-11-17,
+  same machine, each alone. Four more systems tick. No fight, no condition:
+  1,231 to 1,234 ms (port 5: 918). A condition held: the case holds a
+  timerless poison now, 4,963 to 5,003 ms, with a knockout each time the
+  recovery ends; the bleed of the earlier measurement is ended by the
+  forced rest of the first knockout. Floor 1 fights sent to `combat`
+  directly: 5,237 to 5,368 ms, the same 9,673 kills (port 5: 4,104).
+  Floor 6 Tunnels sent to `combat` directly: 14,368 to 14,767 ms, 11,328
+  kills, 1 defeat, 1,958 casts, 1,595 techniques (port 5: 11,500 to
+  12,400). The four budgets are unchanged. Two new runs through the world
+  system, the vitest project `budget-world` (`tests/budgetsWorld.test.ts`,
+  a file of its own because one worker running all six passes the 60
+  seconds vitest gives it to answer): the hunt activity at the Woods Edge
+  of floor 4, a new character under the open sky, 18,923 to 19,656 ms, 9,834
+  kills, 4 knockouts each followed by the return; the hunt activity at the
+  Tunnels of floor 6 with the probe character, 18,608 to 19,636 ms, 11,360
+  kills, 1 knockout. Budget 30,000 ms each. `npm test` and `npm run verify`
+  run `unit`, then `budget`, then `budget-world`.
 
 ## 9. Content
 

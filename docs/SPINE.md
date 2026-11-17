@@ -139,6 +139,12 @@ left behind.
 | 5 | `MIRACLES` of `data/spellcraft.data.ts`, `data/deities.data.ts`, `miracleSpec` of `systems/divine.ts`, `deityRelation` of `systems/deities.ts` | `divine` | In `tests/spellcraft.test.ts` ("the pantheon", "miracle mechanics", content), `tests/goblins.test.ts` | Favour, receiving a miracle, the pantheon shelf, the veto at preparation: `it.todo` tagged step 3 divine (6) |
 | 5 | `healEnemy` of `systems/combat.ts`; the landing of `castCraftedAttack`; `c.buffs`; `setPosition`; `state.skillTriggers` | `combat` (slice version 2: `fight.buffs`, `triggers`, `Enemy.lastAction`; requests `heal-enemy`, `land-slices`, `hurt-enemy`, `add-buff`, `move-player`, `stamp-cooldown`, `mark-event`, `take-prevented`, `attack-retaliation`; `registerInterception`, `registerBlowRider`) | `tests/overgrowth.test.ts`: the 2 cases port 4 retagged; the overgrowth cases of `tests/spellcraft.test.ts` | Nothing |
 | 5 | `tests/band2.test.ts` | Not ported: floors, spots and the John climb | `tests/band2.test.ts`: 5 `it.todo` (3 port 6, 2 port 7) | The whole file |
+| 6 | `data/locations.data.ts`, location half of `registry.ts`, `systems/locations.ts`, `systems/actions.ts` (activities, finds, `settleArrival`; not the condition tick), `systems/mapped.ts`, `systems/safety.ts`, `systems/search.ts`, `systems/activitydrops.ts`, `systems/keyitems.ts`, `climbTo`, `rideLeg`, `ride` of `systems/towers.ts`, `officeArrival` and `rewardTollGolem` of `systems/floodedFloor.ts`, the `travel:trips` listener of `systems/achievements.ts` | `world` | `navigation.test.ts` (12 of 18), `map.test.ts` (2 of 14), `towers.test.ts` (6 of 7), `job.test.ts` (4 of 20), `finds.test.ts` (14 of 14), `safety.test.ts` (6 of 8), `forced.test.ts` (the 5 cases port 4 left), `combatStart.test.ts` (the 4 cases port 4 left), `worldContent.test.ts` (the location lints of old `content.test.ts`, 41 of 47); new `worldSystem.test.ts` (27) and `walk.test.ts` | `it.todo`: bonus time (5), the wayfinding boon (1, port 7), the drawn plan (12, UI step), the job strip and the rate chip (14, UI step), performances and benches (1, step 3), the hold (1, step 4), 2 old save migrations, waypoints, recipes, benches, festival, wards, sea lints (6). Craft activities, the approach of a road, band hubs, the keeper and the dare |
+| 6 | `data/towers.data.ts`, `systems/ladder.ts`, the stops and the gate of `systems/towers.ts`, `systems/floorRules.ts`, `checkFloorClears` and `syncBandPositions` of `systems/levels.ts` | `ladder` | `floorrules.test.ts` (39 of 42), ladder cases of `towers.test.ts`, `band2.test.ts` (the 3 cases port 5 left) | 3 `it.todo` (the forge validator). `bandPassed`, `floorsSeen` (port 7); festival verdicts, ward windows, bands 3 to 7 (step 4) |
+| 6 | `systems/knockoutReturn.ts`, the knockout half of `onDefeat`, the three knockout branches of `tickPlayerStatuses`, the recovery branch of `tickAction`, `returnRecoverTarget` of `systems/huntrest.ts`, `stayHere` of `game.ts` | `knockout` | `knockoutReturn.test.ts` (107 of 110, with a determinism case added), the knockout cases ports 2 and 4 left in `statuses.test.ts` (5), `combat.test.ts` (1), `forced.test.ts` (1) | 3 `it.todo`: a festival floor (step 4), a bench run or a performance (step 3), a prestige (port 7) |
+| 6 | `systems/weather.ts`, `systems/exposure.ts`, the weather tables of `data/climate.data.ts` | `weather` | `weather.test.ts` (10 of 10), `exposure.test.ts` (114, 10 `it.todo`), with "under a gale on the open ridge" of old `derivedcache.test.ts` | Weathersense, the forecast, the bestiary entries the calm opens, `world.sunlight` for Facet, floor 17 and `malgeri_range` (step 4) |
+| 6 | `tests/training.test.ts`, `tests/practice.test.ts`, `tests/completability.test.ts` | Not systems of this port | `training.test.ts` (1 of 12: the data of the Cages), `practice.test.ts` (1 of 13: the post on the Sand), `completability.test.ts` (5 of 5) | The keeper and the dare (step 3), practice shaping (step 3) |
+| 6 | `tests/sites.json`, `scripts/dump-test-sites.mjs` | Replaced | `tests/combatHelpers.ts` builds the site of every spot from the world registry | `tests/sitesOutside.json` keeps 6 tables of spots that are not here: the shelved countryside (2), the hold (3), floor 17 (1) |
 
 Port 1 notes:
 
@@ -404,6 +410,96 @@ Port 5 notes:
 - Old rules that look like bugs and were ported as they are: listed under
   "Old rules ported as they are" in the README of `martial` and of
   `spellcraft`, and in `src/systems/divine/README.md` "Content".
+
+Port 6 notes:
+
+- Four system folders: `world`, `ladder`, `knockout`, `weather`. The design
+  is section 7, written and committed before the code (`de8afc8`).
+- Imports: `ladder` imports `combat`, `counters`, `levels`, `log`, `skills`.
+  `world` imports `attributes`, `combat`, `counters`, `gold`, `items`,
+  `ladder`, `log`, `materials`, `mercy`, `resources`, `skills`, `stats`,
+  `statuses`. `knockout` imports `clock`, `combat`, `counters`, `ladder`,
+  `log`, `resources`, `stats`, `statuses`, `world`. `weather` imports
+  `clock`, `combat`, `counters`, `log`, `skills`, `stats`, `statuses`,
+  `world`. The Location panel of `world` mounts the views of `knockout` and
+  `ladder` (decision 29). No kernel-side file of a folder imports a folder
+  that imports it.
+- No kernel change. No slice of an earlier port changed shape. `combat`
+  gained the requests `combat/set-hunt` and `combat/stop-hunt` and the
+  registry `registerSiteSky`.
+- Content: `regions` (3), `areas` (16), `spots` (80), `key_items` (3),
+  `towers` (1), `bands` (2), `floors` (7), `terrains` (8), `sky_tables` (1),
+  `sky_rules` (5), text registries. Written by `scripts/convert-world.mjs`.
+- The headless walk (`tests/walk.test.ts`): from `f0_cell` through every
+  gate to `f6_great_hall` by `world/*` commands only: 11,440 ticks, 113
+  kills, 1 knockout, which the return handles with no command. What stands
+  in for port 7 content: the probe gives the character 4,000 health, 160
+  damage and 30 armour; the rusty sword is equipped by the test. The gold
+  gates are paid by the weighbridge job, as John does.
+- The knockout is live for every test of ports 1 to 5. Two cases changed: a
+  detonation that takes all health leaves 1 HP; the stand-in system named
+  `world` in the corruption case is gone. `keepHunting` no longer rests the
+  character itself. The held-condition budget holds a poison in place of a
+  bleed: the forced rest of the first knockout tends a bleed and ends it.
+- Measured on 2026-11-17, same machine, each alone: `docs/KERNEL.md`
+  section 8. Two new budgets, 30,000 ms each, in the vitest project
+  `budget-world`.
+- Panel "Location" (`world`). Checked on the dev server (port 5600,
+  parchment theme). The session had no visible window, so the frame loop did
+  not run; the game was advanced by reloading the page (the offline catch-up
+  simulates the gap) and the rectangles of the place line, the status line,
+  the bar, the return line, the activity row, the card of the picked spot
+  and the first spot button were read after each reload. At 1280 pixels:
+  the Cellblock and the Field, with no fight and with a fight open (2
+  samples), each rectangle had one value; no console error. At 375 pixels:
+  the Field after its last fight, 2 samples, one value each, no horizontal
+  scroll, no button under 44 pixels, picking a spot moves nothing; no
+  console error. Found and fixed: the activity row and the description had
+  no fixed height, so an arrival moved everything below them.
+- Open for port 7: quests and shops; the floor 0 script and the weapon rack;
+  prestige (`registerBandPass`, `floorsSeen`, a prestige ends the knockout
+  return, `PRESTIGE_UNLOCK` on the floor 6 clear); the John port on
+  `world/*` commands (`tests/walk.test.ts` is the skeleton), 2 `it.todo` in
+  `tests/band2.test.ts`; the wayfinding boon; the offline summary lines (the
+  ladder end, the first calm); the defeat dialog (`knockout` view,
+  `defeatDialogDue`); the offline budget: 8 hours of the hunt activity cost
+  19 seconds on floors 4 and 6 (section 8 of `docs/KERNEL.md`).
+- Open for the kernel session (decision 4, measured and not fixed here):
+  the same floor 6 table costs 14.7 s sent to `combat` directly and 19.0 s
+  through the hunt activity. Under an open night sky the place darkness
+  changes every game minute with the moons, and each change rebuilds the
+  player's stat table (every 10 ticks). The hunt activity emits
+  `skills/check-discovery` on every tick, as the old loop called
+  `checkDiscovery`.
+- Open for step 3: the keeper of the Cages and the dare with its hold of
+  play, practice shaping, craft activities and benches, the toll collector's
+  reactions to spells, `cardSpent` for activity drops. `statuses` does not
+  touch `statuses/held` when a condition with no modifier lands or goes, so
+  `weather` keeps an `eyeless` flag in its slice and compares each tick.
+- Open for step 4: Weathersense, the forecast, floors 7 to 20 with their
+  regions, band hubs, the approach of a road, the festival and ward rules of
+  the ladder.
+- Open for the UI step: the surveyed plan of the map, the Stations row, the
+  job strip and the rate chip (26 `it.todo` in `tests/map.test.ts` and
+  `tests/job.test.ts`), the weather chip of the header, the floor rules in
+  the forge validator. The combat panel reads "Next fight in 0.0 s" at a
+  cleared spot.
+- Old data and old rules that look wrong and were ported as they are:
+  `clearsToAdvance` is 2 on bands of 3 floors (the field is not read); the
+  description of `ascent_lower` names three floors that no longer exist;
+  the Cages carry `caged`, `dare` and `healBetweenBouts`, read by nothing
+  here; the scope has one waypoint, so the caravan cannot run; a fully
+  explored spot rolls 0.8% per tick for a few gold; the calm flag
+  `flag:malgeri_calm_seen` is shared by every sky table; the sky rules apply
+  only under a sky table, and no region here has one. Per system: "Old
+  rules ported as they are" in the four READMEs.
+- Changed while building, against section 7: `weather` has a third slice
+  field (`eyeless`) and a text registry, and 8 terrains, not 6;
+  `world/select-activity` and `world/go-and-do` at the spot are accepted
+  while knocked out, as the old functions were; `world/travel` (one hop) is
+  a request; `world/stay` was added for `knockout/stay-here`; `safeSpots`
+  starts empty, as in the old build; `world` bumps `travel:trips` on every
+  arrival; the world budgets are a vitest project of their own.
 
 ## 7. Port 6 design: the world
 
