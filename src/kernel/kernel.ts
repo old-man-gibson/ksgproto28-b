@@ -4,12 +4,12 @@
  * (a command) or `tick`. It imports nothing from Svelte and touches no DOM.
  */
 import { collectRegistries, ContentIndex, formatIssue, validateContent, type RegistryEntry } from './content';
-import { Derived } from './derived';
+import { Derived, PLAYER } from './derived';
 import { cloneJson, deepFreeze, isRecord, type DeepReadonly, type Json } from './json';
 import { KERNEL_SLICE_VERSION, kernelMigrations } from './migrations';
 import { createRng, normalizeSeed } from './rng';
 import { checkEnvelope, migrateEntry, SAVE_FORMAT, type SaveEnvelope } from './save';
-import type { AnySystem, Command, CommandResult, Ctx, EventDef, GameEvent, SystemDef } from './system';
+import type { AnySystem, Command, CommandResult, Ctx, EventDef, GameEvent, Modifier, SystemDef } from './system';
 
 export interface KernelSlice {
   tick: number;
@@ -61,8 +61,18 @@ export interface Kernel {
   /** Advance game time by `count` ticks (default 1). */
   tick(count?: number): void;
   view(): PublishedView;
-  derived(stat: string): number;
-  /** Stats whose cached value differs from a full recompute. Empty when sound. */
+  /** A derived value. `entity` defaults to the player, `variant` to the plain block. */
+  derived(stat: string, entity?: string, variant?: string): number;
+  /** Every stat of an entity. Read-only. */
+  stats(entity?: string, variant?: string): ReadonlyMap<string, number>;
+  /** Every modifier collected for an entity. Read-only. */
+  modifiers(entity?: string): readonly Modifier[];
+  /** Entities that have derived values, the player first. */
+  entities(): string[];
+  /**
+   * Stats whose cached value differs from a full recompute, over every
+   * entity. Empty when sound.
+   */
   staleStats(): string[];
   /** A deep copy of the state. For tests and tools. */
   snapshot(): KernelState;
@@ -128,6 +138,12 @@ export function createKernel(options: KernelOptions): Kernel {
     if (skipLog.length > skipLogSize) skipLog.splice(0, skipLog.length - skipLogSize);
   };
 
+  const reads = {
+    derived: (stat: string, entity: string = PLAYER, variant = '') => derived.get(stat, entity, variant),
+    stats: (entity: string = PLAYER, variant = '') => derived.table(entity, variant),
+    modifiers: (entity: string = PLAYER) => derived.modifiers(entity),
+  };
+
   // One context per system, built once. The getters read the current state
   // object, so a context stays valid after `load` replaces the state.
   const contexts = new Map<string, Ctx<any>>();
@@ -142,12 +158,13 @@ export function createKernel(options: KernelOptions): Kernel {
       },
       rng,
       content,
-      derived: (stat) => derived.get(stat),
+      ...reads,
       read,
       emit: <P>(event: EventDef<P>, payload: P, source?: string) => {
         queue.push({ type: event.type, source: source ?? id, tick: state.kernel.tick, payload });
       },
-      touch: (sourceId) => derived.touch(sourceId),
+      touch: (sourceId, entity) => derived.touch(sourceId, entity),
+      dropEntity: (entity) => derived.dropEntity(entity),
       skip: (action, reason) => logSkip(id, action, reason),
     });
   }
@@ -159,8 +176,13 @@ export function createKernel(options: KernelOptions): Kernel {
   for (const system of systems) {
     for (const [stat, def] of Object.entries(system.stats ?? {})) derived.defineStat(stat, def.base);
     for (const source of system.modifiers ?? []) {
-      derived.register(source.id, () =>
-        source.collect({ state: state.slices[system.id] as DeepReadonly<unknown>, content, read }),
+      derived.register(source.id, (entity) =>
+        source.collect({ state: state.slices[system.id] as DeepReadonly<unknown>, content, read, entity }),
+      );
+    }
+    if (system.resolve) {
+      derived.registerResolver(system.id + '/', ({ entity, variant, mods }) =>
+        system.resolve!({ state: state.slices[system.id] as DeepReadonly<unknown>, content, read, entity, variant, mods }),
       );
     }
     for (const handler of system.commands ?? []) {
@@ -171,6 +193,14 @@ export function createKernel(options: KernelOptions): Kernel {
       const list = subscribers.get(handler.event.type) ?? [];
       list.push({ system, handle: handler.handle });
       subscribers.set(handler.event.type, list);
+    }
+  }
+
+  // After every source is registered, so a dependency may name a source of a
+  // system that comes later in the order.
+  for (const system of systems) {
+    for (const source of system.modifiers ?? []) {
+      for (const on of source.dependsOn ?? []) derived.depend(source.id, on);
     }
   }
 
@@ -270,7 +300,7 @@ export function createKernel(options: KernelOptions): Kernel {
           state: state.slices[system.id] as DeepReadonly<unknown>,
           tick: state.kernel.tick,
           content,
-          derived: (stat) => derived.get(stat),
+          ...reads,
           read,
         });
       }
@@ -278,7 +308,8 @@ export function createKernel(options: KernelOptions): Kernel {
       return options.freezeViews ? deepFreeze(view) : view;
     },
 
-    derived: (stat) => derived.get(stat),
+    ...reads,
+    entities: () => derived.entityIds(),
     staleStats: () => derived.findStale(),
     snapshot: () => cloneJson(state),
     skips: () => [...skipLog],

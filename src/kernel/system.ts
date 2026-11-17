@@ -78,9 +78,15 @@ export function on<S, P>(event: EventDef<P>, fn: (ctx: Ctx<S>, event: GameEvent<
 
 // ---- derived values ----
 
+/**
+ * One modifier. A source may return objects with more fields than these (a
+ * label, a gate, an origin). The kernel passes them through untouched; a
+ * resolver reads them.
+ */
 export interface Modifier {
+  /** A declared stat, or a target under the prefix of a system with a resolver. */
   stat: string;
-  /** Value of a stat = (base + sum of add) * product of mult. */
+  /** Default formula: value of a stat = (base + sum of add) * product of mult. */
   kind: 'add' | 'mult';
   value: number;
 }
@@ -93,40 +99,67 @@ export interface StatDef {
 export interface SourceCtx<S> {
   readonly state: DeepReadonly<S>;
   readonly content: ContentIndex;
+  /** The entity the modifiers are collected for. `PLAYER` unless a system reads another. */
+  readonly entity: string;
   read<T>(system: SystemDef<T, any>): DeepReadonly<T>;
 }
 
 export interface ModifierSourceDef<S> {
   /** `<system id>/<name>`. */
   id: string;
+  /**
+   * Ids of other sources whose inputs this one also reads, through `read`. A
+   * touch of one of them touches this source too, in the same call.
+   */
+  dependsOn?: string[];
   collect(ctx: SourceCtx<S>): Modifier[];
+}
+
+/** What a resolver gets. Like a source, it may not read derived values. */
+export interface ResolveCtx<S> extends SourceCtx<S> {
+  /** An opaque key the resolver defines. `''` is the plain block. */
+  readonly variant: string;
+  /** Every modifier collected for the entity, from every source, in source order. */
+  readonly mods: readonly Modifier[];
+}
+
+/** Reads of derived values. `entity` defaults to the player, `variant` to the plain block. */
+export interface DerivedReads {
+  derived(stat: string, entity?: string, variant?: string): number;
+  /** Every stat of an entity. Read-only. */
+  stats(entity?: string, variant?: string): ReadonlyMap<string, number>;
+  /** Every modifier collected for an entity. Read-only. */
+  modifiers(entity?: string): readonly Modifier[];
 }
 
 // ---- contexts ----
 
 /** Read access, given to `view`. */
-export interface ViewCtx<S> {
+export interface ViewCtx<S> extends DerivedReads {
   readonly state: DeepReadonly<S>;
   readonly tick: number;
   readonly content: ContentIndex;
-  derived(stat: string): number;
   read<T>(system: SystemDef<T, any>): DeepReadonly<T>;
 }
 
 /** Write access to the system's own slice, given to tick, commands and events. */
-export interface Ctx<S> {
+export interface Ctx<S> extends DerivedReads {
   /** The system's own slice. Mutate it in place. */
   readonly state: S;
   readonly tick: number;
   readonly rng: Rng;
   readonly content: ContentIndex;
-  derived(stat: string): number;
   /** Another system's slice, read-only. */
   read<T>(system: SystemDef<T, any>): DeepReadonly<T>;
   /** Queue an event. Delivery happens after the current handler returns. */
   emit<P>(event: EventDef<P>, payload: P, source?: string): void;
-  /** Bump the change counter of a modifier source. Call it when its inputs change. */
-  touch(sourceId: string): void;
+  /**
+   * Bump the change counter of a modifier source. Call it when its inputs
+   * change. With an entity, only that entity's values are rebuilt.
+   */
+  touch(sourceId: string, entity?: string): void;
+  /** Forget the derived values of an entity that no longer exists. */
+  dropEntity(entity: string): void;
   /** Record an action that did not happen, outside a command. */
   skip(action: string, reason: string): void;
 }
@@ -145,6 +178,13 @@ export interface SystemDef<S, V = unknown> {
   /** Derived values this system owns, keyed `<system id>/<name>`. */
   stats?: Record<string, StatDef>;
   modifiers?: ModifierSourceDef<S>[];
+  /**
+   * Computes every stat under `<system id>/` that has no base, from the
+   * modifiers collected for one entity. Every returned key starts with
+   * `<system id>/`. Modifier targets under that prefix are the resolver's to
+   * check.
+   */
+  resolve?(ctx: ResolveCtx<S>): Record<string, number>;
   tick?(ctx: Ctx<S>): void;
   commands?: CommandHandler<S>[];
   events?: EventHandler<S>[];

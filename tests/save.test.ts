@@ -75,7 +75,9 @@ describe('save envelope', () => {
     });
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.warnings).toHaveLength(2);
+    // One warning per system whose slice is missing, and one for the unknown slice.
+    expect(result.warnings).toHaveLength(kernel.systems.length + 1);
+    expect(result.warnings.filter((w) => w.includes('"gone"'))).toHaveLength(1);
     expect(kernel.snapshot().slices.counter).toEqual(counter.initial());
   });
 

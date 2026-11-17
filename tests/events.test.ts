@@ -40,7 +40,10 @@ describe('event bus', () => {
   it('gives every event a type, a source, a tick and a payload', () => {
     const kernel = makeKernel();
     const seen: GameEvent[] = [];
-    const remove = kernel.onEvent((event) => seen.push(event));
+    const remove = kernel.onEvent((event) => {
+      // Other systems emit events of their own; this test reads the counter's.
+      if (event.type === milestoneReached.type) seen.push(event);
+    });
     kernel.tick(1200);
     expect(seen.length).toBeGreaterThan(0);
     for (const event of seen) {
