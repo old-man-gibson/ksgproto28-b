@@ -404,3 +404,186 @@ Port 5 notes:
 - Old rules that look like bugs and were ported as they are: listed under
   "Old rules ported as they are" in the README of `martial` and of
   `spellcraft`, and in `src/systems/divine/README.md` "Content".
+
+## 7. Port 6 design: the world
+
+Written before the code (2026-11-17). "Changed while building" at the end of
+the port 6 notes lists what differs.
+
+### 7.1 System folders
+
+Four folders. The old 6-file cycle (combat, locations, actions, towers,
+knockoutReturn, safety) is cut by direction: `ladder` reads only, `world`
+moves the character, `knockout` drives `world` through requests, `weather`
+reads `world`. No folder imports a folder that imports it.
+
+| Folder | Old files | Imports (systems) | Tick order |
+|---|---|---|---|
+| `ladder` | `ladder.ts`, the stop and gate half of `towers.ts`, `floorRules.ts`, `checkFloorClears` and `syncBandPositions` of `levels.ts`, `towers.data.ts` | `combat`, `counters`, `levels`, `log`, `skills` | none |
+| `world` | `locations.ts`, `actions.ts` without the condition tick, `mapped.ts`, `safety.ts`, `search.ts`, `activitydrops.ts`, `keyitems.ts`, the moving half of `towers.ts` (`climbTo`, `rideLeg`, `ride`), `locations.data.ts` | `attributes`, `combat`, `counters`, `gold`, `items`, `ladder`, `log`, `materials`, `mercy`, `resources`, `skills`, `stats`, `statuses` | 5 |
+| `knockout` | `knockoutReturn.ts`, the three knockout branches of `tickPlayerStatuses`, the knockout half of `onDefeat`, `returnRecoverTarget` of `huntrest.ts`, the recovery branch of `tickAction` | `clock`, `combat`, `counters`, `ladder`, `log`, `resources`, `stats`, `statuses`, `world` | 4 |
+| `weather` | `weather.ts`, `exposure.ts`, the weather tables of `climate.data.ts` | `clock`, `combat`, `counters`, `log`, `skills`, `stats`, `statuses`, `world` | 20 |
+
+Order: `resources` and `statuses` tick at 0, `knockout` at 4, `world` at 5,
+`combat` at 10, `weather` at 20. The old loop ran pools, conditions, the
+recovery check, the return step, the activity, the fight, then exposure.
+
+### 7.2 Slices
+
+`world` (version 1):
+
+| Field | Old field |
+|---|---|
+| `spot` | `state.spot`. Starts at `f0_cell`. |
+| `discovered` | `state.discovered` |
+| `travel` | `state.travel`: `{ from, to, ticksLeft, total }` or null |
+| `travelPlan`, `travelIntent` | the same |
+| `activity`, `activityProgress` | the same |
+| `resumeActivity` | the same; key order is recency |
+| `explored`, `finds` | the same |
+| `safeSpots` | `{ nearest, unconditional }` |
+| `recovering` | `state.recovering` |
+
+`knockout` (version 1): `pendingReturn` (old `PendingReturn`), `proven`
+(old `ReturnSpot` or null). The streak counters `ko:n:<spot>`,
+`win:n:<spot>` and `win:at:<spot>` stay counters.
+
+`weather` (version 1): `seed` (number or null) and `darkness` (the place
+darkness last computed, 0 to 1). The old seed was a mix of the save's
+`createdAt`. System code may not read a wall clock, so the seed is one draw
+of the kernel generator, taken at the first game minute the character
+stands under an open sky. A character that never leaves a roof draws
+nothing, so no seeded test of ports 1 to 5 shifts.
+
+`ladder` has no state. Cleared, open, gated and sealed are derived from
+counters, as in the old build.
+
+`combat`, `resources`, `statuses`: no slice change.
+
+### 7.3 Content
+
+| Registry | System | Records | Note |
+|---|---|---|---|
+| `regions` | `world` | 3: `holding_level`, `threshold`, `the_ascent` | `the_hold` and `malgeri_range` are step 4 |
+| `areas` | `world` | 16: 9 of Threshold, 7 floors | |
+| `spots` | `world` | 80: 27 of Threshold, 53 on floors 0 to 6 | Whole records. `recipes`, `benches`, `caged`, `healBetweenBouts`, `dare` are kept in the data and not read until their systems exist. |
+| `key_items` | `world` | 3 | |
+| `world_text` | `world` | the keys this port fires | |
+| `towers`, `bands`, `floors` | `ladder` | 1, 2, 7 | Bands above the second and floors above 6 are step 4 |
+| `terrains`, `sky_tables`, `sky_rules` | `weather` | 6, 1, 5 | Constants of the noise field stay in code |
+| `knockout_text` | `knockout` | the `knockout.*` lines | |
+
+Converted by `scripts/convert-world.mjs`. The task text counts 9 Threshold
+job spots; the old data has 27 Threshold spots, of which 6 hold a job. All
+27 are ported: Threshold is a mapped region and the map shows every spot.
+
+### 7.4 Commands (player)
+
+All of `world`. Each ends a knockout return in flight when it is accepted
+(`world/player-command`, heard by `knockout`), as the old `Game` methods did.
+
+| Command | Old function |
+|---|---|
+| `world/travel-to { to }` | `travelPlanTo` |
+| `world/go-and-do { spot, activity }` | `goAndDo` |
+| `world/select-activity { activity }` | `selectActivity` (null stops) |
+| `world/set-intent { activity }` | `setJourneyIntent`; `''` is "stay here" |
+| `world/cancel-plan` | `cancelTravelPlan` |
+| `world/climb { floor }` | `climbTo` (null is the hub) |
+| `world/fast-travel { to }` | `fastTravelTo` (no button calls it, as in the old build) |
+
+One hop (old `startTravel`) is a function of the system, used by the plan.
+
+### 7.5 Requests and events between the systems
+
+Requests `world` answers (the caller needs the outcome in its handler):
+
+| Request | Caller | Old call |
+|---|---|---|
+| `world/start-activity { activity }`, answers a boolean | `knockout` | `startActivity`: does not end the return |
+| `world/go { spot, activity }`, answers a boolean | `knockout` | `goAndDo` |
+| `world/ride { floor }`, answers a boolean | `knockout` | `climbTo` |
+| `world/retreat { reason }`, answers the spot left | `knockout` | `retreatToSafety`, plus `recovering = true` |
+| `world/recover` | `knockout` | `recovering = false` and the "recovered" line |
+
+Requests `world` makes: `combat/set-hunt { site }` and `combat/stop-hunt`
+(new in `combat`: the hunt loop set from a system, where `combat/hunt` is
+the player's command), `combat/start-forced`, `combat/abandon`,
+`gold/add`, `gold/spend`, `materials/grant`, `mercy/chance`, `items/grant`.
+
+Events `world` emits:
+
+| Event | Payload | Heard by |
+|---|---|---|
+| `world/arrived` | `{ spot, from, ambushed }` | `weather` (darkness), `knockout`; port 7 quests |
+| `world/activity-changed` | `{ spot, activity, kind }` | `knockout`; the panel |
+| `world/player-command` | `{ type }` | `knockout`: the return ends |
+| `world/cycle` | `{ spot, activity, kind, tags, baseTicks }` | `weather`: exposure by work |
+| `world/discovered` | `{ spot }` | port 7 |
+
+To other systems: `resources/set-pace` per activity, on travel and on
+recovery (`RECOVERY_MULT`, `halted` while travelling, `resting`);
+`statuses/situation { down }`; `counters/bump` and `set` (`gold:earned`,
+`gather:<material>`, `flag:search:...`, `found:<material>`, find stats);
+`skills/grant-xp`, `skills/check-discovery`; `attributes/grant-xp-split`;
+`ladder/check` on arrival; `log/line`.
+
+`ladder` hears `combat/kill`, `combat/fight-won` and `ladder/check`, pays
+the floor clear XP through `levels/grant-xp`, sets `level:floor:<id>` and
+`cleared:band:<id>`, and emits `ladder/floor-cleared { floor }`. `world`
+hears that and sends the hunt site again, since `levelStep` may have moved.
+
+`knockout` hears `combat/defeat` (a blow), `statuses/fatal`,
+`statuses/detonated`, `statuses/damage` (a condition, in a fight or not),
+`combat/fight-won` (streaks, the proven hunt, the progress of the return)
+and `world/player-command`. It ticks before `world`: while
+`world.recovering` it checks the recovery mark (60%, or 95% and the hunt
+rest target with a return pending) and asks `world/recover`; then it takes
+one step of the return. It emits `resources/defeat` for the 1 HP.
+
+Subscriber order makes the condition case work: `knockout` (order 4) hears
+`statuses/damage` before `combat` (order 10) closes the fight, so it reads
+whether the fight was forced; `combat` then emits `combat/defeat` with
+`byCondition: true`, which `knockout` ignores.
+
+`weather` states `combat/darkness` from the source `weather/darkness`
+(place darkness, darkvision level, the `eyeless` condition), recomputed
+each game minute and on `world/arrived`. It registers the reader of `sky`
+encounter lines with `combat` (`registerSiteSky`, new in `combat/spawn.ts`,
+the same pattern as the rotation kinds). It applies the sky rules with
+`statuses/apply` under the source `Weather: <kind>`.
+
+### 7.6 The encounter site
+
+`world` builds `EncounterSite` from a spot: `encounters`, `groupWeights`,
+`modifierWeights`, `fightLimit`, `stampOnClear`, `levelStep` (old
+`bandLevelStep`, from `ladder`), `dynamicLevel` (from the band). The hunt
+activity keeps `combat.hunting` on with the site of the spot; a forced spot
+that is not cleared starts its fight on arrival and on every tick with no
+fight, as old `tickAction` did.
+
+### 7.7 Panel
+
+One panel, in `world`: "Location". Top to bottom: the place line and the
+journey line (one fixed-height box, also while standing); the activities of
+the spot; the map of the region as a list of spots by area (click a spot:
+its card with "Go" and one "Go and do" per activity; no other travel
+control); the ladder (each rung with its state: cleared, open, gated with
+the terms of the gate and their progress, sealed). No element changes size
+with the tick or the fight. The old surveyed plan drawn from `map`
+coordinates and the Stations row are left to the UI step; the `map` field
+is ported.
+
+### 7.8 Waits
+
+Port 7: quests, shops, the floor 0 script and the weapon rack, prestige
+(`bandPassed`, `floorsSeen`, the return cleared by a prestige), the John
+port, the offline summary lines of the ladder end.
+
+Step 3: the keeper of the Cages (`healBetweenBouts`) and the dare with its
+hold of play (bonus time), practice shaping, benches and craft activities,
+gather activities (no spot in scope has one), the hall tutor.
+
+Step 4: Weathersense, the festival, ward windows, the sea, band hubs
+(`climbToHub`), the approach of a road (no road in scope has one), every
+floor above 6.
