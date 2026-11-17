@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { PLAYER, type Kernel, type Modifier } from '../src/kernel';
 import { attrXpNeeded, grantAttrXp, grantAttrXpSplit } from '../src/systems/attributes';
+import { grantItem, setBearer, unequipSlot, equipItem, type ItemsState } from '../src/systems/items';
 import { grantLevelXp } from '../src/systems/levels';
 import { drawPool, exertPool, hurtPlayer, setExerting, setPace, spendPool } from '../src/systems/resources';
 import { checkDiscovery, grantSkillXp, raiseSkillCap } from '../src/systems/skills';
 import {
-  armedFact,
   computeBlock,
   dampFact,
   resFloorFact,
@@ -17,10 +17,9 @@ import {
   statOf,
   uncappedResistance,
   vsVariant,
-  wieldTagFact,
 } from '../src/systems/stats';
 import { applyStatus, heldOf, STATUSES, type StatusesState } from '../src/systems/statuses';
-import { ask, emit, makeGame, patch, setMods, slice } from './helpers';
+import { ask, emit, equip, makeGame, patch, setMods, slice, unequip } from './helpers';
 
 /**
  * Port of the old tests/derivedcache.test.ts. Its intent: identical inputs
@@ -29,11 +28,12 @@ import { ask, emit, makeGame, patch, setMods, slice } from './helpers';
  * `kernel.staleStats()`, which recomputes every stat of every entity with
  * every source collected again.
  *
- * Changed: the call shape, and where the old cases changed equipment, a
- * buff or a condition, the same modifiers come from the test-only probe.
+ * Changed: the call shape, and where the old cases changed a buff, the
+ * same modifiers come from the test-only probe. Equipment is the real
+ * `items` system since spine port 3: uid 1 is the starting rusty sword.
  *
  * Left behind, for the ports of the systems they need:
- * - forged pieces (assembly), the festival bonus (prestige), Cooking's food
+ * - forged pieces (modular smithing), the festival bonus (prestige), Cooking's food
  *   milestones over a cooked dish (cooking);
  * - the rebuild count under a gale on the open ridge (weather);
  * - the long fight of the sweep. The sweep here runs every request these
@@ -47,13 +47,6 @@ function matchesFresh(kernel: Kernel, variant = ''): void {
   const fresh = computeBlock(kernel.modifiers(), variant).stats;
   for (const key of STAT_KEYS) expect(statOf(kernel, key, PLAYER, variant), key).toBe(fresh[key]);
 }
-
-const RUSTY_SWORD: Modifier[] = [
-  armedFact(),
-  wieldTagFact('sword'),
-  wieldTagFact('metal'),
-  statMod('damage', 'add', 3, 'Rusty Sword', { kind: 'item', slot: 'weapon' }),
-];
 
 describe('derived-stats cache', () => {
   it('returns the identical object while nothing modifier-relevant changes', () => {
@@ -73,12 +66,12 @@ describe('derived-stats cache', () => {
   it('invalidates on equipment changes', () => {
     const kernel = makeGame();
     const bare = statBlockOf(kernel);
-    setMods(kernel, RUSTY_SWORD);
+    equip(kernel, 1); // rusty sword
     const armed = statBlockOf(kernel);
     expect(armed).not.toBe(bare);
     expect(armed.damage).toBe(bare.damage + 3);
     matchesFresh(kernel);
-    setMods(kernel, []);
+    unequip(kernel, 'weapon');
     const disarmed = statBlockOf(kernel);
     expect(disarmed).not.toBe(armed);
     expect(disarmed).toEqual(bare);
@@ -108,12 +101,11 @@ describe('derived-stats cache', () => {
 
   it('invalidates on a condition: its modifiers, its damping, its resistance rules', () => {
     const kernel = makeGame();
-    setMods(kernel, RUSTY_SWORD);
+    equip(kernel, 1);
     const before = { ...statBlockOf(kernel) };
     // What a chill that dulls weapon bonuses by 50% and takes 30% off cold
     // resistance, floored at -20%, states.
     setMods(kernel, [
-      ...RUSTY_SWORD,
       dampFact(0.5, { kinds: ['item', 'affix', 'rune'], slot: 'weapon' }),
       statMod('resCold', 'add', -0.3, 'Chilled', { kind: 'status' }),
       resFloorFact(-0.2),
@@ -165,8 +157,8 @@ describe('derived-stats cache', () => {
 
   it('serves target-gated variants from the same collection, consistently', () => {
     const kernel = makeGame();
+    equip(kernel, 1);
     setMods(kernel, [
-      ...RUSTY_SWORD,
       { ...statMod('damage', 'mult', 0.5, 'Beast Hunter', { kind: 'title' }), requiresMonsterTag: 'beast' } as Modifier,
     ]);
     const tags = vsVariant(['vermin', 'beast']);
@@ -188,7 +180,7 @@ describe('derived-stats cache', () => {
 
   it('never drifts from a fresh compute across a long run of every request', () => {
     const kernel = makeGame();
-    setMods(kernel, RUSTY_SWORD);
+    equip(kernel, 1);
     kernel.dispatch(setExerting({ on: true }));
     const beast = vsVariant(['beast']);
     let seed = 11;
@@ -199,8 +191,11 @@ describe('derived-stats cache', () => {
     };
     const attrs = ['str', 'dex', 'con', 'int', 'wis', 'cha'] as const;
     const tagSets = [['combat'], ['combat', 'sword'], ['magic', 'arcane'], ['hunt'], ['explore'], ['smithing']];
+    const slots = ['weapon', 'offhand', 'chest', 'head'] as const;
+    const drops = ['iron_dagger', 'leather_vest', 'leather_cap', 'wooden_shield', 'oak_club', 'steel_greatsword'];
+    const sizes = ['small', 'medium', 'large'] as const;
     for (let i = 0; i < 4000; i++) {
-      switch (roll(12)) {
+      switch (roll(16)) {
         case 0:
           emit(kernel, grantAttrXp, { attr: attrs[roll(6)], amount: 5 + roll(60) });
           break;
@@ -234,6 +229,24 @@ describe('derived-stats cache', () => {
         case 10:
           emit(kernel, setPace, { resting: roll(2) === 0, hpMult: roll(2) === 0 ? 15 : 1 });
           break;
+        case 11: {
+          // An item drops at some size; the pack is kept short.
+          const pack = slice<ItemsState>(kernel, 'items').inventory;
+          if (pack.length < 12) ask(kernel, grantItem, { defId: drops[roll(drops.length)], size: sizes[roll(3)], affixChance: 0.5 });
+          break;
+        }
+        case 12: {
+          // Equip something from the pack, into its own slot or the other hand. A skip is fine.
+          const pack = slice<ItemsState>(kernel, 'items').inventory;
+          if (pack.length > 0) kernel.dispatch(equipItem({ uid: pack[roll(pack.length)].uid, ...(roll(3) === 0 ? { slot: slots[roll(2)] } : {}) }));
+          break;
+        }
+        case 13:
+          kernel.dispatch(unequipSlot({ slot: slots[roll(slots.length)] }));
+          break;
+        case 14:
+          ask(kernel, setBearer, { grants: roll(2) === 0 ? [] : ['arms:+1'], size: sizes[roll(3)] });
+          break;
         default:
           emit(kernel, raiseSkillCap, { id: 'chronosense' });
       }
@@ -248,6 +261,8 @@ describe('derived-stats cache', () => {
     expect(state.levels.level).toBeGreaterThan(5);
     expect(Object.keys(state.skills.skills).length).toBeGreaterThan(3);
     expect(state.attributes.attrs.str.level).toBeGreaterThan(10);
+    expect(state.items.uidCounter).toBeGreaterThan(10);
+    expect(Object.keys(state.items.equipment).length).toBeGreaterThan(0);
   }, 60000);
 });
 

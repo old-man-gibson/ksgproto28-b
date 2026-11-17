@@ -46,6 +46,10 @@ take a `ConditionReader`, an object with one function per kind. This file
 imports no system. The reader of the player is `conditionReader(ctx)` in the
 skills system, which takes each kind from the system that owns it.
 
+`equippedTag` reads the tags the `items` system states for worn gear
+(source `items/worn`): `wieldTagFact` per tag, and `armedFact` when the
+weapon slot is filled. Bare hands carry `unarmed`.
+
 `conditionSchema` is the schema of a condition in a content file. The kernel
 schema has no union type, so every field but `type` is optional in it;
 `conditionIssues` checks that a record has exactly the fields its type needs.

@@ -32,14 +32,15 @@ import { emit, makeGame, patch, reads, setMods, slice } from './helpers';
  * Port of the old tests/attributes.test.ts, tests/attackspeed.test.ts and the
  * attribute and stat cases of tests/breakdown.test.ts.
  *
- * Changed: the call shape. Equipment, buffs, achievements and fusion are not
- * ported yet. Where an old test used one of them only as a source of
- * modifiers, the same modifiers come from the test-only probe source here,
- * and the test says so. What each of those systems does beyond emitting
- * modifiers is left behind:
- * - equip and unequip, and item requirements (`canEquip`): the items port;
- * - the rune line and the item line of the damage breakdown: the items port;
+ * Changed: the call shape. Buffs, achievements and fusion are not ported
+ * yet. Where an old test used one of them only as a source of modifiers, the
+ * same modifiers come from the test-only probe source here, and the test
+ * says so. What each of those systems does beyond emitting modifiers is left
+ * behind:
  * - damage tooltips and the fight feed's breakdowns: the combat port.
+ *
+ * The equipment cases of the old file (equip and unequip, `canEquip`, fusion
+ * with a worn sword) are in tests/items.test.ts since spine port 3.
  */
 
 function withLevels(levels: Partial<Record<AttributeId, number>>): Kernel {
@@ -170,10 +171,13 @@ describe('attribute training', () => {
 describe('stat breakdowns (tooltips)', () => {
   it('labels each contribution with its source and matches the live total', () => {
     const kernel = withLevels({ str: 21 }); // rank bonus: +2 damage
-    setMods(kernel, [statMod('damage', 'add', 6, 'Iron Sword', { kind: 'item', slot: 'weapon' })]);
+    patch(kernel, (slices) => {
+      slices.items.equipment.weapon = { uid: 700, defId: 'iron_sword', slots: 1, runes: ['minor_rune_might'] };
+    });
     const bd = statBreakdown(kernel.modifiers(), 'damage');
     const sources = bd.lines.map((l) => l.source);
     expect(sources).toContain('Iron Sword');
+    expect(sources).toContain('Minor Rune of Might (Iron Sword)');
     expect(sources).toContain('Strength Training — Intermediate');
     expect(bd.total).toBeCloseTo(statOf(kernel, 'damage'), 5);
     // Base reflects the formula: 2 + 1.2 × effective STR.

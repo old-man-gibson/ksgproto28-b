@@ -79,8 +79,6 @@ curve inline.
   amount.
 - Talent, cap raises of the legacy, Foresight: read as facts the prestige
   port states (see the stats README).
-- Unlock conditions on a wielded tag hold only for `unarmed` until the items
-  port states what is wielded.
 - A skill panel of its own. The character panel shows the tree.
 
 ## Differences from the old build

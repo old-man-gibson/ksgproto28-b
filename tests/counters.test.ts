@@ -21,10 +21,10 @@ import {
   type CountersState,
 } from '../src/systems/counters';
 import { conditionReader, SKILL_LIST, SKILLS } from '../src/systems/skills';
-import { ATTRIBUTE_IDS, armedFact, fuseFact, namedFact, targetIssue, wieldTagFact } from '../src/systems/stats';
+import { ATTRIBUTE_IDS, fuseFact, namedFact, targetIssue } from '../src/systems/stats';
 import { ATTRIBUTE_LIST, ATTRIBUTE_TRAINING } from '../src/systems/attributes';
 import { RESOURCE_LIST } from '../src/systems/resources';
-import { emit, makeGame, patch, reads, setMods, slice } from './helpers';
+import { emit, equip, makeGame, patch, reads, setMods, slice } from './helpers';
 
 /**
  * Counters and the condition language. The old build had no test file for
@@ -192,10 +192,10 @@ describe('the condition language', () => {
     expect(met({ type: 'quest', id: 'the_first_ascent' })).toBe(false);
     expect(met({ type: 'boon', id: 'foresight' })).toBe(false);
 
-    // What the items, quests and prestige ports will state.
+    // The rusty sword in hand states its tags (the items system). The quests
+    // and prestige ports will state the other two facts.
+    equip(kernel, 1);
     setMods(kernel, [
-      armedFact(),
-      wieldTagFact('sword'),
       namedFact('quest:the_first_ascent', 1),
       namedFact('boon:foresight', 2),
     ]);

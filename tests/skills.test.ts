@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Kernel, Modifier } from '../src/kernel';
+import type { Kernel } from '../src/kernel';
 import type { AttributesState } from '../src/systems/attributes';
 import type { CountersState } from '../src/systems/counters';
 import type { LogState } from '../src/systems/log';
@@ -23,23 +23,22 @@ import {
   type SkillState,
 } from '../src/systems/skills';
 import {
-  armedFact,
   namedFact,
   scaleFact,
   statBlockOf,
   statMod,
   statOf,
   styleFact,
-  wieldTagFact,
   type AttributeId,
   type StatMod,
 } from '../src/systems/stats';
-import { emit, makeGame, patch, reads, setMods, slice } from './helpers';
+import { emit, equip, giveItem, makeGame, patch, reads, setMods, slice, unequip } from './helpers';
 
 /**
  * Port of the old tests/skills.test.ts. Changed: the call shape (requests
- * through the kernel; a wielded weapon and a combat style are facts from the
- * test-only probe source, standing in for the items and styles systems).
+ * through the kernel; a combat style is a fact from the test-only probe
+ * source, standing in for the styles system). A wielded weapon is a real
+ * item since spine port 3: uid 1 is the starting rusty sword.
  *
  * Left behind, for the ports of the systems they need:
  * - "kills no longer spray XP across every weapon family" (combat, world);
@@ -72,14 +71,12 @@ function give(
   });
 }
 
-// What the items port will state for a wielded weapon (old data/items.data.ts).
-const RUSTY_SWORD: Modifier[] = [
-  armedFact(),
-  wieldTagFact('sword'),
-  wieldTagFact('metal'),
-  statMod('damage', 'add', 3, 'Rusty Sword', { kind: 'item', slot: 'weapon' }),
-];
-const KATANA: Modifier[] = [armedFact(), wieldTagFact('sword'), wieldTagFact('katana'), wieldTagFact('metal')];
+/** Arm with a katana: the sword schools are gated on that sub-family, not on any sword. */
+function armKatana(kernel: Kernel): void {
+  const dex = slice<AttributesState>(kernel, 'attributes').attrs.dex.level;
+  if (dex < 8) give(kernel, { attrs: { dex: 8 } }); // katana requirement
+  expect(equip(kernel, giveItem(kernel, 'katana', { slots: 1 }).uid).ok).toBe(true);
+}
 
 const grant = (kernel: Kernel, tags: string[], amount: number, sourceKey?: string | string[]) =>
   emit(kernel, grantSkillXp, { tags, amount, sourceKey });
@@ -181,7 +178,7 @@ describe('skill discovery & branching', () => {
 
   it('unlocks the full branch chain when conditions are met', () => {
     const kernel = newGame({ skills: { fighting: { level: 10, xp: 0 } } });
-    setMods(kernel, RUSTY_SWORD);
+    equip(kernel, 1); // starting rusty sword
     discover(kernel, ['combat', 'sword']);
     expect(held(kernel, 'swordsmanship')).toBeDefined();
 
@@ -193,7 +190,7 @@ describe('skill discovery & branching', () => {
     discover(kernel, ['combat', 'sword', 'style:quick']);
     expect(held(kernel, 'school_ittou_ryu')).toBeUndefined(); // no katana yet
 
-    setMods(kernel, KATANA);
+    armKatana(kernel);
     discover(kernel, ['combat', 'sword', 'style:quick']);
     expect(held(kernel, 'school_ittou_ryu')).toBeDefined();
   });
@@ -395,7 +392,7 @@ describe('practice only flows upward', () => {
   it('sword bonuses stay in the scabbard when the sword does', () => {
     const kernel = newGame({ skills: { swordsmanship: { level: 40, xp: 0 }, ittou_ryu: { level: 20, xp: 0 } } });
     const bare = { ...statBlockOf(kernel) };
-    setMods(kernel, RUSTY_SWORD);
+    equip(kernel, 1); // rusty sword
     const armed = statBlockOf(kernel);
     expect(armed.damage).toBeGreaterThan(bare.damage * 1.5);
     expect(armed.crit).toBeGreaterThan(bare.crit);
@@ -404,13 +401,15 @@ describe('practice only flows upward', () => {
 
 describe('school mastery only pays while you practise the art', () => {
   function jigenMaster(): Kernel {
-    return newGame({
+    const kernel = newGame({
       skills: {
         fighting: { level: 20, xp: 0 },
         swordsmanship: { level: 30, xp: 0 },
         school_jigen_ryu: { level: 40, xp: 0 },
       },
     });
+    armKatana(kernel); // the school claims the Crush slot, and its bonus needs a katana
+    return kernel;
   }
   /** Lines of a source that apply right now. */
   const lines = (kernel: Kernel, prefix: string) =>
@@ -425,25 +424,29 @@ describe('school mastery only pays while you practise the art', () => {
     const kernel = jigenMaster();
     // The school claims the Crush slot: with a katana in hand the style
     // fought in is `jigen_ryu` (old data/styles.data.ts).
-    setMods(kernel, [...KATANA, styleFact('jigen_ryu')]);
+    setMods(kernel, [styleFact('jigen_ryu')]);
     const practising = applied(kernel, 'Jigen-ryu Lv').damage;
-    setMods(kernel, [...KATANA, styleFact('quick')]);
+    setMods(kernel, [styleFact('quick')]);
     const elsewhere = applied(kernel, 'Jigen-ryu Lv').damage;
     // The school's line is 40 x 0.5% = +20% damage, and only in its own style.
     expect(practising / elsewhere).toBeCloseTo(1.2, 6);
     // With no style stated at all, a style-gated line lapses too.
-    setMods(kernel, KATANA);
+    setMods(kernel, []);
     expect(statOf(kernel, 'damage')).toBeCloseTo(elsewhere, 6);
   });
 
   it('Swordsmanship still pays with any sword, in any stance', () => {
     const kernel = jigenMaster();
-    setMods(kernel, [...KATANA, styleFact('quick')]);
-    const armed = statOf(kernel, 'damage');
     setMods(kernel, [styleFact('quick')]);
-    const bare = statOf(kernel, 'damage');
+    const withSkill = (level: number) => {
+      give(kernel, { skills: { swordsmanship: { level, xp: 0 } } });
+      return statOf(kernel, 'damage');
+    };
     // Swordsmanship 30 x 1.5% = +45% damage, with any sword.
-    expect(armed / bare).toBeCloseTo(1.45, 6);
+    expect(withSkill(30) / withSkill(0)).toBeCloseTo(1.45, 6);
+    // Out of the hand the line pays nothing: the level no longer matters.
+    unequip(kernel, 'weapon');
+    expect(withSkill(30)).toBeCloseTo(withSkill(0), 9);
   });
 });
 

@@ -69,4 +69,3 @@ are not positioned elements.
   by the trained level. No hook here; the granting system shapes the amount
   before it asks.
 - The XP router (`setXpRouter`, Weakest Weapon Master past its ceiling).
-- Item requirements (`canEquip`): the items port.

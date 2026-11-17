@@ -74,22 +74,27 @@ tested with a test-only source; the system that feeds it is not ported yet.
 
 | Old read | The later system does this |
 |---|---|
-| Equipment, affixes, runes, hand bonuses, fit scale (`collectBaseMods`) | Registers a source that returns the item modifiers, already scaled by fit, with origin `item`, `affix`, `rune` or `handBonus` and the slot. |
-| `equippedTags`, the `unarmed` pseudo-tag | The same source returns `wieldTagFact(tag)` per tag and `armedFact()` when the weapon slot is filled. Without `armedFact` the entity wields `unarmed`. |
-| Oversize and undersize penalties (`wield`) | A source returns them as `attackSpeed` and `damage` mult modifiers. |
 | Achievement tiers, titles, the festival bonus, combat buffs | Each registers a source with its modifiers. |
 | The style fought in, style mods, exertion mods, momentum | The styles system returns `styleFact(id)` and its modifiers. A source that reads `exerting` or a pool lock declares `dependsOn: ['resources/locks']`. |
 | The fast's dulling of penalties (`fastGuard(...).ward` in `collectBaseMods`) | Not decided. The old code multiplied every negative status modifier by (1 - ward). A source may not read a derived value, so the mutagens port states the ward as a fact and the pipeline applies it to negative modifiers of origin `status`. |
 | Fused super-attributes (`state.fused`) | `fuseFact(a, b)`. The fusion's name in the attribute breakdown is not carried. |
 | Talent (`talentBonus`) | `scaleFact('talent:<skill id>', bonus)`. The skills source marks its effects with `scaleBy`. The "(talent +x%)" label suffix is not shown. |
 | Endowment (`endowmentBonus`) | `endowmentFact(attr, bonus)`. |
-| Chromosome mods, body size (`mutagens`) | A source; `fromStat` is supported. |
+| Chromosome mods (`mutagens`) | A source; `fromStat` is supported. Body size and arm grants go to the `items` system through its `items/set-bearer` request. |
+| Carved runes socketed in gear (`resolveRune` of a carving) | The runecarving port extends `resolveRune` in `src/systems/items/defs.ts`; the source `items/worn` already returns rune modifiers with origin `rune`. |
+| Forged items (`itemDefOf` of a forged instance) | Modular smithing adds its branch to `itemDefOf` in `src/systems/items/defs.ts`. |
 | A title's immunity to a condition (`TitleDef.immune`) | `namedFact('statusImmune:<status id>', 1)` or `namedFact('statusImmuneElement:<damage type>', 1)`. The statuses system reads them. |
 | Quest done, boon rank, Foresight, skill cap raises | `namedFact('quest:<id>', 1)`, `namedFact('boon:<id>', rank)`, `namedFact('foresight', 1)`, `namedFact('skillCap:<id>', n)`. |
 | Monster stat formulas (`monsterStats.ts`) | The resolver runs the player formulas for every entity. The combat port adds the monster formulas and selects by entity. |
 
 ## Filled
 
+- Spine port 3, `items` (source `items/worn`, depends on `skills/effects`):
+  equipment, affixes, catalogue runes, hand bonuses and the fit scale
+  (`collectBaseMods`), with origin `item`, `affix`, `rune` or `handBonus`
+  and the slot; `equippedTags` as `wieldTagFact` per tag and `armedFact`;
+  the oversize and undersize penalties as `attackSpeed` and `damage` mult
+  modifiers.
 - Spine port 2, `statuses` (source `statuses/held`): status mods scaled by
   effective intensity (`statusMods`), damping (`statusDampingFor` as
   `dampFact`), resistance overrides and the floor (`statusResOverrides`,

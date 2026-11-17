@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Kernel } from '../src/kernel';
 import type { AttributesState } from '../src/systems/attributes';
-import { conditionMet, setCounter } from '../src/systems/counters';
+import { conditionIssues, conditionMet, setCounter } from '../src/systems/counters';
 import {
   affixOfId,
   canEquip,
@@ -34,8 +34,8 @@ import {
   type SlotId,
 } from '../src/systems/items';
 import type { LogView } from '../src/systems/log';
-import { conditionReader } from '../src/systems/skills';
-import { attrValue, effectiveAttr, hasWieldTag, namedFact, statBlockOf, targetIssue } from '../src/systems/stats';
+import { conditionReader, SKILL_LIST, SKILLS } from '../src/systems/skills';
+import { attrValue, effectiveAttr, fuseFact, hasWieldTag, namedFact, statBlockOf, targetIssue } from '../src/systems/stats';
 import { ask, emit, equip, giveItem, makeGame, patch, reads, setMods, slice, unequip } from './helpers';
 
 /**
@@ -69,6 +69,60 @@ describe('item content', () => {
     expect(ITEM_LIST).toHaveLength(47);
     expect(ITEMS.rusty_sword).toMatchObject({ slot: 'weapon', wield: 'one_handed', tags: ['sword', 'metal'], value: 5 });
     expect(ITEM_LIST.some((def) => def.id.startsWith('forged'))).toBe(false);
+  });
+
+  it('item requirements resolve; katanas follow the sword-subgroup taxonomy', () => {
+    // Old tests/content.test.ts, "items & recipes".
+    for (const def of ITEM_LIST) {
+      for (const req of def.requirements ?? []) {
+        expect(conditionIssues(req as never), `item ${def.id}`).toEqual([]);
+        if (req.type === 'skill') expect(SKILLS[req.id], `item ${def.id} requires skill ${req.id}`).toBeDefined();
+      }
+      if (def.tags.includes('katana')) expect(def.tags, `${def.id}: katana is a sword subgroup`).toContain('sword');
+    }
+  });
+
+  it('every item names its own icon, and no name is empty', () => {
+    // Old tests/icons.test.ts: one emoji stands for several items, so each
+    // item names its art. The icon files are bought art and are not here.
+    for (const def of ITEM_LIST) {
+      expect(def.art, `${def.id}: art`).toBeTruthy();
+      expect(def.icon, `${def.id}: icon`).toBeTruthy();
+    }
+  });
+
+  it('weapon-family bonuses only apply while that weapon is held', () => {
+    // Old tests/content.test.ts, left behind by port 1 because it reads the
+    // item registry. The style of a `requiresStyle` gate is not checked
+    // against a registry here: the styles port adds that.
+    const WEAPON_TAGS = new Set(['sword', 'greatsword', 'dagger', 'bow', 'blunt', 'staff', 'shield', 'unarmed']);
+    /** The weapon family a skill belongs to: its own, or its nearest ancestor's. */
+    const familyOf = (id: string): string | undefined => {
+      const def = SKILLS[id];
+      if (!def) return undefined;
+      const own = def.tags.find((t) => WEAPON_TAGS.has(t));
+      return own ?? (def.parent ? familyOf(def.parent) : undefined);
+    };
+    /** A sub-family tag (katana within sword) is a narrower gate: every item carrying it carries the family tag. */
+    const narrowerThan = (tag: string, family: string) => {
+      const carriers = ITEM_LIST.filter((i) => i.tags.includes(tag));
+      return carriers.length > 0 && carriers.every((i) => i.tags.includes(family));
+    };
+    const gated = (mod: { requiresTag?: string; requiresStyle?: string }, family: string) =>
+      mod.requiresTag === family ||
+      (mod.requiresTag !== undefined && narrowerThan(mod.requiresTag, family)) ||
+      mod.requiresStyle !== undefined;
+
+    for (const def of SKILL_LIST) {
+      const family = familyOf(def.id);
+      if (!family) continue;
+      for (const mod of def.effects ?? []) {
+        expect(gated(mod, family), `${def.id}: '${mod.stat}' must require ${family} or a style`).toBe(true);
+      }
+      for (const milestone of def.milestones ?? []) {
+        for (const mod of milestone.bonus) expect(gated(mod, family), `${def.id} milestone '${mod.stat}'`).toBe(true);
+      }
+    }
   });
 
   it('every modifier of every item, affix and rune targets a stat the pipeline knows', () => {
@@ -242,7 +296,7 @@ describe('effective attributes (stat layer)', () => {
     setAttr(kernel, 'str', 15);
     setAttr(kernel, 'cha', 9);
     // Fusion is not ported: the probe states the fact the fusion system will.
-    setMods(kernel, [{ stat: 'stats/@fuse', kind: 'add', value: 1, data: { a: 'str', b: 'cha' } } as never]);
+    setMods(kernel, [fuseFact('str', 'cha')]);
     // eff STR (15 + 2 milestones) × 1.01 + eff CHA (9 + 1 milestone)
     expect(attrValue(kernel, 'str')).toBeCloseTo(17 * 1.01 + 10, 5);
 
