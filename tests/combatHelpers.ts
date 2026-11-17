@@ -26,7 +26,7 @@ import type { CountersState } from '../src/systems/counters';
 import type { FeedEntry, LogState } from '../src/systems/log';
 import { setPace, type ResourcesState } from '../src/systems/resources';
 import { statBlockOf, type DerivedStats } from '../src/systems/stats';
-import { ask, emit, equip, makeGame, patch, reads, run, slice } from './helpers';
+import { ask, emit, equip, makeGame, patch, reads, run, setMods, slice } from './helpers';
 import sitesData from './sites.json';
 
 export const SITES = sitesData as unknown as Record<string, EncounterSite & { forced?: boolean }>;
@@ -127,3 +127,61 @@ export function setHp(kernel: Kernel, hp: number): void {
 }
 
 export { combat };
+
+// ---- spine port 5: the player side of the registered kinds ----
+//
+// Nothing in the running game gives the player a technique or a spell yet
+// (learning and the book are step 3). A test writes the ledger and the book
+// directly.
+
+/** Put a technique in the ledger. The old test helper `learn`. */
+export function learn(kernel: Kernel, id: string, form: 'rough' | 'canonical' | 'syncretic' = 'canonical', executions = 0): void {
+  patch(kernel, (slices) => {
+    slices.martial.techniques[id] = { executions, form };
+  });
+}
+
+/** Write a spell into the book, prepared unless told otherwise. Returns its rotation id (`grimoire:<uid>`). */
+export function inscribe(
+  kernel: Kernel,
+  source: { school: 'arcane'; words: string[] } | { school: 'divine'; litany: string },
+  options: { prepared?: boolean; name?: string } = {},
+): string {
+  let uid = 0;
+  patch(kernel, (slices) => {
+    const book = slices.spellcraft;
+    uid = book.nextUid++;
+    book.grimoire.push({
+      uid,
+      source,
+      ...(options.name ? { name: options.name } : {}),
+      ...(options.prepared === false ? {} : { prepared: true }),
+    });
+  });
+  return `grimoire:${uid}`;
+}
+
+/** Set a resource pool directly, for test setup. */
+export function setPool(kernel: Kernel, id: string, value: number): void {
+  patch(kernel, (slices) => {
+    (slices.resources as ResourcesState).values[id as keyof ResourcesState['values']] = value;
+  });
+}
+
+/** Give every enemy of the open fight a health far above what the test deals, and the same maximum. */
+export function hardenFoes(kernel: Kernel, hp = 1e7): void {
+  for (const e of combatOf(kernel).fight?.enemies ?? []) {
+    if (e) setMods(kernel, [{ stat: 'stats/maxHp', kind: 'add', value: hp }], e.entity);
+  }
+  patchFight(kernel, (state) => {
+    for (const e of state.fight?.enemies ?? []) if (e) e.hp = hp;
+  });
+}
+
+/** The skip-log reasons of one action. */
+export function skipsOf(kernel: Kernel, action: string): string[] {
+  return kernel
+    .skips()
+    .filter((entry) => entry.action === action)
+    .map((entry) => entry.reason);
+}
