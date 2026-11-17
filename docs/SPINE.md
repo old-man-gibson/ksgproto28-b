@@ -683,3 +683,182 @@ gather activities (no spot in scope has one), the hall tutor.
 Step 4: Weathersense, the festival, ward windows, the sea, band hubs
 (`climbToHub`), the approach of a road (no road in scope has one), every
 floor above 6.
+
+## 8. Port 7 design: people, quests, shops, floor 0, prestige
+
+Written before the code (2026-11-17). Old sources read at `7c1267b`:
+`systems/quests.ts`, `shops.ts`, `tutorial.ts`, `prestige.ts`, `legacy.ts`,
+the sale half of `equipment.ts`, `data/npcs.data.ts`, `quests.data.ts`,
+`tutorial.data.ts`, `prestige.data.ts`, `save/offline.ts`, `tests/john.ts`,
+`scripts/pacing.ts`.
+
+### 8.1 System folders
+
+Five new folders. Selling goes to the two folders that own the goods, as in
+the old build (`equipment.ts`), so `shops` holds buying only.
+
+| Folder | Old files | Imports (systems) |
+|---|---|---|
+| `npcs` | `npcs.data.ts` (records in scope), `npcsAt`, `npcDialogue`, `talkTo`, `hasMet`, `metKey` of `quests.ts` | `counters`, `log`, `skills`, `world` |
+| `quests` | `quests.ts` without the talk half, `quests.data.ts`, `questLevelXp` of `levels.ts` | `combat`, `counters`, `gold`, `items`, `levels`, `log`, `materials`, `npcs`, `skills`, `stats`, `world` |
+| `shops` | `shops.ts` | `counters`, `gold`, `items`, `log`, `materials`, `npcs`, `stats`, `world` |
+| `tutorial` | `tutorial.ts`, `tutorial.data.ts` | `combat`, `counters`, `items`, `log`, `world` |
+| `prestige` | `prestige.ts`, `legacy.ts`, `prestige.data.ts` | `attributes`, `counters`, `gold`, `items`, `ladder`, `levels`, `log`, `skills`, `stats`, `world` |
+
+Changed folders: `items` (sale of items, spare marks, the request
+`items/equip-now`, the stash carried over a new run), `materials` (sale of
+stackables), `world` (the request `world/place`), `ladder` (the read of
+`floorsSeen`, registered by `prestige`), `weather` (seed and first-calm flag
+carried over a new run). None of the five new folders is imported by an
+older one.
+
+### 8.2 Kernel change: a new run (decision 30)
+
+A prestige replaces every slice. The old build did it with
+`createInitialState()` and copied the legacy block across. Here no system may
+write another's slice, and editing every folder to listen for a reset breaks
+"adding a system touches one folder". So the kernel gets the mechanism; the
+systems keep the rules.
+
+- `ctx.endRun()`: asks for a new run. The kernel performs it after the
+  current command or tick step has drained its events.
+- The new run: every slice is replaced by `initial()`; `kernel.tick` and the
+  random state go on; every entity but the player is dropped; every source
+  is touched. Then each system's `newRun(ctx, previous)` hook runs in system
+  order, where `previous(system)` reads that system's slice as the old run
+  left it; then the events drain.
+- A system that carries something across a prestige says so in its own
+  `newRun`: `prestige` (the legacy block), `items` (the stash, old
+  `carriedStash`), `weather` (the world seed and the first-calm flag),
+  `counters` is not touched by the kernel beyond the reset; `prestige` sets
+  the counters a run starts with.
+
+### 8.3 Slices
+
+| Slice | Version | Fields |
+|---|---|---|
+| `npcs` | none | Met is the counter `met:<npc>`, as in the old build |
+| `quests` | 1 | `quests`: id to `{ status: 'active' \| 'done', progress: number[] }` |
+| `shops` | none | Nothing about a shop is saved (old rule) |
+| `tutorial` | none | Every step reads counters and the world |
+| `prestige` | 1 | `count`, `points`, `purchases`, `peakLevels`, `peakAttrs`, `floorsSeen`, `lastHarvest`, `review`, `spentThisReview` |
+
+The old legacy block also held `cookbook` (cooking, step 3), `stronghold`,
+`stash`, `festivalBonus`, `festivalTechniques` (step 4). The stash is the
+`items` slice's own `stash` here. Each missing field arrives with a migration
+step in its port.
+
+### 8.4 Content
+
+| Registry | System | Records |
+|---|---|---|
+| `npcs` | `npcs` | 8 of 20: `warden_of_the_foot`, the three vendors at the district gates (`ward_outfitter`, `row_apothecary`, `granary_provisioner`), the three material counters (`master_smith`, `head_chef`, `row_alchemist`), `hall_quartermaster`. The other 6 in scope (wizard, priest, captain, shaper, dojo master, hall tutor) arrive with their systems in step 3 (defaults 1 and 4); 6 stand on floors 11 to 20 (step 4). |
+| `quests` | `quests` | 1 of 13: `the_first_ascent`. `faces_of_threshold` and `a_taste_of_everything` wait for step 3 (default 2), the rest for step 4. The warden's quest list holds the one id. |
+| `prestige_sources` | `prestige` | 6, whole |
+| `prestige_boons` | `prestige` | 15, whole. Effects whose reader is not ported (pages, technique slots, the city key, Cook's Notes) are bought and held; nothing reads them yet. |
+| `tutorial_steps` | `tutorial` | 9, whole; the stance and spell steps are skipped by the step reader until martial and arcane (default 3) |
+| text registries | each folder | the lines it fires |
+
+### 8.5 Commands
+
+| Command | Old function |
+|---|---|
+| `npcs/talk { npc }` | `talkTo` |
+| `quests/accept { quest }`, `quests/turn-in { quest }` | `acceptQuest`, `turnInQuest` |
+| `shops/buy { npc, index, qty }` | `buy` |
+| `items/sell { uids }` | `sellItems` |
+| `materials/sell { id, quality, qty }`, `materials/sell-batch { refs, noun }` | `sellStackable`, `sellStackablesBatch` |
+| `tutorial/choose-weapon { weapon, shield }`, `tutorial/skip` | `chooseTutorialWeapon`, `skipTutorial` |
+| `prestige/now`, `prestige/buy-boon { boon }`, `prestige/leave-review` | `prestigeNow`, `buyBoon`, `leaveReview` |
+
+### 8.6 Requests and events between the systems
+
+New requests: `items/equip-now { uid, slot? }` (the rack), `world/place
+{ spot, forget }` (the skip and the start of a run: stop the activity and the
+journey, stand at the spot, note it safe, reveal the mapped region, emit
+`world/arrived`; `forget` makes the spot the only one discovered, as old
+`prestigeNow` did).
+
+Used: `gold/add`, `gold/spend`, `items/grant`, `materials/grant`,
+`materials/take-stack`, `materials/grant-graded`, `combat/abandon`,
+`levels/grant-xp`, `levels/raise-start`, `skills/grant-xp`,
+`skills/grant-xp-direct`, `skills/grant-discovery-xp`,
+`skills/check-discovery`, `counters/*`, `log/line`.
+
+Heard: `quests` hears `combat/kill` (kill objectives) and `world/arrived`
+(reach objectives). `tutorial` hears `world/arrived` (the gate stamps
+`flag:tutorial_done`). Nothing else listens.
+
+Facts (source `quests/done`): `quest:<id>` for each quest turned in.
+Facts (source `prestige/legacy`): `boon:<id>` rank, `talent:<skill>`,
+`endowment:<attr>`, `skillCap:<skill>`, `foresight`. The readers exist since
+port 1 (`src/systems/stats/README.md`).
+
+Registrations: `prestige` calls `registerBandPass` and a new
+`registerFloorsSeen` of `ladder`, the pattern of `registerSiteSky`.
+
+### 8.7 Prestige
+
+- `PRESTIGE_UNLOCK`: `slain:f6_great_hall:goblin_warchief` 1. The stronghold
+  path (`strongholdHeld`, `autoPrestigeDue`) is step 4.
+- `prestige/now`: the harvest, peaks, `floorsSeen` (old `floorsReachedThisRun`
+  plus the earlier list), auto boons, then `endRun`. The new run: the counters
+  `prestige:count` and `flag:tutorial_done`, every `flag:unlock_*` the old run
+  held (old `LOCKABLE_SUBSYSTEMS`), `world/place ascent_foot` with `forget`,
+  starting gold (`gold/add`, not earned), `levels/raise-start`.
+- Harvest sources with no counter yet: `bestiary:entries` (bestiary, step 3)
+  and achievement tiers (achievements, step 3) pay 0.
+- The knockout return ends because its slice starts new.
+
+### 8.8 Shops and selling
+
+- Prices: `BUY_MARKUP` 2, `STRANGER_MARKUP` 1.5, the no-arbitrage floor
+  (one coin over the best resale), the price seal flag. Charisma reads
+  `stats/goldGain`.
+- `sellPrice` (`itemValue x goldGain`, at least 1), `materialSellPrice`,
+  `gradedUnitPrice`: exported by `items` and `materials`, read by `shops`.
+- Socketed runes of a sold item go back to the rune pile.
+
+### 8.9 Floor 0
+
+The rack (spear, sword, dagger, hammer, unarmed; the shield beside a
+one-handed pick), the skip, the gate. The cell, the slime and the field are
+world content since port 6. The step list reads the world. The stance and
+spell steps wait (default 3): the step reader passes over them, and the skip
+stamps their flags as the old skip did.
+
+### 8.10 John
+
+`tests/john.ts` here: the old driver for floors 0 to 6 (`through` 3 to 6),
+on `runHeadless` and `world/*` commands, from a fresh save, no probe
+modifiers. Runs 2 and 3 (floors 7 to 20) are step 4. Known gap before the
+run: floor 2's tutor teaches Gather and Lunge to both Johns in the old build;
+the tutor waits for step 3 (default 4), so John here fights with no
+technique from floor 2 on. `tests/john.test.ts` holds the band 1 bounds that
+need no rack pick, and the 2 `it.todo` of `tests/band2.test.ts`.
+`scripts/pacing.ts` prints the per-floor table.
+
+### 8.11 Panels
+
+- `quests`: the warden's offer, active quests with progress, turn-in.
+- `shops`: the vendors at the current spot, their shelf with prices, buy 1
+  and buy 5; selling from the pack and the pouch stays in the item and
+  inventory panels (a sell button per row).
+- `prestige`: the harvest preview, the button, the boons, the review after a
+  prestige.
+- `tutorial`: the floor 0 card (step, rack, skip).
+- The defeat dialog: a component of `knockout`, mounted by the combat panel
+  (decision 29), opened when a lost fight is not followed by a return.
+- Every panel reserves its slots; nothing changes size with the tick.
+
+### 8.12 Waits
+
+- Step 3: the system NPCs and their talk-gated quests, teaching, crafting
+  objectives (`craft`), favour rewards (`r.favor`, `grantFavorAll`), the
+  stance and spell steps, the cookbook carry, bestiary and achievement
+  harvest sources.
+- Step 4: the stronghold and its automatic prestige, the city key's gate,
+  bands 3 and up, festival legacy, the harbor's quests and shops.
+- The offline summary dialog (kills, gold, levels): UI step. Its two lines
+  of port 6 (ladder end, first calm) are not lost here, because the log keeps
+  lines during catch-up (`src/systems/log/README.md`).
