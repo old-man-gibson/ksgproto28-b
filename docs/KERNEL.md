@@ -229,8 +229,18 @@ An answer returns copies, never a reference into its slice.
   sends `kernel.save(now)` and loads the reply with `kernel.load`. If a worker
   cannot be created, `src/ui/catchup.ts` calls `catchUp` on the main thread.
 - Offline time is capped at 8 hours (`OFFLINE_CAP_MS`).
-- `tests/runner.test.ts` checks that catch-up equals running in place, and
-  sets a budget of 2,000 ms for 8 hours (288,000 ticks). Measured with the
+- The offline budgets are in `tests/budgets.test.ts`, the vitest project
+  `budget`. `npm test` and `npm run verify` run the project `unit` (every
+  other test file, in parallel workers) and then `budget` alone, so a budget
+  measures the simulation and not how many test files share the processor.
+  Until spine port 5 the budget cases ran inside the parallel run, in
+  `tests/runner.test.ts`, `tests/statusSystem.test.ts` and
+  `tests/combatBudget.test.ts`; the "inside the full test run" numbers below
+  are from that arrangement. Under machine load they failed with the code
+  unchanged: floor 1 fights took 12,600 to 14,600 ms inside the run and
+  4,400 ms alone.
+- `tests/runner.test.ts` checks that catch-up equals running in place. The
+  first budget was 2,000 ms for 8 hours (288,000 ticks). Measured with the
   systems of spine port 1: 470 to 530 ms alone, up to 840 ms inside the full
   test run (the toy system alone took about 60 ms). Measured on 2026-11-16
   with spine port 2, same machine and same hour: 700 ms alone, against 650 ms

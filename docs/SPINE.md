@@ -366,7 +366,9 @@ Port 5 notes:
   ready). A hobgoblin given attack speed fires all five.
 - Measured on 2026-11-17, same machine: `docs/KERNEL.md` section 8. The
   three budgets of ports 1 to 4 are unchanged. The new floor 6 run takes
-  11,500 to 12,400 ms alone.
+  11,500 to 13,200 ms alone. The four budgets are one file,
+  `tests/budgets.test.ts`, run as its own vitest project after the other
+  tests.
 - Panel: the enemy slot shows the last action of the monster beside its
   action bar for 3 seconds, in a box that is always there. Checked on the
   dev server (port 5600, parchment theme). At 1280 pixels wide: a fight

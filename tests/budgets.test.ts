@@ -1,21 +1,40 @@
 /**
- * Offline budget with fights. The old build's catch-up cost was mostly
- * combat. This runs 8 hours (288,000 ticks) of a hunt at a floor 1 table
- * through `runHeadless` and holds it to a budget set from a measurement
- * (docs/KERNEL.md section 8).
+ * The offline budgets: four runs of 8 hours (288,000 ticks), each held to a
+ * wall-clock limit set from a measurement (docs/KERNEL.md section 8).
  *
- * The run: a new character with the rusty sword hunts the Vermin Hall table
- * of floor 1 with no fight limit, with the rest rule at 50%. A defeat turns
- * the hunt off (the knockout is the world port's), so the hunt command is
- * sent again every 60 seconds; it changes nothing while a hunt is on.
+ * This file is the vitest project `budget`. It runs alone, after the other
+ * test files (`npm test` runs the project `unit`, then this one), and its
+ * four cases run one after another. A limit here is on the simulation, not
+ * on how many other test files share the processor: inside the parallel run
+ * the same cases took up to three times as long and failed under load.
+ *
+ * - No fight, no condition: catch-up of a new game.
+ * - A condition held: a timerless bleed, which deals damage on every tick.
+ * - Fights at floor 1: a new character with the rusty sword hunts the Vermin
+ *   Hall table with no fight limit, with the rest rule at 50%. A defeat turns
+ *   the hunt off (the knockout is the world port's), so the hunt command is
+ *   sent again every 60 seconds; it changes nothing while a hunt is on.
+ * - Fights at floor 6: the Tunnels, with the firetongue and the witch doctor.
  */
 import { describe, expect, it } from 'vitest';
-import { runHeadless, type Modifier, type ScheduledCommand } from '../src/kernel';
+import {
+  catchUp,
+  createKernel,
+  OFFLINE_CAP_MS,
+  offlineTicks,
+  PLAYER,
+  runHeadless,
+  type Modifier,
+  type ScheduledCommand,
+} from '../src/kernel';
+import { systems } from '../src/systems';
 import { hunt, setHuntRest, type EncounterSite } from '../src/systems/combat';
+import { buyStep } from '../src/systems/counter';
+import { applyStatus, type StatusesState } from '../src/systems/statuses';
 import { watchStatKey } from '../src/systems/martial';
 import { spellCast } from '../src/systems/spellcraft';
 import { combatOf, counterOf, SITES, skipsOf } from './combatHelpers';
-import { equip, makeGame, setMods } from './helpers';
+import { ask, equip, makeGame, probe, setMods } from './helpers';
 
 /**
  * Measured on 2026-11-17: 3,931 ms alone, 7,126 ms inside the full test run
@@ -41,6 +60,56 @@ const FLOOR_SIX_CHARACTER: Modifier[] = [
   { stat: 'stats/damage', kind: 'add', value: 45 },
   { stat: 'stats/armor', kind: 'add', value: 12 },
 ];
+
+/**
+ * No fight, no condition. Raised from 2,000 in spine port 4: the combat
+ * system adds a tick and three event handlers. Measured 929 ms alone then,
+ * 918 ms alone in spine port 5.
+ */
+const EIGHT_HOUR_BUDGET_MS = 3000;
+
+/**
+ * The same span with a condition that deals damage on every tick: a
+ * timerless bleed, which sends four events per tick. Measured 2,650 ms alone
+ * on 2026-11-16 (1,450 ms with a condition that only changes stats), 3,650 ms
+ * alone in spine port 5.
+ */
+const HELD_EIGHT_HOUR_BUDGET_MS = 8000;
+
+describe('offline catch-up', () => {
+  it(`simulates 8 hours of ticks within ${EIGHT_HOUR_BUDGET_MS} ms`, () => {
+    const ticks = offlineTicks(OFFLINE_CAP_MS);
+    expect(ticks).toBe(288_000);
+    const kernel = createKernel({ systems, seed: 9 });
+    kernel.tick(200);
+    kernel.dispatch(buyStep({ stepId: 'small_step' }));
+    const envelope = kernel.save(0);
+
+    const started = performance.now();
+    const result = catchUp({ systems, envelope, ticks, now: OFFLINE_CAP_MS });
+    const elapsed = performance.now() - started;
+
+    console.log(`8 hours, no fight: ${elapsed.toFixed(0)} ms`);
+    expect((result.kernel.data as { tick: number }).tick).toBe(200 + ticks);
+    expect(elapsed, `8 hours took ${elapsed.toFixed(0)} ms`).toBeLessThan(EIGHT_HOUR_BUDGET_MS);
+    // The test's own time limit is above the budget, so the budget is what fails.
+  }, EIGHT_HOUR_BUDGET_MS * 5);
+});
+
+describe('offline catch-up with a condition held', () => {
+  it(`simulates 8 hours of a bleeding character within ${HELD_EIGHT_HOUR_BUDGET_MS} ms`, () => {
+    const g = makeGame({ seed: 9 });
+    ask(g, applyStatus, { entity: PLAYER, app: { id: 'bleeding', intensity: 2 } });
+    ask(g, applyStatus, { entity: PLAYER, app: { id: 'tainted', intensity: 2, duration: 'permanent' } });
+    const envelope = g.save(0);
+    const started = performance.now();
+    const result = catchUp({ systems: [...systems, probe], envelope, ticks: 288_000, now: 0 });
+    const elapsed = performance.now() - started;
+    console.log(`8 hours, a bleed held: ${elapsed.toFixed(0)} ms`);
+    expect((result.slices.statuses.data as unknown as StatusesState).held[PLAYER].map((h) => h.id)).toEqual(['bleeding', 'tainted']);
+    expect(elapsed, `8 hours took ${elapsed.toFixed(0)} ms`).toBeLessThan(HELD_EIGHT_HOUR_BUDGET_MS);
+  }, HELD_EIGHT_HOUR_BUDGET_MS * 3);
+});
 
 describe('offline catch-up with fights', () => {
   it(`simulates 8 hours of hunting a floor 1 table within ${FIGHT_EIGHT_HOUR_BUDGET_MS} ms`, () => {

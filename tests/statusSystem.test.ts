@@ -360,29 +360,7 @@ describe('the view', () => {
   });
 });
 
-/**
- * tests/runner.test.ts budgets 8 hours for a character that holds nothing.
- * This is the same span with a condition that deals damage on every tick: a
- * timerless bleed, which sends four events per tick. Measured 2,650 ms alone
- * on 2026-11-16 (1,450 ms with a condition that only changes stats, 700 ms
- * with none).
- */
-const HELD_EIGHT_HOUR_BUDGET_MS = 8000;
-
-describe('offline catch-up with a condition held', () => {
-  it(`simulates 8 hours of a bleeding character within ${HELD_EIGHT_HOUR_BUDGET_MS} ms`, () => {
-    const g = makeGame({ seed: 9 });
-    apply(g, { id: 'bleeding', intensity: 2 });
-    apply(g, { id: 'tainted', intensity: 2, duration: 'permanent' });
-    const envelope = g.save(0);
-    const started = performance.now();
-    const result = catchUp({ systems: [...systems, probe], envelope, ticks: 288_000, now: 0 });
-    const elapsed = performance.now() - started;
-    expect((result.slices.statuses.data as unknown as StatusesState).held[PLAYER].map((h) => h.id)).toEqual(['bleeding', 'tainted']);
-    expect(elapsed, `8 hours took ${elapsed.toFixed(0)} ms`).toBeLessThan(HELD_EIGHT_HOUR_BUDGET_MS);
-    // The test's own time limit is above the budget, so the budget is what fails.
-  }, HELD_EIGHT_HOUR_BUDGET_MS * 3);
-});
+// The 8-hour budget with a condition held is in tests/budgets.test.ts.
 
 describe('save', () => {
   it('a run split by a save and a load equals the whole run', () => {

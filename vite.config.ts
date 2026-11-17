@@ -14,7 +14,28 @@ export default defineConfig({
   preview: { port: 5601, strictPort: true },
   worker: { format: 'es' },
   test: {
-    include: ['tests/**/*.test.ts'],
-    environment: 'node',
+    // Two projects. `unit` is every test file but the offline budgets, in
+    // parallel workers. `budget` is tests/budgets.test.ts alone: its cases
+    // measure wall-clock time, so they do not share the processor with other
+    // test files. `npm test` runs one project after the other.
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: 'unit',
+          include: ['tests/**/*.test.ts'],
+          exclude: ['tests/budgets.test.ts'],
+          environment: 'node',
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: 'budget',
+          include: ['tests/budgets.test.ts'],
+          environment: 'node',
+        },
+      },
+    ],
   },
 });

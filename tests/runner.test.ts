@@ -1,13 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { catchUp, createKernel, OFFLINE_CAP_MS, offlineTicks, runHeadless, type ScheduledCommand } from '../src/kernel';
+import { catchUp, runHeadless, type ScheduledCommand } from '../src/kernel';
 import { systems } from '../src/systems';
 import { buyStep } from '../src/systems/counter';
 import { makeKernel } from './helpers';
-
-/** Wall-clock limit for simulating 8 hours of ticks with the toy system. */
-// Raised from 2,000 in spine port 4: the combat system adds a tick and three
-// event handlers. Measured 929 ms alone and 1,447 ms inside the full test run.
-const EIGHT_HOUR_BUDGET_MS = 3000;
 
 describe('headless runner', () => {
   it('runs N ticks and the commands at their ticks', () => {
@@ -63,20 +58,5 @@ describe('offline catch-up', () => {
     ).toThrow(/could not load/);
   });
 
-  it(`simulates 8 hours of ticks within ${EIGHT_HOUR_BUDGET_MS} ms`, () => {
-    const ticks = offlineTicks(OFFLINE_CAP_MS);
-    expect(ticks).toBe(288_000);
-    const kernel = createKernel({ systems, seed: 9 });
-    kernel.tick(200);
-    kernel.dispatch(buyStep({ stepId: 'small_step' }));
-    const envelope = kernel.save(0);
-
-    const started = performance.now();
-    const result = catchUp({ systems, envelope, ticks, now: OFFLINE_CAP_MS });
-    const elapsed = performance.now() - started;
-
-    expect((result.kernel.data as { tick: number }).tick).toBe(200 + ticks);
-    expect(elapsed, `8 hours took ${elapsed.toFixed(0)} ms`).toBeLessThan(EIGHT_HOUR_BUDGET_MS);
-    // The test's own time limit is above the budget, so the budget is what fails.
-  }, EIGHT_HOUR_BUDGET_MS * 5);
+  // The 8-hour budget of this runner is in tests/budgets.test.ts.
 });

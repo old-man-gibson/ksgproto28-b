@@ -9,8 +9,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "check": "svelte-check --tsconfig ./tsconfig.json",
-    "test": "vitest run",
-    "verify": "svelte-check --tsconfig ./tsconfig.json && vitest run && vite build"
+    "test": "vitest run --project unit && vitest run --project budget",
+    "verify": "svelte-check --tsconfig ./tsconfig.json && vitest run --project unit && vitest run --project budget && vite build"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^5.0.3",
