@@ -1,0 +1,6955 @@
+[
+  {
+    "id": "fighting",
+    "name": "Fighting",
+    "icon": "👊",
+    "kind": "passive",
+    "category": "combat",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "normal"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 60,
+        "base": "proficient",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "combat"
+    ],
+    "unlock": [],
+    "effects": [
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": 0,
+        "perLevel": 0.01
+      }
+    ],
+    "desc": "Base combat skill. Trained by any combat. Each level adds +1% damage."
+  },
+  {
+    "id": "swordsmanship",
+    "name": "Swordsmanship",
+    "icon": "🗡️",
+    "kind": "passive",
+    "category": "combat",
+    "progression": [
+      {
+        "from": 1,
+        "base": "novice",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "proficient",
+        "rate": "slow"
+      },
+      {
+        "from": 60,
+        "base": "expert",
+        "rate": "slow"
+      }
+    ],
+    "tags": [
+      "combat",
+      "sword"
+    ],
+    "parent": "fighting",
+    "unlock": [
+      {
+        "type": "skill",
+        "id": "fighting",
+        "level": 10
+      },
+      {
+        "type": "equippedTag",
+        "tag": "sword"
+      }
+    ],
+    "effects": [
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": 0,
+        "perLevel": 0.015,
+        "requiresTag": "sword"
+      },
+      {
+        "stat": "crit",
+        "op": "add",
+        "value": 0,
+        "perLevel": 0.002,
+        "requiresTag": "sword"
+      }
+    ],
+    "desc": "Sword skill. Manifests at Fighting 10 with a sword equipped; trained by sword combat. Each level adds +1.5% damage and +0.2% crit while a sword is equipped."
+  },
+  {
+    "id": "scouting",
+    "name": "Scouting",
+    "icon": "🔭",
+    "kind": "passive",
+    "category": "general",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "normal"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 60,
+        "base": "proficient",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "explore",
+      "travel"
+    ],
+    "unlock": [],
+    "effects": [
+      {
+        "stat": "travelSpeed",
+        "op": "mult",
+        "value": 0,
+        "perLevel": 0.01
+      },
+      {
+        "stat": "loot",
+        "op": "mult",
+        "value": 0,
+        "perLevel": 0.005
+      }
+    ],
+    "desc": "Trained by exploring and travelling. Each level adds +1% travel speed and +0.5% loot."
+  },
+  {
+    "id": "chronosense",
+    "name": "Chronosense",
+    "icon": "🕰️",
+    "kind": "passive",
+    "category": "general",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "normal"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 60,
+        "base": "proficient",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "time"
+    ],
+    "unlock": [],
+    "maxLevel": 20,
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Sun-Guesser"
+      },
+      {
+        "level": 4,
+        "name": "Season-Feeler"
+      },
+      {
+        "level": 8,
+        "name": "Bell-Counter"
+      },
+      {
+        "level": 12,
+        "name": "Week-Keeper"
+      },
+      {
+        "level": 16,
+        "name": "Calendar-Mind"
+      },
+      {
+        "level": 25,
+        "name": "Clockwork Soul"
+      }
+    ],
+    "desc": "Trained by elapsed game time only; no action raises it. Levels unlock time readings in order: time of day, season, hour, week, minute. Capped at 20 until the cap is raised; levels past the cap reduce time-based penalties."
+  },
+  {
+    "id": "hunting",
+    "name": "Hunting",
+    "icon": "🏹",
+    "kind": "passive",
+    "category": "general",
+    "progression": [
+      {
+        "from": 1,
+        "base": "adept",
+        "rate": "slow"
+      },
+      {
+        "from": 25,
+        "base": "expert",
+        "rate": "fast"
+      }
+    ],
+    "novelty": {
+      "domain": "bestiary",
+      "k": 20,
+      "c": 2,
+      "discovery": 40
+    },
+    "tags": [
+      "hunt"
+    ],
+    "unlock": [],
+    "effects": [
+      {
+        "stat": "loot",
+        "op": "mult",
+        "value": 0,
+        "perLevel": 0.004
+      },
+      {
+        "stat": "goldGain",
+        "op": "mult",
+        "value": 0,
+        "perLevel": 0.003
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 10,
+        "name": "Trapper"
+      },
+      {
+        "level": 25,
+        "name": "Tracker"
+      },
+      {
+        "level": 40,
+        "name": "Beast Scholar"
+      },
+      {
+        "level": 60,
+        "name": "Monster Hunter"
+      }
+    ],
+    "desc": "Trained by kills; the first kill of a new species pays most, and new bestiary entries pay outright. Each level adds +0.4% loot and +0.3% gold gain, raises the per-kill chance of learning a bestiary fact, and lowers the sightings needed to confirm a habitat."
+  },
+  {
+    "id": "speechcraft",
+    "name": "Speechcraft",
+    "icon": "🗣️",
+    "kind": "passive",
+    "category": "general",
+    "progression": [
+      {
+        "from": 1,
+        "base": "adept",
+        "rate": "slow"
+      },
+      {
+        "from": 25,
+        "base": "expert",
+        "rate": "fast"
+      }
+    ],
+    "novelty": {
+      "domain": "dialogue",
+      "k": 12,
+      "c": 1,
+      "discovery": 30
+    },
+    "tags": [
+      "social"
+    ],
+    "unlock": [],
+    "effects": [
+      {
+        "stat": "goldGain",
+        "op": "mult",
+        "value": 0,
+        "perLevel": 0.005
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 10,
+        "name": "Fast Talker"
+      },
+      {
+        "level": 25,
+        "name": "Negotiator"
+      },
+      {
+        "level": 40,
+        "name": "Silver Tongue"
+      },
+      {
+        "level": 60,
+        "name": "They Will Hear You Out"
+      }
+    ],
+    "desc": "Trained by dialogue and by quests; a new person pays most, and turning work in pays more than accepting it. Manifests the first time you take work from a stranger. Each level adds +0.5% gold gain."
+  },
+  {
+    "id": "musicianship",
+    "name": "Musicianship",
+    "icon": "🎼",
+    "kind": "passive",
+    "category": "general",
+    "progression": [
+      {
+        "from": 1,
+        "base": "novice",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "proficient",
+        "rate": "slow"
+      },
+      {
+        "from": 60,
+        "base": "expert",
+        "rate": "slow"
+      }
+    ],
+    "tags": [
+      "music"
+    ],
+    "unlock": [],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Busker"
+      },
+      {
+        "level": 5,
+        "name": "Time-Keeper"
+      },
+      {
+        "level": 12,
+        "name": "Melodist"
+      },
+      {
+        "level": 20,
+        "name": "Scale-Walker"
+      },
+      {
+        "level": 30,
+        "name": "Virtuoso"
+      }
+    ],
+    "desc": "Trained by performing; manifests on the first performance. Levels unlock notation: quarter notes at 5, eighth notes at 12, other scales at 20, 8-bar forms at 30. A piece is classified by what it measures as, not by what you intended."
+  },
+  {
+    "id": "magic",
+    "name": "Magic",
+    "icon": "✨",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "novice",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "proficient",
+        "rate": "slow"
+      },
+      {
+        "from": 60,
+        "base": "expert",
+        "rate": "slow"
+      }
+    ],
+    "tags": [
+      "magic"
+    ],
+    "unlock": [
+      {
+        "type": "attr",
+        "attr": "int",
+        "level": 15
+      }
+    ],
+    "effects": [
+      {
+        "stat": "spellPower",
+        "op": "mult",
+        "value": 0,
+        "perLevel": 0.02
+      }
+    ],
+    "desc": "Base magic skill. Manifests at Intelligence 15; trained by casting. Each level adds +2% spell power."
+  },
+  {
+    "id": "arcana",
+    "name": "Arcana",
+    "icon": "🪄",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "adept",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "slow"
+      },
+      {
+        "from": 60,
+        "base": "adept",
+        "rate": "glacial"
+      }
+    ],
+    "tags": [
+      "arcane"
+    ],
+    "parent": "magic",
+    "unlock": [
+      {
+        "type": "attr",
+        "attr": "int",
+        "level": 10
+      }
+    ],
+    "novelty": {
+      "domain": "arcana",
+      "k": 16,
+      "c": 2,
+      "discovery": 30
+    },
+    "effects": [
+      {
+        "stat": "spellPower",
+        "op": "mult",
+        "value": 0,
+        "perLevel": 0.01
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Speller"
+      },
+      {
+        "level": 20,
+        "name": "Grammarian"
+      },
+      {
+        "level": 40,
+        "name": "Rhetorician"
+      },
+      {
+        "level": 60,
+        "name": "The Word Made Will"
+      }
+    ],
+    "desc": "Arcane spellcraft. Manifests at Intelligence 10 by working at the spell table; trained by composing new sentences, not by repeating old ones. Word order changes what a sentence does. Each level adds +1% spell power."
+  },
+  {
+    "id": "devotion",
+    "name": "Devotion",
+    "icon": "🙏",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "novice",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "proficient",
+        "rate": "slow"
+      },
+      {
+        "from": 60,
+        "base": "expert",
+        "rate": "slow"
+      }
+    ],
+    "tags": [
+      "divine"
+    ],
+    "unlock": [
+      {
+        "type": "attr",
+        "attr": "wis",
+        "level": 10
+      }
+    ],
+    "effects": [
+      {
+        "stat": "maxSpirit",
+        "op": "add",
+        "value": 0,
+        "perLevel": 0.5
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Supplicant"
+      },
+      {
+        "level": 20,
+        "name": "Acolyte"
+      },
+      {
+        "level": 40,
+        "name": "Ordained"
+      },
+      {
+        "level": 60,
+        "name": "Heard"
+      }
+    ],
+    "desc": "Divine spellcraft. Manifests at Wisdom 10 by working at the spell table. Miracles are granted by a deity, not composed. Each level adds +0.5 max spirit."
+  },
+  {
+    "id": "psionics",
+    "name": "Psionics",
+    "icon": "🧠",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 25,
+        "base": "expert",
+        "rate": "slow"
+      },
+      {
+        "from": 45,
+        "base": "master",
+        "rate": "slow"
+      },
+      {
+        "from": 65,
+        "base": "legendary",
+        "rate": "glacial"
+      }
+    ],
+    "tags": [
+      "psionic"
+    ],
+    "unlock": [
+      {
+        "type": "attr",
+        "attr": "int",
+        "level": 12
+      },
+      {
+        "type": "attr",
+        "attr": "wis",
+        "level": 12
+      }
+    ],
+    "effects": [
+      {
+        "stat": "focusRegen",
+        "op": "add",
+        "value": 0,
+        "perLevel": 0.01
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Latent"
+      },
+      {
+        "level": 20,
+        "name": "Awakened"
+      },
+      {
+        "level": 40,
+        "name": "Disciplined"
+      },
+      {
+        "level": 60,
+        "name": "Unbound Mind"
+      }
+    ],
+    "desc": "Psionic spellcraft. Manifests at Intelligence 12 and Wisdom 12 by working at the spell table. Levels buy more points to allocate and add +0.01 focus regeneration each."
+  },
+  {
+    "id": "darkvision",
+    "name": "Darkvision",
+    "icon": "🌒",
+    "kind": "passive",
+    "category": "environmental",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "normal"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 60,
+        "base": "proficient",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "darkness"
+    ],
+    "unlock": [],
+    "maxLevel": 50,
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Night-Squinter"
+      },
+      {
+        "level": 10,
+        "name": "Low-Light Eyes"
+      },
+      {
+        "level": 25,
+        "name": "Cat’s Custom"
+      },
+      {
+        "level": 50,
+        "name": "Nothing Hides"
+      }
+    ],
+    "desc": "Trained only by standing in natural darkness away from lamplight. Each level removes 2% of the darkness penalty to hit chance and dodge; the penalty is gone at level 50, which is the cap."
+  },
+  {
+    "id": "weathersense",
+    "name": "Weathersense",
+    "icon": "🌦️",
+    "kind": "passive",
+    "category": "environmental",
+    "progression": [
+      {
+        "from": 1,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 25,
+        "base": "expert",
+        "rate": "slow"
+      },
+      {
+        "from": 45,
+        "base": "master",
+        "rate": "slow"
+      },
+      {
+        "from": 65,
+        "base": "legendary",
+        "rate": "glacial"
+      }
+    ],
+    "tags": [
+      "weather"
+    ],
+    "unlock": [],
+    "maxLevel": 30,
+    "novelty": {
+      "domain": "weather",
+      "k": 15,
+      "c": 2,
+      "discovery": 25
+    },
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Sky-Glancer"
+      },
+      {
+        "level": 5,
+        "name": "Cloud-Reader"
+      },
+      {
+        "level": 13,
+        "name": "Front-Runner"
+      },
+      {
+        "level": 21,
+        "name": "Storm-Cartographer"
+      },
+      {
+        "level": 29,
+        "name": "Seven-Day Prophet"
+      }
+    ],
+    "desc": "Trained by standing in weather and by arriving somewhere by travel; manifests in the first severe weather met outdoors. New weather kinds and new regions pay most. Levels unlock forecast rows: 2 hours at level 1, tomorrow at 5, out to 7 days at 29; each row starts rough and sharpens with levels past its unlock. Capped at 30."
+  },
+  {
+    "id": "heat_resistance",
+    "name": "Heat Resistance",
+    "icon": "🌡️",
+    "art": "fire",
+    "kind": "passive",
+    "category": "resistance",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "normal"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 60,
+        "base": "proficient",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "resist:heat"
+    ],
+    "unlock": [],
+    "effects": [
+      {
+        "stat": "resHeat",
+        "op": "add",
+        "value": 0,
+        "levelCurve": "resistTiered"
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Heat Adaptation"
+      },
+      {
+        "level": 20,
+        "name": "Heat Resistance"
+      },
+      {
+        "level": 40,
+        "name": "True Heat Resistance"
+      },
+      {
+        "level": 60,
+        "name": "The Fire In Your Heart"
+      }
+    ],
+    "desc": "Trained by taking heat damage. Each level cuts heat damage taken by 1%, 3% every 5th level, 5% every 10th, 10% every 25th; the resistance caps at 75%."
+  },
+  {
+    "id": "cold_resistance",
+    "name": "Cold Resistance",
+    "icon": "❄️",
+    "kind": "passive",
+    "category": "resistance",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "normal"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 60,
+        "base": "proficient",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "resist:cold"
+    ],
+    "unlock": [],
+    "effects": [
+      {
+        "stat": "resCold",
+        "op": "add",
+        "value": 0,
+        "levelCurve": "resistTiered"
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Cold Adaptation"
+      },
+      {
+        "level": 20,
+        "name": "Cold Resistance"
+      },
+      {
+        "level": 40,
+        "name": "Ice in Your Veins"
+      },
+      {
+        "level": 60,
+        "name": "Colder Than Ice"
+      }
+    ],
+    "desc": "Trained by taking cold damage. Each level cuts cold damage taken by 1%, 3% every 5th level, 5% every 10th, 10% every 25th; the resistance caps at 75%."
+  },
+  {
+    "id": "poison_resistance",
+    "name": "Poison Resistance",
+    "icon": "🧪",
+    "kind": "passive",
+    "category": "resistance",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "normal"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 60,
+        "base": "proficient",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "resist:poison"
+    ],
+    "unlock": [],
+    "effects": [
+      {
+        "stat": "resPoison",
+        "op": "add",
+        "value": 0,
+        "levelCurve": "resistTiered"
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Poison Adaptation"
+      },
+      {
+        "level": 20,
+        "name": "Accelerated Receptor Evolution"
+      },
+      {
+        "level": 40,
+        "name": "Advanced Biochemical Resistance"
+      },
+      {
+        "level": 60,
+        "name": "Absolute Antigen Production"
+      }
+    ],
+    "desc": "Trained by taking poison damage. Each level cuts poison damage taken by 1%, 3% every 5th level, 5% every 10th, 10% every 25th; the resistance caps at 75%."
+  },
+  {
+    "id": "water_resistance",
+    "name": "Water Resistance",
+    "icon": "💧",
+    "kind": "passive",
+    "category": "resistance",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "normal"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 60,
+        "base": "proficient",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "resist:water"
+    ],
+    "unlock": [],
+    "effects": [
+      {
+        "stat": "resWater",
+        "op": "add",
+        "value": 0,
+        "levelCurve": "resistTiered"
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Water Adaptation"
+      },
+      {
+        "level": 20,
+        "name": "Water Resistance"
+      },
+      {
+        "level": 40,
+        "name": "Like Off a Duck"
+      },
+      {
+        "level": 60,
+        "name": "The Sea Declines"
+      }
+    ],
+    "desc": "Trained by taking water damage, including from rain. Each level cuts water damage taken by 1%, 3% every 5th level, 5% every 10th, 10% every 25th; the resistance caps at 75%."
+  },
+  {
+    "id": "wind_resistance",
+    "name": "Wind Resistance",
+    "icon": "💨",
+    "kind": "passive",
+    "category": "resistance",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "normal"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 60,
+        "base": "proficient",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "resist:wind"
+    ],
+    "unlock": [],
+    "effects": [
+      {
+        "stat": "resWind",
+        "op": "add",
+        "value": 0,
+        "levelCurve": "resistTiered"
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Wind Adaptation"
+      },
+      {
+        "level": 20,
+        "name": "Wind Resistance"
+      },
+      {
+        "level": 40,
+        "name": "Weathervane No More"
+      },
+      {
+        "level": 60,
+        "name": "The Storm Walks Around You"
+      }
+    ],
+    "desc": "Trained by taking wind damage, including from weather. Each level cuts wind damage taken by 1%, 3% every 5th level, 5% every 10th, 10% every 25th; the resistance caps at 75%."
+  },
+  {
+    "id": "earth_resistance",
+    "name": "Earth Resistance",
+    "icon": "🪨",
+    "kind": "passive",
+    "category": "resistance",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "normal"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 60,
+        "base": "proficient",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "resist:earth"
+    ],
+    "unlock": [],
+    "effects": [
+      {
+        "stat": "resEarth",
+        "op": "add",
+        "value": 0,
+        "levelCurve": "resistTiered"
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Earth Adaptation"
+      },
+      {
+        "level": 20,
+        "name": "Earth Resistance"
+      },
+      {
+        "level": 40,
+        "name": "Unburied"
+      },
+      {
+        "level": 60,
+        "name": "The Mountain Concedes"
+      }
+    ],
+    "desc": "Trained by taking earth damage, including from sandstorms. Each level cuts earth damage taken by 1%, 3% every 5th level, 5% every 10th, 10% every 25th; the resistance caps at 75%."
+  },
+  {
+    "id": "lightning_resistance",
+    "name": "Lightning Resistance",
+    "icon": "⚡",
+    "kind": "passive",
+    "category": "resistance",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "normal"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 60,
+        "base": "proficient",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "resist:lightning"
+    ],
+    "unlock": [],
+    "effects": [
+      {
+        "stat": "resLightning",
+        "op": "add",
+        "value": 0,
+        "levelCurve": "resistTiered"
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Lightning Adaptation"
+      },
+      {
+        "level": 20,
+        "name": "Lightning Resistance"
+      },
+      {
+        "level": 40,
+        "name": "Grounded"
+      },
+      {
+        "level": 60,
+        "name": "The Bolt Apologizes"
+      }
+    ],
+    "desc": "Trained by taking lightning damage, including from storms. Each level cuts lightning damage taken by 1%, 3% every 5th level, 5% every 10th, 10% every 25th; the resistance caps at 75%."
+  },
+  {
+    "id": "light_resistance",
+    "name": "Light Resistance",
+    "icon": "☀️",
+    "kind": "passive",
+    "category": "resistance",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "normal"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 60,
+        "base": "proficient",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "resist:light"
+    ],
+    "unlock": [],
+    "effects": [
+      {
+        "stat": "resLight",
+        "op": "add",
+        "value": 0,
+        "levelCurve": "resistTiered"
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Light Adaptation"
+      },
+      {
+        "level": 20,
+        "name": "Light Resistance"
+      },
+      {
+        "level": 40,
+        "name": "Unblinking"
+      },
+      {
+        "level": 60,
+        "name": "Stared Down the Sun"
+      }
+    ],
+    "desc": "Trained by taking light damage, including glare and holy light. Each level cuts light damage taken by 1%, 3% every 5th level, 5% every 10th, 10% every 25th; the resistance caps at 75%."
+  },
+  {
+    "id": "dark_resistance",
+    "name": "Dark Resistance",
+    "icon": "🌑",
+    "kind": "passive",
+    "category": "resistance",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "normal"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 60,
+        "base": "proficient",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "resist:dark"
+    ],
+    "unlock": [],
+    "effects": [
+      {
+        "stat": "resDark",
+        "op": "add",
+        "value": 0,
+        "levelCurve": "resistTiered"
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Dark Adaptation"
+      },
+      {
+        "level": 20,
+        "name": "Dark Resistance"
+      },
+      {
+        "level": 40,
+        "name": "At Home in Shadow"
+      },
+      {
+        "level": 60,
+        "name": "The Void Blinks First"
+      }
+    ],
+    "desc": "Trained by taking dark damage. Each level cuts dark damage taken by 1%, 3% every 5th level, 5% every 10th, 10% every 25th; the resistance caps at 75%. Seeing in darkness is Darkvision, not this."
+  },
+  {
+    "id": "arcane_resistance",
+    "name": "Arcane Resistance",
+    "icon": "🔮",
+    "kind": "passive",
+    "category": "resistance",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "normal"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 60,
+        "base": "proficient",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "resist:arcane"
+    ],
+    "unlock": [],
+    "effects": [
+      {
+        "stat": "resArcane",
+        "op": "add",
+        "value": 0,
+        "levelCurve": "resistTiered"
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Arcane Adaptation"
+      },
+      {
+        "level": 20,
+        "name": "Arcane Resistance"
+      },
+      {
+        "level": 40,
+        "name": "Spell-Calloused"
+      },
+      {
+        "level": 60,
+        "name": "Magic Asks Permission"
+      }
+    ],
+    "desc": "Trained by taking arcane damage. Each level cuts arcane damage taken by 1%, 3% every 5th level, 5% every 10th, 10% every 25th; the resistance caps at 75%."
+  },
+  {
+    "id": "smithing",
+    "name": "Smithing",
+    "icon": "⚒️",
+    "kind": "passive",
+    "category": "craft",
+    "progression": [
+      {
+        "from": 1,
+        "base": "novice",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "proficient",
+        "rate": "slow"
+      },
+      {
+        "from": 60,
+        "base": "expert",
+        "rate": "slow"
+      }
+    ],
+    "tags": [
+      "smithing"
+    ],
+    "unlock": [],
+    "effects": [
+      {
+        "stat": "craftSpeed",
+        "op": "mult",
+        "value": 0,
+        "perLevel": 0.01
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Apprentice Smith"
+      },
+      {
+        "level": 20,
+        "name": "Journeyman Smith"
+      },
+      {
+        "level": 40,
+        "name": "Master Smith"
+      },
+      {
+        "level": 60,
+        "name": "Forge Sage"
+      }
+    ],
+    "milestones": [
+      {
+        "level": 5,
+        "bonus": [
+          {
+            "stat": "craftSpeed",
+            "op": "add",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "craftSpeed",
+            "op": "add",
+            "value": 0.02
+          }
+        ]
+      },
+      {
+        "level": 15,
+        "bonus": [
+          {
+            "stat": "craftSpeed",
+            "op": "add",
+            "value": 0.03
+          }
+        ]
+      },
+      {
+        "level": 20,
+        "bonus": [
+          {
+            "stat": "craftSpeed",
+            "op": "add",
+            "value": 0.04
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "craftSpeed",
+            "op": "add",
+            "value": 0.05
+          }
+        ]
+      },
+      {
+        "level": 30,
+        "bonus": [
+          {
+            "stat": "craftSpeed",
+            "op": "add",
+            "value": 0.06
+          }
+        ]
+      },
+      {
+        "level": 35,
+        "bonus": [
+          {
+            "stat": "craftSpeed",
+            "op": "add",
+            "value": 0.07
+          }
+        ]
+      },
+      {
+        "level": 40,
+        "bonus": [
+          {
+            "stat": "craftSpeed",
+            "op": "add",
+            "value": 0.08
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "craftSpeed",
+            "op": "add",
+            "value": 0.09
+          }
+        ]
+      },
+      {
+        "level": 50,
+        "bonus": [
+          {
+            "stat": "craftSpeed",
+            "op": "add",
+            "value": 0.1
+          }
+        ]
+      },
+      {
+        "level": 55,
+        "bonus": [
+          {
+            "stat": "craftSpeed",
+            "op": "add",
+            "value": 0.11
+          }
+        ]
+      },
+      {
+        "level": 60,
+        "bonus": [
+          {
+            "stat": "craftSpeed",
+            "op": "add",
+            "value": 0.12
+          }
+        ]
+      },
+      {
+        "level": 65,
+        "bonus": [
+          {
+            "stat": "craftSpeed",
+            "op": "add",
+            "value": 0.13
+          }
+        ]
+      }
+    ],
+    "desc": "Trained by smithing. Each level adds +1% craft speed, plus a step bonus every 5 levels."
+  },
+  {
+    "id": "woodcutting",
+    "name": "Woodcutting",
+    "icon": "🪓",
+    "kind": "passive",
+    "category": "craft",
+    "progression": [
+      {
+        "from": 1,
+        "base": "novice",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "proficient",
+        "rate": "slow"
+      },
+      {
+        "from": 60,
+        "base": "expert",
+        "rate": "slow"
+      }
+    ],
+    "tags": [
+      "woodcutting"
+    ],
+    "unlock": [],
+    "effects": [
+      {
+        "stat": "loot",
+        "op": "mult",
+        "value": 0,
+        "perLevel": 0.01
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Woodchuck"
+      },
+      {
+        "level": 20,
+        "name": "Woodchucker"
+      },
+      {
+        "level": 40,
+        "name": "Woodchuckest"
+      },
+      {
+        "level": 60,
+        "name": "Deforester"
+      }
+    ],
+    "milestones": [
+      {
+        "level": 5,
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "add",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "add",
+            "value": 0.02
+          }
+        ]
+      },
+      {
+        "level": 15,
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "add",
+            "value": 0.03
+          }
+        ]
+      },
+      {
+        "level": 20,
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "add",
+            "value": 0.04
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "add",
+            "value": 0.05
+          }
+        ]
+      },
+      {
+        "level": 30,
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "add",
+            "value": 0.06
+          }
+        ]
+      },
+      {
+        "level": 35,
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "add",
+            "value": 0.07
+          }
+        ]
+      },
+      {
+        "level": 40,
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "add",
+            "value": 0.08
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "add",
+            "value": 0.09
+          }
+        ]
+      },
+      {
+        "level": 50,
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "add",
+            "value": 0.1
+          }
+        ]
+      },
+      {
+        "level": 55,
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "add",
+            "value": 0.11
+          }
+        ]
+      },
+      {
+        "level": 60,
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "add",
+            "value": 0.12
+          }
+        ]
+      },
+      {
+        "level": 65,
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "add",
+            "value": 0.13
+          }
+        ]
+      }
+    ],
+    "desc": "Trained at woodcutting sites. Each level adds +1% loot, plus a step bonus every 5 levels."
+  },
+  {
+    "id": "mining",
+    "name": "Mining",
+    "icon": "⛏",
+    "kind": "passive",
+    "category": "craft",
+    "progression": [
+      {
+        "from": 1,
+        "base": "novice",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "proficient",
+        "rate": "slow"
+      },
+      {
+        "from": 60,
+        "base": "expert",
+        "rate": "slow"
+      }
+    ],
+    "tags": [
+      "mining"
+    ],
+    "unlock": [],
+    "effects": [
+      {
+        "stat": "loot",
+        "op": "mult",
+        "value": 0,
+        "perLevel": 0.01
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Junior Miner"
+      },
+      {
+        "level": 20,
+        "name": "Senior Miner"
+      },
+      {
+        "level": 40,
+        "name": "Deep Miner"
+      },
+      {
+        "level": 60,
+        "name": "Dwarven Spirit"
+      }
+    ],
+    "milestones": [
+      {
+        "level": 5,
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "add",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "add",
+            "value": 0.02
+          }
+        ]
+      },
+      {
+        "level": 15,
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "add",
+            "value": 0.03
+          }
+        ]
+      },
+      {
+        "level": 20,
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "add",
+            "value": 0.04
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "add",
+            "value": 0.05
+          }
+        ]
+      },
+      {
+        "level": 30,
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "add",
+            "value": 0.06
+          }
+        ]
+      },
+      {
+        "level": 35,
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "add",
+            "value": 0.07
+          }
+        ]
+      },
+      {
+        "level": 40,
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "add",
+            "value": 0.08
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "add",
+            "value": 0.09
+          }
+        ]
+      },
+      {
+        "level": 50,
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "add",
+            "value": 0.1
+          }
+        ]
+      },
+      {
+        "level": 55,
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "add",
+            "value": 0.11
+          }
+        ]
+      },
+      {
+        "level": 60,
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "add",
+            "value": 0.12
+          }
+        ]
+      },
+      {
+        "level": 65,
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "add",
+            "value": 0.13
+          }
+        ]
+      }
+    ],
+    "desc": "Trained at mining sites. Each level adds +1% loot, plus a step bonus every 5 levels."
+  },
+  {
+    "id": "herbalism",
+    "name": "Herbalism",
+    "icon": "🌿",
+    "kind": "passive",
+    "category": "craft",
+    "progression": [
+      {
+        "from": 1,
+        "base": "novice",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "proficient",
+        "rate": "slow"
+      },
+      {
+        "from": 60,
+        "base": "expert",
+        "rate": "slow"
+      }
+    ],
+    "tags": [
+      "herbalism"
+    ],
+    "unlock": [],
+    "effects": [
+      {
+        "stat": "loot",
+        "op": "mult",
+        "value": 0,
+        "perLevel": 0.01
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Hobbyist"
+      },
+      {
+        "level": 20,
+        "name": "Devoted Gardener"
+      },
+      {
+        "level": 40,
+        "name": "Herbsight"
+      },
+      {
+        "level": 60,
+        "name": "Junior Druid"
+      }
+    ],
+    "milestones": [
+      {
+        "level": 5,
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "add",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "add",
+            "value": 0.02
+          }
+        ]
+      },
+      {
+        "level": 15,
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "add",
+            "value": 0.03
+          }
+        ]
+      },
+      {
+        "level": 20,
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "add",
+            "value": 0.04
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "add",
+            "value": 0.05
+          }
+        ]
+      },
+      {
+        "level": 30,
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "add",
+            "value": 0.06
+          }
+        ]
+      },
+      {
+        "level": 35,
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "add",
+            "value": 0.07
+          }
+        ]
+      },
+      {
+        "level": 40,
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "add",
+            "value": 0.08
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "add",
+            "value": 0.09
+          }
+        ]
+      },
+      {
+        "level": 50,
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "add",
+            "value": 0.1
+          }
+        ]
+      },
+      {
+        "level": 55,
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "add",
+            "value": 0.11
+          }
+        ]
+      },
+      {
+        "level": 60,
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "add",
+            "value": 0.12
+          }
+        ]
+      },
+      {
+        "level": 65,
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "add",
+            "value": 0.13
+          }
+        ]
+      }
+    ],
+    "desc": "Trained at herb-gathering sites. Each level adds +1% loot, plus a step bonus every 5 levels. Herbalism 3 unlocks Alchemy."
+  },
+  {
+    "id": "cooking",
+    "name": "Cooking",
+    "icon": "🍳",
+    "kind": "passive",
+    "category": "craft",
+    "progression": [
+      {
+        "from": 1,
+        "base": "novice",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "proficient",
+        "rate": "slow"
+      },
+      {
+        "from": 60,
+        "base": "expert",
+        "rate": "slow"
+      }
+    ],
+    "tags": [
+      "cooking"
+    ],
+    "unlock": [],
+    "novelty": {
+      "domain": "cookery",
+      "k": 5,
+      "c": 4,
+      "discovery": 2
+    },
+    "effects": [
+      {
+        "stat": "craftSpeed",
+        "op": "mult",
+        "value": 0,
+        "perLevel": 0.008
+      }
+    ],
+    "milestones": [
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "foodDuration",
+            "op": "add",
+            "value": 0.06
+          }
+        ]
+      },
+      {
+        "level": 20,
+        "bonus": [
+          {
+            "stat": "foodDuration",
+            "op": "add",
+            "value": 0.06
+          },
+          {
+            "stat": "foodPotency",
+            "op": "add",
+            "value": 0.05
+          }
+        ]
+      },
+      {
+        "level": 30,
+        "bonus": [
+          {
+            "stat": "foodDuration",
+            "op": "add",
+            "value": 0.06
+          }
+        ]
+      },
+      {
+        "level": 40,
+        "bonus": [
+          {
+            "stat": "foodDuration",
+            "op": "add",
+            "value": 0.06
+          },
+          {
+            "stat": "foodPotency",
+            "op": "add",
+            "value": 0.05
+          }
+        ]
+      },
+      {
+        "level": 50,
+        "bonus": [
+          {
+            "stat": "foodDuration",
+            "op": "add",
+            "value": 0.06
+          }
+        ]
+      },
+      {
+        "level": 60,
+        "bonus": [
+          {
+            "stat": "foodDuration",
+            "op": "add",
+            "value": 0.06
+          },
+          {
+            "stat": "foodPotency",
+            "op": "add",
+            "value": 0.05
+          }
+        ]
+      },
+      {
+        "level": 70,
+        "bonus": [
+          {
+            "stat": "foodDuration",
+            "op": "add",
+            "value": 0.06
+          }
+        ]
+      },
+      {
+        "level": 80,
+        "bonus": [
+          {
+            "stat": "foodDuration",
+            "op": "add",
+            "value": 0.06
+          },
+          {
+            "stat": "foodPotency",
+            "op": "add",
+            "value": 0.05
+          }
+        ]
+      },
+      {
+        "level": 90,
+        "bonus": [
+          {
+            "stat": "foodDuration",
+            "op": "add",
+            "value": 0.06
+          }
+        ]
+      },
+      {
+        "level": 100,
+        "bonus": [
+          {
+            "stat": "foodPotency",
+            "op": "add",
+            "value": 0.05
+          }
+        ]
+      },
+      {
+        "level": 120,
+        "bonus": [
+          {
+            "stat": "foodPotency",
+            "op": "add",
+            "value": 0.05
+          }
+        ]
+      },
+      {
+        "level": 140,
+        "bonus": [
+          {
+            "stat": "foodPotency",
+            "op": "add",
+            "value": 0.05
+          }
+        ]
+      },
+      {
+        "level": 160,
+        "bonus": [
+          {
+            "stat": "foodPotency",
+            "op": "add",
+            "value": 0.05
+          }
+        ]
+      },
+      {
+        "level": 180,
+        "bonus": [
+          {
+            "stat": "foodPotency",
+            "op": "add",
+            "value": 0.05
+          }
+        ]
+      },
+      {
+        "level": 200,
+        "bonus": [
+          {
+            "stat": "foodPotency",
+            "op": "add",
+            "value": 0.05
+          }
+        ]
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Camp Cook"
+      },
+      {
+        "level": 8,
+        "name": "Hearth Cook"
+      },
+      {
+        "level": 20,
+        "name": "Kitchen Hand"
+      },
+      {
+        "level": 40,
+        "name": "Chef"
+      }
+    ],
+    "desc": "Trained by cooking, and a dish new to you pays most. Each level adds +0.8% craft speed. Food you eat lasts 6% longer every 10 levels and hits 5% harder every 20, up to +50% each (Duration at level 90, Potency at 200)."
+  },
+  {
+    "id": "alchemy",
+    "name": "Alchemy",
+    "icon": "⚗️",
+    "kind": "passive",
+    "category": "craft",
+    "progression": [
+      {
+        "from": 1,
+        "base": "novice",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "proficient",
+        "rate": "slow"
+      },
+      {
+        "from": 60,
+        "base": "expert",
+        "rate": "slow"
+      }
+    ],
+    "tags": [
+      "alchemy"
+    ],
+    "unlock": [
+      {
+        "type": "skill",
+        "id": "herbalism",
+        "level": 3
+      }
+    ],
+    "effects": [
+      {
+        "stat": "craftSpeed",
+        "op": "mult",
+        "value": 0,
+        "perLevel": 0.006
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Pot-Boiler"
+      },
+      {
+        "level": 12,
+        "name": "Apothecary"
+      },
+      {
+        "level": 30,
+        "name": "Alchemist"
+      },
+      {
+        "level": 55,
+        "name": "Adept of the Work"
+      }
+    ],
+    "desc": "Manifests at Herbalism 3; trained by brewing. Levels buy sequence length (2 steps to 6, at levels 5, 12, 22 and 35) and reagent vocabulary, never brew quality; quality comes from the sequence. Each level adds +0.6% craft speed."
+  },
+  {
+    "id": "geneshaping",
+    "name": "Geneshaping",
+    "icon": "🧬",
+    "kind": "passive",
+    "category": "craft",
+    "progression": [
+      {
+        "from": 1,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 25,
+        "base": "expert",
+        "rate": "slow"
+      },
+      {
+        "from": 45,
+        "base": "master",
+        "rate": "slow"
+      },
+      {
+        "from": 65,
+        "base": "legendary",
+        "rate": "glacial"
+      }
+    ],
+    "tags": [
+      "geneshaping"
+    ],
+    "unlock": [],
+    "novelty": {
+      "domain": "geneshaping",
+      "k": 18,
+      "c": 2,
+      "discovery": 45
+    },
+    "effects": [
+      {
+        "stat": "craftSpeed",
+        "op": "mult",
+        "value": 0,
+        "perLevel": 0.006
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Biomatter Harvester"
+      },
+      {
+        "level": 20,
+        "name": "Mutation Documenter"
+      },
+      {
+        "level": 40,
+        "name": "Master Geneshaper"
+      },
+      {
+        "level": 60,
+        "name": "Life Transmuter"
+      }
+    ],
+    "desc": "Unlocked by quest; trained by geneshaping, and a new gene pays most. Levels raise what a carcass yields and how far a bench can push a grade. Each level adds +0.6% craft speed."
+  },
+  {
+    "id": "runecarving",
+    "name": "Runecarving",
+    "icon": "💎️",
+    "kind": "passive",
+    "category": "craft",
+    "progression": [
+      {
+        "from": 1,
+        "base": "adept",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "slow"
+      },
+      {
+        "from": 60,
+        "base": "adept",
+        "rate": "glacial"
+      }
+    ],
+    "tags": [
+      "runecarving"
+    ],
+    "unlock": [],
+    "effects": [
+      {
+        "stat": "craftSpeed",
+        "op": "mult",
+        "value": 0,
+        "perLevel": 0.01
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Apprentice Runecarver"
+      },
+      {
+        "level": 20,
+        "name": "Journeyman Runecarver"
+      },
+      {
+        "level": 40,
+        "name": "Master Runecarver"
+      },
+      {
+        "level": 60,
+        "name": "One With The Runes"
+      }
+    ],
+    "milestones": [
+      {
+        "level": 5,
+        "bonus": [
+          {
+            "stat": "craftSpeed",
+            "op": "add",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "craftSpeed",
+            "op": "add",
+            "value": 0.02
+          }
+        ]
+      },
+      {
+        "level": 15,
+        "bonus": [
+          {
+            "stat": "craftSpeed",
+            "op": "add",
+            "value": 0.03
+          }
+        ]
+      },
+      {
+        "level": 20,
+        "bonus": [
+          {
+            "stat": "craftSpeed",
+            "op": "add",
+            "value": 0.04
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "craftSpeed",
+            "op": "add",
+            "value": 0.05
+          }
+        ]
+      },
+      {
+        "level": 30,
+        "bonus": [
+          {
+            "stat": "craftSpeed",
+            "op": "add",
+            "value": 0.06
+          }
+        ]
+      },
+      {
+        "level": 35,
+        "bonus": [
+          {
+            "stat": "craftSpeed",
+            "op": "add",
+            "value": 0.07
+          }
+        ]
+      },
+      {
+        "level": 40,
+        "bonus": [
+          {
+            "stat": "craftSpeed",
+            "op": "add",
+            "value": 0.08
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "craftSpeed",
+            "op": "add",
+            "value": 0.09
+          }
+        ]
+      },
+      {
+        "level": 50,
+        "bonus": [
+          {
+            "stat": "craftSpeed",
+            "op": "add",
+            "value": 0.1
+          }
+        ]
+      },
+      {
+        "level": 55,
+        "bonus": [
+          {
+            "stat": "craftSpeed",
+            "op": "add",
+            "value": 0.11
+          }
+        ]
+      },
+      {
+        "level": 60,
+        "bonus": [
+          {
+            "stat": "craftSpeed",
+            "op": "add",
+            "value": 0.12
+          }
+        ]
+      },
+      {
+        "level": 65,
+        "bonus": [
+          {
+            "stat": "craftSpeed",
+            "op": "add",
+            "value": 0.13
+          }
+        ]
+      }
+    ],
+    "desc": "Trained at the rune table. Each level adds +1% craft speed, plus a step bonus every 5 levels."
+  },
+  {
+    "id": "unarmed_combat",
+    "name": "Unarmed Combat",
+    "icon": "👊",
+    "kind": "passive",
+    "category": "combat",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "combat",
+      "unarmed"
+    ],
+    "parent": "fighting",
+    "unlock": [
+      {
+        "type": "skill",
+        "id": "fighting",
+        "level": 3
+      },
+      {
+        "type": "equippedTag",
+        "tag": "unarmed"
+      }
+    ],
+    "effects": [
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": 0,
+        "perLevel": 0.02,
+        "requiresTag": "unarmed"
+      },
+      {
+        "stat": "attackSpeed",
+        "op": "mult",
+        "value": 0,
+        "perLevel": 0.005,
+        "requiresTag": "unarmed"
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Unarmed Fighting"
+      },
+      {
+        "level": 20,
+        "name": "Unarmed Combat"
+      },
+      {
+        "level": 40,
+        "name": "Martial Arts"
+      },
+      {
+        "level": 60,
+        "name": "Mind-Body Unity"
+      }
+    ],
+    "desc": "Manifests at Fighting 3 while unarmed; trained by unarmed combat. Each level adds +2% damage and +0.5% attack speed while unarmed."
+  },
+  {
+    "id": "dagger_combat",
+    "name": "Dagger Combat",
+    "icon": "🔪",
+    "kind": "passive",
+    "category": "combat",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "combat",
+      "dagger"
+    ],
+    "parent": "fighting",
+    "unlock": [
+      {
+        "type": "skill",
+        "id": "fighting",
+        "level": 3
+      },
+      {
+        "type": "equippedTag",
+        "tag": "dagger"
+      }
+    ],
+    "effects": [
+      {
+        "stat": "crit",
+        "op": "add",
+        "value": 0,
+        "perLevel": 0.003,
+        "requiresTag": "dagger"
+      },
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": 0,
+        "perLevel": 0.012,
+        "requiresTag": "dagger"
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Dagger Stabbing"
+      },
+      {
+        "level": 20,
+        "name": "Dagger Combat"
+      },
+      {
+        "level": 40,
+        "name": "Assassin's Blade"
+      },
+      {
+        "level": 60,
+        "name": "Phantom Edge"
+      }
+    ],
+    "desc": "Manifests at Fighting 3 with a dagger equipped; trained by dagger combat. Each level adds +0.3% crit and +1.2% damage while a dagger is equipped."
+  },
+  {
+    "id": "staff_combat",
+    "name": "Staff Combat",
+    "icon": "🪄",
+    "kind": "passive",
+    "category": "combat",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "combat",
+      "staff"
+    ],
+    "parent": "fighting",
+    "unlock": [
+      {
+        "type": "skill",
+        "id": "fighting",
+        "level": 3
+      },
+      {
+        "type": "equippedTag",
+        "tag": "staff"
+      }
+    ],
+    "effects": [
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": 0,
+        "perLevel": 0.01,
+        "requiresTag": "staff"
+      },
+      {
+        "stat": "spellPower",
+        "op": "mult",
+        "value": 0,
+        "perLevel": 0.012,
+        "requiresTag": "staff"
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Staff Twirling"
+      },
+      {
+        "level": 20,
+        "name": "Staff Combat"
+      },
+      {
+        "level": 40,
+        "name": "Bo Staff Mastery"
+      },
+      {
+        "level": 60,
+        "name": "Arcane Pole Harmony"
+      }
+    ],
+    "desc": "Manifests at Fighting 3 with a staff equipped; trained by staff combat. Each level adds +1% damage and +1.2% spell power while a staff is equipped."
+  },
+  {
+    "id": "club_combat",
+    "name": "Club Combat",
+    "icon": "🏏",
+    "kind": "passive",
+    "category": "combat",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "combat",
+      "blunt"
+    ],
+    "parent": "fighting",
+    "unlock": [
+      {
+        "type": "skill",
+        "id": "fighting",
+        "level": 3
+      },
+      {
+        "type": "equippedTag",
+        "tag": "blunt"
+      }
+    ],
+    "effects": [
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": 0,
+        "perLevel": 0.016,
+        "requiresTag": "blunt"
+      },
+      {
+        "stat": "armor",
+        "op": "add",
+        "value": 0,
+        "perLevel": 0.05,
+        "requiresTag": "blunt"
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Club Swinging"
+      },
+      {
+        "level": 20,
+        "name": "Club Combat"
+      },
+      {
+        "level": 40,
+        "name": "Mace Mastery"
+      },
+      {
+        "level": 60,
+        "name": "Earth Shaker"
+      }
+    ],
+    "desc": "Manifests at Fighting 3 with a blunt weapon equipped; trained by blunt combat. Each level adds +1.6% damage and +0.05 armor while a blunt weapon is equipped."
+  },
+  {
+    "id": "greatsword_combat",
+    "name": "Greatsword Combat",
+    "icon": "⚔️",
+    "kind": "passive",
+    "category": "combat",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "combat",
+      "greatsword"
+    ],
+    "parent": "fighting",
+    "unlock": [
+      {
+        "type": "skill",
+        "id": "fighting",
+        "level": 8
+      },
+      {
+        "type": "equippedTag",
+        "tag": "greatsword"
+      }
+    ],
+    "effects": [
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": 0,
+        "perLevel": 0.018,
+        "requiresTag": "greatsword"
+      },
+      {
+        "stat": "crit",
+        "op": "add",
+        "value": 0,
+        "perLevel": 0.0015,
+        "requiresTag": "greatsword"
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Greatsword Wielding"
+      },
+      {
+        "level": 20,
+        "name": "Greatsword Combat"
+      },
+      {
+        "level": 40,
+        "name": "Claymore Mastery"
+      },
+      {
+        "level": 60,
+        "name": "Titan's Blade"
+      }
+    ],
+    "desc": "Manifests at Fighting 8 with a greatsword equipped; trained by greatsword combat. Each level adds +1.8% damage and +0.15% crit while a greatsword is equipped."
+  },
+  {
+    "id": "spear_combat",
+    "name": "Spear Combat",
+    "icon": "🔱️",
+    "kind": "passive",
+    "category": "combat",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "combat",
+      "spear"
+    ],
+    "parent": "fighting",
+    "unlock": [
+      {
+        "type": "skill",
+        "id": "fighting",
+        "level": 8
+      },
+      {
+        "type": "equippedTag",
+        "tag": "spear"
+      }
+    ],
+    "effects": [
+      {
+        "stat": "attackSpeed",
+        "op": "mult",
+        "value": 0,
+        "perLevel": 0.018,
+        "requiresTag": "spear"
+      },
+      {
+        "stat": "crit",
+        "op": "add",
+        "value": 0,
+        "perLevel": 0.0015,
+        "requiresTag": "spear"
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Spearbearer"
+      },
+      {
+        "level": 20,
+        "name": "Hussar"
+      },
+      {
+        "level": 40,
+        "name": "Phalanx"
+      },
+      {
+        "level": 60,
+        "name": "Odin's Spear"
+      }
+    ],
+    "desc": "Manifests at Fighting 8 with a spear equipped; trained by spear combat. Each level adds +1.8% attack speed and +0.15% crit while a spear is equipped."
+  },
+  {
+    "id": "bow_combat",
+    "name": "Bow Combat",
+    "icon": "🏹",
+    "kind": "passive",
+    "category": "combat",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "combat",
+      "bow"
+    ],
+    "parent": "fighting",
+    "unlock": [
+      {
+        "type": "skill",
+        "id": "fighting",
+        "level": 3
+      },
+      {
+        "type": "equippedTag",
+        "tag": "bow"
+      }
+    ],
+    "effects": [
+      {
+        "stat": "crit",
+        "op": "add",
+        "value": 0,
+        "perLevel": 0.002,
+        "requiresTag": "bow"
+      },
+      {
+        "stat": "dodge",
+        "op": "add",
+        "value": 0,
+        "perLevel": 0.002,
+        "requiresTag": "bow"
+      },
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": 0,
+        "perLevel": 0.01,
+        "requiresTag": "bow"
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Bow Handling"
+      },
+      {
+        "level": 20,
+        "name": "Bow Combat"
+      },
+      {
+        "level": 40,
+        "name": "Marksman's Eye"
+      },
+      {
+        "level": 60,
+        "name": "Storm of Arrows"
+      }
+    ],
+    "desc": "Manifests at Fighting 3 with a bow equipped; trained by bow combat. Each level adds +0.2% crit, +0.2% dodge and +1% damage while a bow is equipped."
+  },
+  {
+    "id": "deflection",
+    "name": "Deflection",
+    "icon": "🛡️",
+    "kind": "passive",
+    "category": "combat",
+    "progression": [
+      {
+        "from": 1,
+        "base": "novice",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "proficient",
+        "rate": "slow"
+      },
+      {
+        "from": 60,
+        "base": "expert",
+        "rate": "slow"
+      }
+    ],
+    "tags": [
+      "parrying"
+    ],
+    "parent": "fighting",
+    "unlock": [
+      {
+        "type": "skill",
+        "id": "fighting",
+        "level": 5
+      },
+      {
+        "type": "equippedTag",
+        "tag": "parrying"
+      }
+    ],
+    "effects": [
+      {
+        "stat": "parry",
+        "op": "add",
+        "value": 0,
+        "perLevel": 0.002,
+        "requiresTag": "parrying"
+      },
+      {
+        "stat": "riposte",
+        "op": "add",
+        "value": 0,
+        "perLevel": 0.006,
+        "requiresTag": "parrying"
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Catching Blades"
+      },
+      {
+        "level": 20,
+        "name": "Deflection"
+      },
+      {
+        "level": 40,
+        "name": "Blade Reader"
+      },
+      {
+        "level": 60,
+        "name": "Nothing Lands"
+      }
+    ],
+    "desc": "Manifests at Fighting 5 with a parrying item equipped (parrying dagger, buckler, rapier); any fight while carrying one trains it, in any stance. Each level adds +0.2% parry and +0.6% riposte while one is equipped."
+  },
+  {
+    "id": "school_ittou_ryu",
+    "name": "Ittou-ryu",
+    "icon": "⚔️",
+    "kind": "passive",
+    "category": "combat",
+    "progression": [
+      {
+        "from": 1,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 25,
+        "base": "expert",
+        "rate": "slow"
+      },
+      {
+        "from": 45,
+        "base": "master",
+        "rate": "slow"
+      },
+      {
+        "from": 65,
+        "base": "legendary",
+        "rate": "glacial"
+      }
+    ],
+    "parent": "swordsmanship",
+    "tags": [
+      "style:quick",
+      "style:ittou_ryu_style"
+    ],
+    "unlock": [
+      {
+        "type": "skill",
+        "id": "swordsmanship",
+        "level": 25
+      },
+      {
+        "type": "attr",
+        "attr": "dex",
+        "level": 20
+      },
+      {
+        "type": "equippedTag",
+        "tag": "katana"
+      }
+    ],
+    "effects": [
+      {
+        "stat": "crit",
+        "op": "add",
+        "value": 0.05,
+        "perLevel": 0.004,
+        "requiresStyle": "ittou_ryu_style",
+        "requiresTag": "katana"
+      },
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": 0.05,
+        "perLevel": 0.02,
+        "requiresStyle": "ittou_ryu_style",
+        "requiresTag": "katana"
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Itto-ryu Initiate"
+      },
+      {
+        "level": 20,
+        "name": "Itto-ryu Adept"
+      },
+      {
+        "level": 40,
+        "name": "Itto-ryu Master"
+      },
+      {
+        "level": 60,
+        "name": "Ittosai's Second Descent"
+      }
+    ],
+    "desc": "Katana school. Manifests by fighting in the Quick stance with a katana at Swordsmanship 25 and Dexterity 20; replaces Quick with Ittou-ryu. In that style with a katana: +5% crit and +5% damage, plus +0.4% crit and +2% damage per level."
+  },
+  {
+    "id": "school_jigen_ryu",
+    "name": "Jigen-ryu",
+    "icon": "⚡",
+    "kind": "passive",
+    "category": "combat",
+    "progression": [
+      {
+        "from": 1,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 25,
+        "base": "expert",
+        "rate": "slow"
+      },
+      {
+        "from": 45,
+        "base": "master",
+        "rate": "slow"
+      },
+      {
+        "from": 65,
+        "base": "legendary",
+        "rate": "glacial"
+      }
+    ],
+    "parent": "swordsmanship",
+    "tags": [
+      "style:crush",
+      "style:jigen_ryu"
+    ],
+    "unlock": [
+      {
+        "type": "skill",
+        "id": "swordsmanship",
+        "level": 15
+      },
+      {
+        "type": "attr",
+        "attr": "str",
+        "level": 30
+      },
+      {
+        "type": "equippedTag",
+        "tag": "katana"
+      }
+    ],
+    "effects": [
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": 0,
+        "perLevel": 0.005,
+        "requiresStyle": "jigen_ryu",
+        "requiresTag": "katana"
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Jigen-ryu Initiate"
+      },
+      {
+        "level": 20,
+        "name": "Jigen-ryu Adept"
+      },
+      {
+        "level": 40,
+        "name": "Jigen-ryu Master"
+      },
+      {
+        "level": 60,
+        "name": "The First Strike Is the Last"
+      }
+    ],
+    "desc": "Katana school. Manifests by fighting in the Crush stance with a katana at Swordsmanship 15 and Strength 30; replaces Crush with Jigen-ryu. Each level adds +0.5% damage in that style."
+  },
+  {
+    "id": "school_niten_ichi",
+    "name": "Niten-Ichi-ryu",
+    "icon": "🗡️",
+    "kind": "passive",
+    "category": "combat",
+    "progression": [
+      {
+        "from": 1,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 25,
+        "base": "expert",
+        "rate": "slow"
+      },
+      {
+        "from": 45,
+        "base": "master",
+        "rate": "slow"
+      },
+      {
+        "from": 65,
+        "base": "legendary",
+        "rate": "glacial"
+      }
+    ],
+    "parent": "swordsmanship",
+    "tags": [
+      "style:multi",
+      "style:niten_ichi_ryu"
+    ],
+    "unlock": [
+      {
+        "type": "skill",
+        "id": "swordsmanship",
+        "level": 25
+      },
+      {
+        "type": "attr",
+        "attr": "dex",
+        "level": 35
+      },
+      {
+        "type": "equippedTag",
+        "tag": "katana"
+      }
+    ],
+    "effects": [
+      {
+        "stat": "parry",
+        "op": "add",
+        "value": 0,
+        "perLevel": 0.0015,
+        "requiresStyle": "niten_ichi_ryu",
+        "requiresTag": "katana"
+      },
+      {
+        "stat": "riposte",
+        "op": "add",
+        "value": 0,
+        "perLevel": 0.004,
+        "requiresStyle": "niten_ichi_ryu",
+        "requiresTag": "katana"
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Two-Sword Novice"
+      },
+      {
+        "level": 20,
+        "name": "Niten Adept"
+      },
+      {
+        "level": 40,
+        "name": "Twin Heavens"
+      },
+      {
+        "level": 60,
+        "name": "Both Blades, One Will"
+      }
+    ],
+    "desc": "Katana school. Manifests by fighting in the Flurry stance with a katana at Swordsmanship 25 and Dexterity 35; replaces Flurry with Niten-Ichi-ryu. Each level adds +0.15% parry and +0.4% riposte in that style."
+  },
+  {
+    "id": "school_eishin",
+    "name": "Eishin-ryu",
+    "icon": "🌙",
+    "kind": "passive",
+    "category": "combat",
+    "progression": [
+      {
+        "from": 1,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 25,
+        "base": "expert",
+        "rate": "slow"
+      },
+      {
+        "from": 45,
+        "base": "master",
+        "rate": "slow"
+      },
+      {
+        "from": 65,
+        "base": "legendary",
+        "rate": "glacial"
+      }
+    ],
+    "parent": "swordsmanship",
+    "tags": [
+      "style:finesse",
+      "style:eishin_ryu"
+    ],
+    "unlock": [
+      {
+        "type": "skill",
+        "id": "swordsmanship",
+        "level": 20
+      },
+      {
+        "type": "attr",
+        "attr": "dex",
+        "level": 40
+      },
+      {
+        "type": "equippedTag",
+        "tag": "katana"
+      }
+    ],
+    "effects": [
+      {
+        "stat": "crit",
+        "op": "add",
+        "value": 0,
+        "perLevel": 0.0015,
+        "requiresStyle": "eishin_ryu",
+        "requiresTag": "katana"
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Eishin Student"
+      },
+      {
+        "level": 20,
+        "name": "Eishin Adept"
+      },
+      {
+        "level": 40,
+        "name": "Eishin Master"
+      },
+      {
+        "level": 60,
+        "name": "Draw Without Drawing"
+      }
+    ],
+    "desc": "Katana school. Manifests by fighting in the Finesse stance with a katana at Swordsmanship 20 and Dexterity 40; replaces Finesse with Eishin-ryu. Each level adds +0.15% crit in that style."
+  },
+  {
+    "id": "school_destreza",
+    "name": "Destreza",
+    "icon": "🤺",
+    "kind": "passive",
+    "category": "combat",
+    "progression": [
+      {
+        "from": 1,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 25,
+        "base": "expert",
+        "rate": "slow"
+      },
+      {
+        "from": 45,
+        "base": "master",
+        "rate": "slow"
+      },
+      {
+        "from": 65,
+        "base": "legendary",
+        "rate": "glacial"
+      }
+    ],
+    "parent": "swordsmanship",
+    "tags": [
+      "style:evasive",
+      "style:destreza"
+    ],
+    "unlock": [
+      {
+        "type": "skill",
+        "id": "swordsmanship",
+        "level": 18
+      },
+      {
+        "type": "skill",
+        "id": "deflection",
+        "level": 10
+      },
+      {
+        "type": "attr",
+        "attr": "dex",
+        "level": 30
+      },
+      {
+        "type": "equippedTag",
+        "tag": "rapier"
+      }
+    ],
+    "effects": [
+      {
+        "stat": "parry",
+        "op": "add",
+        "value": 0,
+        "perLevel": 0.002,
+        "requiresStyle": "destreza"
+      },
+      {
+        "stat": "riposte",
+        "op": "add",
+        "value": 0,
+        "perLevel": 0.008,
+        "requiresStyle": "destreza"
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Student of the Circle"
+      },
+      {
+        "level": 20,
+        "name": "Diestro"
+      },
+      {
+        "level": 40,
+        "name": "Master of the True Art"
+      },
+      {
+        "level": 60,
+        "name": "The Point Covers Everything"
+      }
+    ],
+    "desc": "Rapier school. Manifests by fighting in the Evasive stance with a rapier at Swordsmanship 18, Deflection 10 and Dexterity 30; replaces Evasive with Destreza. Each level adds +0.2% parry and +0.8% riposte in that style."
+  },
+  {
+    "id": "school_bolognese",
+    "name": "Bolognese",
+    "icon": "🔰",
+    "kind": "passive",
+    "category": "combat",
+    "progression": [
+      {
+        "from": 1,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 25,
+        "base": "expert",
+        "rate": "slow"
+      },
+      {
+        "from": 45,
+        "base": "master",
+        "rate": "slow"
+      },
+      {
+        "from": 65,
+        "base": "legendary",
+        "rate": "glacial"
+      }
+    ],
+    "parent": "shield_combat",
+    "tags": [
+      "style:defensive",
+      "style:bolognese"
+    ],
+    "unlock": [
+      {
+        "type": "skill",
+        "id": "shield_combat",
+        "level": 15
+      },
+      {
+        "type": "skill",
+        "id": "swordsmanship",
+        "level": 12
+      },
+      {
+        "type": "skill",
+        "id": "deflection",
+        "level": 8
+      },
+      {
+        "type": "attr",
+        "attr": "dex",
+        "level": 20
+      },
+      {
+        "type": "equippedTag",
+        "tag": "sword"
+      },
+      {
+        "type": "equippedTag",
+        "tag": "buckler"
+      }
+    ],
+    "effects": [
+      {
+        "stat": "parry",
+        "op": "add",
+        "value": 0,
+        "perLevel": 0.0015,
+        "requiresStyle": "bolognese"
+      },
+      {
+        "stat": "riposte",
+        "op": "add",
+        "value": 0,
+        "perLevel": 0.005,
+        "requiresStyle": "bolognese"
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Buckler Bearer"
+      },
+      {
+        "level": 20,
+        "name": "Player of the Bind"
+      },
+      {
+        "level": 40,
+        "name": "Bolognese Master"
+      },
+      {
+        "level": 60,
+        "name": "Two Hands, One Guard"
+      }
+    ],
+    "desc": "Sword-and-buckler school. Manifests by fighting in the Brace stance with a sword and a buckler at Shield Combat 15, Swordsmanship 12, Deflection 8 and Dexterity 20; replaces Brace with Bolognese. Each level adds +0.15% parry and +0.5% riposte in that style."
+  },
+  {
+    "id": "school_magic_combat",
+    "name": "Magic Combat",
+    "icon": "🔮",
+    "kind": "passive",
+    "category": "combat",
+    "progression": [
+      {
+        "from": 1,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 25,
+        "base": "expert",
+        "rate": "slow"
+      },
+      {
+        "from": 45,
+        "base": "master",
+        "rate": "slow"
+      },
+      {
+        "from": 65,
+        "base": "legendary",
+        "rate": "glacial"
+      }
+    ],
+    "parent": "fighting",
+    "tags": [
+      "style:finesse",
+      "style:magic_combat",
+      "magic"
+    ],
+    "unlock": [
+      {
+        "type": "skill",
+        "id": "fighting",
+        "level": 10
+      },
+      {
+        "type": "skill",
+        "id": "magic",
+        "level": 10
+      },
+      {
+        "type": "attr",
+        "attr": "int",
+        "level": 20
+      },
+      {
+        "type": "stat",
+        "key": "taught:school_magic_combat",
+        "value": 1
+      }
+    ],
+    "effects": [
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": 0,
+        "perLevel": 0.008,
+        "requiresStyle": "magic_combat"
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Spellblade Novice"
+      },
+      {
+        "level": 20,
+        "name": "Spellblade"
+      },
+      {
+        "level": 40,
+        "name": "War Mage"
+      },
+      {
+        "level": 60,
+        "name": "The Edge Is a Detail"
+      }
+    ],
+    "desc": "Spellblade school. Manifests by fighting in the Finesse stance at Fighting 10, Magic 10 and Intelligence 20; replaces Finesse with Magic Combat, whose exertion spends mana instead of stamina. Each level adds +0.8% damage in that style."
+  },
+  {
+    "id": "school_boxing",
+    "name": "Boxing",
+    "icon": "🥊",
+    "kind": "passive",
+    "category": "combat",
+    "progression": [
+      {
+        "from": 1,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 25,
+        "base": "expert",
+        "rate": "slow"
+      },
+      {
+        "from": 45,
+        "base": "master",
+        "rate": "slow"
+      },
+      {
+        "from": 65,
+        "base": "legendary",
+        "rate": "glacial"
+      }
+    ],
+    "parent": "unarmed_combat",
+    "tags": [
+      "style:evasive",
+      "style:boxing"
+    ],
+    "unlock": [
+      {
+        "type": "skill",
+        "id": "unarmed_combat",
+        "level": 20
+      },
+      {
+        "type": "attr",
+        "attr": "str",
+        "level": 30
+      },
+      {
+        "type": "attr",
+        "attr": "con",
+        "level": 25
+      },
+      {
+        "type": "equippedTag",
+        "tag": "unarmed"
+      }
+    ],
+    "effects": [
+      {
+        "stat": "attackSpeed",
+        "op": "mult",
+        "value": 0,
+        "perLevel": 0.003,
+        "requiresStyle": "boxing"
+      },
+      {
+        "stat": "dodge",
+        "op": "add",
+        "value": 0,
+        "perLevel": 0.001,
+        "requiresStyle": "boxing"
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Amateur Boxer"
+      },
+      {
+        "level": 20,
+        "name": "Contender"
+      },
+      {
+        "level": 40,
+        "name": "Champion"
+      },
+      {
+        "level": 60,
+        "name": "Pound for Pound"
+      }
+    ],
+    "desc": "Unarmed school. Manifests by fighting in the Evasive stance while unarmed at Unarmed Combat 20, Strength 30 and Constitution 25; replaces Evasive with Boxing. Each level adds +0.3% attack speed and +0.1% dodge in that style."
+  },
+  {
+    "id": "school_taekwondo",
+    "name": "Taekwondo",
+    "icon": "🦵",
+    "kind": "passive",
+    "category": "combat",
+    "progression": [
+      {
+        "from": 1,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 25,
+        "base": "expert",
+        "rate": "slow"
+      },
+      {
+        "from": 45,
+        "base": "master",
+        "rate": "slow"
+      },
+      {
+        "from": 65,
+        "base": "legendary",
+        "rate": "glacial"
+      }
+    ],
+    "parent": "unarmed_combat",
+    "tags": [
+      "style:multi",
+      "style:taekwondo"
+    ],
+    "unlock": [
+      {
+        "type": "skill",
+        "id": "unarmed_combat",
+        "level": 25
+      },
+      {
+        "type": "attr",
+        "attr": "dex",
+        "level": 40
+      },
+      {
+        "type": "equippedTag",
+        "tag": "unarmed"
+      }
+    ],
+    "effects": [
+      {
+        "stat": "dodge",
+        "op": "add",
+        "value": 0,
+        "perLevel": 0.0015,
+        "requiresStyle": "taekwondo"
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "White Belt"
+      },
+      {
+        "level": 20,
+        "name": "Black Belt"
+      },
+      {
+        "level": 40,
+        "name": "Master Kicker"
+      },
+      {
+        "level": 60,
+        "name": "Storm of Heels"
+      }
+    ],
+    "desc": "Unarmed school. Manifests by fighting in the Flurry stance while unarmed at Unarmed Combat 25 and Dexterity 40; replaces Flurry with Taekwondo. Each level adds +0.15% dodge in that style."
+  },
+  {
+    "id": "school_muay_thai",
+    "name": "Muay Thai",
+    "icon": "🐘",
+    "kind": "passive",
+    "category": "combat",
+    "progression": [
+      {
+        "from": 1,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 25,
+        "base": "expert",
+        "rate": "slow"
+      },
+      {
+        "from": 45,
+        "base": "master",
+        "rate": "slow"
+      },
+      {
+        "from": 65,
+        "base": "legendary",
+        "rate": "glacial"
+      }
+    ],
+    "parent": "unarmed_combat",
+    "tags": [
+      "style:crush",
+      "style:muay_thai"
+    ],
+    "unlock": [
+      {
+        "type": "skill",
+        "id": "unarmed_combat",
+        "level": 35
+      },
+      {
+        "type": "attr",
+        "attr": "str",
+        "level": 40
+      },
+      {
+        "type": "attr",
+        "attr": "con",
+        "level": 40
+      },
+      {
+        "type": "equippedTag",
+        "tag": "unarmed"
+      }
+    ],
+    "effects": [
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": 0,
+        "perLevel": 0.005,
+        "requiresStyle": "muay_thai"
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Nak Muay"
+      },
+      {
+        "level": 20,
+        "name": "Clinch Fighter"
+      },
+      {
+        "level": 40,
+        "name": "Eight Limbs"
+      },
+      {
+        "level": 60,
+        "name": "Art of Eight Limbs"
+      }
+    ],
+    "desc": "Unarmed school. Manifests by fighting in the Crush stance while unarmed at Unarmed Combat 35, Strength 40 and Constitution 40; replaces Crush with Muay Thai. Each level adds +0.5% damage in that style."
+  },
+  {
+    "id": "school_wrestling",
+    "name": "Wrestling",
+    "icon": "🤼",
+    "kind": "passive",
+    "category": "combat",
+    "progression": [
+      {
+        "from": 1,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 25,
+        "base": "expert",
+        "rate": "slow"
+      },
+      {
+        "from": 45,
+        "base": "master",
+        "rate": "slow"
+      },
+      {
+        "from": 65,
+        "base": "legendary",
+        "rate": "glacial"
+      }
+    ],
+    "parent": "unarmed_combat",
+    "tags": [
+      "style:defensive",
+      "style:wrestling"
+    ],
+    "unlock": [
+      {
+        "type": "skill",
+        "id": "unarmed_combat",
+        "level": 20
+      },
+      {
+        "type": "attr",
+        "attr": "str",
+        "level": 40
+      },
+      {
+        "type": "attr",
+        "attr": "cha",
+        "level": 30
+      },
+      {
+        "type": "equippedTag",
+        "tag": "unarmed"
+      }
+    ],
+    "effects": [
+      {
+        "stat": "maxHp",
+        "op": "add",
+        "value": 0,
+        "perLevel": 0.8,
+        "requiresStyle": "wrestling"
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Grappler"
+      },
+      {
+        "level": 20,
+        "name": "Suplex Artist"
+      },
+      {
+        "level": 40,
+        "name": "Heavyweight"
+      },
+      {
+        "level": 60,
+        "name": "The Immovable"
+      }
+    ],
+    "desc": "Unarmed school. Manifests by fighting in the Brace stance while unarmed at Unarmed Combat 20, Strength 40 and Charisma 30; replaces Brace with Wrestling. Each level adds +0.8 max HP in that style."
+  },
+  {
+    "id": "shield_combat",
+    "name": "Shield Combat",
+    "icon": "🛡️",
+    "kind": "passive",
+    "category": "combat",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "combat",
+      "shield"
+    ],
+    "parent": "fighting",
+    "unlock": [
+      {
+        "type": "skill",
+        "id": "fighting",
+        "level": 3
+      },
+      {
+        "type": "equippedTag",
+        "tag": "shield"
+      }
+    ],
+    "effects": [
+      {
+        "stat": "armor",
+        "op": "mult",
+        "value": 0,
+        "perLevel": 0.02,
+        "requiresTag": "shield"
+      },
+      {
+        "stat": "maxHp",
+        "op": "add",
+        "value": 0,
+        "perLevel": 1,
+        "requiresTag": "shield"
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Shield Bearing"
+      },
+      {
+        "level": 20,
+        "name": "Shield Combat"
+      },
+      {
+        "level": 40,
+        "name": "Buckler Mastery"
+      },
+      {
+        "level": 60,
+        "name": "Aegis Guardian"
+      }
+    ],
+    "desc": "Manifests at Fighting 3 with a shield equipped; trained by fighting with one. Each level adds +2% armor and +1 max HP while a shield is equipped."
+  },
+  {
+    "id": "leathercrafting",
+    "name": "Leathercrafting",
+    "icon": "📦",
+    "kind": "passive",
+    "category": "craft",
+    "progression": [
+      {
+        "from": 1,
+        "base": "adept",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "slow"
+      },
+      {
+        "from": 60,
+        "base": "adept",
+        "rate": "glacial"
+      }
+    ],
+    "tags": [
+      "leatherwork"
+    ],
+    "unlock": [],
+    "effects": [
+      {
+        "stat": "craftSpeed:leatherwork",
+        "op": "mult",
+        "value": 0,
+        "perLevel": 0.01
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Novice Leatherworker"
+      },
+      {
+        "level": 21,
+        "name": "Adept Leatherworker"
+      },
+      {
+        "level": 41,
+        "name": "Professional Leatherworker"
+      },
+      {
+        "level": 61,
+        "name": "Master Leatherworker"
+      }
+    ],
+    "desc": "Trained by leatherwork. Each level adds +1% craft speed for leatherwork only; other crafts are unaffected."
+  },
+  {
+    "id": "school_capoeira",
+    "name": "Capoeira",
+    "icon": "🦵",
+    "kind": "passive",
+    "category": "combat",
+    "parent": "unarmed_combat",
+    "tags": [
+      "style:multi",
+      "style:capoeira"
+    ],
+    "unlock": [
+      {
+        "type": "skill",
+        "id": "unarmed_combat",
+        "level": 25
+      },
+      {
+        "type": "attr",
+        "attr": "dex",
+        "level": 40
+      },
+      {
+        "type": "equippedTag",
+        "tag": "unarmed"
+      },
+      {
+        "type": "stat",
+        "key": "combat:dodges",
+        "value": 100
+      }
+    ],
+    "effects": [
+      {
+        "stat": "dodge",
+        "op": "add",
+        "value": 0,
+        "perLevel": 0.0015,
+        "requiresStyle": "capoeira"
+      }
+    ],
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Aluno"
+      },
+      {
+        "level": 20,
+        "name": "Graduado"
+      },
+      {
+        "level": 40,
+        "name": "Professor"
+      },
+      {
+        "level": 60,
+        "name": "Mestre"
+      }
+    ],
+    "desc": "Unarmed school. Manifests by fighting in the Flurry stance while unarmed at Unarmed Combat 25 and Dexterity 40, after 100 dodges; replaces the Quick stance with Capoeira. Each level adds +0.15% dodge in that style."
+  },
+  {
+    "id": "school_eskrima",
+    "name": "Eskrima",
+    "icon": "📦",
+    "kind": "passive",
+    "category": "combat",
+    "tags": [
+      "dagger"
+    ],
+    "unlock": [
+      {
+        "type": "skill",
+        "id": "dagger_combat",
+        "level": 25
+      },
+      {
+        "type": "equippedTag",
+        "tag": "dagger"
+      },
+      {
+        "type": "attr",
+        "attr": "dex",
+        "level": 30
+      }
+    ],
+    "effects": [],
+    "parent": "dagger_combat",
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Antas Isa"
+      },
+      {
+        "level": 21,
+        "name": "Tagasanay "
+      },
+      {
+        "level": 41,
+        "name": "Guro Lakan"
+      },
+      {
+        "level": 61,
+        "name": "Punong Guro"
+      }
+    ],
+    "desc": "Dagger school. Manifests at Dagger Combat 25 and Dexterity 30 with a dagger equipped. Grants no bonuses yet."
+  },
+  {
+    "id": "word_fire",
+    "name": "Fire",
+    "icon": "🔥",
+    "desc": "Trained by casting or inscribing a sentence that contains \"fire\". Each level makes the word 1.5% stronger. At levels 10, 25, 45 it also grants a bonus.",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "word:fire"
+    ],
+    "parent": "arcana",
+    "unlock": [],
+    "milestones": [
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "resHeat",
+            "op": "add",
+            "value": 0.03
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "resHeat",
+            "op": "add",
+            "value": 0.03
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "resHeat",
+            "op": "add",
+            "value": 0.03
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "word_ice",
+    "name": "Ice",
+    "icon": "❄️",
+    "desc": "Trained by casting or inscribing a sentence that contains \"ice\". Each level makes the word 1.5% stronger. At levels 10, 25, 45 it also grants a bonus.",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "word:ice"
+    ],
+    "parent": "arcana",
+    "unlock": [],
+    "milestones": [
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "resCold",
+            "op": "add",
+            "value": 0.03
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "resCold",
+            "op": "add",
+            "value": 0.03
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "resCold",
+            "op": "add",
+            "value": 0.03
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "word_spark",
+    "name": "Spark",
+    "icon": "⚡",
+    "desc": "Trained by casting or inscribing a sentence that contains \"spark\". Each level makes the word 1.5% stronger. At levels 10, 25, 45 it also grants a bonus.",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "word:spark"
+    ],
+    "parent": "arcana",
+    "unlock": [],
+    "milestones": [
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "speed",
+            "op": "mult",
+            "value": 0.02
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "speed",
+            "op": "mult",
+            "value": 0.02
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "speed",
+            "op": "mult",
+            "value": 0.02
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "word_water",
+    "name": "Water",
+    "icon": "💧",
+    "desc": "Trained by casting or inscribing a sentence that contains \"water\". Each level makes the word 1.5% stronger. At levels 10, 25, 45 it also grants a bonus.",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "word:water"
+    ],
+    "parent": "arcana",
+    "unlock": [],
+    "milestones": [
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "resWater",
+            "op": "add",
+            "value": 0.03
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "resWater",
+            "op": "add",
+            "value": 0.03
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "resWater",
+            "op": "add",
+            "value": 0.03
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "word_stone",
+    "name": "Stone",
+    "icon": "🪨",
+    "desc": "Trained by casting or inscribing a sentence that contains \"stone\". Each level makes the word 1.5% stronger. At levels 10, 25, 45 it also grants a bonus.",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "word:stone"
+    ],
+    "parent": "arcana",
+    "unlock": [],
+    "milestones": [
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "armor",
+            "op": "add",
+            "value": 1.5
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "armor",
+            "op": "add",
+            "value": 1.5
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "armor",
+            "op": "add",
+            "value": 1.5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "word_gust",
+    "name": "Gust",
+    "icon": "💨",
+    "desc": "Trained by casting or inscribing a sentence that contains \"gust\". Each level makes the word 1.5% stronger. At levels 10, 25, 45 it also grants a bonus.",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "word:gust"
+    ],
+    "parent": "arcana",
+    "unlock": [],
+    "milestones": [
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "dodge",
+            "op": "add",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "dodge",
+            "op": "add",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "dodge",
+            "op": "add",
+            "value": 0.01
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "word_seed",
+    "name": "Seed",
+    "icon": "🌱",
+    "desc": "Trained by casting or inscribing a sentence that contains \"seed\". Each level makes the word 1.5% stronger. At levels 10, 25, 45 it also grants a bonus.",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "word:seed"
+    ],
+    "parent": "arcana",
+    "unlock": [],
+    "milestones": [
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "hpRegen",
+            "op": "add",
+            "value": 0.05
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "hpRegen",
+            "op": "add",
+            "value": 0.05
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "hpRegen",
+            "op": "add",
+            "value": 0.05
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "word_iron",
+    "name": "Iron",
+    "icon": "📌",
+    "art": "iron",
+    "desc": "Trained by casting or inscribing a sentence that contains \"iron\". Each level makes the word 1.5% stronger. At levels 10, 25, 45 it also grants a bonus.",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "word:iron"
+    ],
+    "parent": "arcana",
+    "unlock": [],
+    "milestones": [
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "resPiercing",
+            "op": "add",
+            "value": 0.03
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "resPiercing",
+            "op": "add",
+            "value": 0.03
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "resPiercing",
+            "op": "add",
+            "value": 0.03
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "word_venom",
+    "name": "Venom",
+    "icon": "🐍",
+    "desc": "Trained by casting or inscribing a sentence that contains \"venom\". Each level makes the word 1.5% stronger. At levels 10, 25, 45 it also grants a bonus.",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "word:venom"
+    ],
+    "parent": "arcana",
+    "unlock": [],
+    "milestones": [
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "resPoison",
+            "op": "add",
+            "value": 0.03
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "resPoison",
+            "op": "add",
+            "value": 0.03
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "resPoison",
+            "op": "add",
+            "value": 0.03
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "word_acid",
+    "name": "Acid",
+    "icon": "🧪",
+    "desc": "Trained by casting or inscribing a sentence that contains \"acid\". Each level makes the word 1.5% stronger. At levels 10, 25, 45 it also grants a bonus.",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "word:acid"
+    ],
+    "parent": "arcana",
+    "unlock": [],
+    "milestones": []
+  },
+  {
+    "id": "word_light",
+    "name": "Light",
+    "icon": "☀️",
+    "desc": "Trained by casting or inscribing a sentence that contains \"light\". Each level makes the word 1.5% stronger. At levels 10, 25, 45 it also grants a bonus.",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "word:light"
+    ],
+    "parent": "arcana",
+    "unlock": [],
+    "milestones": [
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "resLight",
+            "op": "add",
+            "value": 0.03
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "resLight",
+            "op": "add",
+            "value": 0.03
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "resLight",
+            "op": "add",
+            "value": 0.03
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "word_gloom",
+    "name": "Gloom",
+    "icon": "🌑",
+    "desc": "Trained by casting or inscribing a sentence that contains \"gloom\". Each level makes the word 1.5% stronger. At levels 10, 25, 45 it also grants a bonus.",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "word:gloom"
+    ],
+    "parent": "arcana",
+    "unlock": [],
+    "milestones": [
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "resDark",
+            "op": "add",
+            "value": 0.03
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "resDark",
+            "op": "add",
+            "value": 0.03
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "resDark",
+            "op": "add",
+            "value": 0.03
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "word_zero",
+    "name": "Zero",
+    "icon": "⭕",
+    "art": "zero",
+    "desc": "Trained by casting or inscribing a sentence that contains \"zero\". Each level makes the word 1.5% stronger. At levels 10, 25, 45 it also grants a bonus.",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "word:zero"
+    ],
+    "parent": "arcana",
+    "unlock": [],
+    "milestones": [
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "penetration",
+            "op": "add",
+            "value": 0.02
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "penetration",
+            "op": "add",
+            "value": 0.02
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "penetration",
+            "op": "add",
+            "value": 0.02
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "word_arcane",
+    "name": "Arcane",
+    "icon": "🔮",
+    "desc": "Trained by casting or inscribing a sentence that contains \"arcane\". Each level makes the word 1.5% stronger. At levels 10, 25, 45 it also grants a bonus.",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "word:arcane"
+    ],
+    "parent": "arcana",
+    "unlock": [],
+    "milestones": [
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "maxMana",
+            "op": "add",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "maxMana",
+            "op": "add",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "maxMana",
+            "op": "add",
+            "value": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "word_cut",
+    "name": "Cut",
+    "icon": "🔪",
+    "art": "cut",
+    "desc": "Trained by casting or inscribing a sentence that contains \"cut\". Each level makes the word 1.5% stronger. At levels 10, 25, 45 it also grants a bonus.",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "word:cut"
+    ],
+    "parent": "arcana",
+    "unlock": [],
+    "milestones": [
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "crit",
+            "op": "add",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "crit",
+            "op": "add",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "crit",
+            "op": "add",
+            "value": 0.01
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "word_crush",
+    "name": "Crush",
+    "icon": "🔨",
+    "art": "crush",
+    "desc": "Trained by casting or inscribing a sentence that contains \"crush\". Each level makes the word 1.5% stronger. At levels 10, 25, 45 it also grants a bonus.",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "word:crush"
+    ],
+    "parent": "arcana",
+    "unlock": [],
+    "milestones": [
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "damage",
+            "op": "mult",
+            "value": 0.02
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "damage",
+            "op": "mult",
+            "value": 0.02
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "damage",
+            "op": "mult",
+            "value": 0.02
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "word_pierce",
+    "name": "Pierce",
+    "icon": "🎯",
+    "art": "pierce",
+    "desc": "Trained by casting or inscribing a sentence that contains \"pierce\". Each level makes the word 1.5% stronger. At levels 10, 25, 45 it also grants a bonus.",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "word:pierce"
+    ],
+    "parent": "arcana",
+    "unlock": [],
+    "milestones": [
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "penetration",
+            "op": "add",
+            "value": 0.02
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "penetration",
+            "op": "add",
+            "value": 0.02
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "penetration",
+            "op": "add",
+            "value": 0.02
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "word_fly",
+    "name": "Fly",
+    "icon": "🕊️",
+    "art": "fly",
+    "desc": "Trained by casting or inscribing a sentence that contains \"fly\". Each level makes the word 1.5% stronger. At levels 10, 25, 45 it also grants a bonus.",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "word:fly"
+    ],
+    "parent": "arcana",
+    "unlock": [],
+    "milestones": [
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "speed",
+            "op": "mult",
+            "value": 0.015
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "speed",
+            "op": "mult",
+            "value": 0.015
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "speed",
+            "op": "mult",
+            "value": 0.015
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "word_expand",
+    "name": "Expand",
+    "icon": "💥",
+    "art": "expand",
+    "desc": "Trained by casting or inscribing a sentence that contains \"expand\". Each level makes the word 1.5% stronger. At levels 10, 25, 45 it also grants a bonus.",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "word:expand"
+    ],
+    "parent": "arcana",
+    "unlock": [],
+    "milestones": [
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "splash",
+            "op": "add",
+            "value": 0.02
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "splash",
+            "op": "add",
+            "value": 0.02
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "splash",
+            "op": "add",
+            "value": 0.02
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "word_burst",
+    "name": "Burst",
+    "icon": "🎆",
+    "art": "burst",
+    "desc": "Trained by casting or inscribing a sentence that contains \"burst\". Each level makes the word 1.5% stronger. At levels 10, 25, 45 it also grants a bonus.",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "word:burst"
+    ],
+    "parent": "arcana",
+    "unlock": [],
+    "milestones": [
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "critDamage",
+            "op": "add",
+            "value": 0.05
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "critDamage",
+            "op": "add",
+            "value": 0.05
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "critDamage",
+            "op": "add",
+            "value": 0.05
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "word_grasp",
+    "name": "Grasp",
+    "icon": "🫳",
+    "art": "grasp",
+    "desc": "Trained by casting or inscribing a sentence that contains \"grasp\". Each level makes the word 1.5% stronger. At levels 10, 25, 45 it also grants a bonus.",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "word:grasp"
+    ],
+    "parent": "arcana",
+    "unlock": [],
+    "milestones": [
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "spellPower",
+            "op": "mult",
+            "value": 0.02
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "spellPower",
+            "op": "mult",
+            "value": 0.02
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "spellPower",
+            "op": "mult",
+            "value": 0.02
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "word_ward",
+    "name": "Ward",
+    "icon": "🛡️",
+    "art": "ward",
+    "desc": "Trained by casting or inscribing a sentence that contains \"ward\". Each level makes the word 1.5% stronger. At levels 10, 25, 45 it also grants a bonus.",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "word:ward"
+    ],
+    "parent": "arcana",
+    "unlock": [],
+    "milestones": [
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "armor",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "armor",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "armor",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "word_mend",
+    "name": "Mend",
+    "icon": "💚",
+    "art": "mend",
+    "desc": "Trained by casting or inscribing a sentence that contains \"mend\". Each level makes the word 1.5% stronger. At levels 10, 25, 45 it also grants a bonus.",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "word:mend"
+    ],
+    "parent": "arcana",
+    "unlock": [],
+    "milestones": [
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "maxHp",
+            "op": "add",
+            "value": 6
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "maxHp",
+            "op": "add",
+            "value": 6
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "maxHp",
+            "op": "add",
+            "value": 6
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "word_undo",
+    "name": "Undo",
+    "icon": "↩️",
+    "desc": "Trained by casting or inscribing a sentence that contains \"undo\". Each level makes the word 1.5% stronger. At levels 10, 25, 45 it also grants a bonus.",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "word:undo"
+    ],
+    "parent": "arcana",
+    "unlock": [],
+    "milestones": [
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "resArcane",
+            "op": "add",
+            "value": 0.03
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "resArcane",
+            "op": "add",
+            "value": 0.03
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "resArcane",
+            "op": "add",
+            "value": 0.03
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "word_slowly",
+    "name": "Slowly",
+    "icon": "🐢",
+    "art": "slowly",
+    "desc": "Trained by casting or inscribing a sentence that contains \"slowly\". Each level makes the word 1.5% stronger. At levels 10, 25, 45 it also grants a bonus.",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "word:slowly"
+    ],
+    "parent": "arcana",
+    "unlock": [],
+    "milestones": [
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "maxMana",
+            "op": "add",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "maxMana",
+            "op": "add",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "maxMana",
+            "op": "add",
+            "value": 2
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "word_quickly",
+    "name": "Quickly",
+    "icon": "🐇",
+    "art": "quickly",
+    "desc": "Trained by casting or inscribing a sentence that contains \"quickly\". Each level makes the word 1.5% stronger. At levels 10, 25, 45 it also grants a bonus.",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "word:quickly"
+    ],
+    "parent": "arcana",
+    "unlock": [],
+    "milestones": [
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "attackSpeed",
+            "op": "mult",
+            "value": 0.02
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "attackSpeed",
+            "op": "mult",
+            "value": 0.02
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "attackSpeed",
+            "op": "mult",
+            "value": 0.02
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "word_gently",
+    "name": "Gently",
+    "icon": "🕊️",
+    "desc": "Trained by casting or inscribing a sentence that contains \"gently\". Each level makes the word 1.5% stronger. At levels 10, 25, 45 it also grants a bonus.",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "word:gently"
+    ],
+    "parent": "arcana",
+    "unlock": [],
+    "milestones": [
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "manaEff",
+            "op": "mult",
+            "value": -0.02
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "manaEff",
+            "op": "mult",
+            "value": -0.02
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "manaEff",
+            "op": "mult",
+            "value": -0.02
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "word_viciously",
+    "name": "Viciously",
+    "icon": "🩸",
+    "desc": "Trained by casting or inscribing a sentence that contains \"viciously\". Each level makes the word 1.5% stronger. At levels 10, 25, 45 it also grants a bonus.",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "word:viciously"
+    ],
+    "parent": "arcana",
+    "unlock": [],
+    "milestones": [
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "critDamage",
+            "op": "add",
+            "value": 0.05
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "critDamage",
+            "op": "add",
+            "value": 0.05
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "critDamage",
+            "op": "add",
+            "value": 0.05
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "word_intensely",
+    "name": "Intensely",
+    "icon": "🔆",
+    "art": "intense",
+    "desc": "Trained by casting or inscribing a sentence that contains \"intensely\". Each level makes the word 1.5% stronger. At levels 10, 25, 45 it also grants a bonus.",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "word:intensely"
+    ],
+    "parent": "arcana",
+    "unlock": [],
+    "milestones": [
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "spellPower",
+            "op": "mult",
+            "value": 0.02
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "spellPower",
+            "op": "mult",
+            "value": 0.02
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "spellPower",
+            "op": "mult",
+            "value": 0.02
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "word_dimly",
+    "name": "Dimly",
+    "icon": "🔅",
+    "art": "dim",
+    "desc": "Trained by casting or inscribing a sentence that contains \"dimly\". Each level makes the word 1.5% stronger. At levels 10, 25, 45 it also grants a bonus.",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "word:dimly"
+    ],
+    "parent": "arcana",
+    "unlock": [],
+    "milestones": [
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "manaRegen",
+            "op": "add",
+            "value": 0.02
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "manaRegen",
+            "op": "add",
+            "value": 0.02
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "manaRegen",
+            "op": "add",
+            "value": 0.02
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "word_twice",
+    "name": "Twice",
+    "icon": "✌️",
+    "desc": "Trained by casting or inscribing a sentence that contains \"twice\". Each level makes the word 1.5% stronger. At levels 10, 25, 45 it also grants a bonus.",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "word:twice"
+    ],
+    "parent": "arcana",
+    "unlock": [],
+    "milestones": [
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "crit",
+            "op": "add",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "crit",
+            "op": "add",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "crit",
+            "op": "add",
+            "value": 0.01
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "word_then",
+    "name": "Then",
+    "icon": "⏭️",
+    "desc": "Trained by casting or inscribing a sentence that contains \"then\". Each level makes the word 1.5% stronger. At levels 10, 25, 45 it also grants a bonus.",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "word:then"
+    ],
+    "parent": "arcana",
+    "unlock": [],
+    "milestones": [
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "critDamage",
+            "op": "add",
+            "value": 0.04
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "critDamage",
+            "op": "add",
+            "value": 0.04
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "critDamage",
+            "op": "add",
+            "value": 0.04
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "word_and",
+    "name": "And",
+    "icon": "🤝",
+    "desc": "Trained by casting or inscribing a sentence that contains \"and\". Each level makes the word 1.5% stronger. At levels 10, 25, 45 it also grants a bonus.",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "word:and"
+    ],
+    "parent": "arcana",
+    "unlock": [],
+    "milestones": [
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "spellPower",
+            "op": "mult",
+            "value": 0.02
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "spellPower",
+            "op": "mult",
+            "value": 0.02
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "spellPower",
+            "op": "mult",
+            "value": 0.02
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "word_but",
+    "name": "But",
+    "icon": "🔀",
+    "desc": "Trained by casting or inscribing a sentence that contains \"but\". Each level makes the word 1.5% stronger. At levels 10, 25, 45 it also grants a bonus.",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "word:but"
+    ],
+    "parent": "arcana",
+    "unlock": [],
+    "milestones": [
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "spellPower",
+            "op": "mult",
+            "value": 0.02
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "spellPower",
+            "op": "mult",
+            "value": 0.02
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "spellPower",
+            "op": "mult",
+            "value": 0.02
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "word_or",
+    "name": "Or",
+    "icon": "🎲",
+    "art": "die",
+    "desc": "Trained by casting or inscribing a sentence that contains \"or\". Each level makes the word 1.5% stronger. At levels 10, 25, 45 it also grants a bonus.",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "word:or"
+    ],
+    "parent": "arcana",
+    "unlock": [],
+    "milestones": [
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "mult",
+            "value": 0.02
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "mult",
+            "value": 0.02
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "mult",
+            "value": 0.02
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "word_if",
+    "name": "If",
+    "icon": "❓",
+    "desc": "Trained by casting or inscribing a sentence that contains \"if\". Each level makes the word 1.5% stronger. At levels 10, 25, 45 it also grants a bonus.",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "word:if"
+    ],
+    "parent": "arcana",
+    "unlock": [],
+    "milestones": [
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "skillXp",
+            "op": "mult",
+            "value": 0.02
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "skillXp",
+            "op": "mult",
+            "value": 0.02
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "skillXp",
+            "op": "mult",
+            "value": 0.02
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "word_with",
+    "name": "With",
+    "icon": "🔗",
+    "art": "chain",
+    "desc": "Trained by casting or inscribing a sentence that contains \"with\". Each level makes the word 1.5% stronger. At levels 10, 25, 45 it also grants a bonus.",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "word:with"
+    ],
+    "parent": "arcana",
+    "unlock": [],
+    "milestones": [
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "manaRegen",
+            "op": "add",
+            "value": 0.02
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "manaRegen",
+            "op": "add",
+            "value": 0.02
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "manaRegen",
+            "op": "add",
+            "value": 0.02
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "word_one",
+    "name": "One",
+    "icon": "👤",
+    "desc": "Trained by casting or inscribing a sentence that contains \"one\". Each level makes the word 1.5% stronger. At levels 10, 25, 45 it also grants a bonus.",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "word:one"
+    ],
+    "parent": "arcana",
+    "unlock": [],
+    "milestones": [
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "crit",
+            "op": "add",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "crit",
+            "op": "add",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "crit",
+            "op": "add",
+            "value": 0.01
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "word_others",
+    "name": "Others",
+    "icon": "👥",
+    "desc": "Trained by casting or inscribing a sentence that contains \"others\". Each level makes the word 1.5% stronger. At levels 10, 25, 45 it also grants a bonus.",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "word:others"
+    ],
+    "parent": "arcana",
+    "unlock": [],
+    "milestones": [
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "splash",
+            "op": "add",
+            "value": 0.02
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "splash",
+            "op": "add",
+            "value": 0.02
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "splash",
+            "op": "add",
+            "value": 0.02
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "word_me",
+    "name": "Me",
+    "icon": "🙋",
+    "desc": "Trained by casting or inscribing a sentence that contains \"me\". Each level makes the word 1.5% stronger. At levels 10, 25, 45 it also grants a bonus.",
+    "kind": "passive",
+    "category": "magic",
+    "progression": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ],
+    "tags": [
+      "word:me"
+    ],
+    "parent": "arcana",
+    "unlock": [],
+    "milestones": [
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "maxHp",
+            "op": "add",
+            "value": 5
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "maxHp",
+            "op": "add",
+            "value": 5
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "maxHp",
+            "op": "add",
+            "value": 5
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,167 @@
+[
+  {
+    "id": "foundational",
+    "bands": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "normal"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 60,
+        "base": "proficient",
+        "rate": "normal"
+      }
+    ]
+  },
+  {
+    "id": "simple",
+    "bands": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "normal"
+      }
+    ]
+  },
+  {
+    "id": "specialist",
+    "bands": [
+      {
+        "from": 1,
+        "base": "novice",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "proficient",
+        "rate": "slow"
+      },
+      {
+        "from": 60,
+        "base": "expert",
+        "rate": "slow"
+      }
+    ]
+  },
+  {
+    "id": "insightful",
+    "bands": [
+      {
+        "from": 1,
+        "base": "adept",
+        "rate": "slow"
+      },
+      {
+        "from": 25,
+        "base": "expert",
+        "rate": "fast"
+      }
+    ]
+  },
+  {
+    "id": "perfectionist",
+    "bands": [
+      {
+        "from": 1,
+        "base": "adept",
+        "rate": "fast"
+      },
+      {
+        "from": 20,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 40,
+        "base": "adept",
+        "rate": "slow"
+      },
+      {
+        "from": 60,
+        "base": "adept",
+        "rate": "glacial"
+      }
+    ]
+  },
+  {
+    "id": "esoteric",
+    "bands": [
+      {
+        "from": 1,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 25,
+        "base": "expert",
+        "rate": "slow"
+      },
+      {
+        "from": 45,
+        "base": "master",
+        "rate": "slow"
+      },
+      {
+        "from": 65,
+        "base": "legendary",
+        "rate": "glacial"
+      }
+    ]
+  },
+  {
+    "id": "attribute",
+    "bands": [
+      {
+        "from": 1,
+        "base": "beginner",
+        "rate": "normal"
+      },
+      {
+        "from": 21,
+        "base": "novice",
+        "rate": "normal"
+      },
+      {
+        "from": 41,
+        "base": "adept",
+        "rate": "normal"
+      },
+      {
+        "from": 61,
+        "base": "proficient",
+        "rate": "normal"
+      },
+      {
+        "from": 81,
+        "base": "expert",
+        "rate": "normal"
+      }
+    ]
+  }
+]

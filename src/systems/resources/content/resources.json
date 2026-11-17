@@ -1,0 +1,72 @@
+[
+  {
+    "id": "hp",
+    "art": "hp",
+    "name": "HP",
+    "icon": "❤️",
+    "cssVar": "--hp",
+    "maxStat": "maxHp",
+    "regenStat": "hpRegen",
+    "viaHeal": true
+  },
+  {
+    "id": "stamina",
+    "art": "stamina",
+    "name": "Stamina",
+    "icon": "💪",
+    "cssVar": "--stamina",
+    "maxStat": "maxStamina",
+    "regenStat": "staminaRegen",
+    "effStat": "staminaEff",
+    "reserve": {
+      "share": 0.2,
+      "lowName": "Winded",
+      "emptyName": "Exhausted",
+      "lowIcon": "😮‍💨",
+      "emptyIcon": "🥵",
+      "lowCssVar": "--stamina-winded",
+      "emptyCssVar": "--stamina-exhausted",
+      "lowMsg": "😮‍💨 Winded: stamina is down to 20%. Exertion bonuses stop until it is full again.",
+      "emptyMsg": "🥵 Exhausted: stamina is empty. Speed is 15% lower until stamina is full again, and stamina regenerates at half rate until it passes 50%.",
+      "clearedMsg": "💪 Recovered: stamina penalties gone.",
+      "emptyRegenMult": 0.5,
+      "slowUntil": 0.5,
+      "emptyPenalty": [
+        {
+          "stat": "speed",
+          "op": "mult",
+          "value": -0.15
+        }
+      ]
+    }
+  },
+  {
+    "id": "mana",
+    "art": "mana",
+    "name": "Mana",
+    "icon": "🔮",
+    "cssVar": "--mana",
+    "maxStat": "maxMana",
+    "regenStat": "manaRegen",
+    "effStat": "manaEff",
+    "restRegenMult": 3
+  },
+  {
+    "id": "spirit",
+    "art": "spirit",
+    "name": "Spirit",
+    "icon": "✨",
+    "cssVar": "--spirit",
+    "maxStat": "maxSpirit",
+    "static": true
+  },
+  {
+    "id": "focus",
+    "art": "focus",
+    "name": "Focus",
+    "icon": "🧠",
+    "cssVar": "--focus",
+    "maxStat": "maxFocus",
+    "regenStat": "focusRegen"
+  }
+]

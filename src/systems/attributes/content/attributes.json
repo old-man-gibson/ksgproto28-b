@@ -1,0 +1,38 @@
+[
+  {
+    "id": "str",
+    "name": "Strength",
+    "icon": "💪",
+    "art": "strength"
+  },
+  {
+    "id": "dex",
+    "name": "Dexterity",
+    "icon": "🤸",
+    "art": "dexterity"
+  },
+  {
+    "id": "con",
+    "name": "Constitution",
+    "icon": "🛡️",
+    "art": "constitution"
+  },
+  {
+    "id": "int",
+    "name": "Intelligence",
+    "icon": "📖",
+    "art": "intelligence"
+  },
+  {
+    "id": "wis",
+    "name": "Wisdom",
+    "icon": "🦉",
+    "art": "wisdom"
+  },
+  {
+    "id": "cha",
+    "name": "Charisma",
+    "icon": "🎭",
+    "art": "charisma"
+  }
+]

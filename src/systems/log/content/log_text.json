@@ -1,0 +1,10 @@
+[
+  {
+    "id": "common_more",
+    "text": "+{count} more"
+  },
+  {
+    "id": "combat_hunt",
+    "text": "☠️ Hunt:"
+  }
+]

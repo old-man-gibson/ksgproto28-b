@@ -1,0 +1,36 @@
+{
+  "log": [
+    {
+      "msg": "⬆️ Level 2: +1 to every attribute.",
+      "kind": "info",
+      "t": 6100
+    },
+    {
+      "msg": "☠️ Hunt: 12 gold, Forest Rat ×3",
+      "kind": "combat",
+      "t": 6400,
+      "group": "hunt",
+      "prefix": "☠️ Hunt:",
+      "tally": [
+        {
+          "label": "gold",
+          "qty": 12,
+          "style": "amount"
+        },
+        {
+          "label": "Forest Rat",
+          "qty": 3
+        }
+      ],
+      "window": 300,
+      "since": 6200
+    }
+  ],
+  "combatFeed": [
+    {
+      "text": "You hit the Forest Rat for 4."
+    }
+  ],
+  "floatingFeed": [],
+  "transcript": null
+}

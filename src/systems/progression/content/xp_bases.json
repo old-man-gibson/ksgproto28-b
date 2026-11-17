@@ -1,0 +1,30 @@
+[
+  {
+    "id": "beginner",
+    "cost": 10
+  },
+  {
+    "id": "novice",
+    "cost": 20
+  },
+  {
+    "id": "adept",
+    "cost": 30
+  },
+  {
+    "id": "proficient",
+    "cost": 40
+  },
+  {
+    "id": "expert",
+    "cost": 50
+  },
+  {
+    "id": "master",
+    "cost": 75
+  },
+  {
+    "id": "legendary",
+    "cost": 100
+  }
+]

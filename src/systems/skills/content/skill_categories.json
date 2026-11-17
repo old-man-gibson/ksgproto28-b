@@ -1,0 +1,32 @@
+[
+  {
+    "id": "combat",
+    "name": "Combat",
+    "icon": "⚔️"
+  },
+  {
+    "id": "magic",
+    "name": "Magic",
+    "icon": "✨"
+  },
+  {
+    "id": "resistance",
+    "name": "Resistances",
+    "icon": "🛡️"
+  },
+  {
+    "id": "craft",
+    "name": "Crafting",
+    "icon": "⚒️"
+  },
+  {
+    "id": "general",
+    "name": "General",
+    "icon": "🧭"
+  },
+  {
+    "id": "environmental",
+    "name": "Environmental",
+    "icon": "🏞️"
+  }
+]

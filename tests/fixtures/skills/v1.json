@@ -1,0 +1,26 @@
+{
+  "skills": {
+    "fighting": {
+      "level": 14,
+      "xp": 22.25
+    },
+    "hunting": {
+      "level": 3,
+      "xp": 1
+    },
+    "chronosense": {
+      "level": 20,
+      "xp": 0,
+      "capRaised": 2
+    }
+  },
+  "latent": {
+    "magic": 4.5
+  },
+  "novelty": {
+    "hunting": {
+      "forest_rat": 7,
+      "young_wolf": 1
+    }
+  }
+}

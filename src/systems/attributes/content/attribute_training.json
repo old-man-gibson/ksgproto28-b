@@ -1,0 +1,1444 @@
+[
+  {
+    "id": "str",
+    "name": "Strength Training",
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Strength Training — Beginner"
+      },
+      {
+        "level": 21,
+        "name": "Strength Training — Intermediate",
+        "bonus": [
+          {
+            "stat": "damage",
+            "op": "add",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "level": 41,
+        "name": "Strength Training — Advanced",
+        "bonus": [
+          {
+            "stat": "damage",
+            "op": "add",
+            "value": 4
+          },
+          {
+            "stat": "damage",
+            "op": "mult",
+            "value": 0.05
+          }
+        ]
+      },
+      {
+        "level": 61,
+        "name": "Giant's Strength Training",
+        "bonus": [
+          {
+            "stat": "damage",
+            "op": "add",
+            "value": 8
+          },
+          {
+            "stat": "damage",
+            "op": "mult",
+            "value": 0.1
+          }
+        ]
+      },
+      {
+        "level": 81,
+        "name": "Titan's Strength Training",
+        "bonus": [
+          {
+            "stat": "damage",
+            "op": "add",
+            "value": 15
+          },
+          {
+            "stat": "damage",
+            "op": "mult",
+            "value": 0.2
+          }
+        ]
+      }
+    ],
+    "milestones": [
+      {
+        "level": 5,
+        "bonus": [
+          {
+            "stat": "str",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "str",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 15,
+        "bonus": [
+          {
+            "stat": "str",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 20,
+        "bonus": [
+          {
+            "stat": "str",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "str",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 30,
+        "bonus": [
+          {
+            "stat": "str",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 35,
+        "bonus": [
+          {
+            "stat": "str",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 40,
+        "bonus": [
+          {
+            "stat": "str",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "str",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 50,
+        "bonus": [
+          {
+            "stat": "str",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 55,
+        "bonus": [
+          {
+            "stat": "str",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 60,
+        "bonus": [
+          {
+            "stat": "str",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 65,
+        "bonus": [
+          {
+            "stat": "str",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 70,
+        "bonus": [
+          {
+            "stat": "str",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 75,
+        "bonus": [
+          {
+            "stat": "str",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 80,
+        "bonus": [
+          {
+            "stat": "str",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 85,
+        "bonus": [
+          {
+            "stat": "str",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 90,
+        "bonus": [
+          {
+            "stat": "str",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 95,
+        "bonus": [
+          {
+            "stat": "str",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 100,
+        "bonus": [
+          {
+            "stat": "str",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      }
+    ],
+    "desc": "Trains Strength: +1 every 5 levels, +1% every 10. Ranks at 21, 41, 61 and 81 add flat and percentage damage."
+  },
+  {
+    "id": "dex",
+    "name": "Dexterity Training",
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Dexterity Training — Beginner"
+      },
+      {
+        "level": 21,
+        "name": "Dexterity Training — Intermediate",
+        "bonus": [
+          {
+            "stat": "speed",
+            "op": "add",
+            "value": 3
+          }
+        ]
+      },
+      {
+        "level": 41,
+        "name": "Dexterity Training — Advanced",
+        "bonus": [
+          {
+            "stat": "speed",
+            "op": "add",
+            "value": 6
+          },
+          {
+            "stat": "speed",
+            "op": "mult",
+            "value": 0.04
+          }
+        ]
+      },
+      {
+        "level": 61,
+        "name": "Ghostly Dexterity Training",
+        "bonus": [
+          {
+            "stat": "speed",
+            "op": "add",
+            "value": 12
+          },
+          {
+            "stat": "speed",
+            "op": "mult",
+            "value": 0.08
+          }
+        ]
+      },
+      {
+        "level": 81,
+        "name": "Wraith's Dexterity Training",
+        "bonus": [
+          {
+            "stat": "speed",
+            "op": "add",
+            "value": 20
+          },
+          {
+            "stat": "actionBar",
+            "op": "mult",
+            "value": -0.08
+          }
+        ]
+      }
+    ],
+    "milestones": [
+      {
+        "level": 5,
+        "bonus": [
+          {
+            "stat": "dex",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "dex",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 15,
+        "bonus": [
+          {
+            "stat": "dex",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 20,
+        "bonus": [
+          {
+            "stat": "dex",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "dex",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 30,
+        "bonus": [
+          {
+            "stat": "dex",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 35,
+        "bonus": [
+          {
+            "stat": "dex",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 40,
+        "bonus": [
+          {
+            "stat": "dex",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "dex",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 50,
+        "bonus": [
+          {
+            "stat": "dex",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 55,
+        "bonus": [
+          {
+            "stat": "dex",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 60,
+        "bonus": [
+          {
+            "stat": "dex",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 65,
+        "bonus": [
+          {
+            "stat": "dex",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 70,
+        "bonus": [
+          {
+            "stat": "dex",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 75,
+        "bonus": [
+          {
+            "stat": "dex",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 80,
+        "bonus": [
+          {
+            "stat": "dex",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 85,
+        "bonus": [
+          {
+            "stat": "dex",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 90,
+        "bonus": [
+          {
+            "stat": "dex",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 95,
+        "bonus": [
+          {
+            "stat": "dex",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 100,
+        "bonus": [
+          {
+            "stat": "dex",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      }
+    ],
+    "desc": "Trains Dexterity: +1 every 5 levels, +1% every 10. Ranks at 21, 41, 61 and 81 add speed; rank 81 also shortens the action bar by 8%."
+  },
+  {
+    "id": "con",
+    "name": "Constitution Training",
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Constitution Training — Beginner"
+      },
+      {
+        "level": 21,
+        "name": "Constitution Training — Intermediate",
+        "bonus": [
+          {
+            "stat": "maxHp",
+            "op": "add",
+            "value": 20
+          }
+        ]
+      },
+      {
+        "level": 41,
+        "name": "Constitution Training — Advanced",
+        "bonus": [
+          {
+            "stat": "maxHp",
+            "op": "add",
+            "value": 40
+          },
+          {
+            "stat": "maxHp",
+            "op": "mult",
+            "value": 0.05
+          }
+        ]
+      },
+      {
+        "level": 61,
+        "name": "Troll's Constitution Training",
+        "bonus": [
+          {
+            "stat": "armor",
+            "op": "add",
+            "value": 2
+          },
+          {
+            "stat": "maxHp",
+            "op": "mult",
+            "value": 0.1
+          }
+        ]
+      },
+      {
+        "level": 81,
+        "name": "Mountain's Constitution Training",
+        "bonus": [
+          {
+            "stat": "maxHp",
+            "op": "add",
+            "value": 150
+          },
+          {
+            "stat": "maxHp",
+            "op": "mult",
+            "value": 0.2
+          }
+        ]
+      }
+    ],
+    "milestones": [
+      {
+        "level": 5,
+        "bonus": [
+          {
+            "stat": "con",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "con",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 15,
+        "bonus": [
+          {
+            "stat": "con",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 20,
+        "bonus": [
+          {
+            "stat": "con",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "con",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 30,
+        "bonus": [
+          {
+            "stat": "con",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 35,
+        "bonus": [
+          {
+            "stat": "con",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 40,
+        "bonus": [
+          {
+            "stat": "con",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "con",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 50,
+        "bonus": [
+          {
+            "stat": "con",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 55,
+        "bonus": [
+          {
+            "stat": "con",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 60,
+        "bonus": [
+          {
+            "stat": "con",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 65,
+        "bonus": [
+          {
+            "stat": "con",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 70,
+        "bonus": [
+          {
+            "stat": "con",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 75,
+        "bonus": [
+          {
+            "stat": "con",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 80,
+        "bonus": [
+          {
+            "stat": "con",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 85,
+        "bonus": [
+          {
+            "stat": "con",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 90,
+        "bonus": [
+          {
+            "stat": "con",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 95,
+        "bonus": [
+          {
+            "stat": "con",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 100,
+        "bonus": [
+          {
+            "stat": "con",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      }
+    ],
+    "desc": "Trains Constitution: +1 every 5 levels, +1% every 10. Ranks at 21, 41, 61 and 81 add maximum health; rank 61 also adds 2 armour."
+  },
+  {
+    "id": "int",
+    "name": "Intelligence Study",
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Intelligence Study — Beginner"
+      },
+      {
+        "level": 21,
+        "name": "Intelligence Study — Intermediate",
+        "bonus": [
+          {
+            "stat": "spellPower",
+            "op": "add",
+            "value": 3
+          }
+        ]
+      },
+      {
+        "level": 41,
+        "name": "Intelligence Study — Advanced",
+        "bonus": [
+          {
+            "stat": "skillXp",
+            "op": "mult",
+            "value": 0.05
+          }
+        ]
+      },
+      {
+        "level": 61,
+        "name": "Sage's Intellect",
+        "bonus": [
+          {
+            "stat": "spellPower",
+            "op": "add",
+            "value": 8
+          },
+          {
+            "stat": "spellPower",
+            "op": "mult",
+            "value": 0.1
+          }
+        ]
+      },
+      {
+        "level": 81,
+        "name": "Cosmic Mind",
+        "bonus": [
+          {
+            "stat": "skillXp",
+            "op": "mult",
+            "value": 0.1
+          },
+          {
+            "stat": "spellPower",
+            "op": "mult",
+            "value": 0.2
+          }
+        ]
+      }
+    ],
+    "milestones": [
+      {
+        "level": 5,
+        "bonus": [
+          {
+            "stat": "skillXp",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 7,
+        "bonus": [
+          {
+            "stat": "int",
+            "op": "add",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "int",
+            "op": "mult",
+            "value": 0.1
+          },
+          {
+            "stat": "maxMana",
+            "op": "mult",
+            "value": 0.1
+          }
+        ]
+      }
+    ],
+    "desc": "Trains Intelligence. Ranks at 21, 41, 61 and 81 add spell power and skill experience; milestones at 5, 7 and 10 add skill experience, Intelligence and maximum mana."
+  },
+  {
+    "id": "wis",
+    "name": "Wisdom Contemplation",
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Wisdom Contemplation — Beginner"
+      },
+      {
+        "level": 21,
+        "name": "Wisdom Contemplation — Intermediate",
+        "bonus": [
+          {
+            "stat": "trainXp",
+            "op": "mult",
+            "value": 0.05
+          }
+        ]
+      },
+      {
+        "level": 41,
+        "name": "Wisdom Contemplation — Advanced",
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "add",
+            "value": 0.15
+          }
+        ]
+      },
+      {
+        "level": 61,
+        "name": "Elder's Wisdom",
+        "bonus": [
+          {
+            "stat": "trainXp",
+            "op": "mult",
+            "value": 0.1
+          }
+        ]
+      },
+      {
+        "level": 81,
+        "name": "Enlightened",
+        "bonus": [
+          {
+            "stat": "loot",
+            "op": "add",
+            "value": 0.25
+          },
+          {
+            "stat": "trainXp",
+            "op": "mult",
+            "value": 0.15
+          }
+        ]
+      }
+    ],
+    "milestones": [
+      {
+        "level": 5,
+        "bonus": [
+          {
+            "stat": "wis",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "wis",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 15,
+        "bonus": [
+          {
+            "stat": "wis",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 20,
+        "bonus": [
+          {
+            "stat": "wis",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "wis",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 30,
+        "bonus": [
+          {
+            "stat": "wis",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 35,
+        "bonus": [
+          {
+            "stat": "wis",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 40,
+        "bonus": [
+          {
+            "stat": "wis",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "wis",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 50,
+        "bonus": [
+          {
+            "stat": "wis",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 55,
+        "bonus": [
+          {
+            "stat": "wis",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 60,
+        "bonus": [
+          {
+            "stat": "wis",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 65,
+        "bonus": [
+          {
+            "stat": "wis",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 70,
+        "bonus": [
+          {
+            "stat": "wis",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 75,
+        "bonus": [
+          {
+            "stat": "wis",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 80,
+        "bonus": [
+          {
+            "stat": "wis",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 85,
+        "bonus": [
+          {
+            "stat": "wis",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 90,
+        "bonus": [
+          {
+            "stat": "wis",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 95,
+        "bonus": [
+          {
+            "stat": "wis",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 100,
+        "bonus": [
+          {
+            "stat": "wis",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      }
+    ],
+    "desc": "Trains Wisdom: +1 every 5 levels, +1% every 10. Ranks at 21, 41, 61 and 81 add training experience and loot."
+  },
+  {
+    "id": "cha",
+    "name": "Charisma Practice",
+    "tierNames": [
+      {
+        "level": 1,
+        "name": "Charisma Practice — Beginner"
+      },
+      {
+        "level": 21,
+        "name": "Charisma Practice — Intermediate",
+        "bonus": [
+          {
+            "stat": "goldGain",
+            "op": "mult",
+            "value": 0.05
+          }
+        ]
+      },
+      {
+        "level": 41,
+        "name": "Charisma Practice — Advanced",
+        "bonus": [
+          {
+            "stat": "goldGain",
+            "op": "add",
+            "value": 0.15
+          }
+        ]
+      },
+      {
+        "level": 61,
+        "name": "Silver Tongue",
+        "bonus": [
+          {
+            "stat": "goldGain",
+            "op": "mult",
+            "value": 0.1
+          }
+        ]
+      },
+      {
+        "level": 81,
+        "name": "Sovereign Presence",
+        "bonus": [
+          {
+            "stat": "goldGain",
+            "op": "add",
+            "value": 0.3
+          },
+          {
+            "stat": "goldGain",
+            "op": "mult",
+            "value": 0.15
+          }
+        ]
+      }
+    ],
+    "milestones": [
+      {
+        "level": 5,
+        "bonus": [
+          {
+            "stat": "cha",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 10,
+        "bonus": [
+          {
+            "stat": "cha",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 15,
+        "bonus": [
+          {
+            "stat": "cha",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 20,
+        "bonus": [
+          {
+            "stat": "cha",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 25,
+        "bonus": [
+          {
+            "stat": "cha",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 30,
+        "bonus": [
+          {
+            "stat": "cha",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 35,
+        "bonus": [
+          {
+            "stat": "cha",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 40,
+        "bonus": [
+          {
+            "stat": "cha",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 45,
+        "bonus": [
+          {
+            "stat": "cha",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 50,
+        "bonus": [
+          {
+            "stat": "cha",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 55,
+        "bonus": [
+          {
+            "stat": "cha",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 60,
+        "bonus": [
+          {
+            "stat": "cha",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 65,
+        "bonus": [
+          {
+            "stat": "cha",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 70,
+        "bonus": [
+          {
+            "stat": "cha",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 75,
+        "bonus": [
+          {
+            "stat": "cha",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 80,
+        "bonus": [
+          {
+            "stat": "cha",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 85,
+        "bonus": [
+          {
+            "stat": "cha",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 90,
+        "bonus": [
+          {
+            "stat": "cha",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      },
+      {
+        "level": 95,
+        "bonus": [
+          {
+            "stat": "cha",
+            "op": "add",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "level": 100,
+        "bonus": [
+          {
+            "stat": "cha",
+            "op": "mult",
+            "value": 0.01
+          }
+        ]
+      }
+    ],
+    "desc": "Trains Charisma: +1 every 5 levels, +1% every 10. Ranks at 21, 41, 61 and 81 add gold gain."
+  }
+]

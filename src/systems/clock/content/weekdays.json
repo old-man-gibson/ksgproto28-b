@@ -1,0 +1,30 @@
+[
+  {
+    "id": "firstday",
+    "name": "Firstday"
+  },
+  {
+    "id": "secondday",
+    "name": "Secondday"
+  },
+  {
+    "id": "thirdday",
+    "name": "Thirdday"
+  },
+  {
+    "id": "fourthday",
+    "name": "Fourthday"
+  },
+  {
+    "id": "fifthday",
+    "name": "Fifthday"
+  },
+  {
+    "id": "sixthday",
+    "name": "Sixthday"
+  },
+  {
+    "id": "seventhday",
+    "name": "Seventhday"
+  }
+]

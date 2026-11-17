@@ -1,0 +1,10 @@
+[
+  {
+    "id": "manifested",
+    "text": "✨ Skill unlocked: {icon} {name}."
+  },
+  {
+    "id": "cap_raised",
+    "text": "⏫ {icon} {name} cap raised to Lv {cap}."
+  }
+]

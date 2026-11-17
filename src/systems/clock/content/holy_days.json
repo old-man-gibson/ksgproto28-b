@@ -1,0 +1,22 @@
+[
+  {
+    "id": "vernal_equinox",
+    "name": "Vernal Equinox",
+    "season": "spring"
+  },
+  {
+    "id": "summer_solstice",
+    "name": "Summer Solstice",
+    "season": "summer"
+  },
+  {
+    "id": "autumnal_equinox",
+    "name": "Autumnal Equinox",
+    "season": "autumn"
+  },
+  {
+    "id": "winter_solstice",
+    "name": "Winter Solstice",
+    "season": "winter"
+  }
+]

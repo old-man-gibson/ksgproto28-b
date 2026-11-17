@@ -1,0 +1,18 @@
+[
+  {
+    "id": "up",
+    "text": "⬆️ Level {level}: +{bonus} to every attribute."
+  },
+  {
+    "id": "floor",
+    "text": "🗼 {name} cleared for the first time this run: +{xp} level XP."
+  },
+  {
+    "id": "floor_lapsed",
+    "text": "🗼 {name} cleared: the threat is gone. A floor cleared by time pays no clear XP."
+  },
+  {
+    "id": "band",
+    "text": "🏰 {name}: every floor cleared this run."
+  }
+]

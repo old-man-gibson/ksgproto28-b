@@ -1,0 +1,20 @@
+[
+  {
+    "id": "large_moon",
+    "name": "Large Moon",
+    "cycleDays": 79,
+    "size": "large"
+  },
+  {
+    "id": "middle_moon",
+    "name": "Middle Moon",
+    "cycleDays": 28,
+    "size": "medium"
+  },
+  {
+    "id": "small_moon",
+    "name": "Small Moon",
+    "cycleDays": 37,
+    "size": "small"
+  }
+]

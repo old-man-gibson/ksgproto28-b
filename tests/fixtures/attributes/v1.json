@@ -1,0 +1,28 @@
+{
+  "attrs": {
+    "str": {
+      "level": 12,
+      "xp": 30.5
+    },
+    "dex": {
+      "level": 8,
+      "xp": 0
+    },
+    "con": {
+      "level": 21,
+      "xp": 4
+    },
+    "int": {
+      "level": 10,
+      "xp": 2
+    },
+    "wis": {
+      "level": 1,
+      "xp": 0
+    },
+    "cha": {
+      "level": 5,
+      "xp": 9
+    }
+  }
+}

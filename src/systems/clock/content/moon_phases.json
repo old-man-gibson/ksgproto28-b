@@ -1,0 +1,34 @@
+[
+  {
+    "id": "new",
+    "name": "new moon"
+  },
+  {
+    "id": "waxing_crescent",
+    "name": "waxing crescent"
+  },
+  {
+    "id": "first_quarter",
+    "name": "first quarter"
+  },
+  {
+    "id": "waxing_gibbous",
+    "name": "waxing gibbous"
+  },
+  {
+    "id": "full",
+    "name": "full moon"
+  },
+  {
+    "id": "waning_gibbous",
+    "name": "waning gibbous"
+  },
+  {
+    "id": "last_quarter",
+    "name": "last quarter"
+  },
+  {
+    "id": "waning_crescent",
+    "name": "waning crescent"
+  }
+]
