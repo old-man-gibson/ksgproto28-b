@@ -5,8 +5,10 @@
  * See README.md in this folder.
  */
 import {
+  answer,
   defineCommand,
   defineEvent,
+  defineRequest,
   defineSystem,
   handle,
   OK,
@@ -26,6 +28,7 @@ import {
   drainIntoDebt,
   drawResource,
   hookStat,
+  IN_COMBAT_REGEN_MULT,
   lockMods,
   resourceLock,
   resources,
@@ -44,6 +47,7 @@ import {
   type ResourcesState,
 } from './pools';
 import { exert, type Exertion, type ExertionSpec } from './stamina';
+import { resourceValue } from './pools';
 import { migrations } from './migrations';
 
 export * from './health';
@@ -92,6 +96,26 @@ export const playerDamaged = defineEvent<{ lost: number; type?: DamageType; sour
 );
 /** What an exertion bought. */
 export const exerted = defineEvent<Exertion>('resources/exerted');
+
+// ---- requests: same-handler results (docs/KERNEL.md section 7a) ----
+//
+// The fight resolves a blow, checks whether the player still stands, and
+// spends stamina before it reads what an exertion can still buy, all inside
+// one handler. Each request below does what the event of the same meaning
+// does, emits the same result event, and also answers the result.
+
+/** Take damage, already reduced by every defence. Answers the health lost. Emits `resources/damaged`. */
+export const hitPlayer = defineRequest<{ amount: number; type?: DamageType; source?: DamageSource | null }, number>(
+  'resources/hit',
+);
+/** Restore health. Answers what the heal did, or null for an amount of 0 or less. Emits `resources/healed`. */
+export const healNow = defineRequest<{ amount: number; kind?: HealKind }, HealResult | null>('resources/heal-now');
+/** Burn a pool for a style's per-event payoff. Answers what it bought. Emits `resources/exerted`. */
+export const exertNow = defineRequest<{ spec: ExertionSpec | undefined }, Exertion>('resources/exert-now');
+/** Spend from a pool, respecting the reserve floor. Answers the amount spent. */
+export const drawNow = defineRequest<{ id: ResourceId; amount: number }, number>('resources/draw-now');
+/** Spend from a pool, ignoring the reserve floor. Answers the amount spent. */
+export const spendNow = defineRequest<{ id: ResourceId; amount: number }, number>('resources/spend-now');
 
 // ---- stats: hooks for other systems ----
 
@@ -168,9 +192,33 @@ function announceLocks(ctx: Ctx<ResourcesState>): void {
   }
 }
 
-function applyHeal(ctx: Ctx<ResourcesState>, pools: Pools, amount: number, kind: HealKind): void {
+function applyHeal(ctx: Ctx<ResourcesState>, pools: Pools, amount: number, kind: HealKind): HealResult | null {
   const result = heal(pools, amount, kind);
   if (result) ctx.emit(playerHealed, result);
+  return result;
+}
+
+function applyDamage(
+  ctx: Ctx<ResourcesState>,
+  payload: { amount: number; type?: DamageType; source?: DamageSource | null },
+): number {
+  const lost = damagePlayer(poolsOf(ctx), payload.amount);
+  ctx.emit(playerDamaged, {
+    lost,
+    ...(payload.type ? { type: payload.type } : {}),
+    ...(payload.source !== undefined ? { source: payload.source } : {}),
+  });
+  return lost;
+}
+
+/**
+ * What a live fight does to the health trickle: half while stamina is below
+ * its available max, the whole otherwise. The old `combatRegenMult`.
+ */
+export function combatRegenMult(pools: Pools): number {
+  if (!pools.state.pace.inCombat) return 1;
+  const full = availableMax(pools.stats, pools.hooks, 'stamina');
+  return resourceValue(pools.state, 'stamina') < full - 1e-6 ? IN_COMBAT_REGEN_MULT : 1;
 }
 
 // ---- view ----
@@ -201,7 +249,7 @@ const pool = (id: ResourceId): boolean => (RESOURCE_IDS as readonly string[]).in
 
 export default defineSystem<ResourcesState, ResourcesView>({
   id: 'resources',
-  version: 1,
+  version: 2,
   migrations,
   // Every pool starts full at its level-1 capacity.
   initial: () => ({
@@ -209,7 +257,7 @@ export default defineSystem<ResourcesState, ResourcesView>({
     locks: {},
     exerting: false,
     announced: {},
-    pace: { resting: false, hpMult: 1, healKind: 'idle', halted: false },
+    pace: { resting: false, hpMult: 1, healKind: 'idle', halted: false, inCombat: false },
   }),
   content: { resources },
   stats,
@@ -229,7 +277,8 @@ export default defineSystem<ResourcesState, ResourcesView>({
       tickResources(pools, TPS, pace.resting);
       // The health trickle: the hpRegen stat times how restful the activity
       // is. Through heal, so the heal cap and the observers still apply.
-      if (pace.hpMult > 0) applyHeal(ctx, pools, (pools.stats.hpRegen * pace.hpMult) / TPS, pace.healKind);
+      if (pace.hpMult > 0)
+        applyHeal(ctx, pools, (pools.stats.hpRegen * pace.hpMult * combatRegenMult(pools)) / TPS, pace.healKind);
     }
     announceLocks(ctx);
   },
@@ -266,12 +315,7 @@ export default defineSystem<ResourcesState, ResourcesView>({
     }),
     on(hurtPlayer, (ctx, { payload }) => {
       if (payload.amount <= 0) return ctx.skip('resources/damage', `amount ${payload.amount} is not above 0`);
-      const lost = damagePlayer(poolsOf(ctx), payload.amount);
-      ctx.emit(playerDamaged, {
-        lost,
-        ...(payload.type ? { type: payload.type } : {}),
-        ...(payload.source !== undefined ? { source: payload.source } : {}),
-      });
+      applyDamage(ctx, payload);
     }),
     on(defeatPlayer, (ctx) => setHpAfterDefeat(poolsOf(ctx))),
     on(exertPool, (ctx, { payload }) => {
@@ -279,6 +323,44 @@ export default defineSystem<ResourcesState, ResourcesView>({
     }),
     on(setPace, (ctx, { payload }) => {
       Object.assign(ctx.state.pace, payload);
+    }),
+  ],
+
+  requests: [
+    answer(hitPlayer, (ctx, payload) => {
+      if (payload.amount <= 0) {
+        ctx.skip(hitPlayer.type, `amount ${payload.amount} is not above 0`);
+        return 0;
+      }
+      return applyDamage(ctx, payload);
+    }),
+    answer(healNow, (ctx, payload) => {
+      if (payload.amount <= 0) {
+        ctx.skip(healNow.type, `amount ${payload.amount} is not above 0`);
+        return null;
+      }
+      return applyHeal(ctx, poolsOf(ctx), payload.amount, payload.kind ?? 'other');
+    }),
+    answer(exertNow, (ctx, payload) => {
+      const result = exert(poolsOf(ctx), payload.spec);
+      // The shared constant is handed out as a copy.
+      const bought = { ...result };
+      if (bought.spent > 0) ctx.emit(exerted, bought);
+      return bought;
+    }),
+    answer(drawNow, (ctx, payload) => {
+      if (!pool(payload.id)) {
+        ctx.skip(drawNow.type, `unknown pool "${payload.id}"`);
+        return 0;
+      }
+      return drawResource(poolsOf(ctx), payload.id, payload.amount);
+    }),
+    answer(spendNow, (ctx, payload) => {
+      if (!pool(payload.id)) {
+        ctx.skip(spendNow.type, `unknown pool "${payload.id}"`);
+        return 0;
+      }
+      return spendResource(poolsOf(ctx), payload.id, payload.amount);
     }),
   ],
 

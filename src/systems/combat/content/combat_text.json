@@ -1,0 +1,17 @@
+[
+  { "id": "knocked_out_forced", "text": "💫 {name} knocks you out." },
+  { "id": "knocked_out", "text": "💫 {name} knocks you out. Recovering." },
+  { "id": "appears", "text": "⚠️ {what} (Lv {level}) appears!" },
+  { "id": "appear_group", "text": "⚠️ {what} (Lv {level}) appear!" },
+  { "id": "ambushed", "text": "⚔️ Ambushed. No escape from this fight." },
+  { "id": "hunt_kill", "text": "{icon} {name}" },
+  { "id": "unique_slain", "text": "🏆 {name} slain. It will not return." },
+  { "id": "keeper_slain", "text": "👑 Keeper of {spot} slain." },
+  { "id": "spot_cleared", "text": "🏞️ {spot} cleared. No encounters remain." },
+  { "id": "weapon_dropped", "text": "⚡ Jolted below 50% health: {name} dropped." },
+  { "id": "huntrest_resting", "text": "🛌 HP {hp}%, below your {at}% threshold: resting before the next fight, until {to}%." },
+  { "id": "huntrest_done", "text": "⚔️ Rested. Hunting resumes." },
+  { "id": "huntrest_stuck", "text": "⚔️ HP is not recovering (a condition blocks it). Hunting resumes without resting." },
+  { "id": "fight_kept", "text": "📓 Fight kept in the notebook." },
+  { "id": "fight_evicted", "text": "📓 The notebook is full: the oldest kept fight was dropped." }
+]

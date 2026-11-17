@@ -30,6 +30,7 @@ import {
   type StatKey,
 } from './keys';
 import { STATS_PREFIX, type DampSpec, type ModOrigin, type StatMod } from './mods';
+import { computeMonsterBlock, type MonsterFact } from './monster';
 
 // ---- constants ----
 
@@ -99,6 +100,8 @@ interface Facts {
   resOverrides: { type: DamageType; to: number; bonusIfMet?: number }[];
   resFloor: number | undefined;
   resFloorTaken: Partial<Record<string, number>>;
+  /** Stated for a monster entity: the block is computed by the monster formulas. */
+  monster: MonsterFact | undefined;
 }
 
 const zeroAttrs = (): Record<AttributeId, number> => ({ str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0 });
@@ -122,6 +125,7 @@ function readFacts(mods: readonly Modifier[]): { facts: Facts; plain: StatMod[] 
     resOverrides: [],
     resFloor: undefined,
     resFloorTaken: {},
+    monster: undefined,
   };
   const plain: StatMod[] = [];
   let armed = false;
@@ -185,6 +189,12 @@ function readFacts(mods: readonly Modifier[]): { facts: Facts; plain: StatMod[] 
         if (!isStatKey(arg)) bad(mod, 'names no stat key');
         facts.resFloorTaken[arg] = (facts.resFloorTaken[arg] ?? 0) + mod.value;
         break;
+      case 'monster': {
+        const data = mod.data as MonsterFact | undefined;
+        if (!data || typeof data.level !== 'number') bad(mod, 'needs the monster fact in data');
+        facts.monster = data;
+        break;
+      }
       default:
         bad(mod, 'is not a fact the stat pipeline knows');
     }
@@ -394,6 +404,7 @@ export interface StatBlock {
 
 export function computeBlock(collected: readonly Modifier[], variant = ''): StatBlock {
   const { facts, plain } = readFacts(collected);
+  if (facts.monster) return monsterBlock(facts, plain);
   const mods = activate(facts, plain, vsTagsOf(variant));
 
   // Layer 1: effective attributes feed the base formulas.
@@ -511,6 +522,45 @@ export function computeBlock(collected: readonly Modifier[], variant = ''): Stat
   }
 
   return { stats, effective: eff, attrs, formula, uncapped, scoped, tags: facts.tags, named: facts.named, fused: facts.fused, mods };
+}
+
+/**
+ * The block of a monster entity. The monster formulas of `monster.ts` replace
+ * layers 1 to 8. Gates, scaling, damping and the attribute ceiling are not
+ * applied: the old monster pipeline read the raw modifiers of its conditions.
+ * The variant is ignored: a monster has no target-gated bonus.
+ */
+function monsterBlock(facts: Facts, plain: readonly StatMod[]): StatBlock {
+  const block = computeMonsterBlock(
+    {
+      fact: facts.monster!,
+      base: facts.base,
+      resOverrides: facts.resOverrides,
+      resFloor: facts.resFloor,
+      resFloorTaken: facts.resFloorTaken,
+    },
+    plain,
+  );
+  const mods: ActiveMod[] = plain.map((mod) => ({
+    target: mod.stat.slice(STATS_PREFIX.length),
+    op: mod.kind,
+    value: mod.value,
+    ...(mod.source !== undefined ? { source: mod.source } : {}),
+    ...(mod.origin ? { origin: mod.origin } : {}),
+    ...(mod.fromStat ? { fromStat: mod.fromStat } : {}),
+  }));
+  return {
+    stats: block.stats,
+    effective: block.attrs,
+    attrs: block.attrs,
+    formula: block.attrs,
+    uncapped: block.uncapped,
+    scoped: new Map(),
+    tags: facts.tags,
+    named: facts.named,
+    fused: [],
+    mods,
+  };
 }
 
 /** The stat table of a block, keyed as the kernel serves it. */

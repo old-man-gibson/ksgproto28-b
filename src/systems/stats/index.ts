@@ -17,6 +17,7 @@ import { migrations } from './migrations';
 export * from './breakdown';
 export * from './keys';
 export * from './mods';
+export * from './monster';
 export * from './pipeline';
 
 type Reads = Pick<DerivedReads, 'derived' | 'stats'>;

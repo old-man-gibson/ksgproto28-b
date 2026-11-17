@@ -1,0 +1,42 @@
+[
+  {
+    "id": "normal",
+    "name": "",
+    "multiplierRange": [
+      1,
+      1
+    ],
+    "rewardMult": 1,
+    "weight": 90
+  },
+  {
+    "id": "demiboss",
+    "name": "Demiboss",
+    "multiplierRange": [
+      1.2,
+      1.4
+    ],
+    "rewardMult": 2,
+    "weight": 7
+  },
+  {
+    "id": "boss",
+    "name": "Boss",
+    "multiplierRange": [
+      1.5,
+      1.8
+    ],
+    "rewardMult": 3.5,
+    "weight": 2
+  },
+  {
+    "id": "aberrant",
+    "name": "Aberrant",
+    "multiplierRange": [
+      0.2,
+      2
+    ],
+    "rewardMult": 2,
+    "weight": 1
+  }
+]

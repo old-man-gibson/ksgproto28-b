@@ -343,6 +343,14 @@ export const stashItem = defineRequest<{ item: ItemInstance }, boolean>('items/s
 /** State the body that wears the gear: its capability grants and its size. */
 export const setBearer = defineRequest<Bearer, void>('items/set-bearer');
 
+/**
+ * Take a worn item off into the pack, for a caller that needs the outcome in
+ * its own handler (a jolt in a fight makes the bearer drop the weapon). The
+ * old `unequipSlot` called from `applyBarDamage`. Answers the name of the
+ * item's definition, or null when the slot was empty.
+ */
+export const dropWorn = defineRequest<{ slot: SlotId }, string | null>('items/drop-worn');
+
 // ---- view ----
 
 export interface ItemFact {
@@ -636,6 +644,14 @@ const system: SystemDef<ItemsState, ItemsView> = defineSystem<ItemsState, ItemsV
       return true;
     }),
 
+    answer(dropWorn, (ctx, { slot }) => {
+      const item = ctx.state.equipment[slot];
+      if (!item) return null;
+      delete ctx.state.equipment[slot];
+      ctx.state.inventory.push(item);
+      ctx.touch(WORN_SOURCE);
+      return itemDefOf(item)?.name ?? null;
+    }),
     answer(setBearer, (ctx, { grants, size }) => {
       ctx.state.bearer = { grants: [...grants], size };
       ctx.touch(WORN_SOURCE);

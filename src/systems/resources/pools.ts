@@ -95,6 +95,8 @@ export interface Pace {
   healKind: HealKind;
   /** No regeneration and no trickle at all (the old loop did not tick pools while travelling). */
   halted: boolean;
+  /** A fight is open. The health trickle is halved while stamina is below its available max. */
+  inCombat: boolean;
 }
 
 export interface ResourcesState {

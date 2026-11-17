@@ -153,7 +153,88 @@ const JOBS = [
     // Worst to best: the order of the list is the order of the scale.
     pick: (m) => m.QUALITY_ORDER.map((id) => m.QUALITY_TIERS[id]),
   },
+  {
+    name: 'monsters',
+    out: 'monsters/content/monsters.json',
+    module: 'src/core/data/monsters.data.ts',
+    pick: (m) => Object.values(m.MONSTERS).map(monsterRecord),
+  },
+  {
+    name: 'monster_tiers',
+    out: 'monsters/content/monster_tiers.json',
+    module: 'src/core/data/monsters.data.ts',
+    // Lowest to highest: the order of the list is the tier step of `TAG_RESISTANCES`.
+    pick: (m) => Object.values(m.TIERS),
+  },
+  {
+    name: 'modifier_tiers',
+    out: 'monsters/content/modifier_tiers.json',
+    module: 'src/core/data/monsters.data.ts',
+    // `weight` is the old MODIFIER_WEIGHTS entry of the tier.
+    pick: (m) =>
+      Object.values(m.MODIFIER_TIERS).map((tier) => ({
+        ...tier,
+        weight: m.MODIFIER_WEIGHTS.find((w) => w.id === tier.id)?.weight ?? 0,
+      })),
+  },
+  {
+    name: 'rarities',
+    out: 'monsters/content/rarities.json',
+    module: 'src/core/data/monsters.data.ts',
+    // `weight` is the old RARITY_WEIGHTS entry of the rarity.
+    pick: (m) =>
+      Object.values(m.RARITIES).map((rarity) => ({
+        ...rarity,
+        weight: m.RARITY_WEIGHTS.find((w) => w.id === rarity.id)?.weight ?? 0,
+      })),
+  },
+  {
+    name: 'monster_tags',
+    out: 'monsters/content/monster_tags.json',
+    module: 'src/core/data/bestiary.data.ts',
+    pick: (m) => Object.values(m.MONSTER_TAGS),
+  },
 ];
+
+/**
+ * One monster record in the JSON form:
+ * - `group.weights`, a map keyed by size, becomes a list in key order;
+ * - a psionic `cast.shape`, a map keyed by axis, becomes a list in key order;
+ * - applications in `inflicts` and `wears` go through `statusApplication`.
+ */
+function monsterRecord(def) {
+  const { group, rotation, inflicts, wears, ...rest } = def;
+  return {
+    ...rest,
+    ...(group
+      ? {
+          group: {
+            ...group,
+            ...(group.weights
+              ? { weights: Object.entries(group.weights).map(([size, weight]) => ({ size: Number(size), weight })) }
+              : {}),
+          },
+        }
+      : {}),
+    ...(rotation
+      ? {
+          rotation: rotation.map((entry) =>
+            entry.cast?.shape
+              ? {
+                  ...entry,
+                  cast: {
+                    ...entry.cast,
+                    shape: Object.entries(entry.cast.shape).map(([axis, value]) => ({ axis, value })),
+                  },
+                }
+              : entry,
+          ),
+        }
+      : {}),
+    ...(inflicts ? { inflicts: inflicts.map(statusApplication) } : {}),
+    ...(wears ? { wears: wears.map(statusApplication) } : {}),
+  };
+}
 
 /** `duration: 'permanent'` of an application becomes `permanent: true`: the schema has no union. */
 function statusApplication(app) {

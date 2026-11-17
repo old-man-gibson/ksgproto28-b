@@ -13,6 +13,7 @@
  */
 import { s, type Infer, type Modifier } from '../../kernel';
 import { ATTRIBUTE_IDS, STAT_KEYS, type AttributeId, type DamageType, type StatKey } from './keys';
+import type { MonsterFact } from './monster';
 
 export const STATS_PREFIX = 'stats/';
 
@@ -219,6 +220,12 @@ export const resFloorFact = (floor: number): StatMod => fact('resFloor', floor);
 
 /** What the floor-carrying conditions took off one resistance (negative). Adds up. */
 export const resFloorTakenFact = (stat: StatKey, taken: number): StatMod => fact(`resFloorTaken:${stat}`, taken);
+
+/**
+ * The entity is a monster: its block is computed by the monster formulas
+ * (`monster.ts`) from its `baseAttrFact` attributes and this fact.
+ */
+export const monsterFact = (data: MonsterFact): StatMod => fact('monster', 1, data);
 
 /** The variant key of the block against a target carrying `tags`. `''` for none. */
 export function vsVariant(tags: Iterable<string>): string {

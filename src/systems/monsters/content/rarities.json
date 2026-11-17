@@ -1,0 +1,34 @@
+[
+  {
+    "id": "common",
+    "name": "",
+    "statMult": 1,
+    "lootMult": 1,
+    "color": "#9aa4ad",
+    "weight": 77
+  },
+  {
+    "id": "uncommon",
+    "name": "Uncommon",
+    "statMult": 1.15,
+    "lootMult": 1.5,
+    "color": "#4caf50",
+    "weight": 15
+  },
+  {
+    "id": "rare",
+    "name": "Rare",
+    "statMult": 1.35,
+    "lootMult": 2.5,
+    "color": "#42a5f5",
+    "weight": 6
+  },
+  {
+    "id": "epic",
+    "name": "Epic",
+    "statMult": 1.6,
+    "lootMult": 4,
+    "color": "#ab47bc",
+    "weight": 2
+  }
+]

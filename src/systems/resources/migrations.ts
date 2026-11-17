@@ -4,4 +4,11 @@
 import type { Json } from '../../kernel/json';
 
 /** Step N takes slice data at version N to version N + 1. */
-export const migrations: Record<number, (data: Json) => Json> = {};
+export const migrations: Record<number, (data: Json) => Json> = {
+  // Version 2 (spine port 4): `pace.inCombat`. A fight is not carried over
+  // from a version 1 save, because no version 1 build had one.
+  1: (data) => {
+    const slice = data as { pace: Record<string, Json> };
+    return { ...slice, pace: { ...slice.pace, inCombat: false } } as Json;
+  },
+};

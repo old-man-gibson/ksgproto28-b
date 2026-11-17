@@ -1,0 +1,317 @@
+[
+  {
+    "id": "living",
+    "name": "Living",
+    "category": "material",
+    "icon": "🫀",
+    "desc": "Material tag: a flesh body. Adds no innate armour or resistance."
+  },
+  {
+    "id": "inorganic",
+    "name": "Inorganic",
+    "category": "material",
+    "icon": "🧱",
+    "desc": "Material tag: gel, stone or metal. Gives 3 innate armour unless the species declares its own."
+  },
+  {
+    "id": "incorporeal",
+    "name": "Incorporeal",
+    "category": "material",
+    "icon": "👻",
+    "desc": "Material tag: no solid body. Attaches no armour or resistance rule of its own."
+  },
+  {
+    "id": "slime",
+    "name": "Slime",
+    "category": "taxon",
+    "icon": "🟢"
+  },
+  {
+    "id": "beast",
+    "name": "Beast",
+    "category": "taxon",
+    "icon": "🐾"
+  },
+  {
+    "id": "vermin",
+    "name": "Vermin",
+    "category": "taxon",
+    "icon": "🕷️",
+    "plural": "Vermin"
+  },
+  {
+    "id": "humanoid",
+    "name": "Humanoid",
+    "category": "taxon",
+    "icon": "🧍"
+  },
+  {
+    "id": "goblin",
+    "name": "Goblin",
+    "category": "taxon",
+    "icon": "👺"
+  },
+  {
+    "id": "construct",
+    "name": "Construct",
+    "category": "taxon",
+    "icon": "🗿"
+  },
+  {
+    "id": "undead",
+    "name": "Undead",
+    "category": "taxon",
+    "icon": "💀",
+    "plural": "Undead"
+  },
+  {
+    "id": "spirit",
+    "name": "Spirit",
+    "category": "taxon",
+    "icon": "🕯️"
+  },
+  {
+    "id": "dragon",
+    "name": "Dragon",
+    "category": "taxon",
+    "icon": "🐉"
+  },
+  {
+    "id": "eldritch",
+    "name": "Eldritch",
+    "category": "taxon",
+    "icon": "🌀",
+    "plural": "Eldritch",
+    "desc": "Taxon tag for eldritch creatures. Attaches no mechanical rule."
+  },
+  {
+    "id": "plant",
+    "name": "Plant",
+    "category": "taxon",
+    "icon": "🌱"
+  },
+  {
+    "id": "desert",
+    "name": "Desert",
+    "category": "taxon",
+    "icon": "🏜️",
+    "desc": "Taxon tag for the desert roster, floors 18 to 20. Every kill of a tagged monster counts toward the floor 19 gate (60) and the floor 20 gate (150). Attaches no armour or resistance rule."
+  },
+  {
+    "id": "non_elemental",
+    "name": "Non-elemental",
+    "category": "element",
+    "icon": "⬜",
+    "desc": "Element tag assigned when a monster claims no element. No elemental resistance or weakness follows from it."
+  },
+  {
+    "id": "fire",
+    "name": "Fire",
+    "category": "element",
+    "icon": "🔥"
+  },
+  {
+    "id": "ice",
+    "name": "Ice",
+    "category": "element",
+    "icon": "❄️"
+  },
+  {
+    "id": "lightning",
+    "name": "Lightning",
+    "category": "element",
+    "icon": "⚡"
+  },
+  {
+    "id": "earth",
+    "name": "Earth",
+    "category": "element",
+    "icon": "🪨"
+  },
+  {
+    "id": "wind",
+    "name": "Wind",
+    "category": "element",
+    "icon": "🌪️"
+  },
+  {
+    "id": "water",
+    "name": "Water",
+    "category": "element",
+    "icon": "💧"
+  },
+  {
+    "id": "nature",
+    "name": "Nature",
+    "category": "element",
+    "icon": "🍃"
+  },
+  {
+    "id": "arcane",
+    "name": "Arcane",
+    "category": "element",
+    "icon": "✨"
+  },
+  {
+    "id": "light",
+    "name": "Light",
+    "category": "element",
+    "icon": "🔆"
+  },
+  {
+    "id": "dark",
+    "name": "Dark",
+    "category": "element",
+    "icon": "🌑"
+  },
+  {
+    "id": "toxic",
+    "name": "Toxic",
+    "category": "element",
+    "icon": "☠️"
+  },
+  {
+    "id": "basic",
+    "name": "Basic",
+    "category": "tier",
+    "icon": "·"
+  },
+  {
+    "id": "veteran",
+    "name": "Veteran",
+    "category": "tier",
+    "icon": "⭐"
+  },
+  {
+    "id": "elite",
+    "name": "Elite",
+    "category": "tier",
+    "icon": "🌟"
+  },
+  {
+    "id": "ancient",
+    "name": "Ancient",
+    "category": "tier",
+    "icon": "🏛️"
+  },
+  {
+    "id": "legendary",
+    "name": "Legendary",
+    "category": "tier",
+    "icon": "👑"
+  },
+  {
+    "id": "mythic",
+    "name": "Mythic",
+    "category": "tier",
+    "icon": "🔱"
+  },
+  {
+    "id": "divine",
+    "name": "Divine",
+    "category": "tier",
+    "icon": "☀️"
+  },
+  {
+    "id": "flying",
+    "name": "Flying",
+    "category": "trait",
+    "icon": "🪽"
+  },
+  {
+    "id": "ranged",
+    "name": "Ranged",
+    "category": "trait",
+    "icon": "🏹",
+    "desc": "Derived from the monster reach: it attacks from the back rank. Ranged resistance applies to its hits."
+  },
+  {
+    "id": "swarm",
+    "name": "Swarm",
+    "category": "trait",
+    "icon": "🐝",
+    "desc": "Derived from its group rule: spawns in groups of two or more."
+  },
+  {
+    "id": "solitary",
+    "name": "Solitary",
+    "category": "trait",
+    "icon": "🚪",
+    "desc": "Derived from its group rule: always spawns alone."
+  },
+  {
+    "id": "leader",
+    "name": "Leader",
+    "category": "trait",
+    "icon": "🎖️",
+    "desc": "Derived from its escort list: spawns with escorts of the listed species."
+  },
+  {
+    "id": "unique",
+    "name": "Unique",
+    "category": "trait",
+    "icon": "❗",
+    "desc": "Trait tag: one individual of this species exists."
+  },
+  {
+    "id": "splitter",
+    "name": "Splitter",
+    "category": "trait",
+    "icon": "✂️",
+    "desc": "Trait tag: splits into more units when damaged."
+  },
+  {
+    "id": "mimic",
+    "name": "Mimic",
+    "category": "trait",
+    "icon": "🎭"
+  },
+  {
+    "id": "diminutive",
+    "name": "Diminutive",
+    "category": "size",
+    "icon": "🔸"
+  },
+  {
+    "id": "tiny",
+    "name": "Tiny",
+    "category": "size",
+    "icon": "🔹"
+  },
+  {
+    "id": "small",
+    "name": "Small",
+    "category": "size",
+    "icon": "🔶"
+  },
+  {
+    "id": "medium",
+    "name": "Medium",
+    "category": "size",
+    "icon": "🔷"
+  },
+  {
+    "id": "large",
+    "name": "Large",
+    "category": "size",
+    "icon": "🟠"
+  },
+  {
+    "id": "huge",
+    "name": "Huge",
+    "category": "size",
+    "icon": "🔵"
+  },
+  {
+    "id": "gargantuan",
+    "name": "Gargantuan",
+    "category": "size",
+    "icon": "🟧"
+  },
+  {
+    "id": "colossal",
+    "name": "Colossal",
+    "category": "size",
+    "icon": "🟦"
+  }
+]
