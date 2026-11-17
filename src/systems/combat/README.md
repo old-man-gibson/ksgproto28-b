@@ -231,6 +231,75 @@ rule; roll the next fight from the site when `hunting`.
   were added.
 - `resources/heal-now` is declared in `resources` and not used here yet.
 
+## Port 5 design
+
+Written and committed before the code of spine port 5. The four systems of
+that port (`martial`, `spellcraft`, `arcane`, `divine`) register their kinds
+here. What they need from this folder, each the smallest addition that
+keeps them out of the tick:
+
+### Slice version 2
+
+| Field | Holds |
+|---|---|
+| `fight.buffs` | `{ name, mods, ticksLeft }[]`. Old `CombatState.buffs`: a ward of a spell, the buff of a defensive form. Counted down each tick after the cooldowns. Stated by the source `combat/buffs`. |
+| `Enemy.lastAction` | `{ name, icon, at }`: the last rotation entry the monster used, for the panel. |
+| `triggers` | Rotation id to the player's own trigger. Old `state.skillTriggers`. |
+
+### Registries added to `actions.ts`
+
+- `registerInterception(handler)`: the hook inside the incoming blow that
+  port 4 named. `arm(ctx, fight, event)` is asked once per exchange, at the
+  point the old enemy phase called `pickCounter`. An armed interception
+  states `reduce`, taken off each hit before the heavy stance and armour and
+  counted in `prevented.onHit`, and `fire(ctx, entity)`, called after the
+  exchange when the player still stands, at the point of `fireCounter`. A
+  kill by the answer is processed by the tick.
+- `registerBlowRider(handler)`: the hook inside the player's blow for
+  per-hit riders (the old `spendCoating`). `perHit(ctx, target)` is asked
+  for each hit after the weapon's own typed bonuses and returns typed slices
+  to add; `afterBlow(ctx, target)` returns conditions to apply and a line.
+  No system registers one in port 5; a test does.
+- `registerTriggerSubject(id, read)`: a subject of the trigger language
+  owned by another system (`enemy.castSchool`, `enemy.castElement`).
+- `MonsterActionKind.available` and `PlayerActionKind.pick` may answer with
+  a reason. An entry that cannot run for a reason other than its clock, its
+  position or its trigger is reported once per fight through
+  `ctx.skip('combat/rotation', ...)`. A spent supply (`uses`) is reported by
+  the tick.
+
+### Triggers
+
+`triggers.ts`: `evaluateTrigger` and the subjects of old
+`systems/triggers.ts` that read what is ported (pools, conditions, the
+front enemy, the position, the style id, a technique's clock). The player's
+own trigger on a rotation id is checked by `pickActive` for every kind.
+Command `combat/set-trigger { id, trigger }`.
+
+### Requests added
+
+| Request | Old | Answer |
+|---|---|---|
+| `combat/heal-enemy` `{ entity, amount, source, hostile?, penetration? }` | `healEnemy` | void. Kindness mends and settles an overgrowth; forced life accrues in the overgrowth ledger, escalates and bursts. |
+| `combat/land-slices` `{ entity, slices, crit?, kind? }` | The landing of `castCraftedAttack` | `{ dealt, bite, killed }`. Slices are computed by the caller; this applies the bite of the target's conditions, the HP, `lastHit`, the ledger, `enemyTookDamage` and the harvest. |
+| `combat/add-buff` `{ name, mods, duration }` | `c.buffs.push` | void |
+| `combat/move-player` `{ to }` | `setPosition` | void |
+| `combat/stamp-cooldown` `{ id, ticks }` | `c.cooldowns[id] = n` | void |
+| `combat/mark-event` `{ event }` | `markCombatEvent` | void |
+| `combat/take-prevented` `{ by }` | Reading and clearing `c.prevented` | The amount |
+| `combat/hurt-enemy` `{ entity, amount, type }` | A backlash on a monster | void |
+
+`combat/stamp-action` takes an optional `name` and `icon`, which become
+`Enemy.lastAction`. The tick sets the same for a shaped swing.
+
+`statuses` gains `statuses/feed-surplus` and `statuses/settle-surplus` for
+the overgrowth ledger that `healEnemy` wrote on a status instance.
+
+### The buff slot
+
+`pickActive(ctx, 'buff')` stamps the clock of the active it performs, as
+the old buff slot did for a spell and for a defensive form.
+
 ## Old to new
 
 | Old `combat.ts` | Lines | Here |
