@@ -59,6 +59,7 @@ export * from './damage';
 export * from './engine';
 export * from './ledger';
 export * from './spawn';
+export { TEXT } from './text';
 export * from './types';
 
 // ---- commands ----
