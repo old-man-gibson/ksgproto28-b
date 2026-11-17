@@ -3,6 +3,7 @@ import type { Kernel } from '../src/kernel';
 import type { AttributesState } from '../src/systems/attributes';
 import { conditionIssues, conditionMet, setCounter } from '../src/systems/counters';
 import {
+  itemValue,
   affixOfId,
   canEquip,
   carriedStash,
@@ -662,6 +663,21 @@ describe('the items view', () => {
     emit(kernel, setCounter, { key: 'flag:unlock_runecarving', value: 1 });
     expect(view(kernel).runesOpen).toBe(true);
     expect(view(kernel).inventory[0].facts).toContainEqual({ label: 'Rune slots', fact: '1' });
+  });
+
+  it('the value of an item with an affix is shown through the formatter, not as a raw float', () => {
+    const kernel = makeGame();
+    // 4 x 1.5 x 1.3 (an affix, one rune slot) is 7.800000000000001 as a float.
+    const item = giveItem(kernel, 'cloth_tunic', {
+      affix: { name: 'Sharp', mods: [{ stat: 'damage', op: 'mult', value: 0.1 }] },
+      slots: 1,
+    });
+    expect(String(itemValue(item))).toMatch(/\.\d{4,}/);
+    const row = view(kernel).inventory.find((r) => r.name === 'Sharp Cloth Tunic')!;
+    expect(row.facts).toContainEqual({ label: 'Value', fact: '7.8' });
+    for (const r of view(kernel).inventory) {
+      for (const f of r.facts) expect(f.fact, `${r.name} ${f.label}`).not.toMatch(/\.\d{4,}/);
+    }
   });
 
   it('compares a pack item with the piece worn in each slot it may take', () => {

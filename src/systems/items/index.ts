@@ -52,7 +52,7 @@ import {
   type SizeTag,
   type SlotId,
 } from './defs';
-import { condsText, describeMod } from './format';
+import { condsText, describeMod, fmt } from './format';
 import { itemCategory, itemRarity, type RarityId } from './inventory';
 import { migrations } from './migrations';
 import { rollRuneSlots } from './runeslots';
@@ -437,7 +437,9 @@ function factsOf(item: DeepReadonly<ItemInstance>, def: ItemDef, runesOpen: bool
     for (const ref of item.runes ?? []) facts.push({ label: 'Rune', fact: resolveRune(ref).name });
   }
   if (def.keep) facts.push({ label: 'Kept', fact: 'through prestige, in the stronghold stash' });
-  facts.push({ label: 'Value', fact: String(itemValue(item)) });
+  // Through the display formatter: an affix multiplies the value by 1.5 and a
+  // product such as 8.8 x 1.5 is not a short decimal as a float.
+  facts.push({ label: 'Value', fact: fmt(itemValue(item)) });
   if (def.desc) facts.push({ label: '', fact: def.desc });
   return facts;
 }
