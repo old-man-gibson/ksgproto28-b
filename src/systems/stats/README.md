@@ -79,16 +79,21 @@ tested with a test-only source; the system that feeds it is not ported yet.
 | Oversize and undersize penalties (`wield`) | A source returns them as `attackSpeed` and `damage` mult modifiers. |
 | Achievement tiers, titles, the festival bonus, combat buffs | Each registers a source with its modifiers. |
 | The style fought in, style mods, exertion mods, momentum | The styles system returns `styleFact(id)` and its modifiers. A source that reads `exerting` or a pool lock declares `dependsOn: ['resources/locks']`. |
-| Status mods (`statusMods`), the fast's dulling of penalties | The statuses system returns them, already scaled by intensity. |
-| Damping (`statusDampingFor`) | `dampFact(share, { kinds, stats, slot })` per condition. |
-| Resistance overrides and floor (`statusResOverrides`, `statusResFloor`) | `resOverrideFact`, `resFloorFact`, `resFloorTakenFact`. |
-| Attribute ceiling (`attrCeiling`, Weakest Weapon Master) | `attrCeilingFact(value)`. |
+| The fast's dulling of penalties (`fastGuard(...).ward` in `collectBaseMods`) | Not decided. The old code multiplied every negative status modifier by (1 - ward). A source may not read a derived value, so the mutagens port states the ward as a fact and the pipeline applies it to negative modifiers of origin `status`. |
 | Fused super-attributes (`state.fused`) | `fuseFact(a, b)`. The fusion's name in the attribute breakdown is not carried. |
 | Talent (`talentBonus`) | `scaleFact('talent:<skill id>', bonus)`. The skills source marks its effects with `scaleBy`. The "(talent +x%)" label suffix is not shown. |
 | Endowment (`endowmentBonus`) | `endowmentFact(attr, bonus)`. |
 | Chromosome mods, body size (`mutagens`) | A source; `fromStat` is supported. |
+| A title's immunity to a condition (`TitleDef.immune`) | `namedFact('statusImmune:<status id>', 1)` or `namedFact('statusImmuneElement:<damage type>', 1)`. The statuses system reads them. |
 | Quest done, boon rank, Foresight, skill cap raises | `namedFact('quest:<id>', 1)`, `namedFact('boon:<id>', rank)`, `namedFact('foresight', 1)`, `namedFact('skillCap:<id>', n)`. |
 | Monster stat formulas (`monsterStats.ts`) | The resolver runs the player formulas for every entity. The combat port adds the monster formulas and selects by entity. |
+
+## Filled
+
+- Spine port 2, `statuses` (source `statuses/held`): status mods scaled by
+  effective intensity (`statusMods`), damping (`statusDampingFor` as
+  `dampFact`), resistance overrides and the floor (`statusResOverrides`,
+  `statusResFloor`), the attribute ceiling (`attrCeiling`).
 
 ## Differences from the old build
 

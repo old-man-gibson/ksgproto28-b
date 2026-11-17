@@ -52,6 +52,7 @@ import {
   statBlockOf,
   statOf,
   uncappedResistance,
+  type AttributeId,
   type DamageType,
 } from '../stats';
 import {
@@ -335,14 +336,73 @@ export function conditionReadout(
 }
 
 /**
- * Run `fn` on the list an entity holds, then touch the source when what it
- * reads changed.
+ * One operation on the list an entity holds: what the engine asks about the
+ * bearer, and the check that touches the source when what it reads changed.
+ * A class, so an operation allocates one object and no closures: the
+ * player's conditions run two operations on every tick.
  *
  * Resistances: the player's are read from the stat table as it stood when
  * the operation began, as the old callers passed one stat block per call. Any
  * other entity is read live, as the old monster readers were: a condition
  * landed earlier in the same operation already counts.
  */
+class Operation implements BearerEnv {
+  private signature: string;
+  private readonly frozen: ReadonlyMap<string, number> | undefined;
+
+  constructor(
+    private readonly ctx: Ctx<StatusesState>,
+    private readonly entity: string,
+    private readonly resist: boolean,
+    private readonly list: StatusInstance[],
+  ) {
+    this.signature = sourceSignature(list);
+    this.frozen = entity === PLAYER ? ctx.stats(PLAYER) : undefined;
+  }
+
+  /** Touch the source when what it reads of the list changed since the last check. */
+  sync(): void {
+    const now = sourceSignature(this.list);
+    if (now === this.signature) return;
+    this.signature = now;
+    this.ctx.touch(HELD_SOURCE, this.entity);
+  }
+
+  // The reads of the bearer, in the shape the stat helpers take.
+  stats(entity?: string, variant?: string): ReadonlyMap<string, number> {
+    if (this.frozen) return this.frozen;
+    this.sync();
+    return this.ctx.stats(entity, variant);
+  }
+
+  derived(stat: string, entity?: string, variant?: string): number {
+    if (this.frozen) return this.frozen.get(stat)!;
+    this.sync();
+    return this.ctx.derived(stat, entity, variant);
+  }
+
+  chance(p: number): boolean {
+    return this.ctx.rng.chance(p);
+  }
+
+  conditionResistance(element: DamageType): number | undefined {
+    return this.frozen && !this.resist ? undefined : conditionResistanceOf(this, this.entity, element);
+  }
+
+  damageResistance(type: DamageType): number {
+    return resistBlock(statBlockOf(this, this.entity))[type];
+  }
+
+  contest(attr: AttributeId): { player: number; bearer: number } | null {
+    return this.frozen ? null : { player: attrValue(this.ctx, attr, PLAYER), bearer: attrValue(this, attr, this.entity) };
+  }
+
+  outsideImmunity(def: StatusDef): boolean {
+    return outsideImmunity(this, this.entity, def);
+  }
+}
+
+/** Run `fn` on the list an entity holds, then touch the source when what it reads changed. */
 function mutate<T>(
   ctx: Ctx<StatusesState>,
   entity: string,
@@ -350,39 +410,25 @@ function mutate<T>(
   fn: (list: StatusInstance[], env: BearerEnv) => T,
 ): T {
   const list = (ctx.state.held[entity] ??= []);
-  let signature = sourceSignature(list);
-  const sync = () => {
-    const now = sourceSignature(list);
-    if (now === signature) return;
-    signature = now;
-    ctx.touch(HELD_SOURCE, entity);
-  };
-
-  const isPlayer = entity === PLAYER;
-  const frozen = isPlayer ? ctx.stats(PLAYER) : undefined;
-  const reads: Reads = frozen
-    ? { stats: () => frozen, derived: (stat) => frozen.get(stat)! }
-    : {
-        stats: (e, v) => (sync(), ctx.stats(e, v)),
-        derived: (stat, e, v) => (sync(), ctx.derived(stat, e, v)),
-      };
-
-  const env: BearerEnv = {
-    chance: (p) => ctx.rng.chance(p),
-    conditionResistance: (element) =>
-      isPlayer && !resist ? undefined : conditionResistanceOf(reads, entity, element),
-    damageResistance: (type) => resistBlock(statBlockOf(reads, entity))[type],
-    contest: (attr) =>
-      isPlayer ? null : { player: attrValue(ctx, attr, PLAYER), bearer: attrValue(reads, attr, entity) },
-    outsideImmunity: (def) => outsideImmunity(reads, entity, def),
-  };
-
+  const op = new Operation(ctx, entity, resist, list);
   try {
-    return fn(list, env);
+    return fn(list, op);
   } finally {
     if (list.length === 0) delete ctx.state.held[entity];
-    sync();
+    op.sync();
   }
+}
+
+/** Whether a heal of this kind changes anything about a held condition. */
+function hearsHeal(held: StatusInstance, kind: string): boolean {
+  const def = STATUSES[held.id];
+  if (def?.healCap !== undefined) return true;
+  const rules = held.removal ?? def?.removal;
+  if (!rules) return false;
+  for (const rule of rules) {
+    if (rule.on === 'heal' && (!rule.healKinds || rule.healKinds.includes(kind))) return true;
+  }
+  return false;
 }
 
 const copy = <T>(value: T): T => cloneJson(value as Json) as T;
@@ -612,7 +658,10 @@ export default defineSystem<StatusesState, StatusesView>({
     // A heal of the player: the rationing conditions record it, then every
     // condition hears the treatment, also when the cap let nothing through.
     on(playerHealed, (ctx, { payload }) => {
-      if (!ctx.state.held[PLAYER]) return;
+      // The health trickle sends this on every tick: nothing is built when
+      // no held condition rations healing or has a rule for it.
+      const now = ctx.state.held[PLAYER];
+      if (!now || !now.some((held) => hearsHeal(held, payload.kind))) return;
       mutate(ctx, PLAYER, false, (list, env) => {
         if (payload.healed > 0) engine.noteHealed(list, payload.healed);
         engine.fireStatusEvent(env, list, 'heal', { healKind: payload.kind });

@@ -47,6 +47,9 @@ before changing anything.
   outside that folder except tests and fixtures.
 - State changes only through a command or the tick. The UI reads the
   published view and never the state.
+- One system changes another through a request (`ctx.request`) when it needs
+  the outcome in the same handler, through an event otherwise. It reads
+  another with `ctx.read`. `docs/KERNEL.md` section 7a.
 - A migrations file has `import type` and no other import.
 - When a modifier source's inputs change, call `ctx.touch(sourceId)`.
 - An action that does not happen returns or logs a reason. No silent returns.

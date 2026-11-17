@@ -106,6 +106,11 @@ left behind.
 | 1 | `systems/skills.ts`, `data/skills.data.ts` | `skills` | `skills.test.ts` | Kills spraying XP; the bestiary payout; speechcraft through quests; switching style by command; practice shaping |
 | 1 | `systems/levels.ts`, `data/levels.data.ts` | `levels` | `levels.test.ts`, with `encounterLevel` from old `desert.test.ts` and `rewardLevel` from old `dynamicLevels.test.ts` | `dynamicLevelBonus`, `checkFloorClears`, `syncBandPositions`; what pays level XP; Head Start; the old save migration |
 | 1 | `systems/resources.ts`, `systems/stamina.ts`, `systems/health.ts`, `data/resources.data.ts`, `checkResourceLocks` of `game.ts` | `resources` | `resources.test.ts` (old `regen.test.ts`, `stamina.test.ts`) | Pace per activity and `combatRegenMult`; the condition and ledger observers of heal and damage; exertion in a fight; upkeep per swing |
+| 2 | `systems/statuses.ts` | `statuses` (`engine.ts`, `index.ts`) | `statuses.test.ts`: 111 of the old 127 cases, under the old names | 16 cases as `it.todo`: the knockout and `recovering` (6, port 6); the enemy action bar, `combatEnd` from a real fight, `enemyTookDamage`, `MonsterDef.wears`, a real fight, the fight ledger (7, port 4); species and tag resistances (2, port 4); the fast (1, mutagens) |
+| 2 | `tickPlayerStatuses` of `systems/actions.ts` | `statuses` (the tick in `index.ts`) | `statusSystem.test.ts` (new: tick, events, pool hooks, entities, view, save) | The knockout branch; the fight ledger's attribution |
+| 2 | `systems/conditionHarm.ts` | `statuses` (`harm.ts`) | `conditionResist.test.ts`: the unresistable cases, the `resistanceProblems` lint, `resistBlock` | 9 cases as `it.todo`: food and the Scorched Mess (cooking, consumables), forced healing and monster slices (port 4). The Iron Stomach and monster penetration blocks are tests of titles and of `monsterStats` and are not listed |
+| 2 | `data/statuses.data.ts`, `text/statuses.text.ts` | `statuses` (`content/statuses.json`) | `content.test.ts` validates it | Nothing: all 80 records. `forceStyle`, `displaces.to`, `damp.slot` and `art` are strings until their registries exist |
+| 2 | Cases port 1 left behind | `statuses` | `derivedcache.test.ts`: a condition and its decay, a cooked status, "a decaying condition and the cache" (6 cases) | The gale on the open ridge (weather) |
 
 Port 1 notes:
 
@@ -137,3 +142,28 @@ Port 1 notes:
   Intelligence training has three hand-written milestones (+1 Skill XP at
   level 5, which doubles skill XP; +2 INT at 7; +10% INT and +10% Max Mana at
   10) where the other five attributes use the standard list.
+
+Port 2 notes:
+
+- One system folder, `statuses`. It imports `log`, `resources`, `stats`.
+  No system imports it except the character panel in `attributes`, which
+  mounts its status list.
+- Kernel change: requests (`docs/KERNEL.md` section 7a, decision 28).
+  `tests/requests.test.ts`.
+- The status plug points of `src/systems/stats/README.md` and
+  `src/systems/resources/README.md` are filled by the source
+  `statuses/held`. No slice of port 1 changed shape.
+- Events a later port must emit are listed in
+  `src/systems/statuses/README.md`: `statuses/hook`, `statuses/inflict`,
+  `statuses/situation`, `statuses/forget`.
+- Open for port 4: combat ticks each monster's conditions with the
+  `statuses/tick` request and applies the result; it sends
+  `statuses/situation` and `statuses/forget`; it needs requests on
+  `resources` for the result of a heal, a hit and an exertion.
+- Open for port 6: the knockout. `statuses/fatal`, `statuses/detonated` and
+  `statuses/damage` are emitted and nothing hears them yet. A condition can
+  take the player to 0 HP and nothing follows.
+- Open for port 7: the offline budget with conditions held. 8 hours with a
+  condition that deals damage on every tick took 2,650 ms.
+- Old rules that look like bugs and were ported as they are: listed under
+  "Old rules ported as they are" in `src/systems/statuses/README.md`.

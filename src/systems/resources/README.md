@@ -66,8 +66,9 @@ allowed, healed; also when the cap let nothing through), `resources/damaged`
 
 ## Hooks for other systems
 
-Stats of this system under the kernel's default formula. A later system
-moves them from a modifier source of its own.
+Stats of this system under the kernel's default formula. Another system
+moves them from a modifier source of its own. The statuses system (source
+`statuses/held`) feeds every one but `regenMult`, for every entity.
 
 | Stat | Base | Old function it replaces |
 |---|---|---|
@@ -92,12 +93,10 @@ that reads either declares `dependsOn: [LOCKS_SOURCE]`.
 
 - Which activity gives which pace, `combatRegenMult`, recovery after a
   knockout: world and combat.
-- What conditions do on a heal and on damage (`noteHealed`, the `heal` and
-  `damageTaken` status events): statuses subscribes to `resources/healed` and
-  `resources/damaged`.
 - The fight ledger's attribution (`noteIncoming`, `noteHealed`,
-  `noteHealRefused`) and the Facet `hitTaken` signal: the same two events.
-- `noteResourceSpent`: statuses subscribes to `resources/spent`.
+  `noteHealRefused`) and the Facet `hitTaken` signal: from `resources/healed`
+  and `resources/damaged`.
+- `resources/regenMult`: the fast's regeneration bonus (mutagens).
 - Monster regeneration and `DOUSING_TYPES` (exported, unused): combat.
 - The `cssVar` fields of the registry name colour tokens of the old
   interface. They are kept as data and not read.
@@ -112,3 +111,7 @@ that reads either declares `dependsOn: [LOCKS_SOURCE]`.
 - The heal allowance is a stat. Two heals inside one handler both see the
   allowance as it was before the first, until the statuses system has
   handled `resources/healed`.
+- Conditions hear a heal, a blow and a spend through `resources/healed`,
+  `resources/damaged` and `resources/spent`, after the handler that caused
+  them returns. The old functions called the status module inside `heal`,
+  `damagePlayer` and `spendResource`.

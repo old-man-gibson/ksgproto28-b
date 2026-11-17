@@ -37,12 +37,13 @@ slice type.
 | `tick(ctx)` | Runs once per tick. |
 | `commands` | `handle(commandDef, (ctx, payload) => result)`. Types start with `<id>/`. |
 | `events` | `on(eventDef, (ctx, event) => void)`. Any system's events. |
+| `requests` | `answer(requestDef, (ctx, payload) => result)`. Types start with `<id>/`. |
 | `content` | Registry name to `registry(schema, data, title)`. |
 | `view(ctx)` | What the UI reads. Returns new objects, never the slice. |
 | `order` | Tick order, lower first. Ties run in id order. Default 0. |
 
 `defineSystem` throws on a bad id, a missing or extra migration step, and a
-stat, source or command outside the system's namespace.
+stat, source, command or request outside the system's namespace.
 
 The context (`ctx`) given to `tick`, command handlers and event handlers:
 
@@ -57,6 +58,7 @@ The context (`ctx`) given to `tick`, command handlers and event handlers:
 | `modifiers(entity?)` | Every modifier collected for an entity, read-only. |
 | `read(otherSystem)` | Another system's slice, read-only. |
 | `emit(event, payload, source?)` | Queue an event. `source` defaults to the system id. |
+| `request(request, payload)` | Ask the system that answers `request`. Returns its answer now. |
 | `touch(sourceId, entity?)` | Bump a modifier source's change counter, for every entity or for one. |
 | `dropEntity(entity)` | Forget the derived values of an entity that no longer exists. |
 | `skip(action, reason)` | Log an action that did not happen, outside a command. |
@@ -189,6 +191,32 @@ Dependencies between sources:
 - `kernel.onEvent(listener)` is for the UI and tools. It runs after the
   systems and is not part of the simulation.
 
+## 7a. Requests
+
+- `defineRequest<P, R>('statuses/apply')` declares a typed request: a
+  payload type and a result type.
+- The owning system declares the answer: `requests: [answer(def, (ctx, payload) => result)]`.
+  One answer per type. The type starts with the system id.
+- `ctx.request(def, payload)` runs the answer at once, with the answering
+  system's context, and returns its result to the caller. The answer changes
+  its own slice only, and may `touch` its own sources.
+- Events an answer emits are queued. They are delivered after the handler
+  that made the request returns.
+- A request no system answers throws. More than 32 nested requests throw;
+  that is a loop.
+- A view cannot make a request.
+
+Which to use:
+
+| Need | Use |
+|---|---|
+| Read another system's state | `ctx.read(system)` and that system's exported read functions. |
+| Change another system, and the caller needs the outcome in the same handler (what landed, how much was paid) | A request the other system declares. |
+| Change another system, no outcome needed | An event the other system declares and subscribes to (decision 27). |
+| Tell whoever listens that something happened | An event the emitter declares. |
+
+An answer returns copies, never a reference into its slice.
+
 ## 8. Headless runner and catch-up
 
 - `runHeadless(kernel, { ticks, commands })` runs ticks and scheduled commands
@@ -204,8 +232,15 @@ Dependencies between sources:
 - `tests/runner.test.ts` checks that catch-up equals running in place, and
   sets a budget of 2,000 ms for 8 hours (288,000 ticks). Measured with the
   systems of spine port 1: 470 to 530 ms alone, up to 840 ms inside the full
-  test run (the toy system alone took about 60 ms). Lower or raise the budget
-  as real systems land; do not delete the test.
+  test run (the toy system alone took about 60 ms). Measured on 2026-11-16
+  with spine port 2, same machine and same hour: 700 ms alone, against 650 ms
+  for port 1, and 1,150 ms inside the full test run. Lower or raise the budget as real systems land; do not delete
+  the test.
+- That test runs a character with no condition. `tests/statusSystem.test.ts`
+  has a second budget, 8,000 ms, for 8 hours with a condition that deals
+  damage on every tick: measured 2,650 ms alone and 4,070 ms inside the full
+  test run (1,450 ms alone with a condition that only changes stats). The cost is the events of the damage, four per
+  tick.
 
 ## 9. Content
 
@@ -264,6 +299,8 @@ Dependencies between sources:
 2. Add what the system needs, in the same folder:
    - commands: `defineCommand`, `handle`;
    - events: `defineEvent`, `on`, `ctx.emit`;
+   - requests: `defineRequest`, `answer`, for a change whose outcome the
+     caller needs in its own handler (section 7a);
    - stats and modifier sources, with `ctx.touch` at every change, and
      `dependsOn` on a source that reads another system's slice;
    - `tick`;
@@ -382,4 +419,23 @@ point. Each took the simpler option.
     needs the result (what an exertion bought, what a heal restored) reads it
     from the event the other system emits afterwards. Combat will need some
     of these results inside one handler; spine port 4 decides whether the
-    kernel gets a synchronous request.
+    kernel gets a synchronous request. Decided in port 2: decision 28.
+28. **Requests (spine port 2).** A system may declare requests, and
+    `ctx.request` returns the answer inside the caller's handler (section
+    7a). The old status module returned what an application landed and what
+    a tick dealt, and combat reads both in the middle of resolving one blow.
+    Alternatives: (a) the caller owns the list and calls pure functions on
+    it; then the player's list would sit in the slice of whichever system
+    calls, and the status source could not read it without importing its
+    callers; (b) results as events (decision 27), which arrive after the
+    handler that needs them. Rule for a later port: read with `ctx.read`
+    and the owner's read functions; change through a request when the
+    outcome is needed in the same handler, through an event otherwise. A
+    request is the one case where a handler of one system runs inside a
+    handler of another (decision 6 holds for events). `resources` still
+    takes heals, damage and exertion as events; port 4 adds requests there
+    for the results it needs.
+29. **A panel may mount a component of another system.** The character
+    panel is in `attributes` and mounts `statuses/StatusList.svelte`, as it
+    already imports the index of `resources`, `skills`, `levels` and
+    `clock`. Adding the status list added two lines to that panel.

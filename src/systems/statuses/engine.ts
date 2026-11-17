@@ -1385,13 +1385,24 @@ export function tickStatuses(env: BearerEnv, list: StatusInstance[], ctx: Status
 /**
  * A resistance block in the shape `tickStatuses` wants: what a blow of each
  * type would shed. The type's own resistance plus `resElemental` for the
- * elemental types, held at the body's cap.
+ * elemental types, held at the body's cap. The result is shared by every
+ * caller with the same block: read it, do not write to it.
  */
 export function resistBlock(stats: Partial<DerivedStats>): Record<DamageType, number> {
+  // A stat block is one object until a modifier source changes, and the
+  // player's conditions ask for its resistances on every tick.
+  const known = RESIST_BLOCKS.get(stats);
+  if (known) return known;
   const out = {} as Record<DamageType, number>;
   const cap = stats.resistCap === undefined ? Infinity : Math.max(0, stats.resistCap);
-  for (const [type, key] of Object.entries(RES_STAT_BY_TYPE) as [DamageType, StatKey][]) {
-    out[type] = Math.min(cap, (stats[key] ?? 0) + (ELEMENTAL_TYPES.has(type) ? (stats.resElemental ?? 0) : 0));
+  for (const [type, key, elemental] of RES_ENTRIES) {
+    out[type] = Math.min(cap, (stats[key] ?? 0) + (elemental ? (stats.resElemental ?? 0) : 0));
   }
+  RESIST_BLOCKS.set(stats, out);
   return out;
 }
+
+const RES_ENTRIES = (Object.entries(RES_STAT_BY_TYPE) as [DamageType, StatKey][]).map(
+  ([type, key]) => [type, key, ELEMENTAL_TYPES.has(type)] as const,
+);
+const RESIST_BLOCKS = new WeakMap<object, Record<DamageType, number>>();
