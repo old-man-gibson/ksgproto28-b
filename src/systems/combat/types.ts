@@ -8,7 +8,8 @@ import type { LevelRise } from '../levels';
 import type { FeedEntry } from '../log';
 import type { ModifierTierId, MonsterKit, MonsterRange, MonsterRarityId, TierId } from '../monsters';
 import type { ExertionSpec } from '../resources';
-import type { AttributeId, DamageType } from '../stats';
+import type { AttributeId, ContentMod, DamageType } from '../stats';
+import type { SkillTrigger } from './triggers';
 
 // ---- the site ----
 
@@ -94,6 +95,15 @@ export interface Enemy {
   kit?: MonsterKit;
   /** The damage type of the last blow that hurt it. */
   lastHit?: DamageType;
+  /** The last rotation entry it used, for the panel. `at` is a clock tick. */
+  lastAction?: { name: string; icon: string; at: number };
+}
+
+/** A timed set of modifiers on the player for the fight: a ward, a defensive form. The old `CombatState.buffs` entry. */
+export interface CombatBuff {
+  name: string;
+  mods: ContentMod[];
+  ticksLeft: number;
 }
 
 /** The live fight. The old `CombatState`, without the fields of unported systems. */
@@ -113,6 +123,8 @@ export interface Fight {
   reported?: Record<string, true>;
   /** Ticks of the opening address left. The fight waits while it is above 0. */
   introTicks?: number;
+  /** Buffs on the player, counted down each tick. */
+  buffs: CombatBuff[];
 }
 
 export const NEUTRAL_POSITION = 'neutral';
@@ -191,5 +203,7 @@ export interface CombatState {
   style: StyleState;
   /** The player's explicit order of actives. The old `state.skillOrder`. */
   rotation: string[];
+  /** The player's own trigger per rotation id. The old `state.skillTriggers`. */
+  triggers: Record<string, SkillTrigger>;
   nextEntity: number;
 }

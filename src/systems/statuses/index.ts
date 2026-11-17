@@ -259,6 +259,11 @@ export const dueGraftSpread = defineRequest<{ entity: string }, { id: string; in
 );
 /** Record healing against the conditions that ration it. The player's heals arrive as `resources/healed`. */
 export const noteHealed = defineRequest<{ entity: string; amount: number }, void>('statuses/note-healed');
+/** Write the surplus ledger of a held condition (`engine.writeSurplus`). The ledger afterwards, or null when it is not held. */
+export const writeSurplus = defineRequest<
+  { entity: string; id: string; add?: number; set?: number; rewind?: boolean },
+  number | null
+>('statuses/surplus');
 /** Record a pool spend against the conditions that eat effort. The player's arrive as `resources/spent`. */
 export const noteResourceSpent = defineRequest<
   { entity: string; resource: ResourceId; spent: number; trueMax: number },
@@ -649,6 +654,7 @@ export default defineSystem<StatusesState, StatusesView>({
     answer(tendOnDamage, (ctx, p) => mutate(ctx, p.entity, false, (list) => engine.tendOnDamage(list, p.type))),
     answer(dueGraftSpread, (ctx, p) => mutate(ctx, p.entity, false, (list) => engine.dueGraftSpread(list))),
     answer(noteHealed, (ctx, p) => mutate(ctx, p.entity, false, (list) => engine.noteHealed(list, p.amount))),
+    answer(writeSurplus, (ctx, { entity, id, ...change }) => mutate(ctx, entity, false, (list) => engine.writeSurplus(list, id, change))),
     answer(noteResourceSpent, (ctx, p) =>
       mutate(ctx, p.entity, false, (list) => engine.noteResourceSpent(list, p.resource, p.spent, p.trueMax)),
     ),

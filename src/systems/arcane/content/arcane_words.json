@@ -1,0 +1,797 @@
+[
+  {
+    "id": "fire",
+    "word": "fire",
+    "stacked": [
+      "flame",
+      "blaze"
+    ],
+    "kind": "noun",
+    "icon": "🔥",
+    "mana": 2,
+    "element": "heat",
+    "power": 1,
+    "desc": "Heat noun. 2 mana, 1.0 power. 35% chance to set the target On Fire; further fire deepens the burn rather than extending it.",
+    "inflicts": [
+      {
+        "id": "on_fire",
+        "intensity": 1,
+        "chance": 0.35
+      }
+    ]
+  },
+  {
+    "id": "ice",
+    "word": "ice",
+    "stacked": [
+      "frost",
+      "glacier"
+    ],
+    "kind": "noun",
+    "icon": "❄️",
+    "mana": 2,
+    "element": "cold",
+    "power": 0.9,
+    "desc": "Cold noun. 2 mana, 0.9 power. 40% chance to Chill the target: -40% speed.",
+    "inflicts": [
+      {
+        "id": "chilled",
+        "intensity": 1,
+        "chance": 0.4
+      }
+    ]
+  },
+  {
+    "id": "spark",
+    "word": "spark",
+    "stacked": [
+      "arc",
+      "bolt"
+    ],
+    "kind": "noun",
+    "icon": "⚡",
+    "minLevel": 3,
+    "mana": 2,
+    "element": "lightning",
+    "power": 0.85,
+    "desc": "Lightning noun. 2 mana, 0.85 power. 30% chance to Jolt the target: 1.2 lightning damage each time its action bar fills, for 20 seconds.",
+    "inflicts": [
+      {
+        "id": "jolted",
+        "intensity": 1,
+        "chance": 0.3
+      }
+    ]
+  },
+  {
+    "id": "water",
+    "word": "water",
+    "stacked": [
+      "torrent",
+      "deluge"
+    ],
+    "kind": "noun",
+    "icon": "💧",
+    "minLevel": 4,
+    "mana": 2,
+    "element": "water",
+    "power": 0.8,
+    "desc": "Water noun. 2 mana, 0.8 power. 50% chance to make the target Wet: cold, lightning and poison resistance drop, heat resistance rises.",
+    "inflicts": [
+      {
+        "id": "wet",
+        "intensity": 1,
+        "chance": 0.5
+      }
+    ]
+  },
+  {
+    "id": "stone",
+    "word": "stone",
+    "stacked": [
+      "boulder",
+      "mountain"
+    ],
+    "kind": "noun",
+    "icon": "🪨",
+    "minLevel": 5,
+    "mana": 3,
+    "element": "earth",
+    "power": 1.15,
+    "desc": "Earth noun. 3 mana, 1.15 power. 30% chance to inflict Shardbound: the target takes 0.8 piercing damage whenever it attacks or is struck in melee, for 30 seconds.",
+    "inflicts": [
+      {
+        "id": "shardbound",
+        "intensity": 1,
+        "chance": 0.3
+      }
+    ]
+  },
+  {
+    "id": "gust",
+    "word": "gust",
+    "stacked": [
+      "wind",
+      "storm"
+    ],
+    "kind": "noun",
+    "icon": "💨",
+    "minLevel": 4,
+    "mana": 2,
+    "element": "wind",
+    "power": 0.85,
+    "desc": "Wind noun. 2 mana, 0.85 power. 25% chance to Buffet the target: each point gives a 12% chance that a technique ends Off Balance instead of at its declared position.",
+    "inflicts": [
+      {
+        "id": "buffeted",
+        "intensity": 1,
+        "chance": 0.25
+      }
+    ]
+  },
+  {
+    "id": "seed",
+    "word": "seed",
+    "stacked": [
+      "bramble",
+      "wildwood"
+    ],
+    "kind": "noun",
+    "icon": "🌱",
+    "minLevel": 5,
+    "mana": 2,
+    "element": "poison",
+    "power": 0.7,
+    "desc": "Poison noun. 2 mana, 0.7 power. 50% chance to Seed the target. Seeded does nothing on landing; it grows 0.15 per second (each hit prunes 0.5, water damage feeds it 1), becomes Rootbound at 6, and records every other condition that lands. Rootbound spreads a quarter of that record to the other enemies every 3 seconds. Heat damage removes it.",
+    "inflicts": [
+      {
+        "id": "seeded",
+        "intensity": 1,
+        "chance": 0.5
+      }
+    ]
+  },
+  {
+    "id": "iron",
+    "word": "iron",
+    "stacked": [
+      "steel",
+      "adamant"
+    ],
+    "kind": "noun",
+    "icon": "📌",
+    "art": "iron",
+    "minLevel": 11,
+    "mana": 2,
+    "element": "piercing",
+    "power": 0.9,
+    "desc": "Piercing noun. 2 mana, 0.9 power. 35% chance to Magnetize the target: each point ignores 10% of its dodge and gives piercing attacks +5% crit chance against it, lightning cannot miss it, and its dodge is also reduced by 3%.",
+    "inflicts": [
+      {
+        "id": "magnetized",
+        "intensity": 1,
+        "chance": 0.35
+      }
+    ]
+  },
+  {
+    "id": "venom",
+    "word": "venom",
+    "stacked": [
+      "toxin",
+      "plague"
+    ],
+    "kind": "noun",
+    "icon": "🐍",
+    "minLevel": 6,
+    "mana": 2,
+    "element": "poison",
+    "power": 0.7,
+    "desc": "Poison noun. 2 mana, 0.7 power. 60% chance to Poison the target: poison damage over time and -20% stamina regeneration. Only a stronger dose deepens it.",
+    "inflicts": [
+      {
+        "id": "poison",
+        "intensity": 1,
+        "chance": 0.6
+      }
+    ]
+  },
+  {
+    "id": "acid",
+    "word": "acid",
+    "stacked": [
+      "corrosion",
+      "liquefaction"
+    ],
+    "kind": "noun",
+    "icon": "🧪",
+    "minLevel": 6,
+    "mana": 2,
+    "element": "acid",
+    "power": 0.7,
+    "desc": "Acid noun. 2 mana, 0.7 power. Always Corrodes the target: -12% armor per point, stacking to 6.",
+    "inflicts": [
+      {
+        "id": "corroded",
+        "intensity": 1,
+        "chance": 1
+      }
+    ]
+  },
+  {
+    "id": "light",
+    "word": "light",
+    "stacked": [
+      "radiance",
+      "sun"
+    ],
+    "kind": "noun",
+    "icon": "☀️",
+    "minLevel": 8,
+    "mana": 3,
+    "element": "light",
+    "power": 0.9,
+    "desc": "Light noun. 3 mana, 0.9 power. 30% chance to Dazzle the target: 8% miss chance and -5% dodge; repeat hits extend the duration.",
+    "inflicts": [
+      {
+        "id": "dazzled",
+        "intensity": 1,
+        "chance": 0.3
+      }
+    ]
+  },
+  {
+    "id": "gloom",
+    "word": "gloom",
+    "stacked": [
+      "dusk",
+      "abyss"
+    ],
+    "kind": "noun",
+    "icon": "🌑",
+    "minLevel": 8,
+    "mana": 3,
+    "element": "dark",
+    "power": 1,
+    "desc": "Dark noun. 3 mana, 1.0 power. 15% chance to Taint the target: every resistance drops, light and dark resistance most; at 5 stacks it escalates to Corrupted.",
+    "inflicts": [
+      {
+        "id": "tainted",
+        "intensity": 1,
+        "chance": 0.15
+      }
+    ]
+  },
+  {
+    "id": "zero",
+    "word": "zero",
+    "stacked": [
+      "naught",
+      "null"
+    ],
+    "kind": "noun",
+    "icon": "⭕",
+    "art": "zero",
+    "minLevel": 10,
+    "mana": 2,
+    "element": "arcane",
+    "untyped": true,
+    "power": 1,
+    "desc": "Untyped noun. 2 mana, 1.0 power. No element and no condition: no resistance reduces it and no weakness increases it."
+  },
+  {
+    "id": "arcane",
+    "word": "arcane",
+    "stacked": [
+      "eldritch",
+      "anathema"
+    ],
+    "kind": "noun",
+    "icon": "🔮",
+    "minLevel": 13,
+    "mana": 3,
+    "element": "arcane",
+    "power": 0.9,
+    "desc": "Arcane noun. 3 mana, 0.9 power. 50% chance to inflict Unravelling: lowers arcane resistance; at 3 stacks it escalates to Manaburn.",
+    "inflicts": [
+      {
+        "id": "unravelling",
+        "intensity": 1,
+        "chance": 0.5
+      }
+    ]
+  },
+  {
+    "id": "cut",
+    "word": "cut",
+    "stacked": [
+      "gash",
+      "sunder"
+    ],
+    "kind": "verb",
+    "icon": "🔪",
+    "art": "cut",
+    "minLevel": 9,
+    "mana": 2,
+    "desc": "Verb, slashing delivery. 2 mana. Damage x0.8; the noun’s condition applies at 2.2x the usual rate. Spoken with no noun: 0.55 slashing power, 40% chance to Bleed.",
+    "verb": {
+      "powerMult": 0.8,
+      "barePower": 0.55,
+      "statusRate": 2.2,
+      "bareType": "slashing",
+      "bareInflicts": [
+        {
+          "id": "bleeding",
+          "intensity": 1,
+          "chance": 0.4
+        }
+      ]
+    }
+  },
+  {
+    "id": "crush",
+    "word": "crush",
+    "stacked": [
+      "crumple",
+      "implode"
+    ],
+    "kind": "verb",
+    "icon": "🔨",
+    "art": "crush",
+    "minLevel": 9,
+    "mana": 2,
+    "desc": "Verb, bludgeoning delivery. 2 mana. Damage x1.3; the noun’s condition applies at 0.45x the usual rate. Spoken with no noun: 0.7 bludgeoning power, 40% chance to Concuss.",
+    "verb": {
+      "powerMult": 1.3,
+      "barePower": 0.7,
+      "statusRate": 0.45,
+      "bareType": "bludgeoning",
+      "bareInflicts": [
+        {
+          "id": "concussed",
+          "intensity": 1,
+          "chance": 0.4
+        }
+      ]
+    }
+  },
+  {
+    "id": "pierce",
+    "word": "pierce",
+    "stacked": [
+      "impale",
+      "skewer"
+    ],
+    "kind": "verb",
+    "icon": "🎯",
+    "art": "pierce",
+    "mana": 1,
+    "desc": "Verb, piercing delivery. 1 mana. Damage x0.95, ignores 35% of armor; the noun’s condition applies at 0.6x the usual rate. Spoken with no noun: 0.5 piercing power, 40% chance to Puncture.",
+    "verb": {
+      "powerMult": 0.95,
+      "barePower": 0.5,
+      "penetration": 0.35,
+      "statusRate": 0.6,
+      "bareType": "piercing",
+      "bareInflicts": [
+        {
+          "id": "punctured",
+          "intensity": 1,
+          "chance": 0.4
+        }
+      ]
+    }
+  },
+  {
+    "id": "fly",
+    "word": "fly",
+    "stacked": [
+      "dart",
+      "blink"
+    ],
+    "kind": "verb",
+    "icon": "🕊️",
+    "art": "fly",
+    "mana": 1,
+    "desc": "Verb. 1 mana. Cooldown x0.75, damage x0.9. Spoken with no noun: 0.4 power.",
+    "verb": {
+      "powerMult": 0.9,
+      "barePower": 0.4,
+      "cooldownMult": 0.75
+    }
+  },
+  {
+    "id": "expand",
+    "word": "expand",
+    "stacked": [
+      "engulf",
+      "everything"
+    ],
+    "kind": "verb",
+    "icon": "💥",
+    "art": "expand",
+    "minLevel": 4,
+    "mana": 2,
+    "desc": "Verb. 2 mana. Damage x0.85; 50% of the main target’s raw damage spills onto one random flanker. Enough accumulated spill (1.5 raw) makes the spell hit every enemy. Spoken with no noun: 0.4 power.",
+    "verb": {
+      "powerMult": 0.85,
+      "barePower": 0.4,
+      "splash": 0.5
+    }
+  },
+  {
+    "id": "burst",
+    "word": "burst",
+    "stacked": [
+      "erupt",
+      "detonate"
+    ],
+    "kind": "verb",
+    "icon": "🎆",
+    "art": "burst",
+    "minLevel": 6,
+    "mana": 2,
+    "desc": "Verb. 2 mana. Damage x1.35, cooldown x1.3. Spoken with no noun: 0.6 power.",
+    "verb": {
+      "powerMult": 1.35,
+      "barePower": 0.6,
+      "cooldownMult": 1.3
+    }
+  },
+  {
+    "id": "grasp",
+    "word": "grasp",
+    "stacked": [
+      "clutch",
+      "strangle"
+    ],
+    "kind": "verb",
+    "icon": "🫳",
+    "art": "grasp",
+    "minLevel": 8,
+    "mana": 2,
+    "desc": "Verb. 2 mana. Damage x0.6; the noun’s condition lasts twice as long. Spoken with no noun: 0.3 power.",
+    "verb": {
+      "powerMult": 0.6,
+      "barePower": 0.3,
+      "gripMult": 2
+    }
+  },
+  {
+    "id": "ward",
+    "word": "ward",
+    "stacked": [
+      "bulwark",
+      "sanctum"
+    ],
+    "kind": "verb",
+    "icon": "🛡️",
+    "art": "ward",
+    "minLevel": 5,
+    "mana": 2,
+    "desc": "Verb. 2 mana. Always lands on the speaker: +15% resistance to the noun’s element for 30 seconds. Spoken with no noun: +3 armor instead. Leading words lengthen it, trailing words thicken it.",
+    "verb": {
+      "ward": {
+        "amount": 0.15,
+        "duration": 300
+      }
+    }
+  },
+  {
+    "id": "mend",
+    "word": "mend",
+    "stacked": [
+      "knit",
+      "renew"
+    ],
+    "kind": "verb",
+    "icon": "💚",
+    "art": "mend",
+    "minLevel": 7,
+    "mana": 3,
+    "desc": "Verb. 3 mana. Heals for 1.0 spell power. Lands on the speaker unless another target is spoken; addressed at an enemy, it heals the enemy.",
+    "verb": {
+      "restore": 1
+    }
+  },
+  {
+    "id": "undo",
+    "word": "undo",
+    "stacked": [
+      "unsay",
+      "unmake"
+    ],
+    "kind": "verb",
+    "icon": "↩️",
+    "minLevel": 10,
+    "mana": 3,
+    "desc": "Verb. 3 mana, cooldown x1.2. Makes the spell a counterspell: it is never cast on its own, and fires when an enemy casts. Efficiency: 20%, +7.5% per extra undo tier, +5% per arcane tier, plus a match bonus for each element tier the enemy spell also uses. The enemy spell loses that share of its effect (all of it at 100% or more), and its caster takes manaburn of efficiency x1.0 spell power. Efficiency can exceed 100%.",
+    "verb": {
+      "undo": {
+        "burn": 1
+      },
+      "cooldownMult": 1.2
+    }
+  },
+  {
+    "id": "slowly",
+    "word": "slowly",
+    "stacked": [
+      "dragging",
+      "glacial"
+    ],
+    "kind": "adverb",
+    "icon": "🐢",
+    "art": "slowly",
+    "mana": 1,
+    "adverb": {
+      "powerMult": 1.4,
+      "cooldownMult": 1.5,
+      "manaMult": 1.2,
+      "clock": {
+        "lead": {
+          "dur": 2,
+          "rate": 1
+        },
+        "trail": {
+          "dur": 3,
+          "rate": 0.3333333333333333
+        }
+      }
+    },
+    "desc": "Adverb. 1 mana, spell mana x1.2. Damage x1.4, cooldown x1.5. Leading: conditions last 2x as long at full rate. Trailing: 3x as long at a third of the rate."
+  },
+  {
+    "id": "quickly",
+    "word": "quickly",
+    "stacked": [
+      "flashing",
+      "instant"
+    ],
+    "kind": "adverb",
+    "icon": "🐇",
+    "art": "quickly",
+    "mana": 1,
+    "adverb": {
+      "powerMult": 0.75,
+      "cooldownMult": 0.65,
+      "clock": {
+        "lead": {
+          "dur": 0.25,
+          "rate": 3
+        },
+        "trail": {
+          "dur": 0.5,
+          "rate": 2
+        }
+      }
+    },
+    "desc": "Adverb. 1 mana. Damage x0.75, cooldown x0.65. Leading: conditions run in a quarter of the time at 3x rate. Trailing: half the time at 2x rate."
+  },
+  {
+    "id": "gently",
+    "word": "gently",
+    "stacked": [
+      "faintly",
+      "barely"
+    ],
+    "kind": "adverb",
+    "icon": "🕊️",
+    "minLevel": 7,
+    "mana": 1,
+    "adverb": {
+      "powerMult": 0.5,
+      "manaMult": 0.85,
+      "crit": {
+        "lead": {
+          "chance": -0.05
+        },
+        "trail": {
+          "damage": -0.2
+        }
+      }
+    },
+    "desc": "Adverb. 1 mana, spell mana x0.85. Damage x0.5 per tier; condition intensity is unchanged. Leading: -5% crit chance. Trailing: -20% crit damage. Use it to apply a condition, to an enemy or to yourself, at low cost."
+  },
+  {
+    "id": "viciously",
+    "word": "viciously",
+    "stacked": [
+      "savagely",
+      "murderously"
+    ],
+    "kind": "adverb",
+    "icon": "🩸",
+    "minLevel": 13,
+    "mana": 2,
+    "adverb": {
+      "manaMult": 1.4,
+      "crit": {
+        "lead": {
+          "chance": 0.07
+        },
+        "trail": {
+          "damage": 0.25
+        }
+      }
+    },
+    "desc": "Adverb. 2 mana, spell mana x1.4. Leading: +7% crit chance per tier. Trailing: +25% crit damage per tier."
+  },
+  {
+    "id": "intensely",
+    "word": "intensely",
+    "stacked": [
+      "fiercely",
+      "overwhelmingly"
+    ],
+    "kind": "adverb",
+    "icon": "🔆",
+    "art": "intense",
+    "minLevel": 10,
+    "mana": 2,
+    "adverb": {
+      "intensity": 1.6,
+      "manaMult": 1.3,
+      "clock": {
+        "lead": {
+          "dur": 1,
+          "rate": 1
+        },
+        "trail": {
+          "dur": 0.6,
+          "rate": 1
+        }
+      }
+    },
+    "desc": "Adverb. 2 mana, spell mana x1.3. Condition intensity x1.6. Trailing: condition duration x0.6 as well."
+  },
+  {
+    "id": "dimly",
+    "word": "dimly",
+    "stacked": [
+      "thinly",
+      "scarcely"
+    ],
+    "kind": "adverb",
+    "icon": "🔅",
+    "art": "dim",
+    "minLevel": 8,
+    "mana": 1,
+    "adverb": {
+      "intensity": 0.6,
+      "manaMult": 0.9,
+      "clock": {
+        "lead": {
+          "dur": 1,
+          "rate": 1
+        },
+        "trail": {
+          "dur": 1.6,
+          "rate": 1
+        }
+      }
+    },
+    "desc": "Adverb. 1 mana, spell mana x0.9. Condition intensity x0.6, never below 15% of the condition’s base. Trailing: condition duration x1.6 as well."
+  },
+  {
+    "id": "twice",
+    "word": "twice",
+    "stacked": [
+      "thrice",
+      "fourfold"
+    ],
+    "kind": "adverb",
+    "icon": "✌️",
+    "minLevel": 6,
+    "mana": 2,
+    "adverb": {
+      "hits": 2,
+      "manaMult": 1.8
+    },
+    "desc": "Adverb. 2 mana, spell mana x1.8. Leading: two separate landings, each rolling its own crit and conditions. Trailing: one landing at double weight."
+  },
+  {
+    "id": "then",
+    "word": "then",
+    "kind": "conjunction",
+    "icon": "⏭️",
+    "minLevel": 12,
+    "mana": 1,
+    "conjunction": {
+      "inheritPenetration": true,
+      "followThrough": 1.3
+    },
+    "desc": "Conjunction. 1 mana. The next clause takes the better armor penetration of the two clauses and deals x1.3 damage, but only if the previous strike landed on that target."
+  },
+  {
+    "id": "and",
+    "word": "and",
+    "kind": "conjunction",
+    "icon": "🤝",
+    "minLevel": 14,
+    "mana": 2,
+    "conjunction": {
+      "fuse": 0.85
+    },
+    "desc": "Conjunction. 2 mana. Fuses the next clause into the previous blow: its weight is added at 85%, the blow deals whichever of the two damage types the target resists less, and both conditions apply."
+  },
+  {
+    "id": "but",
+    "word": "but",
+    "kind": "conjunction",
+    "icon": "🔀",
+    "minLevel": 16,
+    "mana": 2,
+    "conjunction": {
+      "transmute": true
+    },
+    "desc": "Conjunction. 2 mana. The next clause does not strike; its condition replaces the previous blow’s condition. A word with no condition removes the blow’s condition instead."
+  },
+  {
+    "id": "or",
+    "word": "or",
+    "kind": "conjunction",
+    "icon": "🎲",
+    "art": "die",
+    "minLevel": 15,
+    "mana": 1,
+    "conjunction": {
+      "alternate": 0.5
+    },
+    "desc": "Conjunction. 1 mana. The linked clauses become alternatives: one is rolled per cast, and each linked clause pays half its mana."
+  },
+  {
+    "id": "if",
+    "word": "if",
+    "kind": "conjunction",
+    "icon": "❓",
+    "minLevel": 18,
+    "mana": 1,
+    "conjunction": {
+      "condition": true
+    },
+    "desc": "Conjunction. 1 mana. The next clause does not strike; its noun names a condition, and the previous blow fires only while the target has that condition or one it escalates into."
+  },
+  {
+    "id": "with",
+    "word": "with",
+    "kind": "conjunction",
+    "icon": "🔗",
+    "art": "chain",
+    "minLevel": 11,
+    "mana": 1,
+    "conjunction": {
+      "accompany": 0.75
+    },
+    "desc": "Conjunction. 1 mana. A next clause with a noun and no verb joins the previous clause instead of acting: an undo also matches the noun’s element, a blow also applies the noun’s condition, a ward also adds resistance to the noun’s element at 75% (armor with no element), a mend also heals the noun’s power at 75%. A clause with its own verb acts on its own."
+  },
+  {
+    "id": "one",
+    "word": "one",
+    "kind": "target",
+    "icon": "👤",
+    "mana": 0,
+    "target": "one",
+    "desc": "Target word: the front enemy. 0 mana. The default when no target is spoken."
+  },
+  {
+    "id": "others",
+    "word": "others",
+    "kind": "target",
+    "icon": "👥",
+    "minLevel": 5,
+    "mana": 2,
+    "target": "others",
+    "desc": "Target word: every enemy. 2 mana, and the spell’s mana x1.5. Each enemy takes 50% power."
+  },
+  {
+    "id": "me",
+    "word": "me",
+    "kind": "target",
+    "icon": "🙋",
+    "minLevel": 2,
+    "mana": 0,
+    "target": "self",
+    "desc": "Target word: the speaker. 0 mana. Damage and conditions land on you."
+  }
+]

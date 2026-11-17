@@ -194,7 +194,112 @@ const JOBS = [
     module: 'src/core/data/bestiary.data.ts',
     pick: (m) => Object.values(m.MONSTER_TAGS),
   },
+  {
+    name: 'positions',
+    out: 'martial/content/positions.json',
+    module: 'src/core/data/martial.data.ts',
+    pick: (m) => Object.values(m.POSITIONS),
+  },
+  {
+    name: 'fork_archetypes',
+    out: 'martial/content/fork_archetypes.json',
+    module: 'src/core/data/martial.data.ts',
+    pick: (m) => m.FORK_ARCHETYPE_LIST,
+  },
+  {
+    name: 'techniques',
+    out: 'martial/content/techniques.json',
+    module: 'src/core/data/martial.data.ts',
+    pick: (m) => m.TECHNIQUE_LIST.map(techniqueRecord),
+  },
+  {
+    name: 'arcane_words',
+    out: 'arcane/content/arcane_words.json',
+    module: 'src/core/data/spellcraft.data.ts',
+    pick: (m) => m.ARCANE_WORD_LIST.map(wordRecord),
+  },
+  {
+    name: 'miracles',
+    out: 'divine/content/miracles.json',
+    module: 'src/core/data/spellcraft.data.ts',
+    pick: (m) => m.MIRACLE_LIST.map((def) => ({ ...def, spec: specRecord(def.spec) })),
+  },
+  {
+    name: 'deities',
+    out: 'divine/content/deities.json',
+    module: 'src/core/data/deities.data.ts',
+    pick: (m) => m.DEITY_LIST,
+  },
+  {
+    name: 'deity_tags',
+    out: 'divine/content/deity_tags.json',
+    module: 'src/core/data/deities.data.ts',
+    // Three old tag ids hold a space ("goblin pantheon"). The record id is the
+    // slug; `tag` is the old id, which deities and relation rules name.
+    pick: (m) => Object.values(m.DEITY_TAGS).map(({ id, ...rest }) => ({ id: slug(id), tag: id, ...rest })),
+  },
 ];
+
+const applications = (apps) => (apps ? apps.map(statusApplication) : undefined);
+
+/** A trigger in the JSON form: a condition's value, a number or a string, is written as a string. */
+function triggerRecord(trigger) {
+  if (!trigger) return undefined;
+  return {
+    ...trigger,
+    ...(trigger.conditions ? { conditions: trigger.conditions.map((c) => ({ ...c, value: String(c.value) })) } : {}),
+  };
+}
+
+/**
+ * One technique record in the JSON form:
+ * - `from` (`'any'`, a list of positions, or a list of ways) becomes a list
+ *   of ways, each `{ any: true }` or `{ at: [...] }`, with its trigger;
+ * - `mastery`, a map keyed by tier, becomes a list in key order;
+ * - applications in `move.inflicts` go through `statusApplication`.
+ */
+function techniqueRecord(def) {
+  const { from, mastery, trigger, move, ...rest } = def;
+  const ways =
+    from === 'any'
+      ? [{ any: true }]
+      : from.length === 0
+        ? []
+        : typeof from[0] === 'string'
+          ? [{ at: from }]
+          : from.map((way) => ({
+              ...(way.at === 'any' ? { any: true } : { at: way.at }),
+              ...(way.trigger ? { trigger: triggerRecord(way.trigger) } : {}),
+            }));
+  return {
+    ...rest,
+    ...(trigger ? { trigger: triggerRecord(trigger) } : {}),
+    from: ways,
+    move: { ...move, ...(move.inflicts ? { inflicts: applications(move.inflicts) } : {}) },
+    ...(mastery ? { mastery: Object.entries(mastery).map(([tier, note]) => ({ tier: Number(tier), ...note })) } : {}),
+  };
+}
+
+/** One arcane word in the JSON form: its applications go through `statusApplication`. */
+function wordRecord(def) {
+  const { inflicts, verb, ...rest } = def;
+  return {
+    ...rest,
+    ...(inflicts ? { inflicts: applications(inflicts) } : {}),
+    ...(verb ? { verb: { ...verb, ...(verb.bareInflicts ? { bareInflicts: applications(verb.bareInflicts) } : {}) } } : {}),
+  };
+}
+
+/** A stated spell in the JSON form: every application goes through `statusApplication`. */
+function specRecord(spec) {
+  const { strikes, grants, afflicts, ...rest } = spec;
+  return {
+    ...rest,
+    strikes: strikes.map((strike) => ({ ...strike, ...(strike.inflicts ? { inflicts: applications(strike.inflicts) } : {}) })),
+    ...(grants ? { grants: applications(grants) } : {}),
+    ...(afflicts ? { afflicts: applications(afflicts) } : {}),
+  };
+}
 
 /**
  * One monster record in the JSON form:

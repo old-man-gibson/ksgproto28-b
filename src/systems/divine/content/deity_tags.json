@@ -1,0 +1,310 @@
+[
+  {
+    "id": "outer",
+    "tag": "outer",
+    "name": "Outer God",
+    "icon": "🌌",
+    "category": "scope"
+  },
+  {
+    "id": "tribal",
+    "tag": "tribal",
+    "name": "Tribal God",
+    "icon": "🔥",
+    "category": "scope"
+  },
+  {
+    "id": "organized",
+    "tag": "organized",
+    "name": "Organized God",
+    "icon": "⛪",
+    "category": "scope"
+  },
+  {
+    "id": "syncretic",
+    "tag": "syncretic",
+    "name": "Syncretized God",
+    "icon": "🔗",
+    "category": "scope"
+  },
+  {
+    "id": "pantheon",
+    "tag": "pantheon",
+    "name": "Pantheonic God",
+    "icon": "🏛️",
+    "category": "scope"
+  },
+  {
+    "id": "yolixoch_pantheon",
+    "tag": "yolixoch pantheon",
+    "name": "Yolixoch Pantheon",
+    "icon": "🌴💧",
+    "category": "membership"
+  },
+  {
+    "id": "foai_pantheon",
+    "tag": "foai pantheon",
+    "name": "Foai Pantheon",
+    "icon": "🏝️🌊",
+    "category": "membership"
+  },
+  {
+    "id": "goblin_pantheon",
+    "tag": "goblin pantheon",
+    "name": "Goblin Pantheon",
+    "icon": "👺",
+    "category": "membership"
+  },
+  {
+    "id": "bestial",
+    "tag": "bestial",
+    "name": "Bestial",
+    "icon": "🐾",
+    "category": "nature"
+  },
+  {
+    "id": "humanoid",
+    "tag": "humanoid",
+    "name": "Humanoid",
+    "icon": "🧍",
+    "category": "nature"
+  },
+  {
+    "id": "gigantoid",
+    "tag": "gigantoid",
+    "name": "Gigantoid",
+    "icon": "🗿",
+    "category": "nature"
+  },
+  {
+    "id": "aberrant",
+    "tag": "aberrant",
+    "name": "Aberrant",
+    "icon": "👁️",
+    "category": "nature"
+  },
+  {
+    "id": "celestial",
+    "tag": "celestial",
+    "name": "Celestial",
+    "icon": "✨",
+    "category": "nature"
+  },
+  {
+    "id": "infernal",
+    "tag": "infernal",
+    "name": "Infernal",
+    "icon": "😈",
+    "category": "nature"
+  },
+  {
+    "id": "mechanical",
+    "tag": "mechanical",
+    "name": "Mechanical",
+    "icon": "⚙️",
+    "category": "nature"
+  },
+  {
+    "id": "evil",
+    "tag": "evil",
+    "name": "Evil",
+    "icon": "🖤",
+    "category": "alignment"
+  },
+  {
+    "id": "good",
+    "tag": "good",
+    "name": "Good",
+    "icon": "🤍",
+    "category": "alignment"
+  },
+  {
+    "id": "neutral",
+    "tag": "neutral",
+    "name": "Neutral",
+    "icon": "⚖️",
+    "category": "alignment"
+  },
+  {
+    "id": "unaligned",
+    "tag": "unaligned",
+    "name": "Unaligned",
+    "icon": "🎲",
+    "category": "alignment"
+  },
+  {
+    "id": "chaotic",
+    "tag": "chaotic",
+    "name": "Chaotic",
+    "icon": "🌀",
+    "category": "alignment"
+  },
+  {
+    "id": "lawful",
+    "tag": "lawful",
+    "name": "Lawful",
+    "icon": "📜",
+    "category": "alignment"
+  },
+  {
+    "id": "zero",
+    "tag": "zero",
+    "name": "Zero",
+    "icon": "⭕",
+    "category": "temperament"
+  },
+  {
+    "id": "infinite",
+    "tag": "infinite",
+    "name": "Infinite",
+    "icon": "♾️",
+    "category": "temperament"
+  },
+  {
+    "id": "atomic",
+    "tag": "atomic",
+    "name": "Atomic",
+    "icon": "⚛️",
+    "category": "temperament"
+  },
+  {
+    "id": "curious",
+    "tag": "curious",
+    "name": "Curious",
+    "icon": "🔍",
+    "category": "temperament"
+  },
+  {
+    "id": "warping",
+    "tag": "warping",
+    "name": "Warping",
+    "icon": "🌀",
+    "category": "temperament"
+  },
+  {
+    "id": "honorable",
+    "tag": "honorable",
+    "name": "Honorable",
+    "icon": "🎖️",
+    "category": "temperament"
+  },
+  {
+    "id": "sacrificial",
+    "tag": "sacrificial",
+    "name": "Sacrificial",
+    "icon": "🩸",
+    "category": "temperament"
+  },
+  {
+    "id": "trickster",
+    "tag": "trickster",
+    "name": "Trickster",
+    "icon": "🎭",
+    "category": "temperament"
+  },
+  {
+    "id": "crafting",
+    "tag": "crafting",
+    "name": "Crafting",
+    "icon": "🔨",
+    "category": "temperament"
+  },
+  {
+    "id": "stalwart",
+    "tag": "stalwart",
+    "name": "Stalwart",
+    "icon": "🛡️",
+    "category": "temperament"
+  },
+  {
+    "id": "mercurial",
+    "tag": "mercurial",
+    "name": "Mercurial",
+    "icon": "🌗",
+    "category": "temperament"
+  },
+  {
+    "id": "fire",
+    "tag": "fire",
+    "name": "Fire",
+    "icon": "🔥",
+    "category": "domain"
+  },
+  {
+    "id": "water",
+    "tag": "water",
+    "name": "Water",
+    "icon": "💧",
+    "category": "domain"
+  },
+  {
+    "id": "earth",
+    "tag": "earth",
+    "name": "Earth",
+    "icon": "🪨",
+    "category": "domain"
+  },
+  {
+    "id": "wind",
+    "tag": "wind",
+    "name": "Wind",
+    "icon": "💨",
+    "category": "domain"
+  },
+  {
+    "id": "lightning",
+    "tag": "lightning",
+    "name": "Lightning",
+    "icon": "⚡",
+    "category": "domain"
+  },
+  {
+    "id": "cold",
+    "tag": "cold",
+    "name": "Cold",
+    "icon": "❄️",
+    "category": "domain"
+  },
+  {
+    "id": "poison",
+    "tag": "poison",
+    "name": "Poison",
+    "icon": "🐍",
+    "category": "domain"
+  },
+  {
+    "id": "arcane",
+    "tag": "arcane",
+    "name": "Arcane",
+    "icon": "🔮",
+    "category": "domain"
+  },
+  {
+    "id": "dark",
+    "tag": "dark",
+    "name": "Dark",
+    "icon": "🌑",
+    "category": "domain"
+  },
+  {
+    "id": "light",
+    "tag": "light",
+    "name": "Light",
+    "icon": "☀️",
+    "category": "domain"
+  },
+  {
+    "id": "metal",
+    "tag": "metal",
+    "name": "Metal",
+    "icon": "🧲",
+    "category": "domain"
+  },
+  {
+    "id": "nature",
+    "tag": "nature",
+    "name": "Nature",
+    "icon": "🌿",
+    "category": "domain"
+  }
+]

@@ -1,0 +1,63 @@
+[
+  {
+    "id": "neutral",
+    "name": "Neutral",
+    "icon": "⚖️",
+    "color": "#9aa5b1",
+    "desc": "The starting position. Every encounter begins here, and every plain swing returns here."
+  },
+  {
+    "id": "coiled",
+    "name": "Coiled",
+    "icon": "🌀",
+    "color": "#b58fe0",
+    "desc": "Wind-up position. Entered by Gather and Ginga; Heavy Blow and other heavy techniques start from here."
+  },
+  {
+    "id": "extended",
+    "name": "Extended",
+    "icon": "🫱",
+    "color": "#e0a855",
+    "desc": "Reach position. Entered by Lunge, Riposte and Crosscut; Thrust starts from here."
+  },
+  {
+    "id": "off_balance",
+    "name": "Off Balance",
+    "icon": "💫",
+    "color": "#e05555",
+    "effects": {
+      "incomingMult": 1.15
+    },
+    "desc": "Incoming damage ×1.15 while here. Left in it by Heavy Blow, Weapon Drop and Overwhelming forks; Ginga and Meia Lua start from here."
+  },
+  {
+    "id": "guarded",
+    "name": "Guarded",
+    "icon": "🛡️",
+    "color": "#5b9bd5",
+    "effects": {
+      "incomingMult": 0.9
+    },
+    "desc": "Incoming damage ×0.9 while here. Entered by Sidestep and Clinch Knee; Flowing Shield and Electric Cross start from here."
+  },
+  {
+    "id": "spell_ready",
+    "name": "Spell Ready",
+    "icon": "🔮",
+    "color": "#8ee1f6",
+    "effects": {
+      "incomingMult": 1.1
+    },
+    "desc": "Holds a readied spell. Incoming damage ×1.1 while here. Entered by Ready Spell; Spell Parry starts from here. Leaving it by any other move drops the spell."
+  },
+  {
+    "id": "wide_open",
+    "name": "Wide Open",
+    "icon": "🤷‍♂️",
+    "color": "#97f524",
+    "effects": {
+      "incomingMult": 1.2
+    },
+    "desc": "Incoming damage ×1.2 while here. Entered by Taunt, Impaling Swing and Exposing forks; German Suplex and Flesh Draw start from here."
+  }
+]

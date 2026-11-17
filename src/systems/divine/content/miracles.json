@@ -1,0 +1,733 @@
+[
+  {
+    "id": "unfold_geometry",
+    "deity": "ikthelthe",
+    "name": "Unfold Geometry",
+    "icon": "📐",
+    "favorCost": 4,
+    "spec": {
+      "name": "Unfold Geometry",
+      "icon": "📐",
+      "target": "one",
+      "manaCost": 5,
+      "cooldown": 160,
+      "desc": "0.4 arcane strike; inflicts Unfolded, lowering physical and arcane resistance for 15 seconds.",
+      "strikes": [
+        {
+          "type": "arcane",
+          "power": 0.4,
+          "inflicts": [
+            {
+              "id": "unfolded",
+              "intensity": 1
+            }
+          ]
+        }
+      ]
+    },
+    "desc": "Ik’Thel’the. 4 favor, 5 mana, 16 second cooldown. One 0.4 arcane strike that inflicts Unfolded for 15 seconds: -12% slashing, piercing and bludgeoning resistance, -15% arcane resistance."
+  },
+  {
+    "id": "fractal_lance",
+    "deity": "ikthelthe",
+    "name": "Fractal Lance",
+    "icon": "🔱",
+    "favorCost": 5,
+    "minLevel": 5,
+    "spec": {
+      "name": "Fractal Lance",
+      "icon": "🔱",
+      "target": "one",
+      "manaCost": 6,
+      "cooldown": 130,
+      "desc": "Three arcane strikes, each half the power of the one before.",
+      "strikes": [
+        {
+          "type": "arcane",
+          "power": 1.4
+        },
+        {
+          "type": "arcane",
+          "power": 0.7
+        },
+        {
+          "type": "arcane",
+          "power": 0.35
+        }
+      ]
+    },
+    "desc": "Ik’Thel’the. 5 favor, 6 mana, 13 second cooldown. Three arcane strikes on one target at 1.4, 0.7 and 0.35 power."
+  },
+  {
+    "id": "fold_space",
+    "deity": "ikthelthe",
+    "name": "Fold Space",
+    "icon": "📄",
+    "favorCost": 4,
+    "spec": {
+      "name": "Fold Space",
+      "icon": "📄",
+      "target": "self",
+      "manaCost": 4,
+      "cooldown": 450,
+      "strikes": [],
+      "grants": [
+        {
+          "id": "folded_space",
+          "intensity": 1
+        }
+      ]
+    },
+    "desc": "Ik’Thel’the. 4 favor, 4 mana, 45 second cooldown. Self: +12% dodge for 40 seconds. No healing."
+  },
+  {
+    "id": "litany_mending",
+    "deity": "xima",
+    "name": "Rite of Mending",
+    "icon": "🙏",
+    "favorCost": 3,
+    "spec": {
+      "name": "Rite of Mending",
+      "icon": "🙏",
+      "target": "self",
+      "heal": 2,
+      "manaCost": 4,
+      "cooldown": 150,
+      "desc": "Heals the caster for 2.0 spell power.",
+      "strikes": []
+    },
+    "desc": "Xima. 3 favor, 4 mana, 15 second cooldown. Self: heals for 2.0 spell power."
+  },
+  {
+    "id": "litany_aegis",
+    "deity": "xima",
+    "name": "Rite of the Aegis",
+    "icon": "🛡️",
+    "favorCost": 8,
+    "minLevel": 10,
+    "spec": {
+      "name": "Rite of the Aegis",
+      "icon": "🛡️",
+      "target": "self",
+      "buff": {
+        "name": "Aegis",
+        "mods": [
+          {
+            "stat": "armor",
+            "op": "add",
+            "value": 6
+          },
+          {
+            "stat": "resDark",
+            "op": "add",
+            "value": 0.1
+          }
+        ],
+        "duration": 300
+      },
+      "manaCost": 6,
+      "cooldown": 400,
+      "desc": "+6 armor and +10% dark resistance on the caster for 30 seconds.",
+      "strikes": []
+    },
+    "desc": "Xima. 8 favor, 6 mana, 40 second cooldown. Self: +6 armor and +10% dark resistance for 30 seconds."
+  },
+  {
+    "id": "rime_of_the_cold_sun",
+    "deity": "xima",
+    "name": "Rime of the Cold Sun",
+    "icon": "❄️",
+    "favorCost": 6,
+    "spec": {
+      "name": "Rime of the Cold Sun",
+      "icon": "❄️",
+      "target": "self",
+      "manaCost": 6,
+      "cooldown": 600,
+      "strikes": [],
+      "grants": [
+        {
+          "id": "ximas_rime",
+          "intensity": 1
+        }
+      ]
+    },
+    "desc": "Xima. 6 favor, 6 mana, 60 second cooldown. Self: +12% heat, cold and lightning resistance for 60 seconds."
+  },
+  {
+    "id": "blood_communion",
+    "deity": "xima",
+    "name": "Blood Communion",
+    "icon": "🩸",
+    "favorCost": 8,
+    "minLevel": 5,
+    "spec": {
+      "name": "Blood Communion",
+      "icon": "🩸",
+      "target": "self",
+      "manaCost": 5,
+      "cooldown": 700,
+      "desc": "You bleed; while Blood Communion lasts, the bleed heals you instead of harming you.",
+      "strikes": [],
+      "grants": [
+        {
+          "id": "bleeding",
+          "intensity": 2
+        },
+        {
+          "id": "blood_communion",
+          "intensity": 1
+        }
+      ]
+    },
+    "desc": "Xima. 8 favor, 5 mana, 70 second cooldown. Self: applies Bleeding at intensity 2, plus Blood Communion for 60 seconds, under which bleed damage heals you instead and you deal +8% damage."
+  },
+  {
+    "id": "litany_retribution",
+    "deity": "denjalle",
+    "name": "Writ of Retribution",
+    "icon": "⚖️",
+    "favorCost": 5,
+    "minLevel": 5,
+    "spec": {
+      "name": "Writ of Retribution",
+      "icon": "⚖️",
+      "target": "one",
+      "manaCost": 5,
+      "cooldown": 120,
+      "desc": "2.2 light strike, 40% chance to Dazzle.",
+      "strikes": [
+        {
+          "type": "light",
+          "power": 2.2,
+          "inflicts": [
+            {
+              "id": "dazzled",
+              "intensity": 1,
+              "chance": 0.4
+            }
+          ]
+        }
+      ]
+    },
+    "desc": "D’Enjalle. 5 favor, 5 mana, 12 second cooldown. One 2.2 light strike with a 40% chance to Dazzle."
+  },
+  {
+    "id": "holy_fire",
+    "deity": "denjalle",
+    "name": "Holy Fire",
+    "icon": "🔥",
+    "favorCost": 6,
+    "spec": {
+      "name": "Holy Fire",
+      "icon": "🔥",
+      "target": "one",
+      "manaCost": 6,
+      "cooldown": 140,
+      "desc": "2.0 strike as heat or light, whichever the target resists less.",
+      "strikes": [
+        {
+          "type": "heat",
+          "orType": "light",
+          "power": 2,
+          "inflicts": [
+            {
+              "id": "on_fire",
+              "intensity": 1,
+              "chance": 0.3
+            }
+          ]
+        }
+      ]
+    },
+    "desc": "D’Enjalle. 6 favor, 6 mana, 14 second cooldown. One 2.0 strike dealt as heat or light, whichever the target resists less; 30% chance to set it On Fire."
+  },
+  {
+    "id": "honorable_duel",
+    "deity": "denjalle",
+    "name": "Honorable Duel",
+    "icon": "⚔️",
+    "favorCost": 7,
+    "minLevel": 5,
+    "spec": {
+      "name": "Honorable Duel",
+      "icon": "⚔️",
+      "target": "self",
+      "manaCost": 5,
+      "cooldown": 500,
+      "strikes": [],
+      "grants": [
+        {
+          "id": "honor_bound",
+          "intensity": 1
+        }
+      ]
+    },
+    "desc": "D’Enjalle. 7 favor, 5 mana, 50 second cooldown. Self: Honor Bound for 20 seconds: flanking enemies do not attack, and you deal +10% damage."
+  },
+  {
+    "id": "perfect_lunge",
+    "deity": "denjalle",
+    "name": "Perfect Lunge",
+    "icon": "🤺",
+    "favorCost": 5,
+    "spec": {
+      "name": "Perfect Lunge",
+      "icon": "🤺",
+      "target": "self",
+      "buff": {
+        "name": "Perfect Lunge",
+        "mods": [
+          {
+            "stat": "crit",
+            "op": "add",
+            "value": 0.08
+          },
+          {
+            "stat": "critDamage",
+            "op": "add",
+            "value": 0.2
+          },
+          {
+            "stat": "damage",
+            "op": "mult",
+            "value": 0.15,
+            "requiresTag": "rapier"
+          }
+        ],
+        "duration": 300
+      },
+      "manaCost": 5,
+      "cooldown": 350,
+      "strikes": []
+    },
+    "desc": "D’Enjalle. 5 favor, 5 mana, 35 second cooldown. Self for 30 seconds: +8% crit chance, +20% crit damage, and +15% damage while a rapier is equipped."
+  },
+  {
+    "id": "artisans_cunning",
+    "deity": "usvylgr",
+    "name": "Artisan's Cunning",
+    "icon": "🔨",
+    "favorCost": 5,
+    "spec": {
+      "name": "Artisan's Cunning",
+      "icon": "🔨",
+      "target": "self",
+      "manaCost": 5,
+      "cooldown": 1200,
+      "strikes": [],
+      "grants": [
+        {
+          "id": "artisans_cunning",
+          "intensity": 1
+        }
+      ]
+    },
+    "desc": "Usvýlgr. 5 favor, 5 mana, 120 second cooldown. Self for 120 seconds: +15% craft speed and +8% loot."
+  },
+  {
+    "id": "veil_of_misdirection",
+    "deity": "usvylgr",
+    "name": "Veil of Misdirection",
+    "icon": "🎭",
+    "favorCost": 6,
+    "spec": {
+      "name": "Veil of Misdirection",
+      "icon": "🎭",
+      "target": "self",
+      "manaCost": 5,
+      "cooldown": 400,
+      "strikes": [],
+      "grants": [
+        {
+          "id": "veiled",
+          "intensity": 1
+        }
+      ]
+    },
+    "desc": "Usvýlgr. 6 favor, 5 mana, 40 second cooldown. Self: Veiled for 30 seconds: incoming attacks have a 12% chance to miss."
+  },
+  {
+    "id": "venom_feast",
+    "deity": "kenese_paea",
+    "name": "Venom Feast",
+    "icon": "🐍",
+    "favorCost": 6,
+    "spec": {
+      "name": "Venom Feast",
+      "icon": "🐍",
+      "target": "one",
+      "transfers": {
+        "statuses": [
+          "poison",
+          "rotting"
+        ],
+        "mult": 1.2
+      },
+      "empowered": {
+        "statuses": [
+          "poison",
+          "rotting"
+        ],
+        "mult": 1.5
+      },
+      "manaCost": 5,
+      "cooldown": 150,
+      "desc": "Moves your Poisoned and Rotting onto the target at 1.2x intensity; 1.5x damage if anyone is Poisoned or Rotting.",
+      "strikes": [
+        {
+          "type": "poison",
+          "power": 0.5,
+          "inflicts": [
+            {
+              "id": "poison",
+              "intensity": 1,
+              "chance": 0.4
+            }
+          ]
+        }
+      ]
+    },
+    "desc": "Kenese Paea. 6 favor, 5 mana, 15 second cooldown. One 0.5 poison strike with a 40% chance to Poison. Removes Poisoned and Rotting from you and applies them to the target at 1.2x intensity. Deals 1.5x if anyone in the fight is Poisoned or Rotting."
+  },
+  {
+    "id": "redouble_venom",
+    "deity": "kenese_paea",
+    "name": "Redouble Venom",
+    "icon": "🐍",
+    "favorCost": 8,
+    "minLevel": 5,
+    "spec": {
+      "name": "Redouble Venom",
+      "icon": "🐍",
+      "target": "one",
+      "amplify": {
+        "statuses": [
+          "poison",
+          "rotting"
+        ],
+        "mult": 2
+      },
+      "manaCost": 4,
+      "staminaCost": 15,
+      "cooldown": 200,
+      "desc": "Doubles and refreshes the target’s Poisoned and Rotting.",
+      "strikes": [
+        {
+          "type": "dark",
+          "power": 0.4
+        }
+      ]
+    },
+    "desc": "Kenese Paea. 8 favor, 4 mana, 15 stamina, 20 second cooldown. One 0.4 dark strike; doubles the intensity of the target’s Poisoned and Rotting and refreshes their duration."
+  },
+  {
+    "id": "night_shroud",
+    "deity": "kenese_paea",
+    "name": "Night Shroud",
+    "icon": "🌑",
+    "favorCost": 5,
+    "spec": {
+      "name": "Night Shroud",
+      "icon": "🌑",
+      "target": "self",
+      "manaCost": 5,
+      "cooldown": 450,
+      "strikes": [],
+      "grants": [
+        {
+          "id": "night_shroud",
+          "intensity": 1
+        }
+      ]
+    },
+    "desc": "Kenese Paea. 5 favor, 5 mana, 45 second cooldown. Self: Night Shroud for 30 seconds: incoming attacks have a 12% chance to miss."
+  },
+  {
+    "id": "sproutbringer",
+    "name": "Sproutbringer",
+    "deity": "tuigamala",
+    "icon": "📦",
+    "favorCost": 0,
+    "spec": {
+      "name": "Sproutbringer",
+      "icon": "",
+      "target": "self",
+      "manaCost": 0,
+      "cooldown": 0,
+      "desc": "",
+      "strikes": []
+    },
+    "desc": ""
+  },
+  {
+    "id": "tuigamalas_mighty_stick",
+    "name": "Tuigamala's Mighty Stick",
+    "deity": "tuigamala",
+    "icon": "📦",
+    "favorCost": 0,
+    "spec": {
+      "name": "",
+      "icon": "",
+      "target": "one",
+      "manaCost": 0,
+      "cooldown": 0,
+      "desc": "",
+      "strikes": []
+    },
+    "desc": ""
+  },
+  {
+    "id": "spear_and_fang",
+    "name": "Spear And Fang",
+    "deity": "cuixtli",
+    "icon": "📦",
+    "favorCost": 0,
+    "spec": {
+      "name": "",
+      "icon": "",
+      "target": "self",
+      "manaCost": 0,
+      "cooldown": 0,
+      "desc": "",
+      "strikes": []
+    },
+    "desc": ""
+  },
+  {
+    "id": "cinder_curse",
+    "deity": "goblin_fire",
+    "name": "Cinder Curse",
+    "icon": "🔥",
+    "favorCost": 4,
+    "spec": {
+      "name": "Cinder Curse",
+      "icon": "🔥",
+      "target": "one",
+      "manaCost": 4,
+      "cooldown": 120,
+      "desc": "1.2 heat strike; 60% chance of On Fire.",
+      "strikes": [
+        {
+          "type": "heat",
+          "power": 1.2,
+          "inflicts": [
+            {
+              "id": "on_fire",
+              "intensity": 1,
+              "chance": 0.6
+            }
+          ]
+        }
+      ]
+    },
+    "desc": "Goblin fire god. 4 favor, 4 mana, 12 second cooldown. One 1.2 heat strike; 60% chance to set the target On Fire."
+  },
+  {
+    "id": "kindling",
+    "deity": "goblin_fire",
+    "name": "Kindling",
+    "icon": "🪵",
+    "favorCost": 7,
+    "minLevel": 5,
+    "spec": {
+      "name": "Kindling",
+      "icon": "🪵",
+      "target": "one",
+      "manaCost": 6,
+      "cooldown": 300,
+      "desc": "Inflicts Blazing.",
+      "strikes": [],
+      "afflicts": [
+        {
+          "id": "blazing",
+          "intensity": 1
+        }
+      ]
+    },
+    "desc": "Goblin fire god. 7 favor, 6 mana, 30 second cooldown. Sets the target Blazing."
+  },
+  {
+    "id": "mud_poultice",
+    "deity": "goblin_mud",
+    "name": "Mud Poultice",
+    "icon": "🟤",
+    "favorCost": 4,
+    "spec": {
+      "name": "Mud Poultice",
+      "icon": "🟤",
+      "target": "others",
+      "heal": 1.5,
+      "manaCost": 4,
+      "cooldown": 150,
+      "desc": "Heals the caster's allies for 1.5 spell power.",
+      "strikes": []
+    },
+    "desc": "Goblin mud god. 4 favor, 4 mana, 15 second cooldown. Heals each of the caster's allies, not the caster, for 1.5 spell power."
+  },
+  {
+    "id": "sucking_mire",
+    "deity": "goblin_mud",
+    "name": "Sucking Mire",
+    "icon": "🫠",
+    "favorCost": 4,
+    "spec": {
+      "name": "Sucking Mire",
+      "icon": "🫠",
+      "target": "one",
+      "manaCost": 4,
+      "cooldown": 160,
+      "desc": "Inflicts Unfooted and 2 Wet.",
+      "strikes": [],
+      "afflicts": [
+        {
+          "id": "unfooted",
+          "intensity": 1
+        },
+        {
+          "id": "wet",
+          "intensity": 2
+        }
+      ]
+    },
+    "desc": "Goblin mud god. 4 favor, 4 mana, 16 second cooldown. Inflicts Unfooted and two stacks of Wet."
+  },
+  {
+    "id": "vermin_swarm",
+    "deity": "goblin_hunt",
+    "name": "Vermin Swarm",
+    "icon": "🐀",
+    "favorCost": 5,
+    "spec": {
+      "name": "Vermin Swarm",
+      "icon": "🐀",
+      "target": "one",
+      "manaCost": 5,
+      "cooldown": 130,
+      "desc": "Three 0.4 piercing strikes; 25% chance of Punctured each.",
+      "strikes": [
+        {
+          "type": "piercing",
+          "power": 0.4,
+          "hits": 3,
+          "inflicts": [
+            {
+              "id": "punctured",
+              "intensity": 1,
+              "chance": 0.25
+            }
+          ]
+        }
+      ]
+    },
+    "desc": "Goblin hunting god. 5 favor, 5 mana, 13 second cooldown. Three 0.4 piercing strikes, each with a 25% chance to inflict Punctured."
+  },
+  {
+    "id": "pack_scent",
+    "deity": "goblin_hunt",
+    "name": "Pack Scent",
+    "icon": "🐦",
+    "favorCost": 4,
+    "spec": {
+      "name": "Pack Scent",
+      "icon": "🐦",
+      "target": "others",
+      "manaCost": 4,
+      "cooldown": 400,
+      "desc": "Grants Steady Hand to the caster's allies.",
+      "strikes": [],
+      "grants": [
+        {
+          "id": "steady_hand",
+          "intensity": 1
+        }
+      ]
+    },
+    "desc": "Goblin hunting god. 4 favor, 4 mana, 40 second cooldown. Grants Steady Hand to each of the caster's allies."
+  },
+  {
+    "id": "atomic_state",
+    "name": "The Atomic State of Words",
+    "deity": "yshicna",
+    "icon": "📦",
+    "favorCost": 0,
+    "spec": {
+      "name": "",
+      "icon": "",
+      "target": "self",
+      "manaCost": 0,
+      "cooldown": 0,
+      "desc": "",
+      "strikes": []
+    },
+    "desc": ""
+  },
+  {
+    "id": "desired_sound",
+    "name": "The Sound of Words",
+    "deity": "yshicna",
+    "icon": "📦",
+    "favorCost": 0,
+    "spec": {
+      "name": "",
+      "icon": "",
+      "target": "self",
+      "manaCost": 0,
+      "cooldown": 0,
+      "desc": "",
+      "strikes": []
+    },
+    "desc": ""
+  },
+  {
+    "id": "fourth_fire",
+    "name": "Fire, Fourfold",
+    "deity": "yshicna",
+    "icon": "📦",
+    "favorCost": 0,
+    "spec": {
+      "name": "",
+      "icon": "",
+      "target": "one",
+      "manaCost": 0,
+      "cooldown": 0,
+      "desc": "",
+      "strikes": []
+    },
+    "desc": ""
+  },
+  {
+    "id": "fourth_twice",
+    "name": "Twice, Fourfold",
+    "deity": "yshicna",
+    "icon": "📦",
+    "favorCost": 0,
+    "spec": {
+      "name": "",
+      "icon": "",
+      "target": "self",
+      "manaCost": 0,
+      "cooldown": 0,
+      "desc": "",
+      "strikes": []
+    },
+    "desc": ""
+  },
+  {
+    "id": "fourth_crush",
+    "name": "Crush, Fourfold",
+    "deity": "yshicna",
+    "icon": "📦",
+    "favorCost": 0,
+    "spec": {
+      "name": "",
+      "icon": "",
+      "target": "one",
+      "manaCost": 0,
+      "cooldown": 0,
+      "desc": "",
+      "strikes": []
+    },
+    "desc": ""
+  }
+]

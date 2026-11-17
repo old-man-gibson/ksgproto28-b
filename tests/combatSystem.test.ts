@@ -4,7 +4,7 @@
  * the save holds a fight, the fight is deterministic from a seed, and the
  * rotation kinds of later ports attach through a registry.
  */
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { runHeadless, type Kernel, type ScheduledCommand } from '../src/kernel';
 import {
   abandon,
@@ -15,6 +15,8 @@ import {
   fightStarted,
   fightWon,
   hunt,
+  monsterActionHandler,
+  playerActionHandler,
   registerMonsterAction,
   registerPlayerAction,
   setHuntRest,
@@ -402,11 +404,28 @@ describe('rules of the blow', () => {
 });
 
 describe('rotation kinds are registered, not coded', () => {
-  afterEach(() => {
+  // Since spine port 5 the four kinds are registered by `martial` and
+  // `spellcraft`. These cases register kinds of their own under the same
+  // names: the real ones are taken out for each case and put back after it.
+  const real = {
+    technique: monsterActionHandler('technique')!,
+    cast: monsterActionHandler('cast')!,
+    playerTechnique: playerActionHandler('technique:')!,
+    grimoire: playerActionHandler('grimoire:')!,
+  };
+  const dropAll = () => {
     unregisterAction('monster', 'technique');
     unregisterAction('monster', 'cast');
     unregisterAction('player', 'technique:');
     unregisterAction('player', 'grimoire:');
+  };
+  beforeEach(dropAll);
+  afterEach(() => {
+    dropAll();
+    registerMonsterAction('technique', real.technique);
+    registerMonsterAction('cast', real.cast);
+    registerPlayerAction('technique:', real.playerTechnique);
+    registerPlayerAction('grimoire:', real.grimoire);
   });
 
   it('an entry whose kind nobody registered is passed over, reported once, and the monster swings plainly', () => {

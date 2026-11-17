@@ -26,10 +26,19 @@ import {
   type Json,
   type StatDef,
 } from '../../kernel';
+import clock, { totalTicksOf } from '../clock';
 import log, { logLine, transcriptClose, transcriptForSave } from '../log';
 import { MONSTERS, monsterFactMod, type MonsterRange } from '../monsters';
 import resources, { isAlive, playerDamaged, playerHealed } from '../resources';
-import { ATTRIBUTE_IDS, baseAttrFact, statBlockOf, type StatMod } from '../stats';
+import {
+  ATTRIBUTE_IDS,
+  baseAttrFact,
+  contentMod,
+  statBlockOf,
+  type ContentMod,
+  type DamageType,
+  type StatMod,
+} from '../stats';
 import statuses, {
   conditionDamage,
   conditionDetonated,
@@ -38,15 +47,25 @@ import statuses, {
   STATUSES,
   visibleStatuses,
 } from '../statuses';
+import type { ActionCtx } from './actions';
+import type { TypedSlice } from './damage';
 import {
   abandonCombat,
+  addBuff as pushBuff,
+  attackRetaliation,
+  BUFFS_SOURCE,
   closeLedger,
   fallToCondition,
+  healEnemy as healEnemyNow,
   hook,
   inForcedFight,
+  landSlices as landSlicesNow,
+  markCombatEvent,
   now,
+  POSITION_SOURCE,
   restTarget,
   runCombatTick,
+  setPlayerPosition,
   setResting,
   stampMonsterAction,
   startForcedFight,
@@ -66,12 +85,15 @@ import {
   noteHealed,
   noteHealRefused,
   noteIncoming,
+  noteOutgoing,
 } from './ledger';
 import { migrations } from './migrations';
 import { combatText, TEXT } from './text';
-import type { CombatState, EncounterSite, Enemy, FightLedger, HuntRest, StyleState } from './types';
+import { evaluateTrigger, type SkillTrigger } from './triggers';
+import type { CombatBuff, CombatState, EncounterSite, Enemy, FightLedger, HuntRest, StyleState } from './types';
 
 export * from './actions';
+export * from './triggers';
 export * from './damage';
 export * from './engine';
 export * from './ledger';
@@ -93,6 +115,8 @@ export const keepLastFight = defineCommand<void>('combat/keep-fight');
 export const dropKeptFight = defineCommand<{ id: number }>('combat/drop-fight');
 /** The player's explicit order of actives. */
 export const setRotation = defineCommand<{ order: string[] }>('combat/set-rotation');
+/** The player's own trigger on a rotation id. `trigger: null` removes it. */
+export const setTrigger = defineCommand<{ id: string; trigger: SkillTrigger | null }>('combat/set-trigger');
 
 // ---- requests ----
 
@@ -112,7 +136,42 @@ export const damageEnemy = defineRequest<
   EnemyDamageResult | null
 >('combat/damage-enemy');
 /** Stamp a monster's rotation entry as fired. For the kind that performs a working. False for an unknown entity. */
-export const stampAction = defineRequest<{ entity: string; index: number; cooldown: number }, boolean>('combat/stamp-action');
+export const stampAction = defineRequest<
+  { entity: string; index: number; cooldown: number; name?: string; icon?: string },
+  boolean
+>('combat/stamp-action');
+/**
+ * Heal a monster: kindness from its own side, or life forced into it by a
+ * working (the default). The old `healEnemy`. A burst is not swept here.
+ */
+export const healEnemy = defineRequest<
+  { entity: string; amount: number; source: string; hostile?: boolean; penetration?: number },
+  void
+>('combat/heal-enemy');
+/**
+ * Slices the caller computed land on an enemy. Null when no living enemy has
+ * the entity id. The landing of the old `castCraftedAttack`.
+ */
+export const landSlices = defineRequest<
+  { entity: string; slices: TypedSlice[]; crit?: boolean; kind?: HitKind },
+  { dealt: number; bite: number; killed: boolean } | null
+>('combat/land-slices');
+/** HP taken off a monster with no defence asked and nothing told: a backlash, a spill. */
+export const hurtEnemy = defineRequest<{ entity: string; amount: number; type: DamageType; outgoing?: boolean }, void>(
+  'combat/hurt-enemy',
+);
+/** A buff on the player for the fight. The old `c.buffs.push`. */
+export const addBuff = defineRequest<CombatBuff, void>('combat/add-buff');
+/** Move the player to a position. The old `setPosition`. */
+export const movePlayer = defineRequest<{ to: string }, void>('combat/move-player');
+/** Put a rotation id of the player on its clock. */
+export const stampCooldown = defineRequest<{ id: string; ticks: number }, void>('combat/stamp-cooldown');
+/** Stamp a trigger event on the fight. The old `markCombatEvent`. */
+export const markEvent = defineRequest<{ event: string }, void>('combat/mark-event');
+/** Read and spend what the last block or parry stopped. */
+export const takePrevented = defineRequest<{ by: 'onHit' | 'onParry' }, number>('combat/take-prevented');
+/** The cost of attacking under the player's conditions, for a working that takes the swing's place. True when fatal. */
+export const retaliateAttack = defineRequest<void, boolean>('combat/attack-retaliation');
 
 // ---- events to this system ----
 
@@ -176,7 +235,12 @@ export interface EnemyView {
   range: MonsterRange;
   /** Icons of its visible conditions. */
   conditions: string[];
+  /** The rotation entry it used within the last `ACTION_SHOWN_TICKS`, or null. */
+  action: { name: string; icon: string } | null;
 }
+
+/** Ticks the panel shows a monster's last action for. */
+export const ACTION_SHOWN_TICKS = 30;
 
 export interface CombatView {
   inFight: boolean;
@@ -201,9 +265,9 @@ const copy = <T>(value: DeepReadonly<T>): T => cloneJson(value as Json) as T;
 
 // ---- the declaration ----
 
-export default defineSystem<CombatState, CombatView>({
+const combat = defineSystem<CombatState, CombatView>({
   id: 'combat',
-  version: 1,
+  version: 2,
   migrations,
   // After `resources` and `statuses`: the old loop ticked the pools, the
   // player's conditions and the health trickle before the fight.
@@ -221,6 +285,7 @@ export default defineSystem<CombatState, CombatView>({
     // system states the style.
     style: { id: 'balanced', exertion: { on: 'attack', cost: 0.02, hit: { damage: 0.1 } } },
     rotation: [],
+    triggers: {},
     nextEntity: 1,
   }),
   content: { combat_text: combatText },
@@ -235,6 +300,19 @@ export default defineSystem<CombatState, CombatView>({
         if (!e) return [];
         const mods: StatMod[] = [monsterFactMod(e.defId, e.level, e.kit as Enemy['kit'])];
         for (const id of ATTRIBUTE_IDS) mods.push(baseAttrFact(id, e.attrs[id] ?? 0));
+        return mods;
+      },
+    },
+    // States nothing: it is the change counter of the player's position, for
+    // the source of another system that reads `fight.position` (`dependsOn`).
+    { id: POSITION_SOURCE, collect: () => [] },
+    {
+      id: BUFFS_SOURCE,
+      collect: ({ state, entity }) => {
+        if (entity !== PLAYER || !state.fight) return [];
+        const mods: StatMod[] = [];
+        for (const buff of state.fight.buffs)
+          for (const m of buff.mods) mods.push(contentMod(m as ContentMod, `Buff: ${buff.name}`, { kind: 'buff' }));
         return mods;
       },
     },
@@ -286,6 +364,17 @@ export default defineSystem<CombatState, CombatView>({
       ctx.state.rotation = [...new Set(order)];
       return OK;
     }),
+    handle(setTrigger, (ctx, { id, trigger }) => {
+      if (typeof id !== 'string' || id === '') return skipped('the rotation id is empty');
+      if (trigger === null) {
+        if (!(id in ctx.state.triggers)) return skipped(`"${id}" has no trigger`);
+        delete ctx.state.triggers[id];
+        return OK;
+      }
+      if (typeof trigger !== 'object') return skipped('the trigger is not an object');
+      ctx.state.triggers[id] = copy(trigger);
+      return OK;
+    }),
   ],
 
   requests: [
@@ -322,9 +411,52 @@ export default defineSystem<CombatState, CombatView>({
         ctx.skip(stampAction.type, `no enemy has the entity id "${p.entity}"`);
         return false;
       }
-      stampMonsterAction(ctx, e, p.index, p.cooldown);
+      stampMonsterAction(ctx, e, p.index, p.cooldown, p.name ? { name: p.name, icon: p.icon ?? '' } : undefined);
       return true;
     }),
+    answer(healEnemy, (ctx, p) => {
+      const e = enemyOf(ctx.state, p.entity);
+      if (!e) return ctx.skip(healEnemy.type, `no enemy has the entity id "${p.entity}"`);
+      healEnemyNow(ctx, e, p.amount, p.source, p.hostile ?? true, p.penetration ?? 0);
+    }),
+    answer(landSlices, (ctx, p) => {
+      const e = enemyOf(ctx.state, p.entity);
+      if (!e || e.hp <= 0) {
+        ctx.skip(landSlices.type, `no living enemy has the entity id "${p.entity}"`);
+        return null;
+      }
+      return landSlicesNow(ctx, e, p.slices, !!p.crit, p.kind ?? 'strike');
+    }),
+    answer(hurtEnemy, (ctx, p) => {
+      const e = enemyOf(ctx.state, p.entity);
+      if (!e) return ctx.skip(hurtEnemy.type, `no enemy has the entity id "${p.entity}"`);
+      e.hp -= p.amount;
+      e.lastHit = p.type;
+      if (p.outgoing) noteOutgoing(ctx.state, now(ctx), p.amount);
+    }),
+    answer(addBuff, (ctx, p) => {
+      if (!ctx.state.fight) return ctx.skip(addBuff.type, 'no fight is open');
+      pushBuff(ctx, copy(p));
+    }),
+    answer(movePlayer, (ctx, { to }) => {
+      if (!ctx.state.fight) return ctx.skip(movePlayer.type, 'no fight is open');
+      setPlayerPosition(ctx, ctx.state.fight, to);
+    }),
+    answer(stampCooldown, (ctx, { id, ticks }) => {
+      if (!ctx.state.fight) return ctx.skip(stampCooldown.type, 'no fight is open');
+      ctx.state.fight.cooldowns[id] = ticks;
+    }),
+    answer(markEvent, (ctx, { event }) => {
+      if (!ctx.state.fight) return ctx.skip(markEvent.type, 'no fight is open');
+      markCombatEvent(ctx, event);
+    }),
+    answer(takePrevented, (ctx, { by }) => {
+      const c = ctx.state.fight;
+      const stopped = c?.prevented?.[by] ?? 0;
+      if (c && stopped > 0) c.prevented = { ...c.prevented, [by]: undefined };
+      return stopped;
+    }),
+    answer(retaliateAttack, (ctx) => (ctx.state.fight ? attackRetaliation(ctx) : false)),
   ],
 
   events: [
@@ -379,6 +511,7 @@ export default defineSystem<CombatState, CombatView>({
     const fight = state.fight;
     const held = ctx.read(statuses);
     const player = statBlockOf(ctx);
+    const tick = totalTicksOf(ctx.read(clock));
     return {
       inFight: fight !== null,
       forced: !!fight?.forced,
@@ -401,6 +534,7 @@ export default defineSystem<CombatState, CombatView>({
           maxHp: block.maxHp,
           bar: Math.max(0, Math.min(1, e.bar / 1000)),
           range: e.range,
+          action: e.lastAction && tick - e.lastAction.at <= ACTION_SHOWN_TICKS ? { name: e.lastAction.name, icon: e.lastAction.icon } : null,
           conditions: visibleStatuses(heldOf(held, e.entity)).map((h) => STATUSES[h.id]?.icon ?? ''),
         };
       }),
@@ -417,5 +551,13 @@ export default defineSystem<CombatState, CombatView>({
     };
   },
 });
+
+export default combat;
+
+/** Whether a trigger holds now, for a handler of a registered kind. False with no fight open. */
+export function triggerHolds(ctx: ActionCtx, trigger: DeepReadonly<SkillTrigger> | undefined): boolean {
+  const state = ctx.read(combat);
+  return state.fight ? evaluateTrigger({ ctx, fight: state.fight, state }, trigger) : false;
+}
 
 export { restTarget };

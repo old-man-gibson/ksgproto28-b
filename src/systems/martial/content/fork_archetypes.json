@@ -1,0 +1,72 @@
+[
+  {
+    "id": "split",
+    "name": "Split",
+    "icon": "⚡",
+    "kind": "strike",
+    "hits": 2,
+    "damageMult": 0.65,
+    "desc": "Strike fork: 2 hits at 0.65× damage each, 1.3× in total."
+  },
+  {
+    "id": "overwhelm",
+    "name": "Overwhelming",
+    "icon": "💥",
+    "kind": "strike",
+    "damageMult": 1.6,
+    "exitTo": "off_balance",
+    "desc": "Strike fork: 1.6× damage; the move exits to Off Balance."
+  },
+  {
+    "id": "exposing",
+    "name": "Exposing",
+    "icon": "💥",
+    "kind": "strike",
+    "damageMult": 1.3,
+    "dodgeMult": 0.8,
+    "exitTo": "wide_open",
+    "desc": "Strike fork: 1.3× damage and dodge ×0.8; the move exits to Wide Open."
+  },
+  {
+    "id": "economy",
+    "name": "Economical",
+    "icon": "♻️",
+    "kind": "strike",
+    "damageMult": 0.9,
+    "cooldownMult": 0.6,
+    "desc": "Strike fork: 0.9× damage, cooldown ×0.6."
+  },
+  {
+    "id": "sweep",
+    "name": "Sweeping",
+    "icon": "🌊",
+    "kind": "strike",
+    "damageMult": 0.9,
+    "splashAdd": 0.35,
+    "desc": "Strike fork: 0.9× damage, +35% splash to enemies beside the target."
+  },
+  {
+    "id": "flowing",
+    "name": "Flowing",
+    "icon": "🌀",
+    "kind": "strike",
+    "exitTo": "extended",
+    "desc": "Strike fork: the move exits to Extended instead of its usual position."
+  },
+  {
+    "id": "lasting",
+    "name": "Lasting",
+    "icon": "⏳",
+    "kind": "buff",
+    "durationMult": 1.6,
+    "desc": "Buff fork: duration ×1.6."
+  },
+  {
+    "id": "sudden",
+    "name": "Sudden",
+    "icon": "💨",
+    "kind": "buff",
+    "cooldownMult": 0.65,
+    "desc": "Buff fork: cooldown ×0.65."
+  }
+]

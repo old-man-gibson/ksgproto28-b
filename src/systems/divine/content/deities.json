@@ -1,0 +1,309 @@
+[
+  {
+    "id": "ikthelthe",
+    "name": "Ik'Thel'the",
+    "epithet": "the Infinity between Zero and One",
+    "icon": "🌀",
+    "tags": [
+      "aberrant",
+      "zero",
+      "curious",
+      "warping",
+      "outer"
+    ],
+    "desc": "Aspects: aberrant, zero, curious, warping, outer. Miracles: arcane strikes, a debuff that lowers physical and arcane resistance (Unfold Geometry), and a dodge buff (Fold Space). None of them heal. No synergies or hostilities with any other deity."
+  },
+  {
+    "id": "denjalle",
+    "name": "D'Enjalle",
+    "epithet": "the Shining Rapier",
+    "icon": "🤺",
+    "tags": [
+      "humanoid",
+      "honorable",
+      "fire",
+      "organized"
+    ],
+    "synergies": [
+      {
+        "anyOf": [
+          "organized",
+          "honorable"
+        ]
+      },
+      {
+        "anyOf": [
+          "humanoid"
+        ],
+        "unless": [
+          "evil",
+          "trickster"
+        ],
+        "waiver": [
+          "honorable"
+        ]
+      }
+    ],
+    "desc": "Aspects: humanoid, honorable, fire, organized. Miracles: Writ of Retribution (light strike), Holy Fire (heat or light strike), Honorable Duel (flanking enemies do not attack, +10% damage) and Perfect Lunge (+8% crit chance, +20% crit damage, +15% damage with a rapier). Synergy (+25% damage and healing on a miracle cast within 10 seconds after theirs or the same deity’s) with organized or honorable deities, and with humanoid ones unless they are evil or trickster (honorable waives that)."
+  },
+  {
+    "id": "usvylgr",
+    "name": "Usvýlgr",
+    "epithet": "the Crafty Hammer",
+    "icon": "🔨",
+    "tags": [
+      "gigantoid",
+      "earth",
+      "crafting",
+      "trickster",
+      "organized"
+    ],
+    "synergies": [
+      {
+        "anyOf": [
+          "crafting",
+          "earth"
+        ]
+      }
+    ],
+    "hostilities": [
+      {
+        "anyOf": [
+          "trickster"
+        ],
+        "unless": [
+          "crafting",
+          "earth"
+        ]
+      }
+    ],
+    "desc": "Aspects: gigantoid, earth, crafting, trickster, organized. Miracles: Artisan's Cunning (+15% craft speed and +8% loot for 120 seconds) and Veil of Misdirection (12% of incoming attacks miss for 30 seconds). Synergy (+25% damage and healing on a miracle cast within 10 seconds after theirs or the same deity’s) with crafting or earth deities. Hostile to trickster deities that are neither crafting nor earth: the two cannot be prepared together."
+  },
+  {
+    "id": "xima",
+    "name": "Xima",
+    "epithet": "the Cold Sun",
+    "icon": "🩸",
+    "tags": [
+      "bestial",
+      "cold",
+      "honorable",
+      "sacrificial",
+      "tribal",
+      "yolixoch pantheon"
+    ],
+    "synergies": [
+      {
+        "anyOf": [
+          "bestial",
+          "tribal",
+          "yolixoch pantheon"
+        ],
+        "unless": [
+          "fire",
+          "poison"
+        ]
+      }
+    ],
+    "desc": "Aspects: bestial, cold, honorable, sacrificial, tribal, Yolixoch pantheon. Self-targeted miracles with 15 to 70 second cooldowns: Rite of Mending (heal), Rite of the Aegis (+6 armor, +10% dark resistance), Rime of the Cold Sun (+12% heat, cold and lightning resistance) and Blood Communion (your bleeding heals you instead of harming you, +8% damage). Synergy (+25% damage and healing on a miracle cast within 10 seconds after theirs or the same deity’s) with bestial, tribal or Yolixoch deities unless they are fire or poison."
+  },
+  {
+    "id": "cuixtli",
+    "name": "Cuixtli and Ilhuitonal",
+    "epithet": "the First Hunter",
+    "icon": "🩸",
+    "tags": [
+      "bestial",
+      "honorable",
+      "tribal",
+      "humanoid",
+      "lightning",
+      "wind",
+      "yolixoch pantheon"
+    ],
+    "synergies": [
+      {
+        "anyOf": [
+          "bestial",
+          "tribal",
+          "honorable",
+          "yolixoch pantheon"
+        ],
+        "unless": [
+          "poison",
+          "evil",
+          "aberrant"
+        ]
+      }
+    ],
+    "desc": "A paired deity. Aspects: bestial, honorable, tribal, humanoid, lightning, wind, Yolixoch pantheon. Miracles strengthen spears, grant periodic bonus attacks, and improve hunting against newly encountered opponents. Synergy (+25% damage and healing on a miracle cast within 10 seconds after theirs or the same deity’s) with bestial, tribal, honorable or Yolixoch deities unless they are poison, evil or aberrant."
+  },
+  {
+    "id": "kenese_paea",
+    "name": "Kenese Paea",
+    "epithet": "the Doubled Viper",
+    "icon": "🐍",
+    "tags": [
+      "humanoid",
+      "poison",
+      "dark",
+      "sacrificial",
+      "tribal",
+      "foai pantheon"
+    ],
+    "synergies": [
+      {
+        "anyOf": [
+          "bestial",
+          "evil",
+          "poison",
+          "sacrificial"
+        ]
+      }
+    ],
+    "hostilities": [
+      {
+        "anyOf": [
+          "honorable",
+          "light"
+        ]
+      }
+    ],
+    "desc": "Aspects: humanoid, poison, dark, sacrificial, tribal, Foai pantheon. Miracles: Venom Feast (moves your Poisoned and Rotting onto the target at 1.2x intensity; 1.5x damage while anyone is Poisoned or Rotting), Redouble Venom (doubles the target's Poisoned and Rotting) and Night Shroud (12% of incoming attacks miss for 30 seconds). Synergy (+25% damage and healing on a miracle cast within 10 seconds after theirs or the same deity’s) with bestial, evil, poison or sacrificial deities. Hostile to honorable and light deities: the two cannot be prepared together."
+  },
+  {
+    "id": "tuigamala",
+    "name": "Tuigamala",
+    "epithet": "the Treebreaker",
+    "icon": "🌿",
+    "tags": [
+      "humanoid",
+      "tribal",
+      "nature",
+      "honorable",
+      "unaligned",
+      "foai pantheon"
+    ],
+    "synergies": [
+      {
+        "anyOf": [
+          "honorable",
+          "nature",
+          "foai pantheon"
+        ],
+        "unless": [
+          "evil",
+          "poison",
+          "fire"
+        ]
+      }
+    ],
+    "hostilities": [
+      {
+        "anyOf": [
+          "evil",
+          "poison",
+          "fire"
+        ]
+      }
+    ],
+    "desc": "Aspects: humanoid, tribal, nature, honorable, unaligned, Foai pantheon. Miracles strengthen wooden weapons and grow plants. Synergy (+25% damage and healing on a miracle cast within 10 seconds after theirs or the same deity’s) with honorable, nature or Foai deities. Hostile to evil, poison and fire deities: the two cannot be prepared together."
+  },
+  {
+    "id": "yshicna",
+    "name": "yShicna'",
+    "epithet": "Logic Purified",
+    "icon": "⚛️",
+    "tags": [
+      "aberrant",
+      "atomic",
+      "arcane",
+      "curious",
+      "warping",
+      "outer"
+    ],
+    "desc": "Aspects: aberrant, atomic, arcane, curious, warping, outer. Miracles act on arcane words: one returns a word's Meaning to its basic state, another raises the Sound of a word the caster has uttered many times. No synergies or hostilities with any other deity."
+  },
+  {
+    "id": "goblin_fire",
+    "name": "Goblin Fire God",
+    "epithet": "the Torch-Bearer",
+    "icon": "🔥",
+    "tags": [
+      "tribal",
+      "humanoid",
+      "fire",
+      "chaotic",
+      "goblin pantheon"
+    ],
+    "synergies": [
+      {
+        "anyOf": [
+          "goblin pantheon"
+        ]
+      }
+    ],
+    "hostilities": [
+      {
+        "anyOf": [
+          "water",
+          "cold"
+        ],
+        "unless": [
+          "goblin pantheon"
+        ]
+      }
+    ],
+    "desc": "Aspects: tribal, humanoid, fire, chaotic, Goblin pantheon. Miracles set enemies on fire. Synergy (+25% damage and healing on a miracle cast within 10 seconds after theirs or the same deity’s) with the Goblin pantheon. Hostile to water and cold deities outside it: the two cannot be prepared together."
+  },
+  {
+    "id": "goblin_mud",
+    "name": "Goblin Mud God",
+    "epithet": "the Mire",
+    "icon": "🟤",
+    "tags": [
+      "tribal",
+      "humanoid",
+      "earth",
+      "water",
+      "goblin pantheon"
+    ],
+    "synergies": [
+      {
+        "anyOf": [
+          "goblin pantheon",
+          "earth"
+        ]
+      }
+    ],
+    "desc": "Aspects: tribal, humanoid, earth, water, Goblin pantheon. Miracles heal the caster's allies (Mud Poultice) and inflict Unfooted and Wet on an enemy (Sucking Mire). Synergy (+25% damage and healing on a miracle cast within 10 seconds after theirs or the same deity’s) with the Goblin pantheon and earth deities."
+  },
+  {
+    "id": "goblin_hunt",
+    "name": "Goblin Hunting God",
+    "epithet": "the Ratcatcher",
+    "icon": "🐀",
+    "tags": [
+      "tribal",
+      "bestial",
+      "nature",
+      "goblin pantheon"
+    ],
+    "synergies": [
+      {
+        "anyOf": [
+          "goblin pantheon",
+          "bestial"
+        ]
+      }
+    ],
+    "hostilities": [
+      {
+        "anyOf": [
+          "honorable"
+        ]
+      }
+    ],
+    "desc": "Aspects: tribal, bestial, nature, Goblin pantheon. Miracles: Vermin Swarm (three 0.4 piercing strikes, 25% chance of Punctured each) and Pack Scent (Steady Hand on the caster's allies: +3% crit chance, +2% parry). Synergy (+25% damage and healing on a miracle cast within 10 seconds after theirs or the same deity’s) with the Goblin pantheon and bestial deities. Hostile to honorable deities: the two cannot be prepared together."
+  }
+]

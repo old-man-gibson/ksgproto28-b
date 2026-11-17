@@ -708,6 +708,28 @@ export function healAllowance(list: HeldList): number {
   return allowance;
 }
 
+/**
+ * Write the surplus ledger of a held condition: the overgrowth a forced
+ * healing feeds. `add` grows it, `set` replaces it, `rewind` winds the clock
+ * back to the lifetime of the status when it has one. Returns the ledger
+ * afterwards, or null when the condition is not held. The old `healEnemy`
+ * wrote `data.surplus` and `ticksLeft` on the instance directly.
+ */
+export function writeSurplus(
+  list: StatusInstance[],
+  id: string,
+  change: { add?: number; set?: number; rewind?: boolean },
+): number | null {
+  const held = list.find((s) => s.id === id);
+  if (!held) return null;
+  held.data = held.data ?? {};
+  if (change.set !== undefined) held.data.surplus = change.set;
+  if (change.add !== undefined) held.data.surplus = (held.data.surplus ?? 0) + change.add;
+  const def = STATUSES[held.id];
+  if (change.rewind && held.ticksLeft !== null && def?.duration) held.ticksLeft = def.duration;
+  return held.data.surplus ?? 0;
+}
+
 /** Record healing against every condition that rations it. */
 export function noteHealed(list: StatusInstance[], amount: number): void {
   for (const held of list) {

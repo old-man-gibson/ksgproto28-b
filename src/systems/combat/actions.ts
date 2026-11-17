@@ -13,8 +13,14 @@
  * makes a request to its own system; to hurt an enemy it makes
  * `combat/damage-enemy`.
  *
- * This port registers no kind. The normal attack is what a combatant does
- * when its rotation offers nothing.
+ * Port 4 registered no kind. Port 5 registers `technique` (martial) and
+ * `cast` (spellcraft) for monsters, `technique:` and `grimoire:` for the
+ * player. The normal attack is what a combatant does when its rotation
+ * offers nothing.
+ *
+ * Two more registries hold the hooks inside a blow that a kind cannot reach:
+ * an interception (a counter technique: inside the enemy's blow) and a blow
+ * rider (a coating: per hit of the player's blow).
  */
 import type { Ctx, DeepReadonly } from '../../kernel';
 import type { MonsterAction } from '../monsters';
@@ -53,8 +59,18 @@ export interface MonsterActionKind {
    * checked by the tick before this is asked. The old gates of
    * `pickMonsterAction`: a technique's `from` positions; for a working, a
    * counterspell, a kin-only working with no kin, a mind in debt, a seal.
+   *
+   * `true`: it can. `false`: not now, and that is the ordinary rhythm of a
+   * fight (the position, a trap that waits). A string: it cannot, for the
+   * reason given; the tick reports it once per fight and entry.
    */
-  available(ctx: ActionCtx, enemy: DeepReadonly<Enemy>, entry: DeepReadonly<MonsterAction>, fight: DeepReadonly<Fight>): boolean;
+  available(
+    ctx: ActionCtx,
+    enemy: DeepReadonly<Enemy>,
+    entry: DeepReadonly<MonsterAction>,
+    fight: DeepReadonly<Fight>,
+    index: number,
+  ): boolean | string;
   /**
    * A technique: the shape of the swing. The tick stamps the clock, moves the
    * monster and throws the blow.
@@ -143,8 +159,11 @@ export interface PlayerActionKind {
    * The active when it can be used now for `slot`, else null. The cooldown
    * is checked by the tick before this is asked. `attack` spends the action
    * bar; `buff` fires as soon as it is ready and is performed by the handler.
+   *
+   * Null: not now (the slot, the position, a trigger). A string: it cannot
+   * be used, for the reason given; the tick reports it once per fight and id.
    */
-  pick(ctx: ActionCtx, id: string, slot: 'attack' | 'buff', fight: DeepReadonly<Fight>): PickedActive | null;
+  pick(ctx: ActionCtx, id: string, slot: 'attack' | 'buff', fight: DeepReadonly<Fight>): PickedActive | string | null;
 }
 
 const PLAYER_KINDS = new Map<string, PlayerActionKind>();
@@ -176,4 +195,92 @@ export function playerActionKinds(): IterableIterator<[string, PlayerActionKind]
 /** Tests only: drop a registered kind. */
 export function unregisterAction(side: 'monster' | 'player', key: string): void {
   (side === 'monster' ? MONSTER_KINDS : PLAYER_KINDS).delete(key);
+}
+
+// ---- inside the enemy's blow ----
+
+/**
+ * A reflex that has passed every gate and waits on the blow itself. The old
+ * `ArmedCounter`.
+ */
+export interface ArmedInterception {
+  /** Named in the damage report: "<name> intercepts". */
+  name: string;
+  /** Share of each hit taken off before the heavy stance and armour (0 to 1). */
+  reduce: number;
+  /**
+   * The answer, after the exchange, when the player still stands. `target` is
+   * the enemy that threw the blow. The handler lands it through
+   * `combat/damage-enemy`; the tick processes a kill.
+   */
+  fire(ctx: ActionCtx, target: DeepReadonly<Enemy>): void;
+}
+
+export interface InterceptionKind {
+  /**
+   * The interception ready for `event` now, or null. Asked once per exchange,
+   * after dodge, shroud, wall and parry have failed and before the hits are
+   * rolled: the point the old enemy phase called `pickCounter`.
+   */
+  arm(ctx: ActionCtx, fight: DeepReadonly<Fight>, event: string): ArmedInterception | null;
+}
+
+const INTERCEPTIONS = new Map<string, InterceptionKind>();
+
+/** Register an interception of the incoming blow. Called at module load by the system that owns it. */
+export function registerInterception(key: string, handler: InterceptionKind): void {
+  if (INTERCEPTIONS.has(key)) throw new Error(`combat: interception "${key}" is registered twice`);
+  INTERCEPTIONS.set(key, handler);
+}
+
+/** The first registered interception that arms for the event, in registration order. */
+export function armInterception(ctx: ActionCtx, fight: DeepReadonly<Fight>, event: string): ArmedInterception | null {
+  for (const handler of INTERCEPTIONS.values()) {
+    const armed = handler.arm(ctx, fight, event);
+    if (armed) return armed;
+  }
+  return null;
+}
+
+// ---- inside the player's blow ----
+
+/** Typed damage one hit carries on top of the weapon's own. */
+export interface RiderSlice {
+  type: DamageType;
+  value: number;
+  source: string;
+  /** Added to the blow's penetration for this slice. */
+  penetration?: number;
+}
+
+export interface BlowRiderKind {
+  /**
+   * Asked once per hit of a weapon blow, after the weapon's own typed bonuses
+   * (the old `spendCoating`). The handler spends its supply through a request
+   * to its own system. An empty list: nothing rides this hit.
+   */
+  perHit(ctx: ActionCtx, target: DeepReadonly<Enemy>): RiderSlice[];
+  /**
+   * Asked once after the blow when `perHit` returned a slice for any hit:
+   * conditions for the target (applied while it lives, with the blow's
+   * penetration) and a feed line (a coating used up).
+   */
+  afterBlow?(ctx: ActionCtx, target: DeepReadonly<Enemy>): { inflicts?: StatusApplication[]; source: string; line?: string };
+}
+
+const BLOW_RIDERS = new Map<string, BlowRiderKind>();
+
+/** Register a per-hit rider of the player's weapon blow. Called at module load by the system that owns it. */
+export function registerBlowRider(key: string, handler: BlowRiderKind): void {
+  if (BLOW_RIDERS.has(key)) throw new Error(`combat: blow rider "${key}" is registered twice`);
+  BLOW_RIDERS.set(key, handler);
+}
+
+export function blowRiders(): IterableIterator<BlowRiderKind> {
+  return BLOW_RIDERS.values();
+}
+
+/** Tests only: drop a registered hook. */
+export function unregisterHook(kind: 'interception' | 'rider', key: string): void {
+  (kind === 'interception' ? INTERCEPTIONS : BLOW_RIDERS).delete(key);
 }

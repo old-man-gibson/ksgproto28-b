@@ -121,16 +121,23 @@ import statuses, {
   type HeldList,
   type StatusApplication,
   type StatusTickResult,
+  reform,
+  removeStatus,
+  writeSurplus,
 } from '../statuses';
 import {
+  armInterception,
+  blowRiders,
   monsterActionHandler,
   monsterActionKind,
   playerActionHandler,
   playerActionKinds,
   type ActionCtx,
+  type BlowRiderKind,
   type MonsterShape,
   type PickedActive,
 } from './actions';
+import { evaluateTrigger } from './triggers';
 import {
   addSlice,
   heaviestType,
@@ -158,6 +165,7 @@ import {
 import { TEXT } from './text';
 import {
   NEUTRAL_POSITION,
+  type CombatBuff,
   type CombatState,
   type EncounterSite,
   type Enemy,
@@ -171,6 +179,10 @@ type C = Ctx<CombatState>;
 
 /** Ticks between the end of a fight and the next roll. Doubled after a defeat. */
 export const RESPAWN_DELAY = 15;
+/** Touched when the player's position in the fight changes. It states nothing itself: a source that reads the position lists it in `dependsOn`. */
+export const POSITION_SOURCE = 'combat/position';
+/** States the buffs of the fight on the player. */
+export const BUFFS_SOURCE = 'combat/buffs';
 /** Ticks before a monster may repeat a technique that declares no cooldown. */
 export const TECHNIQUE_MONSTER_COOLDOWN = 60;
 /** Intensity of the hunger a fasting body hands out per point of wisdom. */
@@ -410,7 +422,7 @@ function trackWeaponFamily(ctx: C): void {
 }
 
 /** The damage type of the player's weapon attacks. Bare fists bludgeon. */
-export function playerDamageType(ctx: C): DamageType {
+export function playerDamageType(ctx: Pick<C, 'read'>): DamageType {
   const def = weaponDef(ctx.read(items));
   if (!def) return 'bludgeoning';
   if (def.damageType) return def.damageType;
@@ -422,7 +434,7 @@ export function playerDamageType(ctx: C): DamageType {
 }
 
 /** What the player's weapon damage is credited to in a damage report. */
-function weaponSource(ctx: C): string {
+export function weaponSource(ctx: Pick<C, 'read'>): string {
   return weaponDef(ctx.read(items))?.name ?? 'Bare hands';
 }
 
@@ -759,6 +771,7 @@ function startEncounter(ctx: C, site: EncounterSite, forced = false, enemies?: (
     cooldowns: {},
     events: {},
     ...(forced ? { forced: true } : {}),
+    buffs: [],
   };
   ctx.state.fight = fight;
 
@@ -1040,6 +1053,12 @@ function closeCombat(ctx: C): void {
   }
   ctx.state.fight = null;
   if (fight) {
+    // Outside a fight the player stands neutral (`playerPosition`): the
+    // position source is touched only when closing the fight changes that.
+    // A touch rebuilds the player's stat block, and a fight closes thousands
+    // of times in a catch-up.
+    if (fight.position !== NEUTRAL_POSITION) ctx.touch(POSITION_SOURCE, PLAYER);
+    if (fight.buffs.length) ctx.touch(BUFFS_SOURCE, PLAYER);
     ctx.emit(setSituation, { inCombat: false });
     ctx.emit(setPace, { inCombat: false });
     ctx.emit(fightClosed, { site: ctx.state.site?.id ?? '', standing });
@@ -1226,6 +1245,38 @@ function reportSkipped(ctx: C, fight: Fight, entity: string, key: string, kind: 
 }
 
 /**
+ * An entry that cannot run, for a reason its kind gave or the tick found (a
+ * spent supply). One skip-log line per fight, entry and reason. The old code
+ * passed such an entry over without a word (`docs/PITFALLS.md` section 6).
+ */
+function reportRefusal(ctx: C, fight: Fight, entity: string, key: string, reason: string): void {
+  const mark = `${entity}:${key}:${reason}`;
+  if (fight.reported?.[mark]) return;
+  (fight.reported ??= {})[mark] = true;
+  ctx.skip('combat/rotation', `${entity} entry "${key}": ${reason}`);
+}
+
+/** Where the player stands: the position of the open fight, neutral with none. A fight starts neutral. */
+export function playerPosition(state: DeepReadonly<CombatState>): string {
+  return state.fight?.position ?? NEUTRAL_POSITION;
+}
+
+/** Where the player stands. The one place the position changes, so the source that states it is touched. The old `setPosition`. */
+export function setPlayerPosition(ctx: C, c: Fight, next: string): void {
+  if (c.position === next) return;
+  c.position = next;
+  ctx.touch(POSITION_SOURCE, PLAYER);
+}
+
+/** Add a buff on the player for the fight. The old `c.buffs.push`. */
+export function addBuff(ctx: C, buff: CombatBuff): void {
+  const c = ctx.state.fight;
+  if (!c) return;
+  c.buffs.push(buff);
+  ctx.touch(BUFFS_SOURCE, PLAYER);
+}
+
+/**
  * The order the player's actives are considered in: the explicit rotation
  * first, then every other id the registered kinds know. The old
  * `activeRotation`.
@@ -1254,7 +1305,14 @@ export function pickActive(ctx: C, slot: 'attack' | 'buff'): PickedActive | null
       continue;
     }
     if ((c.cooldowns[id] ?? 0) > 0) continue;
+    // The player's own trigger on the id: every kind answers to it. The old
+    // code read `state.skillTriggers[id]` in each branch of `pickActive`.
+    if (!evaluateTrigger({ ctx: ctx as ActionCtx, fight: c, state: ctx.state }, ctx.state.triggers[id])) continue;
     const picked = kind.pick(ctx as ActionCtx, id, slot, c);
+    if (typeof picked === 'string') {
+      reportRefusal(ctx, c, PLAYER, id, picked);
+      continue;
+    }
     if (picked) return picked;
   }
   return null;
@@ -1279,14 +1337,22 @@ function pickMonsterAction(ctx: C, e: Enemy): MonsterChoice | null {
   for (let index = 0; index < rotation.length; index++) {
     if ((e.cooldowns?.[index] ?? 0) > tick) continue;
     const entry = rotation[index];
-    if (entry.uses !== undefined && (e.spent?.[index] ?? 0) >= entry.uses) continue;
+    if (entry.uses !== undefined && (e.spent?.[index] ?? 0) >= entry.uses) {
+      reportRefusal(ctx, fight, e.entity, String(index), `its supply of ${entry.uses} is spent`);
+      continue;
+    }
     const kind = monsterActionKind(entry);
     const handler = monsterActionHandler(kind);
     if (!handler) {
       reportSkipped(ctx, fight, e.entity, String(index), kind);
       continue;
     }
-    if (!handler.available(ctx as ActionCtx, e, entry, fight)) continue;
+    const can = handler.available(ctx as ActionCtx, e, entry, fight, index);
+    if (typeof can === 'string') {
+      reportRefusal(ctx, fight, e.entity, String(index), can);
+      continue;
+    }
+    if (!can) continue;
     if (handler.perform) return { index, perform: () => handler.perform!(ctx as ActionCtx, e, entry, index) };
     if (handler.shape) return { index, shape: handler.shape(ctx as ActionCtx, e, entry) };
   }
@@ -1294,9 +1360,16 @@ function pickMonsterAction(ctx: C, e: Enemy): MonsterChoice | null {
 }
 
 /** Stamp a monster's rotation entry as fired: its clock and its supply. The old `spendMonsterAction` with the clock. */
-export function stampMonsterAction(ctx: C, e: Enemy, index: number, cooldown: number): void {
+export function stampMonsterAction(
+  ctx: C,
+  e: Enemy,
+  index: number,
+  cooldown: number,
+  action?: { name: string; icon: string },
+): void {
   (e.cooldowns ??= {})[index] = now(ctx) + cooldown;
   (e.spent ??= {})[index] = (e.spent?.[index] ?? 0) + 1;
+  if (action) e.lastAction = { name: action.name, icon: action.icon, at: now(ctx) };
 }
 
 // ---- the rest rule ----
@@ -1386,6 +1459,11 @@ export function runCombatTick(ctx: C): void {
   for (const id of Object.keys(c.cooldowns)) {
     if (c.cooldowns[id] > 0) c.cooldowns[id] -= 1;
   }
+  if (c.buffs.length) {
+    const held = c.buffs.length;
+    c.buffs = c.buffs.filter((b) => (b.ticksLeft -= 1) > 0);
+    if (c.buffs.length !== held) ctx.touch(BUFFS_SOURCE, PLAYER);
+  }
 
   const stats = statBlockOf(ctx);
 
@@ -1412,12 +1490,32 @@ export function runCombatTick(ctx: C): void {
     return;
   }
 
-  // Buff-type actives fire as soon as available. The kind performs them.
-  pickActive(ctx, 'buff')?.cast?.(ctx as ActionCtx);
-  if (!state.fight) return;
+  // Buff-type actives fire as soon as available. The kind performs them; the
+  // clock is stamped here, as the old buff slot stamped it for a working on
+  // the caster and for a defensive form.
+  const buff = pickActive(ctx, 'buff');
+  if (buff?.cast) {
+    c.cooldowns[buff.id] = buff.cooldown;
+    buff.cast(ctx as ActionCtx);
+    if (!state.fight) return;
+    // "Fire pierce me" is valid grammar: a working on the caster can be the last thing they do.
+    if (!alive(ctx)) {
+      onDefeat(ctx);
+      return;
+    }
+    // An enemy's counterspell can be refused and its backlash can drop it.
+    if (c.enemies.some((e) => e !== null && e.hp <= 0)) {
+      sweepDead(ctx);
+      if (!state.fight) return;
+    }
+  }
 
-  if (playerPhase(ctx, c, front, stats)) return;
-  enemyPhase(ctx, c, stats);
+  // The stat block is read again: a buff or a new position changes it.
+  const live = buff?.cast ? statBlockOf(ctx) : stats;
+  const centre = c.enemies[0];
+  if (!centre) return;
+  if (playerPhase(ctx, c, centre, live)) return;
+  enemyPhase(ctx, c, live);
 }
 
 /**
@@ -1605,6 +1703,7 @@ function swing(
   if (looming !== 1) steps.push({ label: 'Resistance vs Smaller (target)', mult: looming });
   const weapon = ctx.read(items).equipment.weapon;
   const wdef = weapon ? itemDefOf(weapon) : undefined;
+  const ridden = new Set<BlowRiderKind>();
   for (let h = 0; h < hits; h++) {
     let hit = blow * bully * underdog * looming;
     const crit = forced
@@ -1648,6 +1747,23 @@ function swing(
       const extra = monsterSlice(statsOf(ctx, monster), b.type, b.source, b.value, penetration);
       addSlice(slices, extra);
       hit += extra.dealt;
+    }
+    // Registered riders (a coating) are spent per hit, because they are paid out per hit.
+    for (const rider of blowRiders()) {
+      const carried = rider.perHit(ctx as ActionCtx, monster);
+      if (!carried.length) continue;
+      ridden.add(rider);
+      for (const b of carried) {
+        const extra = monsterSlice(
+          statsOf(ctx, monster),
+          b.type,
+          b.source,
+          b.value,
+          Math.min(0.95, penetration + (b.penetration ?? 0)),
+        );
+        addSlice(slices, extra);
+        hit += extra.dealt;
+      }
     }
     total += hit;
   }
@@ -1698,10 +1814,21 @@ function swing(
     for (const app of shape.inflicts)
       ctx.request(applyStatus, { entity: monster.entity, app, source: hitLabel, penetration: vs.penetration });
   }
+  for (const rider of ridden) {
+    const left = rider.afterBlow?.(ctx as ActionCtx, monster);
+    if (!left) continue;
+    if (left.inflicts && monster.hp > 0) {
+      for (const app of left.inflicts)
+        ctx.request(applyStatus, { entity: monster.entity, app, source: left.source, penetration: vs.penetration });
+    }
+    if (left.line) feed(ctx, left.line);
+  }
   // A plain swing recovers to neutral, and that recovery is not displaced.
-  c.position = shape?.to
-    ? (statusDisplacedExit(roller(ctx), mine(ctx)) ?? shape.to)
-    : NEUTRAL_POSITION;
+  setPlayerPosition(
+    ctx,
+    c,
+    shape?.to ? (statusDisplacedExit(roller(ctx), mine(ctx)) ?? shape.to) : NEUTRAL_POSITION,
+  );
   if (shape) active?.after?.(ctx as ActionCtx);
 
   // Spill: part of the blow carries past its target into a random flanker.
@@ -1746,6 +1873,144 @@ function swing(
 }
 
 const RUNE_NAME = (ref: string): string => RUNES[ref]?.name ?? ref;
+
+// ---- landing from outside the normal attack ----
+
+/**
+ * Slices a caller computed land on an enemy: the bite of the target's
+ * conditions, at least 1 in total, HP, `lastHit`, the ledger, its conditions
+ * told per type, the graft harvest. The landing of the old
+ * `castCraftedAttack`. It does not sweep the dead.
+ */
+export function landSlices(
+  ctx: C,
+  monster: Enemy,
+  slices: readonly TypedSlice[],
+  crit = false,
+  kind: HitKind = 'strike',
+): { dealt: number; bite: number; killed: boolean } {
+  const bite = statusIncomingDamageMult(heldBy(ctx, monster));
+  const total = slices.reduce((sum, s) => sum + s.dealt, 0);
+  const dealt = Math.max(1, Math.round(total * bite));
+  monster.hp -= dealt;
+  monster.lastHit = heaviestType(slices) ?? monster.lastHit;
+  const byType = new Map<DamageType, number>();
+  for (const s of slices) byType.set(s.type, (byType.get(s.type) ?? 0) + s.dealt);
+  applyHarvest(ctx, monster, enemyTookDamage(ctx, monster, byType));
+  if (crit) markCombatEvent(ctx, 'onCrit');
+  ctx.emit(hitLanded, {
+    attacker: PLAYER,
+    target: monster.entity,
+    total: dealt,
+    crit,
+    kind,
+    type: monster.lastHit ?? 'bludgeoning',
+  });
+  return { dealt, bite, killed: monster.hp <= 0 };
+}
+
+/** The share of a mending an overgrowth swallows before it can close a wound. */
+export const OVERGROWTH_HEAL_TAX = 1 / 3;
+
+/**
+ * Heal a monster. Kindness from its own side (`hostile: false`) closes
+ * wounds and settles an overgrowth: a third of it is spent on the growth,
+ * and each point spent undoes three of the surplus. Life forced into it by a
+ * working aimed at it accrues in full in the overgrowth ledger, whether it
+ * found a wound or not; enough of it escalates the growth, and more bursts
+ * the body. A burst deals the damage; the caller sweeps. The old `healEnemy`.
+ */
+export function healEnemy(
+  ctx: C,
+  target: Enemy,
+  amount: number,
+  source: string,
+  hostile = true,
+  penetration = 0,
+): void {
+  const c = ctx.state.fight;
+  if (!c || amount <= 0) return;
+  const maxHp = statsOf(ctx, target).maxHp;
+  // Only what has somewhere to go closes a wound.
+  const room = Math.max(0, maxHp - target.hp);
+  let mending = Math.min(amount, room);
+  const list = heldBy(ctx, target);
+  const swollen = list.find((s) => s.id === 'proliferating') ?? list.find((s) => s.id === 'overgrowth');
+
+  if (!hostile) {
+    if (mending > 0 && swollen?.data?.surplus) {
+      const withheld = mending * OVERGROWTH_HEAL_TAX;
+      mending -= withheld;
+      const left = Math.max(0, swollen.data.surplus - withheld / OVERGROWTH_HEAL_TAX);
+      ctx.request(writeSurplus, { entity: target.entity, id: swollen.id, set: left });
+      if (left <= 0) {
+        ctx.request(removeStatus, { entity: target.entity, id: swollen.id });
+        feed(ctx, `🌿 The ${target.name} loses ${STATUSES[swollen.id]?.name ?? 'overgrowth'}: its overgrowth total is 0.`);
+      }
+    }
+    if (mending > 0) target.hp += mending;
+    feed(ctx, `💚 ${source} heals the ${target.name} for ${Math.round(mending)} HP.`);
+    return;
+  }
+
+  if (mending > 0) target.hp += mending;
+
+  // The ledger rides whichever rung of the ladder is already held.
+  let heldId = swollen?.id;
+  let intensity = swollen?.intensity ?? 0;
+  if (!heldId) {
+    const fresh = ctx.request(applyStatus, {
+      entity: target.entity,
+      app: { id: 'overgrowth', intensity: 1 },
+      source,
+      penetration,
+    });
+    if (!fresh) return;
+    heldId = fresh.id;
+    intensity = fresh.intensity;
+  }
+  // Feeding it keeps the clock wound.
+  const surplus = ctx.request(writeSurplus, { entity: target.entity, id: heldId, add: amount, rewind: true });
+  if (surplus === null) return;
+
+  const def = STATUSES[heldId];
+  const cfg = def?.surplus;
+  if (cfg?.escalateAt !== undefined && def?.escalatesTo && surplus >= maxHp * cfg.escalateAt) {
+    ctx.request(removeStatus, { entity: target.entity, id: heldId });
+    // A transformation, not a new dose: the next rung goes through `reform`,
+    // so a poison-resistant body is not billed twice.
+    const next = ctx.request(reform, { entity: target.entity, app: { id: def.escalatesTo, intensity }, source });
+    if (next) ctx.request(writeSurplus, { entity: target.entity, id: next.id, set: surplus });
+    feed(ctx, `🧬 The ${target.name}'s overgrowth escalates to ${STATUSES[def.escalatesTo]?.name ?? def.escalatesTo}.`);
+    return;
+  }
+  if (cfg?.detonateAt !== undefined && surplus >= maxHp * cfg.detonateAt) {
+    // The bearer takes the whole ledger and everything beside it a share.
+    ctx.request(removeStatus, { entity: target.entity, id: heldId });
+    const type = (cfg.detonateType ?? 'poison') as DamageType;
+    target.hp -= surplus;
+    target.lastHit = type;
+    feed(ctx, `💥 The ${target.name}'s overgrowth bursts: it takes ${Math.round(surplus)} ${type} damage.`);
+    for (const other of c.enemies) {
+      if (!other || other === target) continue;
+      const slice = monsterSlice(statsOf(ctx, other), type, source, surplus * (cfg.detonateShare ?? 0.5), 0);
+      const dealt = Math.max(1, Math.round(slice.dealt));
+      other.hp -= dealt;
+      other.lastHit = type;
+      feed(ctx, `💥 The burst hits the ${other.name} for ${dealt} ${type}.`);
+    }
+    return;
+  }
+  feed(
+    ctx,
+    `🌿 ${source} heals the ${target.name} for ${Math.round(mending)} HP and adds ${Math.round(amount)} to its overgrowth (total ${Math.round(surplus)}).`,
+  );
+}
+
+/** The player's per-attack retaliation, for a working that takes the swing's place. True when it was fatal. */
+export function attackRetaliation(ctx: C): boolean {
+  return applyRetaliation(ctx, 'onAttack');
+}
 
 /**
  * Enemy attacks: everyone acts, and position against reach decides how well.
@@ -1925,7 +2190,7 @@ function enemyPhase(ctx: C, c: Fight, stats: Readonly<DerivedStats>): void {
     // A technique shapes the swing: its multiplier, type and riders ride the blow.
     const move = action?.shape;
     if (move) {
-      stampMonsterAction(ctx, e, action!.index, move.cooldown ?? TECHNIQUE_MONSTER_COOLDOWN);
+      stampMonsterAction(ctx, e, action!.index, move.cooldown ?? TECHNIQUE_MONSTER_COOLDOWN, move);
       e.position = statusDisplacedExit(roller(ctx), heldBy(ctx, e)) ?? move.to;
       feed(ctx, `${move.icon} The ${e.name} moves into ${move.name}.`);
       if (move.watchKey) bump(ctx, move.watchKey);
@@ -1938,6 +2203,9 @@ function enemyPhase(ctx: C, c: Fight, stats: Readonly<DerivedStats>): void {
     const looming = Math.max(0, 1 - stats.fromSmaller * stepsSmaller(ctx, e.defId));
     const bully = 1 + es.vsSmaller * stepsLarger(ctx, e.defId);
     const underdog = 1 + es.vsLarger * stepsSmaller(ctx, e.defId);
+    // A counter form gets between the player and the blow: it comes off
+    // before armour. Picked once for the exchange, not per hit.
+    const counter = armInterception(ctx as ActionCtx, c, 'onHit');
     const braced = stats.armor * guard.armor;
     // Surprise cuts both ways: the damageTaken event of the blow spends the condition.
     const bite = statusIncomingDamageMult(mine(ctx));
@@ -1967,9 +2235,10 @@ function enemyPhase(ctx: C, c: Fight, stats: Readonly<DerivedStats>): void {
         underdog *
         (0.9 + ctx.rng.next() * 0.2);
       thrown += one;
-      const cut = heavy ? Math.min(one, heavy.intensity) : 0;
+      const countered = counter ? one * (1 - counter.reduce) : one;
+      const cut = heavy ? Math.min(countered, heavy.intensity) : 0;
       cutTotal += cut;
-      const raw = one - cut;
+      const raw = countered - cut;
       if (heavy && raw <= 0) {
         cutHits++;
         continue;
@@ -2034,6 +2303,7 @@ function enemyPhase(ctx: C, c: Fight, stats: Readonly<DerivedStats>): void {
           ...(mod.damage !== 1 ? [{ label: 'Melee attacker in the back row', mult: mod.damage }] : []),
           ...(posMult !== 1 ? [{ label: posMult > 1 ? 'You are off balance' : 'You are guarded', mult: posMult }] : []),
           { label: 'Swing variance ±10%' },
+          ...(counter ? [{ label: `${counter.name} intercepts`, mult: 1 - counter.reduce }] : []),
           ...(bite !== 1 ? [{ label: 'Conditions on the target', mult: bite }] : []),
           ...(braced > 0 ? [{ label: 'Braced — extra armor', value: braced }] : []),
           ...(cutTotal > 0 ? [{ label: 'Heavy stance cuts it by Power', value: -Math.round(cutTotal) }] : []),
@@ -2074,6 +2344,12 @@ function enemyPhase(ctx: C, c: Fight, stats: Readonly<DerivedStats>): void {
     if (!alive(ctx)) {
       onDefeat(ctx);
       return;
+    }
+    // Still standing, so the reflex completes: soften, then answer.
+    if (counter) {
+      counter.fire(ctx as ActionCtx, e);
+      if (e.hp <= 0) onKill(ctx, i);
+      if (!state.fight) return;
     }
   }
 }
