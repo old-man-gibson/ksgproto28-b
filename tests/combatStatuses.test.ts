@@ -432,7 +432,7 @@ describe('wield.test.ts: the parry line', () => {
     expect(slice<SkillsState>(g2, 'skills').skills.deflection).toBeDefined();
   });
 
-  it.todo('Bolognese manifests by bracing behind a sword and buckler (the styles port: schools take a stance slot)');
+  // The Bolognese case of this group stays an `it.todo` in `tests/wield.test.ts` (styles).
 });
 
 import { hunt } from '../src/systems/combat';

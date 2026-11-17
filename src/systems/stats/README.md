@@ -18,7 +18,8 @@ those systems registers a source, and the resolver turns the collected list
 into the block. The cache and the stale check are the kernel's.
 
 Files: `keys.ts` (stat keys, attribute ids, damage types), `mods.ts`
-(modifier type, builders, facts), `pipeline.ts` (the formulas),
+(modifier type, builders, facts), `pipeline.ts` (the formulas), `monster.ts`
+(the monster formulas),
 `breakdown.ts` (tooltips), `index.ts` (the declaration and the read helpers).
 
 ## Targets
@@ -85,9 +86,39 @@ tested with a test-only source; the system that feeds it is not ported yet.
 | Forged items (`itemDefOf` of a forged instance) | Modular smithing adds its branch to `itemDefOf` in `src/systems/items/defs.ts`. |
 | A title's immunity to a condition (`TitleDef.immune`) | `namedFact('statusImmune:<status id>', 1)` or `namedFact('statusImmuneElement:<damage type>', 1)`. The statuses system reads them. |
 | Quest done, boon rank, Foresight, skill cap raises | `namedFact('quest:<id>', 1)`, `namedFact('boon:<id>', rank)`, `namedFact('foresight', 1)`, `namedFact('skillCap:<id>', n)`. |
-| Monster stat formulas (`monsterStats.ts`) | The resolver runs the player formulas for every entity. The combat port adds the monster formulas and selects by entity. |
+
+## The monster case
+
+An entity is a monster when a source states `monsterFact` for it (level,
+innate armour, regeneration, innate resistances) next to its `baseAttrFact`
+attributes. `computeBlock` then hands the collected list to `monster.ts`,
+the port of old `systems/monsterStats.ts` (`statsFromAttrs`, the modifier
+layers, `applyDerivedMods`, the overrides and the floor, the clamp). The
+entity is collected by the same sources, cached by the same kernel record
+and checked by the same `staleStats`; only the formulas differ.
+
+| | Player | Monster |
+|---|---|---|
+| Attributes | Floored at 1; fusion, ceiling, endowment | The stated base, adds, mults. No floor |
+| Max HP | `40 + 10 x CON` | `12 + 7 x CON`, rounded |
+| Damage | `2 + 1.2 x STR` | `1.5 + 1.1 x STR` |
+| Speed | `50 x (1 + 0.015 x DEX)` on a bar of 1000 | `(1000 / 24) x (1 + 0.012 x DEX)`, at most `1000 / 6` |
+| Dodge | Converging, cap 0.75 | `0.003 x DEX`, at most 0.35 before modifiers; clamp 0.9 |
+| Armour | `0.3 x CON` | The innate armour of the fact `x (1 + 0.05 x (level - 1))` |
+| Attack speed | Converging per source | Plain multiplier |
+| Resistances | Cap is `resistCap` (0.75) | Held to [-1, `resistCap`] (0.9) |
+| Gates, `scaleBy`, damping, the attribute ceiling | Applied | Not applied |
+| A modifier on a stat the body lacks | An error | Ignored (`MONSTER_STAT_KEYS`) |
+
+The block of a monster holds every stat key: the keys a monster does not
+have are 0. `stats/uncapped:<res key>` is the resistance before the clamp
+where the clamp changed it; condition immunity reads it.
 
 ## Filled
+
+- Spine port 4, `combat` (source `combat/monsters`): the monster fact and
+  the attributes of every enemy of the open fight, built by
+  `src/systems/monsters`.
 
 - Spine port 3, `items` (source `items/worn`, depends on `skills/effects`):
   equipment, affixes, catalogue runes, hand bonuses and the fit scale

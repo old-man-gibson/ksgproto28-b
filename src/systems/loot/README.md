@@ -73,11 +73,10 @@ None. A roll that comes up `nothing` is an outcome.
 
 ## Left behind
 
-- The call on a kill, with the monster's tags, rarity, modifier tier, level,
-  size and killing blow: port 4.
-- The drop tables inside monster and location data: ports 4 and 6.
-- The rarity and modifier tier registries (`RARITIES`, `MODIFIER_TIERS`):
-  port 4. This system takes their product as `rewardMult`.
+- The drop tables inside location data: port 6. The monster tables are in
+  `src/systems/monsters` and `combat` makes the call on a kill (spine port
+  4), with `rewardMult` the product of the rarity's `lootMult` and the
+  modifier tier's `rewardMult`.
 - Finds from searching: port 6.
 
 ## Old rules ported as they are

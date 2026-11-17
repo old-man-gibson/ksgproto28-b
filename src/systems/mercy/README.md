@@ -36,6 +36,8 @@ None.
 
 ## Left behind
 
-- `proc:crit` rolls: the combat port calls `mercy/proc`.
+- Filled by spine port 4: `combat` rolls every crit through `mercy/proc`,
+  under `proc:crit` for the player and `proc:crit:<monster id>` per species,
+  and the spawn, modifier and rarity picks through `mercy/pick`.
 - The old save migration from version 45 (an absent ledger): the save here
   starts at version 1.

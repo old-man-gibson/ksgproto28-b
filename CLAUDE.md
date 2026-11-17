@@ -25,8 +25,9 @@ before changing anything.
 - `npm run dev`: dev server on port 5600 (strict). `npm run forge` opens the
   forge at `/forge/` on the same server.
 - `npm test`: vitest only.
-- `.claude/launch.json` holds the dev server entry `ksgb-dev` for the browser
-  preview tool.
+- `.claude/launch.json` holds the dev server entry `ksgb-dev` and the build
+  preview entry `ksgb-preview` (port 5601, needs `npm run build` first) for
+  the browser preview tool.
 
 ## Environment
 

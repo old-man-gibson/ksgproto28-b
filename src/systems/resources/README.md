@@ -40,13 +40,21 @@ and the lock announcer of old `game.ts` (`checkResourceLocks`).
 
 ## Pace
 
-`pace = { resting, hpMult, healKind, halted }`, default
-`{ false, 1, 'idle', false }`: standing about. The old `tickAction` chose
+`pace = { resting, hpMult, healKind, halted, inCombat }`, default
+`{ false, 1, 'idle', false, false }`: standing about. The old `tickAction` chose
 these per tick from the activity and the fight; here the world and combat
 ports send `resources/set-pace`. `RECOVERY_MULT` (rest 15, job 4, train,
 gather and craft 2, the rest 1) and `IN_COMBAT_REGEN_MULT` (0.5) are exported
 for them. `halted` stops all regeneration: the old loop did not tick pools
 while travelling.
+
+`inCombat` (slice version 2, spine port 4): while it is set, the health
+trickle is multiplied by `IN_COMBAT_REGEN_MULT` on every tick on which
+stamina is below its available max. This is the old `combatRegenMult` of
+`systems/actions.ts`. It is computed here, in the tick, so it reads stamina
+after the pool tick of the same tick, as the old loop did. `combat` sends
+`{ inCombat }` when a fight starts and when it closes, and `{ hpMult: 15,
+healKind: 'rest' }` while a hunt rests before its next fight.
 
 ## Command
 
@@ -63,6 +71,21 @@ Emitted: `resources/spent` (a draw, with the true max, for a condition that
 eats effort), `resources/lock-changed`, `resources/healed` (kind, asked,
 allowed, healed; also when the cap let nothing through), `resources/damaged`
 (lost, type, source), `resources/exerted` (what an exertion bought).
+
+## Requests with an answer (spine port 4, docs/KERNEL.md section 7a)
+
+A fight resolves a blow, checks whether the player still stands, and spends
+stamina before it reads what an exertion can still buy, all in one handler.
+Each request does what the event of the same meaning does, emits the same
+result event, and answers the result.
+
+| Request | Answer | Event of the same meaning |
+|---|---|---|
+| `resources/hit` `{ amount, type?, source? }` | The health lost. | `resources/damage` |
+| `resources/heal-now` `{ amount, kind? }` | `{ kind, asked, allowed, healed }` or null. | `resources/heal` |
+| `resources/exert-now` `{ spec }` | What the exertion bought (a copy). | `resources/exert` |
+| `resources/draw-now` `{ id, amount }` | The amount spent. | `resources/draw` |
+| `resources/spend-now` `{ id, amount }` | The amount spent. | `resources/spend` |
 
 ## Hooks for other systems
 
@@ -87,17 +110,17 @@ that reads either declares `dependsOn: [LOCKS_SOURCE]`.
 
 - `resources/set-exerting`: exertion is already on, or already off.
 - A pool request: unknown pool.
-- `resources/heal`, `resources/damage`: the amount is not above 0.
+- `resources/heal`, `resources/damage`, `resources/hit`,
+  `resources/heal-now`: the amount is not above 0.
 
 ## Left behind
 
-- Which activity gives which pace, `combatRegenMult`, recovery after a
-  knockout: world and combat.
-- The fight ledger's attribution (`noteIncoming`, `noteHealed`,
-  `noteHealRefused`) and the Facet `hitTaken` signal: from `resources/healed`
-  and `resources/damaged`.
+- Which activity gives which pace, recovery after a knockout: world.
+- The Facet `hitTaken` signal: from `resources/damaged`. The fight ledger's
+  attribution is in `combat` (spine port 4), from `resources/healed` and
+  `resources/damaged`.
 - `resources/regenMult`: the fast's regeneration bonus (mutagens).
-- Monster regeneration and `DOUSING_TYPES` (exported, unused): combat.
+- Monster regeneration reads `DOUSING_TYPES` in `combat` (spine port 4).
 - The `cssVar` fields of the registry name colour tokens of the old
   interface. They are kept as data and not read.
 

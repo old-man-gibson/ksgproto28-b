@@ -222,7 +222,7 @@ export type AttackOutcome = 'hit' | 'evaded' | 'fumbled' | 'dodged' | 'shrouded'
 /** A normal attack was thrown. */
 export const attackThrown = defineEvent<{ attacker: string; target: string; outcome: AttackOutcome }>('combat/attack');
 
-export type HitKind = 'attack' | 'graze' | 'riposte' | 'spill' | 'condition' | 'retaliation' | 'strike' | 'bar';
+export type HitKind = 'attack' | 'graze' | 'riposte' | 'spill' | 'condition' | 'strike';
 /** Damage landed on a combatant. */
 export const hitLanded = defineEvent<{
   attacker: string | null;
@@ -266,6 +266,8 @@ export const playerDefeated = defineEvent<{
   outcome: FightOutcome;
   cause: string;
   site: string;
+  /** A condition, not a blow of the fight, took the player to 0 HP. */
+  byCondition: boolean;
 }>('combat/defeat');
 
 /** A rotation entry of a kind no system has registered was passed over. */
@@ -978,7 +980,7 @@ export function onDefeat(ctx: C, outcome: FightOutcome = 'knocked_out', cause = 
   const forced = !!c.forced;
   const monster = c.enemies[0];
   const site = ctx.state.site?.id ?? '';
-  ctx.emit(playerDefeated, { monster: monster ? refOf(monster) : null, forced, outcome, cause, site });
+  ctx.emit(playerDefeated, { monster: monster ? refOf(monster) : null, forced, outcome, cause, site, byCondition: false });
   bump(ctx, 'defeats');
   if (cause) ctx.emit(logLine, { msg: `${outcome === 'dead' ? '💀' : '💫'} ${cause}`, kind: 'danger' });
   else say(ctx, forced ? 'knocked_out_forced' : 'knocked_out', { name: monster?.name ?? '' }, 'danger');
@@ -987,6 +989,33 @@ export function onDefeat(ctx: C, outcome: FightOutcome = 'knocked_out', cause = 
   ctx.state.hunting = false;
   ctx.state.huntRest.active = false;
   endFight(ctx, outcome, cause || undefined);
+}
+
+/**
+ * A condition took the player to 0 HP while a fight was open. The fight half
+ * of the three knockout branches of the old `tickPlayerStatuses`
+ * (`systems/actions.ts`): the ledger is closed as a knockout, the fight is
+ * abandoned (the respawn delay is the short one), and the hunt is turned off
+ * as the old retreat cleared the activity. The old code emitted no `defeat`
+ * bus event here, so the counter `defeats` is not bumped. The "knocks you
+ * out" line names the condition and belongs to the knockout (port 6).
+ */
+function fallToCondition(ctx: C): void {
+  const c = ctx.state.fight!;
+  const monster = c.enemies[0];
+  ctx.emit(playerDefeated, {
+    monster: monster ? refOf(monster) : null,
+    forced: !!c.forced,
+    outcome: 'knocked_out',
+    cause: '',
+    site: ctx.state.site?.id ?? '',
+    byCondition: true,
+  });
+  endFight(ctx, 'knocked_out');
+  closeCombat(ctx);
+  ctx.state.respawnTimer = RESPAWN_DELAY;
+  ctx.state.hunting = false;
+  ctx.state.huntRest.active = false;
 }
 
 /**
@@ -1342,6 +1371,13 @@ export function runCombatTick(ctx: C): void {
   }
 
   const c = state.fight;
+
+  // The player's conditions ticked before this system. One of them may have
+  // been what finished the player.
+  if (!alive(ctx)) {
+    fallToCondition(ctx);
+    return;
+  }
 
   if (c.introTicks && c.introTicks > 0) {
     if (c.introTicks === 30 || c.introTicks === 20) feed(ctx, '“Please provide documents.”');

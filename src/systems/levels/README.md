@@ -42,9 +42,10 @@ used here; `floor`, `floor_lapsed` and `band` are for the world port.
 
 ## Left behind
 
-- `dynamicLevelBonus`: needs monsters and bands (combat, world).
+- `dynamicLevelBonus`: ported in `combat` (`spawn.ts`, spine port 4). It
+  reads the band's rule from the encounter site; the world port puts it there.
 - `checkFloorClears`, `syncBandPositions`: need floors, bands and the ladder
   (world).
-- What pays level XP: kills, quest turn-ins, floor clears. The combat, quests
-  and world ports emit `levels/grant-xp`.
+- What pays level XP: kills (`combat` emits `levels/grant-xp`, spine port
+  4), quest turn-ins, floor clears. The quests and world ports emit theirs.
 - `applyStartingLevel`: the prestige port emits `levels/raise-start`.

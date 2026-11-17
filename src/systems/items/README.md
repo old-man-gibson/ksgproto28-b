@@ -76,6 +76,7 @@ the rusty sword (uid 1, one rune slot) in the pack, not equipped.
 | `items/grant-rune` `{ id, qty?, silent? }` | Adds to the rune pile. Logs unless `silent`. |
 | `items/stash` `{ item }` | Puts a keep-marked item in the stash. `false` for any other. |
 | `items/set-bearer` `{ grants, size }` | States the body that wears the gear. |
+| `items/drop-worn` `{ slot }` | Takes a worn item off into the pack, for a caller that needs the outcome in its own handler (spine port 4: a jolt in a fight makes the bearer drop the weapon). The name of the item's definition, or null when the slot was empty. |
 
 ## Modifier source
 
@@ -161,7 +162,7 @@ Converted with `node scripts/convert-content.mjs items affixes runes`.
 | Weapon oils (`state.coating`) | Not read by any old item rule. The alchemy port owns the coating and its source. |
 | Combat styles | Not read by any old item rule. A style that needs a tag reads `hasWieldTag`. |
 | Monster tag names in "vs" modifier text | `describeMod` prints the tag id. |
-| Dropping the weapon under a condition (`dropWeaponBelow`, old `combat.ts:3645`) | Port 4 decides; `items/unequip` is a command, so that port adds a request here if it needs the outcome. |
+| Dropping the weapon under a condition (`dropWeaponBelow`, old `combat.ts:3645`) | Filled by spine port 4: the request `items/drop-worn`, made by `combat` from the player's bar damage. |
 
 ## Left behind
 

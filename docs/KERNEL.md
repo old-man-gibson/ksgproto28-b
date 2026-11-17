@@ -243,6 +243,15 @@ An answer returns copies, never a reference into its slice.
   damage on every tick: measured 2,650 ms alone and 4,070 ms inside the full
   test run (1,450 ms alone with a condition that only changes stats). The cost is the events of the damage, four per
   tick. Spine port 3: 3,096 ms alone, 3,944 ms inside the full test run.
+- Spine port 4 (combat), measured on 2026-11-17, same machine. No fight, no
+  condition: 929 ms alone, 1,447 ms inside the full test run; the budget of
+  `tests/runner.test.ts` was raised to 3,000 ms. With a bleed held: 3,561 ms
+  alone, 5,577 ms inside the full run; budget 8,000 ms. A third budget,
+  `tests/combatBudget.test.ts`: 8 hours of fights at a floor 1 table through
+  `runHeadless`, 3,931 ms alone and 7,126 ms inside the full run for 9,673
+  kills; budget 12,000 ms. Each budget test sets its own time limit above
+  its budget, so the budget is what fails and not the test runner's default
+  of 5,000 ms.
 
 ## 9. Content
 

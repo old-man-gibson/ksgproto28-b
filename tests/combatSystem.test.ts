@@ -195,6 +195,31 @@ describe('a fight as events', () => {
   });
 });
 
+describe('a condition that finishes the player in a fight', () => {
+  it('closes the fight as a knockout, with the condition at the top of the ledger and no defeat counted', () => {
+    const g = makeGame({ seed: 30 });
+    const seen = events(g);
+    // Training equipment never hurts: the bleed is what does it.
+    stage(g, [{ monsterId: 'training_dummy', level: 1 }], rats);
+    ask(g, applyStatus, { entity: 'player', app: { id: 'bleeding', intensity: 3 } });
+    setHp(g, 2);
+    for (let i = 0; i < 400 && combatOf(g).fight; i++) g.tick();
+    const c = combatOf(g);
+    expect(c.fight).toBeNull();
+    expect(c.hunting).toBe(false);
+    expect(c.respawnTimer).toBe(15);
+    expect(c.lastFight?.outcome).toBe('knocked_out');
+    expect(c.lastFight!.incoming[0].key).toBe('cond:bleeding');
+    expect(seen.find((e) => e.type === 'combat/defeat')!.payload).toMatchObject({
+      byCondition: true,
+      forced: true,
+      site: 'rats',
+    });
+    expect(counterOf(g, 'defeats')).toBe(0);
+    expect(g.entities()).toEqual(['player']);
+  });
+});
+
 describe('the site record', () => {
   it('a once kill and a boss kill are on the counters the moment they happen', () => {
     const lair: EncounterSite = {

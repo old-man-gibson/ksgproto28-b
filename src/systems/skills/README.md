@@ -73,10 +73,13 @@ curve inline.
 
 ## Left behind
 
-- Who grants XP and checks discovery: combat, actions, quests, the bestiary,
-  the spell table. They emit the requests above.
-- Practice shaping (`practiceXp`): no hook; the granting system shapes the
-  amount.
+- Who grants XP and checks discovery: `combat` does for kills, swings and
+  blows taken (spine port 4). Actions, quests, the bestiary and the spell
+  table emit the requests above when they are ported.
+- Practice shaping (`practiceXp`): no hook. The old rule cut a grant by the
+  level of the skill that receives it, so the granting system cannot shape
+  it. A fight against training equipment pays unshaped XP until this system
+  gets the hook.
 - Talent, cap raises of the legacy, Foresight: read as facts the prestige
   port states (see the stats README).
 - A skill panel of its own. The character panel shows the tree.

@@ -118,6 +118,14 @@ left behind.
 | 3 | `data/items.data.ts`, catalogue of `data/runes.data.ts` | `items` (`content/items.json`, `affixes.json`, `runes.json`) | `content.test.ts` validates them; content cases in `items.test.ts` | The 46 `forged:<class>` stubs (generated from item classes); rune patterns, adornments, named runes. `techniqueMods` targets of a rune are strings until the martial registries exist |
 | 3 | `DropEntry`, `DropTable`, `dropKey`, `dropRowsFor`, `rollDropTable` of `systems/combat.ts` (1586 to 1700); drop-table checks of `tests/content.test.ts` | `loot` | `loot.test.ts`: the method-drop cases of old `desert.test.ts` with its two tables written in the test, plus new cases calling the request | 1 case as `it.todo` (a kill by a condition sets `lastHit`, port 4). The call on a kill; the tables inside monster and location data; `RARITIES` and `MODIFIER_TIERS` |
 | 3 | Cases ports 1 and 2 left behind | `items` | `skills.test.ts`, `counters.test.ts`, `derivedcache.test.ts`, `attributes.test.ts`: a worn weapon is a real item where the old test equipped one; the cache sweep grants, equips, unequips and changes the body; "weapon-family bonuses only apply while that weapon is held" of old `content.test.ts` | The forged-piece cache case (smithing) |
+| 4 | `data/monsters.data.ts`, tag registry of `data/bestiary.data.ts`, `monsterTags`, `monsterTagSet`, `monsterSizeRank` of `systems/bestiary.ts`, species half of `systems/monsterStats.ts` (`kitOf`, `innateArmor`, `innateResistances`, `TAG_ARMOR`, `TAG_RESISTANCES`, attribute rolls, `penetrationOf`, `penetrationProblems`) | `monsters` (no state) | `tests/monsters.test.ts`: the monster, derived-tag, inflicts and penetration cases of old `content.test.ts`; the innate-resistance and stat-block cases of old `combat.test.ts` in `tests/combat.test.ts` | 3 cases as `it.todo`: portrait files and the generated art list (2, the art step), the floor half of the penetration rule (1, port 6). The bestiary. All 131 records are ported; the task text said 146 |
+| 4 | Formula half of `systems/monsterStats.ts` (`statsFromAttrs`, `monsterStatsUnclamped`, `applyDerivedMods`, `applyResOverrides`, `clampMonsterStats`) | `stats` (`monster.ts`): the monster case of the shared pipeline, selected by `monsterFact` | In `tests/combat.test.ts` ("a monster reads the same stat block the player does", "a monster entity goes through the shared stat path"); `conditionResist` cases in `tests/combatStatuses.test.ts` | Nothing |
+| 4 | `systems/combat.ts`: size steps, graze, respawn, generation and groups, fight start, forced and staged fights, typed damage, `onKill`, `onDefeat`, `activeRotation`, `pickActive`, `pickMonsterAction`, bar damage, retaliation, `enemyTookDamage`, enemy regeneration, status ticks, minds, `runCombatTick`, the player's normal attack, enemy attacks, close and abandon, kept wounds. Mapping by line range: `src/systems/combat/README.md` "Old to new" | `combat` (`engine.ts`, `spawn.ts`, `damage.ts`, `actions.ts`, `index.ts`) | `combat.test.ts`, `combatStart.test.ts`, `forced.test.ts`, `dynamicLevels.test.ts`, `keeper.test.ts`, `hunters.test.ts`, `breakdown.test.ts` (damage cases), `encounters.test.ts`, under the old names; new `combatSystem.test.ts` (determinism, a save in the middle of a fight, rotation kinds, events, requests, view) and `combatBudget.test.ts` | 14 cases as `it.todo`: the knockout, travel, roads, the pathfinder, activities (10, port 6), combat styles (1), achievement tiers (2), the bestiary level range (1). Not ported, each an extension point: floating weapons, counter techniques, crafted spells and monster workings, counterspells, Facet strikes, gene abilities, statues, coatings, skill actives, the approach, practice shaping |
+| 4 | `systems/ledger.ts` | `combat` (`ledger.ts`) | `ledger.test.ts`, under the old names | 1 case as `it.todo` (the migration from old save version 35). The notebook has commands and no panel part |
+| 4 | `systems/huntrest.ts` | `combat` (`holdNextFight`, `setResting` in `engine.ts`; the command `combat/set-hunt-rest`) | `huntrest.test.ts`, whole | `returnRecoverTarget` (port 6: the pending return) |
+| 4 | `combatRegenMult` of `systems/actions.ts`; the fight half of `tickPlayerStatuses` (a condition finishes the player in a fight) | `resources` (`pace.inCombat`, slice version 2), `combat` (`fallToCondition`) | In `combatSystem.test.ts` | Pace per activity (port 6) |
+| 4 | Kill and defeat listeners of `systems/achievements.ts`; the kill listener of `systems/levels.ts`; `dynamicLevelBonus` of `systems/levels.ts` | `combat` (`onKill`, `onDefeat`, `spawn.ts`) | `hunters.test.ts`, `dynamicLevels.test.ts` | `checkFloorClears` (port 6) |
+| 4 | Cases ports 1 to 3 left tagged port 4 | `combat` | `tests/combatStatuses.test.ts`: 17 cases under their old names, from `statuses.test.ts` (10), `conditionResist.test.ts` (4), `loot.test.ts` (1), `wield.test.ts` (2) | 3 retagged: forced healing of a monster (2, port 5 or arcane: `healEnemy`), a school taking a stance slot (1, styles) |
 
 Port 1 notes:
 
@@ -224,3 +232,84 @@ Port 3 notes:
 - Old rules that look like bugs and were ported as they are: listed under
   "Old rules ported as they are" in `src/systems/items/README.md` and
   `src/systems/loot/README.md`.
+
+Port 4 notes:
+
+- Two system folders: `monsters` (registry and species rules, no state) and
+  `combat`. The monster formulas are a file of `stats`, as the port 1 note
+  asked: one resolver, selected by a fact a source states.
+- Imports: `monsters` imports `counters`, `items`, `loot`, `stats`,
+  `statuses`. `combat` imports `attributes`, `clock`, `counters`, `gold`,
+  `items`, `levels`, `log`, `loot`, `mercy`, `monsters`, `resources`,
+  `skills`, `stats`, `statuses`. No system imports `combat`. No folder
+  imports a folder that imports it.
+- No kernel change. Decision 28 (requests) carried the port: a blow is
+  resolved in one handler with `resources/hit`, `resources/exert-now`,
+  `resources/draw-now`, `statuses/apply`, `statuses/fire`, `statuses/tick`,
+  `mercy/proc`, `loot/roll`.
+- Slices of earlier ports: `resources` is at version 2 (`pace.inCombat`),
+  with a migration step and a fixture. `resources` gained five requests,
+  `items` one (`items/drop-worn`). `stats` gained `monster.ts` and the fact
+  `monsterFact`.
+- The save holds the fight (`tests/fixtures/combat/v1.json` is a slice saved
+  in the middle of one). The old build dropped the fight at save.
+- Locations do not exist yet. Combat takes an `EncounterSite` as data
+  (`src/systems/combat/README.md` "The site"). The ported tests carry the
+  encounter tables of the old spots they stood on in `tests/sites.json`,
+  written by `scripts/dump-test-sites.mjs`.
+- Rotations: the normal attack is the only kind this port executes. A kind
+  is registered by its owner (`registerMonsterAction`,
+  `registerPlayerAction`); an entry of an unregistered kind is passed over
+  with one skip-log line per fight and entry, and the combatant swings
+  plainly. Of the 131 monsters, 60 have a rotation. Six of them are on
+  floors 0 to 6: `goblin_raid_leader` (floor 4), `hobgoblin` (5, 6),
+  `hobgoblin_champion` (5), `goblin_warchief` (6) with techniques
+  (`pocket_sand`, `dirty_stab`, `gather`, `hamstring`, `lunge`,
+  `heavy_blow`); `goblin_firetongue` (5, 6) with two arcane sentences;
+  `goblin_witch_doctor` (6) with three divine workings (`mud_poultice` with
+  2 uses, `vermin_swarm`, `cinder_curse`). Section 1 counted the two
+  sentences and not the witch doctor's workings.
+- Content: `monsters` (131), `monster_tiers` (7), `modifier_tiers` (4),
+  `rarities` (4), `monster_tags` (50), `combat_text` (15). Converted with
+  `node scripts/convert-content.mjs monsters monster_tiers modifier_tiers
+  rarities monster_tags`.
+- Panel: `combat` holds the combat panel. Five enemy slots, the status line
+  and the log have fixed heights. Checked on the build preview (port 5601)
+  at 1280 and 375 pixels wide: a kill, a group of three, a defeat; the
+  positions of the status line, the bars, the slots and the log were
+  sampled every 50 ms and did not change; no console error.
+- Measured on 2026-11-17, same machine. 8 hours with no fight and no
+  condition: 929 ms alone, 1,447 ms inside the full test run (port 3: 700
+  to 715 and 1,106); budget raised from 2,000 to 3,000 ms. With a bleed
+  held: 3,561 ms alone, 5,577 ms inside the full run (port 3: 3,096 and
+  3,944); budget 8,000 ms, unchanged. 8 hours of fights at a floor 1 table
+  (`tests/combatBudget.test.ts`): 3,931 ms alone, 7,126 ms inside the full
+  run, 9,673 kills; budget 12,000 ms. The three budget tests run in
+  parallel workers, which is why each is slower inside the full run.
+- Open for port 5: register `technique` and `cast` with
+  `registerMonsterAction`, and the player kinds; `combat/heal-enemy` for a
+  working that forces life into a monster (2 `it.todo` cases in
+  `tests/conditionResist.test.ts`); counter techniques and per-hit riders
+  (coatings) need a hook inside the blow that combat does not have yet:
+  add it to `actions.ts` as a registered kind, not to the tick.
+- Open for port 6: the knockout. `combat/defeat` carries `monster`,
+  `forced`, `outcome`, `cause`, `site` and `byCondition`; combat has closed
+  the fight, set the respawn delay and turned the hunt off. HP 1,
+  `recovering`, the retreat, the return, the "knocks you out" line of a
+  condition, and `resources/set-pace` per activity are the world port's.
+  The site: build `EncounterSite` from a spot, with `levelStep` and
+  `dynamicLevel` from its band; send `combat/hunt` from the hunt activity,
+  `combat/start-forced` on arrival at a forced spot, `combat/abandon` on
+  travel and activity switches after checking `inForcedFight`. `sky` lines
+  of an encounter table do not roll until weather exists. The hook stat
+  `combat/darkness`. The approach (`pendingApproach`). `checkFloorClears` on
+  `combat/kill` and `combat/fight-won`. `penetrationProblems` takes the
+  early-floor list. 10 `it.todo` cases wait in `combatStart.test.ts`,
+  `forced.test.ts` and `combat.test.ts`.
+- Open for port 7: the John port needs the knockout of port 6 and the
+  monster techniques of port 5 to match the old climb on floors 4 to 6.
+  The toll golem's reward and spell reactions (`floodedFloor.ts`) are not
+  ported; its 30-tick address is.
+- Old rules that look like bugs and were ported as they are: listed under
+  "Old rules ported as they are" in `src/systems/combat/README.md` and
+  `src/systems/monsters/README.md`.

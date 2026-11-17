@@ -81,10 +81,10 @@ rule. Any other entity always resists.
 | `resources/healed` | resources | resources (port 1) | Records the heal against a heal cap; fires `heal` with the kind. |
 | `resources/damaged` | resources | resources (port 1) | Fires `damageTaken` with type and amount lost. |
 | `resources/spent` | resources | resources (port 1) | `noteResourceSpent`: a condition that eats effort grows its debt. |
-| `statuses/hook` | here | Port 4 combat: `barFill`, `barDeplete`, `combatEnd`, `damageTaken` on a monster. Alchemy and consumables: `cure` with a tag. | `fireStatusEvent`. |
-| `statuses/inflict` | here | Port 4: a monster's `wears` at spawn. Port 6 weather: the sky rules, with a source that starts with `Weather: `. Cooking, alchemy, mutagens: grants. | `applyStatuses`. |
-| `statuses/situation` | here | Port 4: `inCombat` at fight start and end. Port 6: `down` at knockout and recovery. | Sets the two flags. |
-| `statuses/forget` | here | Port 4: a monster entity is gone. The emitter also calls `ctx.dropEntity`. | Deletes the entity's list. |
+| `statuses/hook` | here | Alchemy and consumables: `cure` with a tag. (`combat` fires `barFill`, `barDeplete`, `combatEnd` and a monster's `damageTaken` with the `statuses/fire` request: it reads what they changed in the same handler.) | `fireStatusEvent`. |
+| `statuses/inflict` | here | Port 6 weather: the sky rules, with a source that starts with `Weather: `. Cooking, alchemy, mutagens: grants. (`combat` applies a monster's `wears` with the `statuses/apply-all` request.) | `applyStatuses`. |
+| `statuses/situation` | here | `combat`: `inCombat` at fight start and end. Port 6: `down` at knockout and recovery. | Sets the two flags. |
+| `statuses/forget` | here | `combat`: a monster entity is gone. The emitter also calls `ctx.dropEntity`. | Deletes the entity's list. |
 
 A caller that needs the answer in its own handler (combat applying a bite
 and reading what landed) uses the request of the same meaning instead.
@@ -140,18 +140,22 @@ outcome, not a skip: the request answers null.
 ## Left behind
 
 - The knockout: `statuses/fatal`, `statuses/detonated` and
-  `statuses/damage` are emitted; ending the fight, 1 HP, `recovering`, the
-  retreat and the "knocks you out" line are port 6 and port 4.
-- The fight ledger's attribution of condition damage (`noteConditionDamage`):
-  port 4, from `statuses/damage`.
-- Monster ticks: combat calls `tickStatuses` per monster and applies the
-  result (old `combat.ts:3925-4030`), and `dueGraftSpread`.
+  `statuses/damage` are emitted; 1 HP, `recovering`, the retreat and the
+  "knocks you out" line are port 6. `combat` closes an open fight when a
+  condition leaves the player at 0 HP (spine port 4).
+- Filled by spine port 4, in `combat`: the fight ledger's attribution of
+  condition damage, from `statuses/damage`; the monster ticks
+  (`statuses/tick` per enemy, `dueGraftSpread`); `statuses/situation`,
+  `statuses/forget`; the hooks `barFill`, `barDeplete`, `combatEnd` and
+  `damageTaken` on a monster, sent as the `statuses/fire` request because
+  the tick reads what they changed in the same handler; `MonsterDef.wears`
+  at fight start.
 - The surplus ledger (`data.surplus`): the engine sheds it; the writer is
-  forced healing (`healEnemy`, port 4 or arcane), which needs a request that
+  forced healing (`healEnemy`, port 5 or arcane), which needs a request that
   adds to it.
 - Titles (`TitleDef.immune`), styles (`effectiveStyleId` reads
   `statusForcedStyle`), the fast's dulling of penalties and its ward
-  (mutagens), `MonsterDef.wears`, weather doses, food grants.
+  (mutagens), weather doses, food grants.
 - The full tooltip (`statusTipLines` of the old interface): the view carries
   the description and a few facts; per-second damage and modifier lines need
   the format library.

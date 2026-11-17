@@ -4,11 +4,26 @@ The fight: spawning, the combat tick, kills, defeats, the fight ledger and
 the rest-before-the-next-fight rule.
 
 Port of: old `systems/combat.ts` (the parts listed under "Old to new"),
-`systems/ledger.ts`, `systems/huntrest.ts`. The monster registry and the
-monster formulas are in `src/systems/monsters` and `src/systems/stats`.
+`systems/ledger.ts`, `systems/huntrest.ts`. The monster registry is in
+`src/systems/monsters`; the monster formulas are the monster case of
+`src/systems/stats`.
 
-This file was written before the code. Section "Design" is the contract the
-code follows; the sections after it are filled in as the port lands.
+Section "Design" was written and committed before the code (`8639309`). It
+was corrected where the build changed a name; those changes are listed under
+"Changed while building".
+
+## Files
+
+| File | Holds |
+|---|---|
+| `types.ts` | The slice, `Enemy`, `Fight`, `EncounterSite`, the ledger types. |
+| `damage.ts` | Typed damage, pure: `monsterSlice`, `incomingSlice`, `afterPenetration`, `heaviestType`, `POSITION_MODS`. |
+| `spawn.ts` | `eligibleEncounters`, `spawnMonster`, `spawnGroup`, `dynamicLevelBonus`, kept wounds. |
+| `ledger.ts` | The fight ledger and the notebook. |
+| `actions.ts` | The registry of rotation kinds. |
+| `engine.ts` | Fight start, the tick, the normal attack on both sides, kill, defeat, close, the rest rule. |
+| `index.ts` | The declaration: slice, commands, requests, events, source, view. |
+| `CombatPanel.svelte`, `panel.ts` | The panel. |
 
 ## Design
 
@@ -20,8 +35,7 @@ one of four ways and never edits a file in this folder:
 
 1. it hears an event this system emits;
 2. it moves a hook stat of this system from a modifier source of its own;
-3. it answers a request this system makes through a registered kind
-   (rotation entries, below);
+3. it registers a rotation kind (`actions.ts`);
 4. it sends an event or a request this system declares.
 
 ### Entities
@@ -38,17 +52,18 @@ When it leaves the fight this system emits `statuses/forget` and calls
 
 | Field | Holds |
 |---|---|
-| `fight` | The live fight or null. Old `state.combat`: `enemies` (5 slots), `playerBar`, `cooldowns`, `events`, `forced`, `prevented`. |
+| `fight` | The live fight or null. Old `state.combat`: `enemies` (5 slots), `playerBar`, `momentum`, `position`, `cooldowns`, `events`, `forced`, `prevented`, `introTicks`, `reported`. |
 | `site` | The encounter site fights are rolled from, or null. Old `SPOTS[state.spot]`, as far as combat read it. |
 | `hunting` | The hunt loop is on: a fight is rolled when the respawn timer runs out. |
 | `respawnTimer` | Ticks until the next roll. |
 | `ledger`, `lastFight`, `notebook` | The fight ledger (old `state.fight`, `state.lastFight`, `state.notebook`). |
 | `huntRest` | `{ at, toFull, active }`. |
-| `style` | `{ id, exertion }` as the styles system last stated it. Default: no exertion. |
+| `style` | `{ id, exertion }` as the styles system last stated it. Default: `balanced` with its old exertion (`on: attack`, cost 0.02, +10% damage). |
+| `rotation` | The player's explicit order of actives. Old `state.skillOrder`. |
 | `nextEntity` | Counter for monster entity ids. |
 
-A fight is saved. The old build dropped the fight at save; `woundsForSave`
-is therefore not needed.
+A fight is saved. The old build dropped the fight at save; its
+`woundsForSave` is therefore not needed and not ported.
 
 ### The site
 
@@ -56,7 +71,7 @@ Locations arrive in port 6. Combat does not read a location registry. It
 takes an `EncounterSite` as data:
 
 `{ id, name, encounters[], groupWeights?, modifierWeights?, fightLimit?,
-stampOnClear?, levelStep?, dynamicLevel? }`.
+stampOnClear?, levelStep?, dynamicLevel?, clearedMsg? }`.
 
 An encounter line is the old `SpotEncounter`. `levelStep` is the old
 `bandLevelStep` result and `dynamicLevel` the band's `{ factor, capShare }`;
@@ -66,10 +81,11 @@ port 6 computes both from its floor and band data when it sends the site.
 
 | Command | Does |
 |---|---|
-| `combat/hunt` `{ site }` | Set the site and turn the hunt loop on. Port 6 sends it from the hunt activity; the dev panel sends it with a site built from one monster. |
-| `combat/stop` | Turn the hunt loop off and walk away from the fight. Refused in a forced fight. |
+| `combat/hunt` `{ site }` | Set the site and turn the hunt loop on. Port 6 sends it from the hunt activity; the panel sends it with a site built from one monster. A fight open at another site is abandoned. |
+| `combat/stop` | Turn the hunt loop off and walk away from the fight. |
 | `combat/set-hunt-rest` `{ at, toFull }` | Old `setHuntRest`. |
-| `combat/keep-fight`, `combat/drop-fight` | The notebook. |
+| `combat/keep-fight`, `combat/drop-fight` `{ id }` | The notebook. |
+| `combat/set-rotation` `{ order }` | The player's explicit order of actives. |
 
 ### Requests this system answers
 
@@ -78,19 +94,18 @@ port 6 computes both from its floor and band data when it sends the site.
 | `combat/start-forced` `{ site }` | `startForcedFight` | true when a fight began |
 | `combat/start-staged` `{ site, members }` | `startStagedGroup`, `startStagedFight` | void |
 | `combat/abandon` | `abandonCombat` | true when there was a fight. Never refuses; the caller checks `inForcedFight` first. |
-| `combat/damage-enemy` `{ entity, slices[], source, label? }` | The body of every "a strike lands on an enemy" site: `monsterSlice` per slice, HP, `lastHit`, the ledger, `enemyTookDamage`, the graft harvest. | `{ dealt, killed, slices }` |
-| `combat/heal-enemy` | `healEnemy` | Not answered in this port. Listed for port 5. |
+| `combat/damage-enemy` `{ entity, strikes[], source, penetration?, kind? }` | The body of a strike on an enemy from outside the normal attack (`abilityStrike`, each strike of `castCraftedAttack`): `monsterSlice` per strike, HP, `lastHit`, the ledger, `enemyTookDamage`, the graft harvest. | `{ dealt, killed, slices }`, or null for an entity that is not a living enemy |
+| `combat/stamp-action` `{ entity, index, cooldown }` | `spendMonsterAction` and the clock stamp | false for an unknown entity |
 
-`combat/damage-enemy` does not sweep the dead. The caller's action ends, and
-the tick sweeps before it goes on (old `sweepDead`).
+`combat/damage-enemy` does not sweep the dead. The tick sweeps at the point
+the old tick swept after the strikes of the run's ability.
 
 ### Requests this system makes
 
-`statuses/*` (apply, tick, fire, bar-damage, consume-magnet, tend,
-graft-spread), `resources/hit`, `resources/heal-now`, `resources/exert-now`,
-`resources/draw-now` (new in this port, section "Earlier ports"),
-`mercy/pick`, `mercy/proc`, `loot/roll`, `gold/add`, `items/drop-weapon`
-(new in this port).
+`statuses/apply`, `apply-all`, `tick`, `fire`, `bar-damage`,
+`consume-magnet`, `tend`, `graft-spread`; `resources/hit`, `exert-now`,
+`draw-now`; `mercy/pick`, `mercy/proc`; `loot/roll`; `gold/add`;
+`items/drop-worn`.
 
 ### Events this system emits
 
@@ -98,24 +113,37 @@ Every payload names entities by id and carries copies.
 
 | Event | When | Payload |
 |---|---|---|
-| `combat/fight-started` | A fight begins (old `encounter` bus event and `onEncounterStart`) | `site`, `forced`, `enemies[] { entity, defId, level }` |
+| `combat/fight-started` | A fight begins (old `encounter` bus event and `onEncounterStart`) | `site`, `forced`, `enemies[] { entity, defId, name, level }` |
 | `combat/bar-filled` | A combatant's action bar completes | `entity` |
 | `combat/attack` | A normal attack was thrown, hit or not | `attacker`, `target`, `outcome`: `hit`, `evaded`, `fumbled`, `dodged`, `shrouded`, `blocked`, `parried`, `harmless` |
-| `combat/hit` | Damage landed on a combatant | `attacker`, `target`, `total`, `crit`, `slices[]`, `kind`: `attack`, `graze`, `riposte`, `spill`, `condition`, `retaliation`, `strike` |
-| `combat/kill` | An enemy died (old `kill` bus event) | `entity`, `defId`, `level`, `rewardLevel`, `xp`, `tags`, `lastHit`, `site`, `boss`, `once` |
+| `combat/hit` | Damage landed on a combatant | `attacker`, `target`, `total`, `crit`, `type`, `thrown?`, `kind`: `attack`, `graze`, `riposte`, `spill`, `condition`, `strike` |
+| `combat/kill` | An enemy died (old `kill` bus event) | `entity`, `defId`, `name`, `level`, `rewardLevel`, `xp`, `tags`, `lastHit`, `site`, `boss`, `once` |
 | `combat/fight-won` | The last enemy died (old `fight:won`) | `site`, `forced` |
-| `combat/fight-closed` | A fight ended for any reason (old `fight:closed`) | `site`, `standing[] { entity, defId }`, `outcome` |
-| `combat/defeat` | The player went down (old `defeat` bus event, plus what `onDefeat` handed to the retreat) | `monster { defId, name, level }`, `forced`, `outcome`, `cause`, `site` |
-| `combat/skipped-action` | A rotation entry of a kind nobody answers | `entity`, `kind` |
+| `combat/fight-closed` | A fight ended for any reason (old `fight:closed`) | `site`, `standing[]` |
+| `combat/defeat` | The player went down (old `defeat` bus event, plus what `onDefeat` handed to the retreat) | `monster { entity, defId, name, level }` or null, `forced`, `outcome`, `cause`, `site`, `byCondition` |
+| `combat/skipped-action` | A rotation entry of a kind nobody registered | `entity`, `kind` |
+
+`combat/close-ledger` is sent by this system to itself (see "The ledger").
 
 The trigger stamps of old `markCombatEvent` (`onEncounterStart`, `onCrit`,
-`onDodge`, `onParry`, `onHit`, `onGraze`) are kept in `fight.events` and are
-also the events above; port 5 reads either.
+`onDodge`, `onParry`, `onHit`, `onGraze`) are kept in `fight.events`, in
+clock ticks; the events above carry the same moments.
 
-Status hooks, sent as `statuses/hook` or the request of the same meaning:
-`barFill`, `barDeplete`, `combatEnd`, `damageTaken` on a monster, and
-`statuses/situation { inCombat }`, `statuses/inflict` for `wears`,
-`statuses/forget`.
+To other systems: `statuses/situation { inCombat }`, `statuses/forget`,
+`resources/set-pace { inCombat }` and, for the rest rule, `{ hpMult,
+healKind }`; `counters/bump`, `set`, `clear`; `skills/grant-xp`,
+`skills/check-discovery`; `attributes/grant-xp`; `levels/grant-xp`;
+`log/line`, `log/feed`, `log/feed-repeat`, `log/feed-floating`,
+`log/feed-settle`, `log/transcript-open`, `log/transcript-close`.
+
+### Events this system hears
+
+| Event | Does |
+|---|---|
+| `resources/damaged` | Attributes the damage in the ledger. `source: null` is already attributed; no source is recorded as `unknown`. |
+| `statuses/damage` | Attributes a tick of the player's conditions, one row per condition. |
+| `resources/healed` | Records the heal by kind, and what a condition refused. |
+| `combat/set-style` | The style fought in and its exertion, from the styles system. |
 
 ### Hook stats
 
@@ -127,46 +155,52 @@ moves them from its own modifier source.
 | `combat/darkness` | 0 | `darknessFactor(state)` of old `exposure.ts` (port 6) |
 | `combat/positionDodgeMult` | 1 | `positionDodgeMult` of old `martial.ts` |
 | `combat/positionIncomingMult` | 1 | `positionIncomingMult`, before `stumbleTaken` |
-| `combat/sizeRank` | 3 (medium) | `playerSizeRank` of old `mutagens.ts` |
-| `combat/incantFillMult` | 1 | `incantFillMult` (a wind-up drags the bar) |
+| `combat/barFillMult` | 1 | `incantFillMult` (a wind-up drags the player's bar) |
+
+The player's size is `wielderRank` of `items`, which the body's owner states
+with `items/set-bearer`.
 
 ### Rotations
 
 Old `activeRotation` and `pickActive` walked one list for the player and
-`pickMonsterAction` one list per monster. Both are ported. An entry has a
-kind. This port executes one kind: the normal attack, which is what the
-action bar does when the rotation offers nothing.
+`pickMonsterAction` one list per monster. Both are ported (`engine.ts`). An
+entry has a kind. This port executes one kind: the normal attack, which is
+what the action bar does when the rotation offers nothing.
 
-Other kinds are registered, not coded here:
+Other kinds are registered at module load by the system that owns them:
 
-- `registerActionKind(kind, handler)` in `combat/actions.ts` is called at
-  module load by the system that owns the kind. The handler gets the combat
-  context and the entry and returns what it did: `{ acted: true }`, or
-  `{ acted: false }` to fall through to the next entry.
-- Monster kinds: `technique` (port 5, the six monster techniques), `cast`
-  (port 5, the two monster sentences). A monster technique shapes the normal
-  attack: its handler returns a `shape` (`damageMult`, `damageType`, `hits`,
-  `inflicts`, `cooldown`, `to`) and the enemy attack phase applies it.
-- Player kinds: `technique:`, `grimoire:`, `facet:`, the gene active, skill
-  actives (`strike`, `spell`, `buff`).
-- An entry whose kind has no handler is skipped with
+- `registerMonsterAction(kind, handler)`, kind `technique` or `cast`. The
+  handler answers `available` (the old gates), and either `shape` (a
+  technique: `damageMult`, `damageType`, `hits`, `inflicts`, `cooldown`,
+  `to`, `watchKey`; the tick stamps the clock, moves the monster and throws
+  the blow) or `perform` (a working: it replaces the swing, is not dodged or
+  parried, and does everything itself, including `combat/stamp-action`).
+- `registerPlayerAction(prefix, handler)`, prefix `technique:`, `grimoire:`,
+  `facet:` or a whole id. The handler answers `known` (ids beyond the
+  explicit order) and `pick(id, slot)`. A picked active has a `shape` (the
+  tick throws the blow with `damageMult`, `hits`, `penetration`, `splash`,
+  a named `crit`, `inflicts`, `staminaCost`, `momentum`, `prevented`, `to`)
+  or a `cast` (it takes the swing's place and lands through
+  `combat/damage-enemy`). `sure` and `approach` feed the to-hit sequence.
+- A handler gets a narrow context: reads, the generator, `emit`, `request`,
+  `skip`. It does not get the combat slice.
+- An entry whose kind has no handler is passed over with
   `ctx.skip('combat/rotation', ...)` once per fight and entry, and
   `combat/skipped-action` is emitted. The combatant then does what the old
   code did when nothing in the rotation was available: a plain swing.
 
-### Not ported, each an extension point and not a stub
+`tests/combatSystem.test.ts` registers each of the four shapes from a test.
 
-| Old part | Lines | Attaches through |
-|---|---|---|
-| Floating weapons, telekinesis | 278-708 | A system with its own tick, ordered before combat, calling `combat/damage-enemy`; `handSwingShare` of `items` is already read by the swing. |
-| Crafted self-casts, monster workings, `castCraftedAttack` | 2224-2539, 3229-3522 | Action kinds `grimoire:` and `cast`; `combat/damage-enemy`; `combat/heal-enemy`. |
-| Counterspells | 2540-2803 | Hears `combat/attack` of kind cast; arcane port. |
-| Counter techniques (`pickCounter`, `fireCounter`) | 2095-2223 | Action kind with a `counter` hook; martial port. `fight.prevented` is kept for it. |
-| Facet ability strikes | 3523-3609 | `combat/damage-enemy`, `combat/bar-filled`, `combat/hit`. |
-| Gene abilities, incantation, tongues | 2847-3085 | Action kind; hook stat `combat/incantFillMult`. |
-| Statues and rubble | 1701-1777 | No monster on floors 0 to 6 has a statue rule. `statueOf` of `statuses` is read where the old tick read it so that a statue condition is not silently ignored: listed under "Left behind". |
-| Coatings (`spendCoating`) | in 4217-4835 | Hears `combat/hit` of kind `attack`; alchemy port. |
-| Toll golem, wards, festival, sea | - | Not ported. |
+### The ledger
+
+A blow, a heal and a condition tick reach the ledger as events, after the
+handler that caused them returns. The handler that ends a fight therefore
+does not close the ledger itself: it emits `combat/close-ledger`, which
+arrives after the damage events and the feed lines of that handler. The
+close reads the conditions the player still holds (after `combatEnd`) and
+copies the transcript the log system kept, without damage reports.
+
+Walking away drops the tally at once.
 
 ### Tick order
 
@@ -174,13 +208,179 @@ Other kinds are registered, not coded here:
 `tickAction` ran `tickResources`, `tickPlayerStatuses`, the health trickle
 and then `tickCombat`.
 
-One tick with a fight open, in old order: cooldowns; each enemy's conditions
-(`statuses/tick`), which can kill; enemy regeneration; enemy minds; the
-player's bar (reversal, bar damage, `barFill`, blocked action, the rotation,
-the normal attack with dodge, miss, graze, crit, typed slices, spill,
-retaliation, XP); each enemy's bar (reversal, jostle, bar damage, the
-rotation, self-miss, the player's dodge, shroud, ranged block, parry and
-riposte, the blow, riders, XP); defeat.
+One tick with a fight open, in old order: the player at 0 HP from a
+condition (the fight is closed as a knockout); the opening address; cooldowns;
+each enemy's conditions (`statuses/tick`), which can kill; enemy
+regeneration; enemy minds; the sweep of what a request killed; buff-slot
+actives; the player's bar (reversal, bar damage, `barFill`, a blocked
+action, the rotation, the to-hit sequence, graze, the blow with crit, typed
+slices, spill, retaliation, XP); each enemy's bar (reversal, jostle, bar
+damage, the rotation, self-miss, the player's dodge, shroud, ranged block,
+parry and riposte, the blow, riders, XP); defeat.
 
 With no fight: settle the floating feed runs; the respawn timer; the rest
 rule; roll the next fight from the site when `hunting`.
+
+### Changed while building
+
+- `combat/sizeRank` was dropped: `items` already holds the body's size.
+- `combat/incantFillMult` is named `combat/barFillMult`.
+- `combat/heal-enemy` is not declared. It arrives with the system that
+  forces healing on a monster (port 5 or arcane).
+- `combat/set-rotation`, `combat/stamp-action` and `combat/close-ledger`
+  were added.
+- `resources/heal-now` is declared in `resources` and not used here yet.
+
+## Old to new
+
+| Old `combat.ts` | Lines | Here |
+|---|---|---|
+| `stepsSmaller`, `stepsLarger`, `landGraze`, `shedCooldownsOnMiss`, `landMonsterGraze` | 109-277 | `engine.ts` |
+| Floating weapons, telekinesis | 278-708 | Not ported (extension point) |
+| `RESPAWN_DELAY`, `POSITION_MODS`, `feed`, `rollAgainst`, `markCombatEvent` | 709-760 | `engine.ts`, `damage.ts` |
+| `slainKey`, `fightsKey`, `bossKey`, `isSpotBoss`, `isNightNow`, `encounterPowerRatio`, `eligibleEncounters`, `spotCleared`, `spawnMonster` | 761-949 | `spawn.ts` (`isSiteBoss`, `siteCleared`) |
+| `feedTheFast`, `frontEnemy`, `liveEnemies`, `rollGroupSize`, `spawnGroup`, `warrantsAppearsLine` | 951-1102 | `engine.ts`, `spawn.ts` |
+| `startEncounter`, `inForcedFight`, `startForcedFight`, `startStagedFight`, `startStagedGroup` | 1104-1276 | `engine.ts`; the approach (`pendingApproach`) is left behind |
+| `combatTags`, `WEAPON_DAMAGE_TYPES`, `trackWeaponFamily`, `playerDamageType` | 1278-1352 | `engine.ts`, `damage.ts` |
+| `monsterResistance`, `afterPenetration`, `monsterSlice`, `incomingSlice`, `incomingDamage`, `addSlice`, crit keys, `resNote` | 1354-1575 | `damage.ts`, `monsters` (`monsterResistance`) |
+| Drop tables | 1586-1700 | `loot` (port 3) |
+| Statues, rubble, `standAside`; `rattle` | 1701-1777 | Statues not ported; `rattle` in `engine.ts` |
+| `onKill`, `onDefeat` | 1778-1946 | `engine.ts`, without the statue rules and the knockout |
+| `activeRotation`, `pickActive` | 1948-2093 | `engine.ts` over `actions.ts` |
+| `pickCounter`, `fireCounter` | 2095-2222 | Not ported (extension point) |
+| Crafted self-casts, monster workings, counterspells | 2224-2803 | Not ported (extension point) |
+| `pickMonsterAction` | 2804-2845 | `engine.ts` over `actions.ts` |
+| Incantation, tongues, gene abilities, `healEnemy`, `castCraftedAttack`, Facet strikes | 2847-3609 | Not ported (extension point); `spendMonsterAction` is `stampMonsterAction`; `sweepDead` in `engine.ts` |
+| `answeredToDeath`, `applyBarDamage`, `applyMonsterBarDamage`, `applyRetaliation`, `applyMonsterRetaliation`, `enemyTookDamage`, `dealtByType`, `heaviestType` | 3610-3865 | `engine.ts`, `damage.ts` |
+| `regenDoused`, `tickEnemyRegen`, `tickEnemyStatuses`, `burnMind`, `tickEnemyMinds`, `settleWhen` | 3867-4057 | `engine.ts` |
+| `tickCombat`, `runCombatTick` head | 4061-4215 | `runCombatTick` |
+| Player attack | 4217-4834 | `playerPhase`, `swing` |
+| Enemy attacks | 4836-5303 | `enemyPhase` |
+| `closeCombat`, `abandonCombat` | 5306-5360 | `engine.ts` |
+| `KEPT_WOUND_CAP`, `spawnHp`, `pendingWounds` | 5362-5406 | `spawn.ts`; `woundsForSave` not needed |
+
+Other old files: `ledger.ts` is `ledger.ts` whole. `huntrest.ts`:
+`holdNextFight`, `restTarget`, `restingForFight`, `setHuntRest`,
+`clearRest` are in `engine.ts` and `index.ts`; `returnRecoverTarget` is port
+6. `monsterMind`, `mindInDebt` of `monsterStats.ts` are in `engine.ts`.
+`naturalDarkness` of `exposure.ts` is in `spawn.ts`. `isPracticeFight` of
+`practice.ts` is in `engine.ts`. The kill, defeat listeners of
+`achievements.ts` and the kill listener of `levels.ts` are in `onKill` and
+`onDefeat`.
+
+## Not ported, each an extension point and not a stub
+
+| Old part | Attaches through |
+|---|---|
+| Floating weapons, telekinesis | A system with its own tick, ordered before combat, calling `combat/damage-enemy`. The swing already reads `handSwingShare` of `items`. `landGraze` takes the share. |
+| Player techniques, the six monster techniques | `registerPlayerAction('technique:')`, `registerMonsterAction('technique')`; hook stats `combat/positionDodgeMult`, `combat/positionIncomingMult`; `fight.position`, `Enemy.position`. |
+| Counter techniques (`pickCounter`, `fireCounter`) | Needs a hook inside the incoming blow that this port does not have. `fight.prevented` and the `onHit` stamp are kept for it. Listed under "Open for the martial port". |
+| Crafted spells, monster workings, `castCraftedAttack` | `registerPlayerAction('grimoire:')`, `registerMonsterAction('cast')`, `combat/damage-enemy`, `combat/stamp-action`, `resources/hit`. |
+| Counterspells | Hears `combat/attack` and the workings of its own kind; arcane port. |
+| Facet ability strikes and actions | `combat/damage-enemy`, `combat/bar-filled`, `combat/hit`, `registerPlayerAction('facet:')`. |
+| Gene abilities, incantation, tongues | A player kind for the gene active; `combat/barFillMult`. |
+| Coatings (`spendCoating`) | Hears `combat/hit` of kind `attack`; alchemy port. Its per-hit slices need a hook inside the blow: listed with the counters. |
+| Statues and rubble, `standAside` | No monster of floors 0 to 6 has the rule. A statue condition on an enemy is reported once through the skip log. |
+| Skill actives (`strike`, `spell`, `buff`), combat buffs | No skill record in the registry is an active. A player kind for skill ids when one exists. |
+| The approach (`pendingApproach`) | The world port applies it after `combat/fight-started`, or through a field of `combat/start-forced`. |
+| Practice shaping (`practiceXp`) | `skills` and `attributes` have no hook for shaping a grant by the receiving level. A fight against training equipment pays unshaped XP. |
+| Toll golem reward and spell reactions, wards, festival, sea | Not ported. The 30-tick address of the toll golem is ported (`introTicks`). |
+
+## Skip reasons
+
+- `combat/hunt`: the site has no id or no encounter list; the site names an
+  unknown monster; a line lacks a level range; the fight cannot be left.
+- `combat/stop`: the fight cannot be left; no hunt is on and no fight is
+  open.
+- `combat/set-hunt-rest`: the threshold is not a number.
+- `combat/keep-fight`: no fight has ended yet; the fight is already kept.
+- `combat/drop-fight`: no kept fight has the id.
+- `combat/set-rotation`: the order is not a list of ids.
+- `combat/start-forced`, `combat/start-staged`: a site or member issue, as
+  for `combat/hunt`; a staged fight needs a member.
+- `combat/damage-enemy`, `combat/stamp-action`: no enemy has the entity id.
+- `combat/rotation`: no system has registered the action kind.
+- `combat/encounter`: a line needs the sky (world port).
+- `combat/statue`: an enemy holds a statue condition.
+- `combat/close-ledger`: no ledger is open.
+
+A fight that does not start because the site is cleared, the table is empty
+or a fight is open is an outcome of `combat/start-forced` (false), not a
+skip.
+
+## Left behind
+
+- The knockout: `combat/defeat` is emitted, the fight is closed, the respawn
+  delay is doubled and the hunt is turned off (the old retreat cleared the
+  activity). Setting HP to 1, `recovering`, the retreat, `captureFall` and
+  the return are port 6. Until then the player stays at the HP the blow left
+  and recovers at the idle rate.
+- A condition that takes the player to 0 HP in a fight: this system closes
+  the fight as a knockout (`byCondition: true`, the short respawn delay, no
+  `defeats` bump, as the old `tickPlayerStatuses` did). The "knocks you out"
+  line names the condition and is the knockout's (port 6).
+- `sky` lines of an encounter table (weather, port 6).
+- `returnRecoverTarget` of `huntrest.ts` (port 6).
+- The bestiary (`recordEncounter`, `recordKill`, `spawnLevels`): hears
+  `combat/fight-started` and `combat/kill`.
+- `checkFloorClears` on a kill and a win (port 6): hears `combat/kill` and
+  `combat/fight-won`.
+- The notebook has commands and no panel part.
+- Monster portraits: the view carries the file name (`art`); the panel shows
+  the emoji icon.
+
+## Differences from the old build
+
+- The save holds the fight. A load continues it.
+- Monster cooldown stamps and trigger stamps are in clock ticks
+  (`clock.totalTicks`), as the old ones were in `state.totalTicks`.
+- XP grants, counter bumps and log lines are events: they are applied after
+  the tick handler returns, in emit order. A level-up line of a skill
+  therefore appears after the lines of the tick that earned it, not between
+  them.
+- A counter bumped in a handler is not readable in the same handler. The one
+  place that needed it (`fights:<site>` against the fight limit) adds the
+  bump it just sent.
+- `wears` are applied when the fight starts, after every member is minted,
+  not inside `spawnMonster`: a monster's stat block is read from the slice.
+  No record has `wears` with a chance, so the order of draws is unchanged.
+- The ledger closes one event later than the old `endFight` (see "The
+  ledger").
+- `hunting` replaces "the selected activity is a hunt". A defeat turns it
+  off.
+
+## Old rules ported as they are
+
+- The feed line of a group reads "and 1 others attack!" for a group of two.
+- `noteOutgoing` has a `kill` flag and no caller sets it: `outgoing.kills`
+  of a ledger is always 0.
+- The shroud roll (`statusIncomingMissChance`) draws from the generator on
+  every enemy swing that was not dodged, also at a chance of 0. The self-miss
+  roll and the parry roll draw only when there is a chance.
+- A monster's riders are applied before the check that the player is still
+  standing: the blow that ends a fight can leave a condition behind.
+- Player XP for a swing (`str` 2, `dex` 1, skill XP by reward level) is paid
+  before the kill is processed, also for the blow that kills.
+- `applyMonsterBarDamage`, a retaliation that hits a monster, and a
+  condition's bar damage take the slice unrounded and with no floor: a
+  monster's HP can be fractional. Blows are rounded with a floor of 1.
+- A blow on the player is rounded per hit (`max(1, round(slice x bite))`),
+  so a flurry of small hits deals at least 1 each.
+- `fixedDamage` ignores the bite of a surprise condition and every defence.
+- In `onKill`, gold is `round(monster.gold x goldGain)`; `monster.gold` was
+  already rounded at spawn.
+- The rarity roll multiplies rewards by `rarity.statMult`, not by
+  `rarity.lootMult`, at spawn (`xp`). `lootMult` is read by the drop roll.
+- `rollGroupSize` clamps to the leader's `min` and `max` after the weighted
+  roll, so a leader with `min: 5` always brings four, whatever the site's
+  weights say.
+- A dodge is rolled with `Math.min(0.9, ...)` although the dodge stat is
+  held at 0.75; a stance's bought dodge can pass the stat's cap.
+- The parry riposte and the spill do not tell the target's conditions
+  (`enemyTookDamage` is not called for them), and do not write the ledger's
+  `outgoing`.
+- `combat:attacks` counts shaped blows and plain ones alike.
+- The task text counted 146 monsters; the old registry holds 131.
+- The survey in `docs/SPINE.md` section 1 counted two monster spell
+  sentences on floors 0 to 6. The old data also gives `goblin_witch_doctor`
+  (floor 6) three divine workings.

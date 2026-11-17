@@ -4,8 +4,20 @@
     {
       "name": "ksgb-dev",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
       "port": 5600
+    },
+    {
+      "name": "ksgb-preview",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "preview"
+      ],
+      "port": 5601
     }
   ]
 }
