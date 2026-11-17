@@ -141,7 +141,8 @@ healKind }`; `counters/bump`, `set`, `clear`; `skills/grant-xp`,
 | Event | Does |
 |---|---|
 | `resources/damaged` | Attributes the damage in the ledger. `source: null` is already attributed; no source is recorded as `unknown`. |
-| `statuses/damage` | Attributes a tick of the player's conditions, one row per condition. |
+| `statuses/damage` | Attributes a tick of the player's conditions, one row per condition. Closes an open fight as a knockout when the tick left the player at 0 HP. |
+| `statuses/detonated`, `statuses/fatal` | Close an open fight as a knockout: a detonation that left the player at 0 HP, a fatal condition whatever the HP. |
 | `resources/healed` | Records the heal by kind, and what a condition refused. |
 | `combat/set-style` | The style fought in and its exertion, from the styles system. |
 
@@ -208,8 +209,7 @@ Walking away drops the tally at once.
 `tickAction` ran `tickResources`, `tickPlayerStatuses`, the health trickle
 and then `tickCombat`.
 
-One tick with a fight open, in old order: the player at 0 HP from a
-condition (the fight is closed as a knockout); the opening address; cooldowns;
+One tick with a fight open, in old order: the opening address; cooldowns;
 each enemy's conditions (`statuses/tick`), which can kill; enemy
 regeneration; enemy minds; the sweep of what a request killed; buff-slot
 actives; the player's bar (reversal, bar damage, `barFill`, a blocked
@@ -315,9 +315,10 @@ skip.
   activity). Setting HP to 1, `recovering`, the retreat, `captureFall` and
   the return are port 6. Until then the player stays at the HP the blow left
   and recovers at the idle rate.
-- A condition that takes the player to 0 HP in a fight: this system closes
-  the fight as a knockout (`byCondition: true`, the short respawn delay, no
-  `defeats` bump, as the old `tickPlayerStatuses` did). The "knocks you out"
+- A condition that finishes the player in a fight (its damage or its
+  detonation leaves 0 HP, or it is fatal): this system closes the fight as a
+  knockout (`byCondition: true`, the short respawn delay, no `defeats` bump,
+  as the old `tickPlayerStatuses` did). The "knocks you out"
   line names the condition and is the knockout's (port 6).
 - `sky` lines of an encounter table (weather, port 6).
 - `returnRecoverTarget` of `huntrest.ts` (port 6).
@@ -380,6 +381,9 @@ skip.
   (`enemyTookDamage` is not called for them), and do not write the ledger's
   `outgoing`.
 - `combat:attacks` counts shaped blows and plain ones alike.
+- A monster's graze that takes the player to 0 HP does not end the fight:
+  the enemy phase stops, and the defeat follows on the next blow that lands.
+  No monster record has the `graze` stat.
 - The task text counted 146 monsters; the old registry holds 131.
 - The survey in `docs/SPINE.md` section 1 counted two monster spell
   sentences on floors 0 to 6. The old data also gives `goblin_witch_doctor`

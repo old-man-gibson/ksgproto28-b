@@ -992,16 +992,20 @@ export function onDefeat(ctx: C, outcome: FightOutcome = 'knocked_out', cause = 
 }
 
 /**
- * A condition took the player to 0 HP while a fight was open. The fight half
- * of the three knockout branches of the old `tickPlayerStatuses`
- * (`systems/actions.ts`): the ledger is closed as a knockout, the fight is
+ * A condition finished the player while a fight was open. The fight half of
+ * the three knockout branches of the old `tickPlayerStatuses`
+ * (`systems/actions.ts`): a detonation or a tick of condition damage that
+ * leaves the player at 0 HP, and a fatal condition whatever the HP. Called
+ * from the handlers of `statuses/detonated`, `statuses/damage` and
+ * `statuses/fatal`. The ledger is closed as a knockout, the fight is
  * abandoned (the respawn delay is the short one), and the hunt is turned off
  * as the old retreat cleared the activity. The old code emitted no `defeat`
  * bus event here, so the counter `defeats` is not bumped. The "knocks you
  * out" line names the condition and belongs to the knockout (port 6).
  */
-function fallToCondition(ctx: C): void {
-  const c = ctx.state.fight!;
+export function fallToCondition(ctx: C): void {
+  const c = ctx.state.fight;
+  if (!c) return;
   const monster = c.enemies[0];
   ctx.emit(playerDefeated, {
     monster: monster ? refOf(monster) : null,
@@ -1371,13 +1375,6 @@ export function runCombatTick(ctx: C): void {
   }
 
   const c = state.fight;
-
-  // The player's conditions ticked before this system. One of them may have
-  // been what finished the player.
-  if (!alive(ctx)) {
-    fallToCondition(ctx);
-    return;
-  }
 
   if (c.introTicks && c.introTicks > 0) {
     if (c.introTicks === 30 || c.introTicks === 20) feed(ctx, '“Please provide documents.”');

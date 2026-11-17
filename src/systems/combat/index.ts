@@ -28,12 +28,20 @@ import {
 } from '../../kernel';
 import log, { logLine, transcriptClose, transcriptForSave } from '../log';
 import { MONSTERS, monsterFactMod, type MonsterRange } from '../monsters';
-import { playerDamaged, playerHealed } from '../resources';
+import resources, { isAlive, playerDamaged, playerHealed } from '../resources';
 import { ATTRIBUTE_IDS, baseAttrFact, statBlockOf, type StatMod } from '../stats';
-import statuses, { conditionDamage, heldOf, STATUSES, visibleStatuses } from '../statuses';
+import statuses, {
+  conditionDamage,
+  conditionDetonated,
+  conditionFatal,
+  heldOf,
+  STATUSES,
+  visibleStatuses,
+} from '../statuses';
 import {
   abandonCombat,
   closeLedger,
+  fallToCondition,
   hook,
   inForcedFight,
   now,
@@ -347,6 +355,15 @@ export default defineSystem<CombatState, CombatView>({
     on(conditionDamage, (ctx, { payload }) => {
       if (payload.entity !== PLAYER) return;
       for (const h of payload.hits) noteConditionDamage(ctx.state, now(ctx), h.id, h.amount);
+      // The damage itself was applied before this event arrived.
+      if (ctx.state.fight && !isAlive(ctx.read(resources))) fallToCondition(ctx);
+    }),
+    on(conditionDetonated, (ctx, { payload }) => {
+      if (payload.entity === PLAYER && ctx.state.fight && !isAlive(ctx.read(resources))) fallToCondition(ctx);
+    }),
+    // A fatal condition ends the fight whatever health is left.
+    on(conditionFatal, (ctx, { payload }) => {
+      if (payload.entity === PLAYER && ctx.state.fight) fallToCondition(ctx);
     }),
     on(playerHealed, (ctx, { payload }) => {
       noteHealed(ctx.state, now(ctx), payload.kind, payload.healed);
