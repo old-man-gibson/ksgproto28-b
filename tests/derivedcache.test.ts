@@ -35,7 +35,7 @@ import { ask, emit, equip, makeGame, patch, setMods, slice, unequip } from './he
  * Left behind, for the ports of the systems they need:
  * - forged pieces (modular smithing), the festival bonus (prestige), Cooking's food
  *   milestones over a cooked dish (cooking);
- * - the rebuild count under a gale on the open ridge (weather);
+ * - the rebuild count under a gale on the open ridge: in `tests/exposure.test.ts` since spine port 6;
  * - the long fight of the sweep. The sweep here runs every request these
  *   systems accept instead.
  */
@@ -371,5 +371,6 @@ describe('a decaying condition and the cache', () => {
     }
   });
 
-  it.todo('under a gale on the open ridge: rebuilds on a minority of ticks (weather: the sky rules that dose buffeted)');
+  // 'under a gale on the open ridge': ported in `tests/exposure.test.ts` (spine port 6), on a floor 4
+  // area the test puts under the Malgeri sky table, since floor 17 is step 4 content.
 });

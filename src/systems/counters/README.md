@@ -62,5 +62,5 @@ schema has no union type, so every field but `type` is optional in it;
 
 - Bumps on kill and defeat (`kills`, `kills:<id>`, `kills:tag:<tag>`,
   `defeats`): `combat` emits them (spine port 4). The bump on arrival
-  (`travel:trips`): the world port.
+  (`travel:trips`): `world` emits it (spine port 6).
 - Achievement tiers (`checkAchievements`): the achievements port.

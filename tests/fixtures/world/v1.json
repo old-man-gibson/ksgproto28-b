@@ -1,0 +1,14 @@
+{
+  "spot": "f2_stairhead",
+  "discovered": ["f0_cell", "f0_cellblock", "f0_field", "f0_gate", "ascent_foot", "f1_landing", "f1_storerooms", "f2_stairhead", "f2_hall_1", "f2_gym"],
+  "travel": { "from": "f2_stairhead", "to": "f2_hall_1", "ticksLeft": 12, "total": 25 },
+  "travelPlan": ["f2_gym"],
+  "travelIntent": { "spot": "f2_gym", "activity": "train_str_gym" },
+  "activity": null,
+  "activityProgress": 0,
+  "resumeActivity": { "f1_storerooms": "hunt", "f2_hall_1": "hunt", "f2_stairhead": "camp_f2" },
+  "explored": { "f1_reception": 40 },
+  "finds": { "f1_reception": ["office_key"] },
+  "safeSpots": { "nearest": "f2_stairhead", "unconditional": "f2_stairhead" },
+  "recovering": false
+}

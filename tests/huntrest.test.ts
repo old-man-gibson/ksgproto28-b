@@ -4,7 +4,7 @@
  *
  * Call shape changes: `g.setHuntRest(at, toFull)` is the command
  * `combat/set-hunt-rest`; the site is the Cages table from
- * `tests/sites.json`; `restingForFight` reads the combat slice.
+ * the world registry (`combatHelpers.ts`); `restingForFight` reads the combat slice.
  *
  * Not ported: `returnRecoverTarget` (it reads the pending return of the
  * knockout: port 6). The old file had no case for it.

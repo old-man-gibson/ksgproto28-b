@@ -32,7 +32,7 @@ calendar (`DAYS_PER_MONTH` and so on) are constants in `index.ts`.
 ## Left behind
 
 - Weather, climate tables and the sky (the rest of `data/climate.data.ts`):
-  the world port.
+  ported in `weather` (spine port 6).
 - Pause, the keeper's dare and bonus time, which stop or double the clock:
   the ports of those systems. Nothing holds the clock yet.
 - Chronosense, which decides how much of the clock the player may read.

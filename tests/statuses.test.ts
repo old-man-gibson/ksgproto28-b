@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { defineSystem, on, PLAYER, type GameEvent, type Kernel, type Modifier } from '../src/kernel';
+import { PLAYER, type GameEvent, type Kernel, type Modifier } from '../src/kernel';
 import {
   availableMax,
   drawPool,
@@ -24,7 +24,6 @@ import statuses, {
   APPLICATION_FLOOR,
   amplifyStatuses,
   applyStatus,
-  conditionFatal,
   dueGraftSpread,
   escalationChance,
   fieldHunger,
@@ -62,7 +61,10 @@ import statuses, {
   type StatusInstance,
   type StatusTickInput,
 } from '../src/systems/statuses';
-import { ask, emit, makeGame, makeKernel, patch, probe, run, setMods, slice } from './helpers';
+import { ask, emit, makeGame, patch, run, setMods, slice } from './helpers';
+import { logLine } from '../src/systems/log';
+import type { WorldState } from '../src/systems/world';
+import { huntingGame } from './combatHelpers';
 
 /**
  * Port of the old tests/statuses.test.ts. Changed: the call shape only.
@@ -302,7 +304,13 @@ describe('damage over time', () => {
     expect(resisted.damage).toBeCloseTo(plain.damage * 0.5);
   });
 
-  it.todo('a condition can kill outside of combat (port 6: the knockout, `recovering`)');
+  it('a condition can kill outside of combat', () => {
+    const g = fresh(4);
+    setPool(g, 'hp', 3);
+    apply(g, PLAYER, { id: 'blazing', intensity: 5 });
+    for (let i = 0; i < 40 && !recovering(g); i++) g.tick();
+    expect(recovering(g)).toBe(true);
+  });
 });
 
 describe('a pierced dot is partly unresistable', () => {
@@ -857,28 +865,16 @@ describe('corruption', () => {
     expect(trueMax(statBlockOf(g), 'hp')).toBe(wholeHp);
   });
 
-  // `recovering` is the world's (port 6). A test-only system stands in for
-  // it: it hears `statuses/fatal` and states that the player is down.
+  // The knockout system hears `statuses/fatal` and the world system states
+  // that the player is down (spine port 6).
   it('emptying your spirit takes you down and keeps half its hold', () => {
-    const world = defineSystem<{ downs: number }>({
-      id: 'world',
-      version: 1,
-      initial: () => ({ downs: 0 }),
-      events: [
-        on(conditionFatal, (ctx, event) => {
-          ctx.state.downs++;
-          ctx.emit(setSituation, { down: true });
-          expect(event.payload.id).toBe('corrupted');
-        }),
-      ],
-    });
-    const g = track(makeKernel([probe, world], { seed: 31 }));
+    const g = track(makeGame({ seed: 31 }));
     // Ten points of corruption seals spirit away entirely.
     apply(g, PLAYER, { id: 'corrupted', intensity: 7 });
     edit(g, 'corrupted', (held) => (held.intensity = 10));
 
     g.tick(5);
-    expect(slice<{ downs: number }>(g, 'world').downs).toBe(1);
+    expect(slice<{ recovering: boolean }>(g, 'world').recovering).toBe(true);
     expect(slice<StatusesState>(g, 'statuses').down).toBe(true);
     // Half, rounded up, and it does not tick away on its own.
     const held = find(g, 'corrupted')!;
@@ -978,10 +974,71 @@ describe('the end of a fight lets go of what only a fight could shed', () => {
   });
 });
 
+const recovering = (g: Kernel): boolean => slice<WorldState>(g, 'world').recovering;
+
+/**
+ * A new character knocked out in a real fight and left alone to come round.
+ * The old tests stood on the shelved `ravine_floor` and selected its hunt.
+ * That spot is not in the world registry: its table is hunted with
+ * `combat/hunt`, so no activity is running and the knockout sends the
+ * character nowhere afterwards (the old tests cleared the activity by hand
+ * for the same end).
+ */
+function knockedOut(seed: number): Kernel {
+  const g = track(huntingGame(seed, 'ravine_floor'));
+  for (let i = 0; i < 3000 && !recovering(g); i++) g.tick();
+  expect(recovering(g)).toBe(true);
+  return g;
+}
+
 describe('a knockout is a floor, not a step you can fall through twice', () => {
-  it.todo('a rot that outlives the fight cannot knock you out while you are down (port 6: the knockout)');
+  /** Knocked out with something corrosive still running. */
+  function downedWithRot(seed = 3): Kernel {
+    const g = knockedOut(seed);
+    // Deep enough to matter: rot deals 0.12 per point per tick. A light dose
+    // is outpaced by the recovery trickle and never reaches the floor.
+    apply(g, PLAYER, { id: 'rotting', intensity: 200 });
+    return g;
+  }
+
+  it('a rot that outlives the fight cannot knock you out while you are down', () => {
+    const g = downedWithRot();
+    // Being finished after getting back up is the game working. Being
+    // finished while still on the floor is the bug, and it used to happen on
+    // every tick. The old test counted "finishes you" lines; the line a
+    // condition knockout writes now says "knocks you out", so both count.
+    let whileDown = 0;
+    let down = false;
+    g.onEvent((event) => {
+      if (event.type !== logLine.type) return;
+      const msg = (event.payload as { msg?: string }).msg ?? '';
+      if (down && (msg.includes('finishes you') || msg.includes('knocks you out'))) whileDown += 1;
+    });
+
+    let peak = 0;
+    for (let i = 0; i < 300; i++) {
+      down = recovering(g);
+      g.tick();
+      peak = Math.max(peak, hp(g));
+    }
+    expect(whileDown).toBe(0);
+    // The knockout used to return before the recovery regen, pinning health
+    // at the 1 it was set to for as long as anything was eating it.
+    expect(peak).toBeGreaterThan(1);
+  });
+
   // Ported in tests/combatStatuses.test.ts (spine port 4): it does not overwrite the summary of the fight that actually felled you
-  it.todo('you still come round once the rot has run its course (port 6: the knockout)');
+
+  it('you still come round once the rot has run its course', () => {
+    const g = downedWithRot();
+    // Long enough for the 45-second rot to run out and for the health it kept
+    // eating to climb back afterwards. Being held on the floor must not be a
+    // dead end.
+    for (let i = 0; i < 1500; i++) g.tick();
+    expect(has(g, 'rotting')).toBe(false);
+    expect(recovering(g)).toBe(false);
+    expect(hp(g)).toBeGreaterThan(1);
+  });
 });
 
 describe('being out cold is time passing', () => {
@@ -1011,8 +1068,40 @@ describe('being out cold is time passing', () => {
     expect(find(g, 'rotting')!.ticksLeft).toBe(full - 6);
   });
 
-  it.todo('a rot does not pick up where it left off once you are back on your feet (port 6: the knockout)');
-  it.todo('and the floor is not a long stay — a heavy rot burns out in a fraction of its clock (port 6: the knockout)');
+  it('a rot does not pick up where it left off once you are back on your feet', () => {
+    const g = knockedOut(3);
+    // Light enough that the recovery trickle outruns it: the band that used
+    // to stand the character up at 60% with most of the fever still to come,
+    // and put it straight back down.
+    apply(g, PLAYER, { id: 'rotting', intensity: 5 });
+
+    let rose = -1;
+    let knockdowns = 0;
+    let wasDown = true;
+    for (let t = 1; t <= 1200; t++) {
+      g.tick();
+      const isDown = recovering(g);
+      if (rose < 0 && !isDown) rose = t;
+      if (isDown && !wasDown) knockdowns += 1;
+      wasDown = isDown;
+    }
+    expect(rose).toBeGreaterThan(0);
+    expect(knockdowns).toBe(0); // it does not get a second go
+    expect(has(g, 'rotting')).toBe(false);
+  });
+
+  it('and the floor is not a long stay — a heavy rot burns out in a fraction of its clock', () => {
+    const g = knockedOut(3);
+    apply(g, PLAYER, { id: 'rotting', intensity: 200 });
+    const clock = find(g, 'rotting')!.ticksLeft!; // 45 s = 450 ticks
+
+    let down = 0;
+    for (let t = 1; t <= 1200 && recovering(g); t++, down++) g.tick();
+    expect(recovering(g)).toBe(false);
+    // At a rate of 1 this was the whole 450 plus the healing after it. Lying
+    // there is bounded by a fraction of the affliction.
+    expect(down).toBeLessThan(clock / 2);
+  });
 });
 
 // ---------- Wind: displacement ----------

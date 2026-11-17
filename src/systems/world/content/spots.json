@@ -1,0 +1,4579 @@
+[
+  {
+    "id": "ascent_foot",
+    "name": "The Foot of the Ascent",
+    "icon": "🗼",
+    "areaId": "ascent_foot_area",
+    "map": {
+      "x": 50,
+      "y": 37.5
+    },
+    "waypoint": true,
+    "activities": [
+      {
+        "id": "rest_foot",
+        "kind": "rest",
+        "name": "Rest at the Doorstep Inn",
+        "icon": "🛏️"
+      }
+    ],
+    "connections": [],
+    "desc": "Hub of Threshold and the door to the Ascent. Rest at the Doorstep Inn makes this the city haven: a lost fight returns you here. All eight district roads end here, 1 s each. The Warden of the Foot stands here and gives the starting quests."
+  },
+  {
+    "id": "lectory_steps",
+    "name": "The Lectory Steps",
+    "icon": "📐",
+    "areaId": "scholars_quarter",
+    "map": {
+      "x": 50,
+      "y": 17.5
+    },
+    "activities": [
+      {
+        "id": "train_int_steps",
+        "kind": "train",
+        "attr": "int",
+        "name": "Argue on the Steps",
+        "icon": "💬"
+      }
+    ],
+    "connections": [
+      {
+        "to": "ascent_foot",
+        "ticks": 12,
+        "label": "the Scholars’ Road"
+      },
+      {
+        "to": "temple_rise_gate",
+        "ticks": 18
+      },
+      {
+        "to": "the_reading_hall",
+        "ticks": 8
+      },
+      {
+        "to": "chalk_yard",
+        "ticks": 8
+      }
+    ],
+    "desc": "Gate of the Scholars’ Quarter. Argue on the Steps trains Intelligence. Connects to the Foot, the Reading Hall, the Chalk Yard, the Granary Gate and the Pilgrims’ Stair."
+  },
+  {
+    "id": "the_reading_hall",
+    "name": "The Reading Hall",
+    "icon": "📖",
+    "areaId": "scholars_quarter",
+    "map": {
+      "x": 38,
+      "y": 6
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [
+      {
+        "id": "train_int_hall",
+        "kind": "train",
+        "attr": "int",
+        "name": "Read Until It Sticks",
+        "icon": "📚",
+        "drops": [
+          {
+            "material": "recipe_lectory_porridge",
+            "chance": 0.0008
+          }
+        ]
+      },
+      {
+        "id": "train_wis_hall",
+        "kind": "train",
+        "attr": "wis",
+        "name": "Sit With a Hard Passage",
+        "icon": "🧘",
+        "tags": [
+          "magic"
+        ]
+      }
+    ],
+    "benches": [
+      "spelltable"
+    ],
+    "connections": [],
+    "desc": "Indoor. Holds a Spell Table for inscribing spells. Read Until It Sticks trains Intelligence. Sit With a Hard Passage trains Wisdom and pays magic skill XP. Docent Marell stands here."
+  },
+  {
+    "id": "chalk_yard",
+    "name": "The Chalk Yard",
+    "icon": "🔠",
+    "areaId": "scholars_quarter",
+    "map": {
+      "x": 62,
+      "y": 5
+    },
+    "exploreTicks": 420,
+    "activities": [
+      {
+        "id": "explore_chalk",
+        "kind": "explore",
+        "name": "Read the Old Working",
+        "icon": "🔍"
+      },
+      {
+        "id": "train_int_chalk",
+        "kind": "train",
+        "attr": "int",
+        "name": "Copy Out a Proof",
+        "icon": "✏️",
+        "drops": [
+          {
+            "material": "word_slip_stone",
+            "chance": 0.0008
+          }
+        ]
+      }
+    ],
+    "finds": [
+      {
+        "id": "chalk_yard_purse",
+        "at": 0.6,
+        "gold": {
+          "min": 10,
+          "max": 15
+        },
+        "desc": "💰 A purse under the chalk working on the flagstones: 10 to 15 gold."
+      }
+    ],
+    "connections": [],
+    "desc": "Read the Old Working explores the yard (42 s). Copy Out a Proof trains Intelligence."
+  },
+  {
+    "id": "temple_rise_gate",
+    "name": "Pilgrims' Stair",
+    "icon": "🪜",
+    "areaId": "temple_rise",
+    "map": {
+      "x": 68.4,
+      "y": 23.4
+    },
+    "activities": [
+      {
+        "id": "train_con_stair",
+        "kind": "train",
+        "attr": "con",
+        "name": "Walk the Stair",
+        "icon": "🚶"
+      }
+    ],
+    "connections": [
+      {
+        "to": "ascent_foot",
+        "ticks": 12,
+        "label": "the Pilgrim Way"
+      },
+      {
+        "to": "ironyard_gate",
+        "ticks": 18
+      },
+      {
+        "to": "the_nine_chapels",
+        "ticks": 8
+      },
+      {
+        "to": "censer_walk",
+        "ticks": 8
+      }
+    ],
+    "desc": "Gate of Temple Rise. Walk the Stair trains Constitution. Connects to the Foot, the Nine Chapels, Censer Walk, the Lectory Steps and the Muster Gate."
+  },
+  {
+    "id": "the_nine_chapels",
+    "name": "The Nine Chapels",
+    "icon": "⛪",
+    "areaId": "temple_rise",
+    "map": {
+      "x": 80,
+      "y": 10
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [
+      {
+        "id": "train_wis_chapels",
+        "kind": "train",
+        "attr": "wis",
+        "name": "Keep a Vigil",
+        "icon": "🕯️",
+        "tags": [
+          "magic"
+        ],
+        "drops": [
+          {
+            "material": "votive_token",
+            "chance": 0.0008,
+            "rarer": 2
+          }
+        ]
+      }
+    ],
+    "benches": [
+      "spelltable"
+    ],
+    "connections": [],
+    "desc": "Indoor. Holds a Spellcrafting Table: its Divine tab teaches miracles for favor. Keep a Vigil trains Wisdom and pays magic skill XP. Prior Ashvane stands here."
+  },
+  {
+    "id": "censer_walk",
+    "name": "Censer Walk",
+    "icon": "🪔",
+    "areaId": "temple_rise",
+    "map": {
+      "x": 90,
+      "y": 20
+    },
+    "activities": [
+      {
+        "id": "train_cha_censer",
+        "kind": "train",
+        "attr": "cha",
+        "name": "Work the Colonnade",
+        "icon": "🎭"
+      }
+    ],
+    "connections": [],
+    "desc": "Colonnade off the Pilgrims’ Stair. Work the Colonnade trains Charisma. Ilex stands here."
+  },
+  {
+    "id": "ironyard_gate",
+    "name": "The Muster Gate",
+    "icon": "🛡️",
+    "areaId": "the_ironyard",
+    "map": {
+      "x": 76,
+      "y": 37.5
+    },
+    "activities": [
+      {
+        "id": "train_str_muster",
+        "kind": "train",
+        "attr": "str",
+        "name": "Drill in Formation",
+        "icon": "🪖"
+      }
+    ],
+    "connections": [
+      {
+        "to": "ascent_foot",
+        "ticks": 12,
+        "label": "the Muster Road"
+      },
+      {
+        "to": "alembic_row_gate",
+        "ticks": 18
+      },
+      {
+        "to": "the_sand",
+        "ticks": 8
+      },
+      {
+        "to": "long_gallery",
+        "ticks": 8
+      },
+      {
+        "to": "the_cages",
+        "ticks": 8
+      }
+    ],
+    "desc": "Gate of the Ironyard. Drill in Formation trains Strength. Captain Hurst stands here. Connects to the Foot, the Cages, the Sand, the Long Gallery, the Pilgrims’ Stair and the Retort Gate."
+  },
+  {
+    "id": "the_cages",
+    "name": "The Cages",
+    "icon": "🪤",
+    "areaId": "the_ironyard",
+    "map": {
+      "x": 84,
+      "y": 18
+    },
+    "caged": true,
+    "healBetweenBouts": {
+      "maxAttrTotal": 30
+    },
+    "dare": {
+      "monsterId": "suspiciously_large_slime",
+      "level": 16,
+      "every": 8,
+      "desc": "Oh dang, this slime’s gotten big. I don’t think you should tackle that, but if you wanna try yer luck, go ahead."
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Step Into a Cage",
+        "icon": "🪤"
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "forest_rat",
+        "weight": 40,
+        "level": [
+          1,
+          2
+        ]
+      },
+      {
+        "monsterId": "cage_slime",
+        "weight": 40,
+        "level": [
+          1,
+          2
+        ]
+      },
+      {
+        "monsterId": "goblin",
+        "weight": 20,
+        "level": [
+          2,
+          3
+        ]
+      }
+    ],
+    "modifierWeights": {
+      "normal": 100
+    },
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 100
+      }
+    ],
+    "connections": [],
+    "desc": "Menagerie. Step Into a Cage fights one Forest Rat, Cage-Bred Slime or Goblin at a time (levels 1 to 3), never a rolled modifier. The slimes are bred with no armour or resistances. Kills here unlock each bestiary fact exactly at its kill count. The keeper heals beginners after every win."
+  },
+  {
+    "id": "the_sand",
+    "name": "The Sand",
+    "icon": "🤺",
+    "areaId": "the_ironyard",
+    "map": {
+      "x": 93,
+      "y": 28
+    },
+    "activities": [
+      {
+        "id": "train_dex_sand",
+        "kind": "train",
+        "attr": "dex",
+        "name": "Footwork on the Sand",
+        "icon": "👣"
+      },
+      {
+        "id": "spar_sand",
+        "kind": "train",
+        "attr": "str",
+        "name": "Spar",
+        "icon": "⚔️",
+        "tags": [
+          "combat"
+        ],
+        "drops": [
+          {
+            "material": "drill_manual_riposte",
+            "chance": 0.0008
+          }
+        ]
+      },
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Beat the Post",
+        "icon": "🪵"
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "benchmark_dummy",
+        "weight": 100,
+        "level": [
+          1,
+          1
+        ]
+      }
+    ],
+    "modifierWeights": {
+      "normal": 100
+    },
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 100
+      }
+    ],
+    "connections": [],
+    "desc": "Footwork on the Sand trains Dexterity. Spar trains Strength and pays combat skill XP. Beat the Post fights a wooden post that never strikes back: a tenth of the usual skill and attribute XP, less as each level rises, never under 1 XP per second for each skill and attribute it trains. Master Ekwe stands here."
+  },
+  {
+    "id": "long_gallery",
+    "name": "The Long Gallery",
+    "icon": "🏹",
+    "areaId": "the_ironyard",
+    "map": {
+      "x": 93,
+      "y": 47
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [
+      {
+        "id": "train_dex_gallery",
+        "kind": "train",
+        "attr": "dex",
+        "name": "Shoot the Long Butts",
+        "icon": "🎯"
+      },
+      {
+        "id": "train_con_gallery",
+        "kind": "train",
+        "attr": "con",
+        "name": "Draw Until It Hurts",
+        "icon": "💪"
+      }
+    ],
+    "connections": [],
+    "desc": "Indoor archery range. Shoot the Long Butts trains Dexterity; Draw Until It Hurts trains Constitution."
+  },
+  {
+    "id": "alembic_row_gate",
+    "name": "The Retort Gate",
+    "icon": "⚗️",
+    "areaId": "alembic_row",
+    "map": {
+      "x": 68.4,
+      "y": 51.6
+    },
+    "activities": [],
+    "connections": [
+      {
+        "to": "ascent_foot",
+        "ticks": 12,
+        "label": "the Retort Road"
+      },
+      {
+        "to": "chancery_arch",
+        "ticks": 18
+      },
+      {
+        "to": "the_alembics",
+        "ticks": 8
+      },
+      {
+        "to": "the_vivarium",
+        "ticks": 8
+      }
+    ],
+    "desc": "Gate of Alembic Row. Sister Nim sells healing salve, mushroom broth, mendroot and spring water here. Connects to the Foot, the Alembics, the Vivarium, the Muster Gate and the Chancery Arch."
+  },
+  {
+    "id": "the_alembics",
+    "name": "The Alembics",
+    "icon": "🧪",
+    "areaId": "alembic_row",
+    "map": {
+      "x": 90,
+      "y": 55
+    },
+    "tags": [
+      "indoor",
+      "heat"
+    ],
+    "activities": [
+      {
+        "id": "job_retorts",
+        "kind": "job",
+        "gold": 11,
+        "ticksPer": 210,
+        "name": "Wash Out the Retorts",
+        "icon": "🧽",
+        "drops": [
+          {
+            "material": "emberbloom",
+            "chance": 0.00875,
+            "qty": 3
+          }
+        ]
+      }
+    ],
+    "benches": [
+      "alchemy",
+      "preparing"
+    ],
+    "connections": [],
+    "desc": "Indoor, heat-tagged. Holds an alchemy bench. Wash Out the Retorts is a job: 11 gold per 21 s. Odri Venn sells reagents here."
+  },
+  {
+    "id": "the_vivarium",
+    "name": "The Vivarium",
+    "icon": "🧫",
+    "areaId": "alembic_row",
+    "map": {
+      "x": 80,
+      "y": 65
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [],
+    "benches": [
+      "mutagens"
+    ],
+    "connections": [],
+    "desc": "Indoor. Holds a Culture Bench for geneshaping."
+  },
+  {
+    "id": "chancery_arch",
+    "name": "The Chancery Arch",
+    "icon": "🏛️",
+    "areaId": "the_chancery",
+    "map": {
+      "x": 50,
+      "y": 57.5
+    },
+    "activities": [],
+    "connections": [
+      {
+        "to": "ascent_foot",
+        "ticks": 12,
+        "label": "the Chancery Road"
+      },
+      {
+        "to": "assize_gate",
+        "ticks": 18
+      },
+      {
+        "to": "the_rolls",
+        "ticks": 8
+      },
+      {
+        "to": "seal_room",
+        "ticks": 8
+      }
+    ],
+    "desc": "Gate of the Chancery. No activities. Connects to the Foot, the Rolls, the Seal Room, the Retort Gate and the Assize Gate."
+  },
+  {
+    "id": "the_rolls",
+    "name": "The Rolls",
+    "icon": "📜",
+    "areaId": "the_chancery",
+    "map": {
+      "x": 62,
+      "y": 70
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [
+      {
+        "id": "job_copying",
+        "kind": "job",
+        "gold": 12,
+        "ticksPer": 220,
+        "name": "Copy Out Writs",
+        "icon": "🖋️",
+        "staticTime": true,
+        "drops": [
+          {
+            "material": "chancery_price_seal",
+            "chance": 0.0092
+          }
+        ]
+      },
+      {
+        "id": "train_int_rolls",
+        "kind": "train",
+        "attr": "int",
+        "name": "Read the Indexes",
+        "icon": "🗂️"
+      }
+    ],
+    "connections": [],
+    "desc": "Indoor. Copy Out Writs is a job: 12 gold per 22 s. Read the Indexes trains Intelligence."
+  },
+  {
+    "id": "seal_room",
+    "name": "The Seal Room",
+    "icon": "🔏",
+    "areaId": "the_chancery",
+    "map": {
+      "x": 38,
+      "y": 70
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [
+      {
+        "id": "train_wis_seals",
+        "kind": "train",
+        "attr": "wis",
+        "name": "Learn Which Stamp",
+        "icon": "🧠"
+      }
+    ],
+    "connections": [],
+    "desc": "Indoor. Learn Which Stamp trains Wisdom."
+  },
+  {
+    "id": "assize_gate",
+    "name": "The Assize Gate",
+    "icon": "⚖️",
+    "areaId": "the_assize",
+    "map": {
+      "x": 31.6,
+      "y": 51.6
+    },
+    "activities": [
+      {
+        "id": "train_cha_assize",
+        "kind": "train",
+        "attr": "cha",
+        "name": "Watch a Case Argued",
+        "icon": "👂"
+      }
+    ],
+    "connections": [
+      {
+        "to": "ascent_foot",
+        "ticks": 12,
+        "label": "the Assize Road"
+      },
+      {
+        "to": "wrights_gate",
+        "ticks": 18
+      },
+      {
+        "to": "the_high_bench",
+        "ticks": 8
+      },
+      {
+        "to": "the_holding",
+        "ticks": 8
+      }
+    ],
+    "desc": "Gate of the Assize. Watch a Case Argued trains Charisma. Connects to the Foot, the High Bench, the Holding, the Chancery Arch and the Wrights’ Gate."
+  },
+  {
+    "id": "the_high_bench",
+    "name": "The High Bench",
+    "icon": "🪑",
+    "areaId": "the_assize",
+    "map": {
+      "x": 20,
+      "y": 65
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [
+      {
+        "id": "train_cha_bench",
+        "kind": "train",
+        "attr": "cha",
+        "name": "Plead a Small Matter",
+        "icon": "🗣️"
+      },
+      {
+        "id": "train_wis_bench",
+        "kind": "train",
+        "attr": "wis",
+        "name": "Weigh Both Sides",
+        "icon": "⚖️"
+      }
+    ],
+    "connections": [],
+    "desc": "Indoor. Plead a Small Matter trains Charisma; Weigh Both Sides trains Wisdom."
+  },
+  {
+    "id": "the_holding",
+    "name": "The Holding",
+    "icon": "🔒",
+    "areaId": "the_assize",
+    "map": {
+      "x": 10,
+      "y": 55
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [
+      {
+        "id": "job_watch",
+        "kind": "job",
+        "gold": 14,
+        "ticksPer": 260,
+        "name": "Stand the Night Watch",
+        "icon": "🌙",
+        "staticTime": true,
+        "drops": [
+          {
+            "material": "unclaimed_case_file",
+            "chance": 0.0108
+          }
+        ]
+      }
+    ],
+    "connections": [],
+    "desc": "Indoor. Stand the Night Watch is a job: 14 gold per 26 s."
+  },
+  {
+    "id": "wrights_gate",
+    "name": "The Wrights' Gate",
+    "icon": "⚒️",
+    "areaId": "wrights_ward",
+    "map": {
+      "x": 24,
+      "y": 37.5
+    },
+    "activities": [],
+    "connections": [
+      {
+        "to": "ascent_foot",
+        "ticks": 12,
+        "label": "the Wrights’ Road"
+      },
+      {
+        "to": "granary_gate",
+        "ticks": 18
+      },
+      {
+        "to": "the_forges",
+        "ticks": 8
+      },
+      {
+        "to": "the_long_bench",
+        "ticks": 8
+      }
+    ],
+    "desc": "Gate of Wrights’ Ward. Pell Marrow sells armour and weapons here; four more lines open once the Toll Hall keeper is defeated. Connects to the Foot, the Forges, the Long Bench, the Assize Gate and the Granary Gate."
+  },
+  {
+    "id": "the_forges",
+    "name": "The Forges",
+    "icon": "🔥",
+    "areaId": "wrights_ward",
+    "map": {
+      "x": 7,
+      "y": 47
+    },
+    "tags": [
+      "heat"
+    ],
+    "activities": [
+      {
+        "id": "job_bellows_threshold",
+        "kind": "job",
+        "gold": 14,
+        "ticksPer": 250,
+        "name": "Work the Bellows",
+        "icon": "🔥",
+        "drops": [
+          {
+            "material": "smiths_pattern_bronze",
+            "chance": 0.0104
+          }
+        ]
+      },
+      {
+        "id": "train_str_forges",
+        "kind": "train",
+        "attr": "str",
+        "name": "Swing the Sledge",
+        "icon": "🔨",
+        "tags": [
+          "blunt"
+        ]
+      }
+    ],
+    "recipes": [
+      "iron_ingot",
+      "copper_ingot",
+      "tin_ingot",
+      "bronze_ingot"
+    ],
+    "benches": [
+      "forging"
+    ],
+    "connections": [],
+    "desc": "Heat-tagged. Smelting counter with the iron ingot recipe, and an anvil that forges ingots, hardwood and leather into pieces. Work the Bellows is a job: 14 gold per 25 s. Swing the Sledge trains Strength and pays blunt skill XP. Ferra Ostwind sells ore, scrap, wood and leather here."
+  },
+  {
+    "id": "the_long_bench",
+    "name": "The Long Bench",
+    "icon": "🔣",
+    "areaId": "wrights_ward",
+    "map": {
+      "x": 7,
+      "y": 31
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [],
+    "benches": [
+      "runecarving"
+    ],
+    "connections": [],
+    "desc": "Indoor. Holds a Rune Table for runecarving."
+  },
+  {
+    "id": "granary_gate",
+    "name": "The Granary Gate",
+    "icon": "🌾",
+    "areaId": "the_granaries",
+    "map": {
+      "x": 31.6,
+      "y": 23.4
+    },
+    "activities": [],
+    "connections": [
+      {
+        "to": "ascent_foot",
+        "ticks": 12,
+        "label": "the Granary Road"
+      },
+      {
+        "to": "lectory_steps",
+        "ticks": 18
+      },
+      {
+        "to": "the_weighbridge",
+        "ticks": 8
+      },
+      {
+        "to": "the_undercrofts",
+        "ticks": 8
+      },
+      {
+        "to": "granary_kitchens",
+        "ticks": 8
+      }
+    ],
+    "desc": "Gate of the Granaries. Orrin Tallow sells rations and cooked dishes here. Connects to the Foot, the Granary Kitchens, the Weighbridge, the Undercrofts, the Wrights’ Gate and the Lectory Steps."
+  },
+  {
+    "id": "granary_kitchens",
+    "name": "The Granary Kitchens",
+    "icon": "🍲",
+    "areaId": "the_granaries",
+    "map": {
+      "x": 30,
+      "y": 8
+    },
+    "tags": [
+      "indoor",
+      "heat"
+    ],
+    "activities": [
+      {
+        "id": "job_pans",
+        "kind": "job",
+        "gold": 10,
+        "ticksPer": 200,
+        "name": "Scrub the Pans",
+        "icon": "🍳",
+        "drops": [
+          {
+            "material": "iron_pot",
+            "chance": 0.0083,
+            "quality": "b",
+            "unique": true
+          }
+        ]
+      }
+    ],
+    "benches": [
+      "cooking",
+      "preparing"
+    ],
+    "connections": [],
+    "desc": "Indoor, heat-tagged. Holds a Cooking Stove. Scrub the Pans is a job: 10 gold per 20 s. Bryva Coll sells raw ingredients here."
+  },
+  {
+    "id": "the_weighbridge",
+    "name": "The Weighbridge",
+    "icon": "⚓",
+    "areaId": "the_granaries",
+    "map": {
+      "x": 10,
+      "y": 20
+    },
+    "activities": [
+      {
+        "id": "job_hauling",
+        "kind": "job",
+        "gold": 11,
+        "ticksPer": 180,
+        "name": "Haul and Stack",
+        "icon": "📦"
+      },
+      {
+        "id": "train_str_haul",
+        "kind": "train",
+        "attr": "str",
+        "name": "Shift the Heavy Lots",
+        "icon": "🪨"
+      }
+    ],
+    "connections": [],
+    "desc": "Haul and Stack is a job: 11 gold per 18 s. Shift the Heavy Lots trains Strength."
+  },
+  {
+    "id": "the_undercrofts",
+    "name": "The Undercrofts",
+    "icon": "🪵",
+    "areaId": "the_granaries",
+    "map": {
+      "x": 20,
+      "y": 10
+    },
+    "tags": [
+      "indoor"
+    ],
+    "exploreTicks": 520,
+    "activities": [
+      {
+        "id": "explore_undercrofts",
+        "kind": "explore",
+        "name": "Go Through the Back Stores",
+        "icon": "🔍"
+      },
+      {
+        "id": "train_con_undercrofts",
+        "kind": "train",
+        "attr": "con",
+        "name": "Shift Barrels All Day",
+        "icon": "🛢️"
+      }
+    ],
+    "finds": [
+      {
+        "id": "undercroft_flour_sack",
+        "at": 0.5,
+        "material": {
+          "id": "rough_flour",
+          "qty": 3
+        },
+        "desc": "🌾 A split sack in the back stores: 3 Rough Flour."
+      }
+    ],
+    "connections": [],
+    "desc": "Indoor. Go Through the Back Stores explores the cellars (52 s). Shift Barrels All Day trains Constitution."
+  },
+  {
+    "id": "f1_landing",
+    "name": "The Flooded Landing",
+    "icon": "🪜",
+    "areaId": "ascent_f1_area",
+    "map": {
+      "x": 10,
+      "y": 68
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [
+      {
+        "id": "camp_f1",
+        "kind": "rest",
+        "name": "Camp Above the Water",
+        "icon": "🏕️"
+      }
+    ],
+    "connections": [
+      {
+        "to": "f1_storerooms",
+        "ticks": 25,
+        "oneWay": true
+      }
+    ],
+    "desc": "Landing of floor 1, the Flooded Offices. Camp Above the Water is a rest activity, and the landing is a haven. The Vermin Hall is the only way on. Goal: take the toll stamp from the Toll Collector."
+  },
+  {
+    "id": "f1_storerooms",
+    "name": "The Vermin Hall",
+    "icon": "🐀",
+    "areaId": "ascent_f1_area",
+    "map": {
+      "x": 10,
+      "y": 49
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Drive Out the Vermin",
+        "icon": "⚔️"
+      }
+    ],
+    "connections": [
+      {
+        "to": "f1_landing",
+        "ticks": 25,
+        "oneWay": true
+      },
+      {
+        "to": "f1_bonded_deep",
+        "revealWhen": [
+          {
+            "type": "stat",
+            "key": "fights:f1_storerooms",
+            "value": 6
+          }
+        ],
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "fights:f1_storerooms",
+            "value": 6
+          }
+        ],
+        "label": "Follow the Fleeing Vermin"
+      }
+    ],
+    "fightLimit": 6,
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 100
+      }
+    ],
+    "modifierWeights": {
+      "normal": 100
+    },
+    "encounters": [
+      {
+        "monsterId": "forest_rat",
+        "weight": 75,
+        "level": [
+          1,
+          2
+        ]
+      },
+      {
+        "monsterId": "slime_base_basic",
+        "weight": 25,
+        "level": [
+          1,
+          1
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "fights:f1_storerooms",
+            "value": 4
+          }
+        ]
+      }
+    ],
+    "desc": "Drive Out the Vermin fights Forest Rats (levels 1 to 2), one at a time; Slimes (level 1) join after 4 wins. 6 wins clear the hall and open the way to the Records Passage."
+  },
+  {
+    "id": "f1_bonded_deep",
+    "name": "The Records Passage",
+    "icon": "📚",
+    "areaId": "ascent_f1_area",
+    "map": {
+      "x": 10,
+      "y": 30
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [],
+    "connections": [
+      {
+        "to": "f1_storerooms",
+        "ticks": 25,
+        "oneWay": true
+      },
+      {
+        "to": "f1_archive",
+        "ticks": 25,
+        "oneWay": true
+      },
+      {
+        "to": "f1_lockers",
+        "ticks": 25,
+        "oneWay": true
+      },
+      {
+        "to": "f1_forms",
+        "ticks": 25,
+        "oneWay": true
+      }
+    ],
+    "desc": "Passage off the Vermin Hall. No activities. Leads to the Archive, the Staff Lockers and the Forms Store, each a search room. The clerk’s daybook is found by searching the Archive."
+  },
+  {
+    "id": "f1_archive",
+    "name": "The Archive",
+    "icon": "🔎",
+    "areaId": "ascent_f1_area",
+    "map": {
+      "x": 29,
+      "y": 19
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [
+      {
+        "id": "search",
+        "kind": "search",
+        "name": "Search the Shelves",
+        "icon": "🔎",
+        "ticksPer": 50,
+        "rewards": [
+          {
+            "id": "salvage",
+            "weight": 65,
+            "material": {
+              "id": "common_herb",
+              "qty": 1
+            }
+          },
+          {
+            "id": "coins",
+            "weight": 35,
+            "gold": {
+              "min": 3,
+              "max": 8
+            }
+          },
+          {
+            "id": "daybook",
+            "weight": 25,
+            "limit": 1,
+            "guaranteedBy": 4,
+            "keyItem": "toll_clerk_book"
+          }
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "to": "f1_bonded_deep",
+        "ticks": 25,
+        "oneWay": true
+      }
+    ],
+    "desc": "Search the Shelves (5 s) pays 1 common herb, 3 to 8 gold, or the clerk’s daybook (once per run, guaranteed by the 4th search). The daybook opens the Forms Store’s door to Office Reception."
+  },
+  {
+    "id": "f1_lockers",
+    "name": "Staff Lockers",
+    "icon": "🔎",
+    "areaId": "ascent_f1_area",
+    "map": {
+      "x": 29,
+      "y": 34
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [
+      {
+        "id": "search",
+        "kind": "search",
+        "name": "Search the Room",
+        "icon": "🔎",
+        "ticksPer": 50,
+        "rewards": [
+          {
+            "id": "salvage",
+            "weight": 65,
+            "material": {
+              "id": "iron_scrap",
+              "qty": 1
+            }
+          },
+          {
+            "id": "coins",
+            "weight": 35,
+            "gold": {
+              "min": 3,
+              "max": 8
+            }
+          }
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "to": "f1_bonded_deep",
+        "ticks": 25,
+        "oneWay": true
+      }
+    ],
+    "desc": "Search the Room (5 s) pays 1 iron scrap or 3 to 8 gold."
+  },
+  {
+    "id": "f1_forms",
+    "name": "Forms Store",
+    "icon": "🔎",
+    "areaId": "ascent_f1_area",
+    "map": {
+      "x": 29,
+      "y": 49
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [
+      {
+        "id": "search",
+        "kind": "search",
+        "name": "Search the Room",
+        "icon": "🔎",
+        "ticksPer": 50,
+        "rewards": [
+          {
+            "id": "salvage",
+            "weight": 65,
+            "material": {
+              "id": "iron_scrap",
+              "qty": 1
+            }
+          },
+          {
+            "id": "coins",
+            "weight": 35,
+            "gold": {
+              "min": 3,
+              "max": 8
+            }
+          }
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "to": "f1_bonded_deep",
+        "ticks": 25,
+        "oneWay": true
+      },
+      {
+        "to": "f1_reception",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_clerk_book",
+            "value": 1
+          }
+        ],
+        "label": "Enter the Office Section"
+      }
+    ],
+    "desc": "Search the Room (5 s) pays 1 iron scrap or 3 to 8 gold. With the clerk’s daybook, Enter the Office Section leads to Office Reception."
+  },
+  {
+    "id": "f1_reception",
+    "name": "Office Reception",
+    "icon": "🗝️",
+    "areaId": "ascent_f1_area",
+    "map": {
+      "x": 48,
+      "y": 58
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [
+      {
+        "id": "explore_reception",
+        "kind": "explore",
+        "name": "Search Beneath the Desk",
+        "icon": "🔍"
+      }
+    ],
+    "connections": [
+      {
+        "to": "f1_forms",
+        "ticks": 25,
+        "oneWay": true
+      },
+      {
+        "to": "f1_scribe",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Scribe’s Office"
+      },
+      {
+        "to": "f1_auditor",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "The Auditor"
+      },
+      {
+        "to": "f1_break_room",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Break Room"
+      },
+      {
+        "to": "f1_toll_hall",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Toll Collector’s Office"
+      },
+      {
+        "to": "f1_registry",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "The Registry"
+      },
+      {
+        "to": "f1_dispatch",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Dispatch Office"
+      },
+      {
+        "to": "f1_records",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Records Office"
+      },
+      {
+        "to": "f1_supplies",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Supply Office"
+      }
+    ],
+    "exploreTicks": 40,
+    "finds": [
+      {
+        "id": "office_key",
+        "at": 1,
+        "keyItem": "toll_office_key"
+      }
+    ],
+    "desc": "Search Beneath the Desk (4 s) finds the office key; the eight office doors stay locked until you have it. Each door is named for its room. The daybook gives the room order that leads to the Toll Collector; a wrong door sends you to another room."
+  },
+  {
+    "id": "f1_registry",
+    "name": "The Registry",
+    "icon": "🗃️",
+    "areaId": "ascent_f1_area",
+    "map": {
+      "x": 48,
+      "y": 18
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [],
+    "connections": [
+      {
+        "to": "f1_scribe",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Scribe’s Office"
+      },
+      {
+        "to": "f1_auditor",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "The Auditor"
+      },
+      {
+        "to": "f1_break_room",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Break Room"
+      },
+      {
+        "to": "f1_toll_hall",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Toll Collector’s Office"
+      },
+      {
+        "to": "f1_dispatch",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Dispatch Office"
+      },
+      {
+        "to": "f1_records",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Records Office"
+      },
+      {
+        "to": "f1_supplies",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Supply Office"
+      },
+      {
+        "to": "f1_reception",
+        "ticks": 25,
+        "oneWay": true,
+        "label": "Return to Reception"
+      }
+    ],
+    "desc": "Numbered drawers reach the ceiling. The water has carried their labels across the floor."
+  },
+  {
+    "id": "f1_scribe",
+    "name": "Scribe’s Office",
+    "icon": "✒️",
+    "areaId": "ascent_f1_area",
+    "map": {
+      "x": 68,
+      "y": 18
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [],
+    "connections": [
+      {
+        "to": "f1_auditor",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "The Auditor"
+      },
+      {
+        "to": "f1_break_room",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Break Room"
+      },
+      {
+        "to": "f1_toll_hall",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Toll Collector’s Office"
+      },
+      {
+        "to": "f1_registry",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "The Registry"
+      },
+      {
+        "to": "f1_dispatch",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Dispatch Office"
+      },
+      {
+        "to": "f1_records",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Records Office"
+      },
+      {
+        "to": "f1_supplies",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Supply Office"
+      },
+      {
+        "to": "f1_reception",
+        "ticks": 25,
+        "oneWay": true,
+        "label": "Return to Reception"
+      }
+    ],
+    "desc": "Form templates lie beneath a paperweight. A ruler projects from the drawer beside them."
+  },
+  {
+    "id": "f1_auditor",
+    "name": "The Auditor",
+    "icon": "🔍",
+    "areaId": "ascent_f1_area",
+    "map": {
+      "x": 88,
+      "y": 18
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [],
+    "connections": [
+      {
+        "to": "f1_scribe",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Scribe’s Office"
+      },
+      {
+        "to": "f1_break_room",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Break Room"
+      },
+      {
+        "to": "f1_toll_hall",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Toll Collector’s Office"
+      },
+      {
+        "to": "f1_registry",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "The Registry"
+      },
+      {
+        "to": "f1_dispatch",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Dispatch Office"
+      },
+      {
+        "to": "f1_records",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Records Office"
+      },
+      {
+        "to": "f1_supplies",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Supply Office"
+      },
+      {
+        "to": "f1_reception",
+        "ticks": 25,
+        "oneWay": true,
+        "label": "Return to Reception"
+      }
+    ],
+    "desc": "A validation ledger lies open beside a stack of rejected forms."
+  },
+  {
+    "id": "f1_break_room",
+    "name": "Break Room",
+    "icon": "🍎",
+    "areaId": "ascent_f1_area",
+    "map": {
+      "x": 48,
+      "y": 38
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [],
+    "connections": [
+      {
+        "to": "f1_scribe",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Scribe’s Office"
+      },
+      {
+        "to": "f1_auditor",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "The Auditor"
+      },
+      {
+        "to": "f1_toll_hall",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Toll Collector’s Office"
+      },
+      {
+        "to": "f1_registry",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "The Registry"
+      },
+      {
+        "to": "f1_dispatch",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Dispatch Office"
+      },
+      {
+        "to": "f1_records",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Records Office"
+      },
+      {
+        "to": "f1_supplies",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Supply Office"
+      },
+      {
+        "to": "f1_reception",
+        "ticks": 25,
+        "oneWay": true,
+        "label": "Return to Reception"
+      }
+    ],
+    "desc": "A bowl of wax apples sits between two empty cups."
+  },
+  {
+    "id": "f1_dispatch",
+    "name": "Dispatch Office",
+    "icon": "📨",
+    "areaId": "ascent_f1_area",
+    "map": {
+      "x": 68,
+      "y": 38
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [],
+    "connections": [
+      {
+        "to": "f1_scribe",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Scribe’s Office"
+      },
+      {
+        "to": "f1_auditor",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "The Auditor"
+      },
+      {
+        "to": "f1_break_room",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Break Room"
+      },
+      {
+        "to": "f1_toll_hall",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Toll Collector’s Office"
+      },
+      {
+        "to": "f1_registry",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "The Registry"
+      },
+      {
+        "to": "f1_records",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Records Office"
+      },
+      {
+        "to": "f1_supplies",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Supply Office"
+      },
+      {
+        "to": "f1_reception",
+        "ticks": 25,
+        "oneWay": true,
+        "label": "Return to Reception"
+      }
+    ],
+    "desc": "Pigeonholes cover the wall. Unsent envelopes cling to the table legs."
+  },
+  {
+    "id": "f1_records",
+    "name": "Records Office",
+    "icon": "📑",
+    "areaId": "ascent_f1_area",
+    "map": {
+      "x": 88,
+      "y": 38
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [],
+    "connections": [
+      {
+        "to": "f1_scribe",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Scribe’s Office"
+      },
+      {
+        "to": "f1_auditor",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "The Auditor"
+      },
+      {
+        "to": "f1_break_room",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Break Room"
+      },
+      {
+        "to": "f1_toll_hall",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Toll Collector’s Office"
+      },
+      {
+        "to": "f1_registry",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "The Registry"
+      },
+      {
+        "to": "f1_dispatch",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Dispatch Office"
+      },
+      {
+        "to": "f1_supplies",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Supply Office"
+      },
+      {
+        "to": "f1_reception",
+        "ticks": 25,
+        "oneWay": true,
+        "label": "Return to Reception"
+      }
+    ],
+    "desc": "Copies of the same receipt hang from drying lines."
+  },
+  {
+    "id": "f1_supplies",
+    "name": "Supply Office",
+    "icon": "📦",
+    "areaId": "ascent_f1_area",
+    "map": {
+      "x": 68,
+      "y": 58
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [],
+    "connections": [
+      {
+        "to": "f1_scribe",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Scribe’s Office"
+      },
+      {
+        "to": "f1_auditor",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "The Auditor"
+      },
+      {
+        "to": "f1_break_room",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Break Room"
+      },
+      {
+        "to": "f1_toll_hall",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Toll Collector’s Office"
+      },
+      {
+        "to": "f1_registry",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "The Registry"
+      },
+      {
+        "to": "f1_dispatch",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Dispatch Office"
+      },
+      {
+        "to": "f1_records",
+        "ticks": 25,
+        "oneWay": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:key_item:toll_office_key",
+            "value": 1
+          }
+        ],
+        "label": "Records Office"
+      },
+      {
+        "to": "f1_reception",
+        "ticks": 25,
+        "oneWay": true,
+        "label": "Return to Reception"
+      }
+    ],
+    "desc": "Boxes of spare nibs stand on a stool above the water."
+  },
+  {
+    "id": "f1_toll_hall",
+    "name": "Toll Collector’s Office",
+    "icon": "🗿",
+    "areaId": "ascent_f1_area",
+    "map": {
+      "x": 88,
+      "y": 58
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [],
+    "connections": [
+      {
+        "to": "f1_reception",
+        "ticks": 25,
+        "oneWay": true,
+        "label": "Return to Reception"
+      }
+    ],
+    "forced": true,
+    "fightLimit": 1,
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 100
+      }
+    ],
+    "modifierWeights": {
+      "normal": 100
+    },
+    "encounters": [
+      {
+        "monsterId": "toll_collector_golem",
+        "weight": 1,
+        "level": [
+          4,
+          4
+        ],
+        "once": true,
+        "boss": true
+      }
+    ],
+    "desc": "Arriving starts a fight that cannot be fled: the Toll Collector, level 4, alone. A heat spell blinds it, a cold spell removes its dodge and most of its armour, a lightning spell speeds up its attacks and hurts it; each lasts 8 s. Its kill gives the toll stamp and clears floor 1."
+  },
+  {
+    "id": "f2_stairhead",
+    "name": "The Stairhead",
+    "icon": "🪜",
+    "areaId": "ascent_f2_area",
+    "map": {
+      "x": 8,
+      "y": 50
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [
+      {
+        "id": "camp_f2",
+        "kind": "rest",
+        "name": "Camp on the Landing",
+        "icon": "🏕️"
+      }
+    ],
+    "connections": [
+      {
+        "to": "f2_hall_1",
+        "ticks": 25
+      }
+    ],
+    "desc": "Landing of floor 2, the same building as floor 1, one storey up. Camp on the Landing is a rest activity, and the landing is a haven. The Long Hall starts here (2.5 s)."
+  },
+  {
+    "id": "f2_hall_1",
+    "name": "The Mail Carts",
+    "icon": "📬",
+    "areaId": "ascent_f2_area",
+    "map": {
+      "x": 26,
+      "y": 50
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Clear the Stretch",
+        "icon": "⚔️"
+      }
+    ],
+    "fightLimit": 3,
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 100
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "ledger_tome",
+        "weight": 70,
+        "level": [
+          3,
+          4
+        ]
+      },
+      {
+        "monsterId": "filing_automaton",
+        "weight": 30,
+        "level": [
+          3,
+          4
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "to": "f2_gym",
+        "ticks": 15
+      },
+      {
+        "to": "f2_hall_2",
+        "ticks": 30,
+        "label": "On Down the Hall",
+        "requires": [
+          {
+            "type": "stat",
+            "key": "fights:f2_hall_1",
+            "value": 3
+          }
+        ],
+        "revealWhen": [
+          {
+            "type": "stat",
+            "key": "fights:f2_hall_1",
+            "value": 3
+          }
+        ]
+      }
+    ],
+    "desc": "First stretch of the Long Hall. Clear the Stretch fights Bound Ledgers and Filing Automatons (levels 3 to 4), one at a time; after 3 wins the way on down the hall opens and the stretch spawns no more fights. A door leads to the Cleared Office, where the tutor teaches."
+  },
+  {
+    "id": "f2_gym",
+    "name": "The Cleared Office",
+    "icon": "🥋",
+    "areaId": "ascent_f2_area",
+    "map": {
+      "x": 26,
+      "y": 28
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [
+      {
+        "id": "train_str_gym",
+        "kind": "train",
+        "attr": "str",
+        "name": "Work the Heavy Bag",
+        "icon": "🥊"
+      }
+    ],
+    "connections": [],
+    "desc": "An office emptied out for training. The tutor here teaches two techniques for free: Gather (Neutral → Coiled), then Lunge (Coiled → Extended) once you know a way into Coiled. Work the Heavy Bag trains Strength."
+  },
+  {
+    "id": "f2_hall_2",
+    "name": "The Filing Bays",
+    "icon": "🗄️",
+    "areaId": "ascent_f2_area",
+    "map": {
+      "x": 44,
+      "y": 50
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Clear the Stretch",
+        "icon": "⚔️"
+      }
+    ],
+    "fightLimit": 3,
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 80
+      },
+      {
+        "size": 2,
+        "weight": 20
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "filing_automaton",
+        "weight": 60,
+        "level": [
+          4,
+          5
+        ]
+      },
+      {
+        "monsterId": "ledger_tome",
+        "weight": 40,
+        "level": [
+          4,
+          5
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "to": "f2_stores",
+        "ticks": 15
+      },
+      {
+        "to": "f2_hall_3",
+        "ticks": 30,
+        "label": "On Down the Hall",
+        "requires": [
+          {
+            "type": "stat",
+            "key": "fights:f2_hall_2",
+            "value": 3
+          }
+        ],
+        "revealWhen": [
+          {
+            "type": "stat",
+            "key": "fights:f2_hall_2",
+            "value": 3
+          }
+        ]
+      }
+    ],
+    "desc": "Second stretch of the Long Hall. Clear the Stretch fights Filing Automatons and Bound Ledgers (levels 4 to 5), at most two at a time; 3 wins open the way on. A door leads to the Quartermaster’s Cage."
+  },
+  {
+    "id": "f2_stores",
+    "name": "The Quartermaster’s Cage",
+    "icon": "📦",
+    "areaId": "ascent_f2_area",
+    "map": {
+      "x": 44,
+      "y": 72
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [],
+    "connections": [],
+    "desc": "A caged supply room. The quartermaster sells healing salve and food."
+  },
+  {
+    "id": "f2_hall_3",
+    "name": "Copy Room Row",
+    "icon": "🖨️",
+    "areaId": "ascent_f2_area",
+    "map": {
+      "x": 62,
+      "y": 50
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Clear the Stretch",
+        "icon": "⚔️"
+      }
+    ],
+    "fightLimit": 3,
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 80
+      },
+      {
+        "size": 2,
+        "weight": 20
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "sorting_automaton",
+        "weight": 50,
+        "level": [
+          5,
+          6
+        ]
+      },
+      {
+        "monsterId": "living_doll",
+        "weight": 50,
+        "level": [
+          5,
+          6
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "to": "f2_break_room",
+        "ticks": 15
+      },
+      {
+        "to": "f2_hall_4",
+        "ticks": 30,
+        "label": "On Down the Hall",
+        "requires": [
+          {
+            "type": "stat",
+            "key": "fights:f2_hall_3",
+            "value": 3
+          }
+        ],
+        "revealWhen": [
+          {
+            "type": "stat",
+            "key": "fights:f2_hall_3",
+            "value": 3
+          }
+        ]
+      }
+    ],
+    "desc": "Third stretch of the Long Hall. Clear the Stretch fights Sorting Automatons and Living Dolls (levels 5 to 6), at most two at a time; 3 wins open the way on. A door leads to the Break Room."
+  },
+  {
+    "id": "f2_break_room",
+    "name": "The Break Room",
+    "icon": "☕",
+    "areaId": "ascent_f2_area",
+    "map": {
+      "x": 62,
+      "y": 28
+    },
+    "tags": [
+      "indoor"
+    ],
+    "exploreTicks": 300,
+    "activities": [
+      {
+        "id": "rest_break_room",
+        "kind": "rest",
+        "name": "Sit Down for a While",
+        "icon": "🪑"
+      },
+      {
+        "id": "explore_f2",
+        "kind": "explore",
+        "name": "Go Through the Cupboards",
+        "icon": "🔍"
+      }
+    ],
+    "finds": [
+      {
+        "id": "f2_petty_cash",
+        "at": 0.4,
+        "gold": {
+          "min": 70,
+          "max": 110
+        },
+        "desc": "💰 A petty-cash tin behind the mugs: 70 to 110 gold."
+      }
+    ],
+    "connections": [],
+    "desc": "A haven halfway down the hall: Sit Down for a While is a rest activity. Go Through the Cupboards explores the room (30 s) for one find."
+  },
+  {
+    "id": "f2_hall_4",
+    "name": "The Far End",
+    "icon": "🚪",
+    "areaId": "ascent_f2_area",
+    "map": {
+      "x": 80,
+      "y": 50
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Clear the Stretch",
+        "icon": "⚔️"
+      }
+    ],
+    "fightLimit": 3,
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 80
+      },
+      {
+        "size": 2,
+        "weight": 20
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "living_doll",
+        "weight": 50,
+        "level": [
+          6,
+          7
+        ]
+      },
+      {
+        "monsterId": "filing_automaton",
+        "weight": 50,
+        "level": [
+          6,
+          7
+        ]
+      }
+    ],
+    "connections": [],
+    "desc": "Far end of the Long Hall. Clear the Stretch fights Living Dolls and Filing Automatons (levels 6 to 7), at most two at a time. The third win clears floor 2; the stretch then spawns no more fights."
+  },
+  {
+    "id": "f3_stairhead",
+    "name": "The Stairwell Head",
+    "icon": "🪜",
+    "areaId": "ascent_f3_area",
+    "map": {
+      "x": 50,
+      "y": 6
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [
+      {
+        "id": "camp_f3",
+        "kind": "rest",
+        "name": "Camp on the Landing",
+        "icon": "🏕️"
+      }
+    ],
+    "connections": [
+      {
+        "to": "f3_mail_room",
+        "ticks": 15
+      },
+      {
+        "to": "f3_landing_2",
+        "ticks": 30,
+        "label": "Down the Stairwell",
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:f3_stairs_1",
+            "value": 1
+          }
+        ],
+        "revealWhen": [
+          {
+            "type": "stat",
+            "key": "flag:f3_stairs_1",
+            "value": 1
+          }
+        ]
+      }
+    ],
+    "desc": "Landing of floor 3, the top of the building’s stairwell. Camp on the Landing is a rest activity, and the landing is a haven. The Mail Room is off the landing; the next flight down opens once its floor plan is found there."
+  },
+  {
+    "id": "f3_mail_room",
+    "name": "The Mail Room",
+    "icon": "📮",
+    "areaId": "ascent_f3_area",
+    "map": {
+      "x": 24,
+      "y": 6
+    },
+    "tags": [
+      "indoor"
+    ],
+    "exploreTicks": 360,
+    "activities": [
+      {
+        "id": "search_room",
+        "kind": "explore",
+        "name": "Sort Through the Sacks",
+        "icon": "🔍"
+      }
+    ],
+    "finds": [
+      {
+        "id": "f3_mail_plan",
+        "at": 0.3,
+        "stat": {
+          "key": "flag:f3_stairs_1"
+        },
+        "desc": "🗺️ A floor plan in a mail sack, the stairwell marked. The next flight down is open."
+      },
+      {
+        "id": "f3_mail_purse",
+        "at": 0.5,
+        "gold": {
+          "min": 60,
+          "max": 90
+        },
+        "desc": "💰 An unclaimed parcel of coin: 60 to 90 gold."
+      },
+      {
+        "id": "f3_mail_string",
+        "at": 0.75,
+        "stat": {
+          "key": "flag:f3_strings_cut"
+        },
+        "desc": "✂️ A string anchor bolted under the sorting table, its line running down through the floor. Cut: the bureaucrat below loses a string (one level)."
+      }
+    ],
+    "connections": [],
+    "desc": "Sort Through the Sacks explores the room (36 s) for three finds: the floor plan that opens the stairwell’s next flight, a purse, and one of the three string anchors the bureaucrat in the Hearing Room hangs from."
+  },
+  {
+    "id": "f3_landing_2",
+    "name": "The Second Landing",
+    "icon": "🪜",
+    "areaId": "ascent_f3_area",
+    "map": {
+      "x": 50,
+      "y": 27
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Clear the Landing",
+        "icon": "⚔️"
+      }
+    ],
+    "fightLimit": 2,
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 100
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "living_doll",
+        "weight": 60,
+        "level": [
+          6,
+          7
+        ]
+      },
+      {
+        "monsterId": "sorting_automaton",
+        "weight": 40,
+        "level": [
+          6,
+          7
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "to": "f3_archive",
+        "ticks": 15
+      },
+      {
+        "to": "f3_landing_3",
+        "ticks": 30,
+        "label": "Down the Stairwell",
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:f3_stairs_2",
+            "value": 1
+          }
+        ],
+        "revealWhen": [
+          {
+            "type": "stat",
+            "key": "flag:f3_stairs_2",
+            "value": 1
+          }
+        ]
+      }
+    ],
+    "desc": "Second landing of the stairwell. Clear the Landing fights Living Dolls and Sorting Automatons (levels 6 to 7), one at a time; 2 wins and it spawns no more fights. The Archive Stacks are off the landing; the next flight down opens once their floor plan is found."
+  },
+  {
+    "id": "f3_archive",
+    "name": "The Archive Stacks",
+    "icon": "🗄️",
+    "areaId": "ascent_f3_area",
+    "map": {
+      "x": 76,
+      "y": 27
+    },
+    "tags": [
+      "indoor"
+    ],
+    "exploreTicks": 420,
+    "activities": [
+      {
+        "id": "search_room",
+        "kind": "explore",
+        "name": "Search the Stacks",
+        "icon": "🔍"
+      }
+    ],
+    "finds": [
+      {
+        "id": "f3_archive_plan",
+        "at": 0.3,
+        "stat": {
+          "key": "flag:f3_stairs_2"
+        },
+        "desc": "🗺️ A floor plan filed under the stairwell. The next flight down is open."
+      },
+      {
+        "id": "f3_archive_club",
+        "at": 0.5,
+        "item": "oak_club",
+        "desc": "🏏 An oak club wedged between two shelves. A club deals bludgeoning damage, which the bureaucrat, a construct, takes more of."
+      },
+      {
+        "id": "f3_archive_string",
+        "at": 0.75,
+        "stat": {
+          "key": "flag:f3_strings_cut"
+        },
+        "desc": "✂️ A string anchor behind the end shelf. Cut: the bureaucrat below loses a string (one level)."
+      }
+    ],
+    "connections": [],
+    "desc": "Search the Stacks explores the room (42 s) for three finds: the floor plan for the next flight, an oak club, and a string anchor."
+  },
+  {
+    "id": "f3_landing_3",
+    "name": "The Third Landing",
+    "icon": "🪜",
+    "areaId": "ascent_f3_area",
+    "map": {
+      "x": 50,
+      "y": 48
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Clear the Landing",
+        "icon": "⚔️"
+      }
+    ],
+    "fightLimit": 2,
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 100
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "living_doll",
+        "weight": 50,
+        "level": [
+          7,
+          8
+        ]
+      },
+      {
+        "monsterId": "filing_automaton",
+        "weight": 50,
+        "level": [
+          7,
+          8
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "to": "f3_annex",
+        "ticks": 15
+      },
+      {
+        "to": "f3_hearing_room",
+        "ticks": 30,
+        "label": "Down to the Hearing Room",
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:f3_stairs_3",
+            "value": 1
+          }
+        ],
+        "revealWhen": [
+          {
+            "type": "stat",
+            "key": "flag:f3_stairs_3",
+            "value": 1
+          }
+        ]
+      }
+    ],
+    "desc": "Third landing of the stairwell. Clear the Landing fights Living Dolls and Filing Automatons (levels 7 to 8), one at a time; 2 wins and it spawns no more fights. The Records Annex is off the landing; the way down to the Hearing Room opens once its floor plan is found."
+  },
+  {
+    "id": "f3_annex",
+    "name": "The Records Annex",
+    "icon": "📂",
+    "areaId": "ascent_f3_area",
+    "map": {
+      "x": 24,
+      "y": 48
+    },
+    "tags": [
+      "indoor"
+    ],
+    "exploreTicks": 420,
+    "activities": [
+      {
+        "id": "search_room",
+        "kind": "explore",
+        "name": "Go Through the Files",
+        "icon": "🔍"
+      }
+    ],
+    "finds": [
+      {
+        "id": "f3_annex_plan",
+        "at": 0.3,
+        "stat": {
+          "key": "flag:f3_stairs_3"
+        },
+        "desc": "🗺️ A floor plan with the Hearing Room marked at the bottom of the stairwell. The way down is open."
+      },
+      {
+        "id": "f3_annex_salve",
+        "at": 0.5,
+        "material": {
+          "id": "healing_salve",
+          "qty": 2
+        },
+        "desc": "🧴 Two healing salves in a first-aid drawer."
+      },
+      {
+        "id": "f3_annex_string",
+        "at": 0.75,
+        "stat": {
+          "key": "flag:f3_strings_cut"
+        },
+        "desc": "✂️ The last string anchor, in the annex ceiling. Cut: the bureaucrat below loses a string (one level)."
+      }
+    ],
+    "connections": [],
+    "desc": "Go Through the Files explores the room (42 s) for three finds: the floor plan to the Hearing Room, two healing salves, and the last string anchor."
+  },
+  {
+    "id": "f3_hearing_room",
+    "name": "The Hearing Room",
+    "icon": "⚖️",
+    "areaId": "ascent_f3_area",
+    "map": {
+      "x": 50,
+      "y": 69
+    },
+    "tags": [
+      "indoor"
+    ],
+    "forced": true,
+    "fightLimit": 1,
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 100
+      }
+    ],
+    "modifierWeights": {
+      "normal": 100
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Answer the Summons",
+        "icon": "⚔️"
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "puppet_bureaucrat",
+        "weight": 1,
+        "once": true,
+        "level": [
+          12,
+          12
+        ],
+        "requires": [
+          {
+            "type": "statMax",
+            "key": "flag:f3_strings_cut",
+            "value": 0
+          }
+        ]
+      },
+      {
+        "monsterId": "puppet_bureaucrat",
+        "weight": 1,
+        "once": true,
+        "level": [
+          11,
+          11
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:f3_strings_cut",
+            "value": 1
+          },
+          {
+            "type": "statMax",
+            "key": "flag:f3_strings_cut",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "puppet_bureaucrat",
+        "weight": 1,
+        "once": true,
+        "level": [
+          10,
+          10
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:f3_strings_cut",
+            "value": 2
+          },
+          {
+            "type": "statMax",
+            "key": "flag:f3_strings_cut",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "monsterId": "puppet_bureaucrat",
+        "weight": 1,
+        "once": true,
+        "level": [
+          9,
+          9
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:f3_strings_cut",
+            "value": 3
+          }
+        ]
+      }
+    ],
+    "connections": [],
+    "desc": "Bottom of the stairwell. Arriving starts a fight that cannot be fled: the Puppet Bureaucrat, alone. It is level 12 with all three strings, one level less for each string anchor cut in the side rooms above (level 9 with none left). Its kill clears floor 3; the room then spawns no more fights."
+  },
+  {
+    "id": "f4_treeline",
+    "name": "The Treeline",
+    "icon": "🌲",
+    "areaId": "ascent_f4_area",
+    "map": {
+      "x": 50,
+      "y": 6
+    },
+    "activities": [
+      {
+        "id": "camp_f4",
+        "kind": "rest",
+        "name": "Camp at the Treeline",
+        "icon": "🏕️"
+      }
+    ],
+    "connections": [
+      {
+        "to": "f4_woods_edge",
+        "ticks": 20
+      }
+    ],
+    "desc": "Landing of floor 4, where the tower opens onto woodland. Camp at the Treeline is a rest activity, and the landing is a haven."
+  },
+  {
+    "id": "f4_woods_edge",
+    "name": "The Woods Edge",
+    "icon": "🌳",
+    "areaId": "ascent_f4_area",
+    "map": {
+      "x": 50,
+      "y": 20
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Hunt the Edge",
+        "icon": "🏹"
+      },
+      {
+        "id": "explore",
+        "kind": "explore",
+        "name": "Forage",
+        "icon": "🌿"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 75
+      },
+      {
+        "size": 2,
+        "weight": 25
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "forest_rat",
+        "weight": 35,
+        "level": [
+          7,
+          8
+        ]
+      },
+      {
+        "monsterId": "young_wolf",
+        "weight": 35,
+        "level": [
+          7,
+          9
+        ]
+      },
+      {
+        "monsterId": "goblin",
+        "weight": 30,
+        "level": [
+          7,
+          9
+        ]
+      }
+    ],
+    "exploreTicks": 240,
+    "finds": [
+      {
+        "id": "f4_edge_herbs",
+        "at": 0.25,
+        "material": {
+          "id": "common_herb",
+          "qty": 4
+        },
+        "desc": "🌿 Four common herbs under the leaf litter."
+      },
+      {
+        "id": "f4_edge_berries",
+        "at": 0.6,
+        "material": {
+          "id": "forest_berries",
+          "qty": 4
+        },
+        "desc": "🫐 Four handfuls of forest berries."
+      },
+      {
+        "id": "f4_edge_purse",
+        "at": 1,
+        "gold": {
+          "min": 30,
+          "max": 60
+        },
+        "desc": "💰 A purse dropped by a goblin scout: 30 to 60 gold."
+      }
+    ],
+    "connections": [
+      {
+        "to": "f4_deep_woods",
+        "ticks": 30
+      },
+      {
+        "to": "f4_hills",
+        "ticks": 30
+      }
+    ],
+    "desc": "Endless hunt: forest rats, young wolves and goblins, level 7 to 9 (up to double that while your attributes are higher than theirs), sometimes two at once. Forage explores the edge (24 s) for herbs, berries and a purse."
+  },
+  {
+    "id": "f4_hills",
+    "name": "The Barrow Hills",
+    "icon": "⛰️",
+    "areaId": "ascent_f4_area",
+    "map": {
+      "x": 82,
+      "y": 36
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Hunt the Hills",
+        "icon": "🏹"
+      },
+      {
+        "id": "explore",
+        "kind": "explore",
+        "name": "Search the Barrows",
+        "icon": "🔍"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 80
+      },
+      {
+        "size": 2,
+        "weight": 20
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "boar",
+        "weight": 45,
+        "level": [
+          8,
+          9
+        ]
+      },
+      {
+        "monsterId": "cliff_hawk",
+        "weight": 35,
+        "level": [
+          8,
+          9
+        ]
+      },
+      {
+        "monsterId": "goblin",
+        "weight": 20,
+        "level": [
+          8,
+          9
+        ]
+      }
+    ],
+    "exploreTicks": 300,
+    "finds": [
+      {
+        "id": "f4_hills_ore",
+        "at": 0.3,
+        "material": {
+          "id": "copper_ore",
+          "qty": 3
+        },
+        "desc": "⛏️ Three chunks of copper ore in a cut bank."
+      },
+      {
+        "id": "f4_hills_barrow",
+        "at": 0.7,
+        "gold": {
+          "min": 50,
+          "max": 90
+        },
+        "material": {
+          "id": "iron_scrap",
+          "qty": 2
+        },
+        "desc": "⚱️ A looted barrow the looters missed a corner of: 50 to 90 gold and two iron scrap."
+      }
+    ],
+    "connections": [
+      {
+        "to": "f4_ravine_rim",
+        "ticks": 30
+      }
+    ],
+    "desc": "Endless hunt: boars, cliff hawks and goblins, level 8 to 9 (up to double that while your attributes are higher than theirs). Search the Barrows explores the hills (30 s) for copper ore and a barrow cache. Joins the Woods Edge and the Ravine Rim."
+  },
+  {
+    "id": "f4_deep_woods",
+    "name": "The Deep Woods",
+    "icon": "🌲",
+    "areaId": "ascent_f4_area",
+    "map": {
+      "x": 40,
+      "y": 36
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Hunt the Deep Woods",
+        "icon": "🏹"
+      },
+      {
+        "id": "explore",
+        "kind": "explore",
+        "name": "Explore",
+        "icon": "🧭"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 55
+      },
+      {
+        "size": 2,
+        "weight": 25
+      },
+      {
+        "size": 3,
+        "weight": 20
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "wolf",
+        "weight": 35,
+        "level": [
+          8,
+          9
+        ]
+      },
+      {
+        "monsterId": "boar",
+        "weight": 25,
+        "level": [
+          8,
+          9
+        ]
+      },
+      {
+        "monsterId": "goblin",
+        "weight": 40,
+        "level": [
+          8,
+          9
+        ]
+      }
+    ],
+    "exploreTicks": 300,
+    "finds": [
+      {
+        "id": "f4_deep_mushrooms",
+        "at": 0.3,
+        "material": {
+          "id": "cave_mushroom",
+          "qty": 3
+        },
+        "desc": "🍄 Three cave mushrooms around a rotten stump."
+      },
+      {
+        "id": "f4_deep_camp",
+        "at": 0.8,
+        "gold": {
+          "min": 40,
+          "max": 80
+        },
+        "material": {
+          "id": "iron_scrap",
+          "qty": 2
+        },
+        "desc": "⛺ An abandoned camp: 40 to 80 gold and two iron scrap."
+      }
+    ],
+    "connections": [
+      {
+        "to": "f4_ravine_rim",
+        "ticks": 30
+      }
+    ],
+    "desc": "Endless hunt: wolves, boars and goblin raid parties of up to three, level 8 to 9 (up to double that while your attributes are higher than theirs). Explore (30 s) finds mushrooms and an abandoned camp."
+  },
+  {
+    "id": "f4_ravine_rim",
+    "name": "The Ravine Rim",
+    "icon": "🪨",
+    "areaId": "ascent_f4_area",
+    "map": {
+      "x": 55,
+      "y": 52
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Hunt the Rim",
+        "icon": "🏹"
+      },
+      {
+        "id": "explore",
+        "kind": "explore",
+        "name": "Look Over the Edge",
+        "icon": "🔭"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 70
+      },
+      {
+        "size": 2,
+        "weight": 20
+      },
+      {
+        "size": 3,
+        "weight": 10
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "cliff_hawk",
+        "weight": 45,
+        "level": [
+          8,
+          10
+        ]
+      },
+      {
+        "monsterId": "goblin",
+        "weight": 55,
+        "level": [
+          8,
+          10
+        ]
+      }
+    ],
+    "exploreTicks": 240,
+    "finds": [
+      {
+        "id": "f4_rim_nest",
+        "at": 0.4,
+        "gold": {
+          "min": 20,
+          "max": 40
+        },
+        "material": {
+          "id": "gold_leaf",
+          "qty": 1
+        },
+        "desc": "🪶 A hawk nest: 20 to 40 gold and a gold leaf."
+      },
+      {
+        "id": "f4_rim_camp",
+        "at": 0.75,
+        "spot": "f4_ravine_floor",
+        "desc": "🔭 Smoke on the ravine floor: the goblin raid camp. It is on the map."
+      }
+    ],
+    "connections": [
+      {
+        "to": "f4_ravine_floor",
+        "ticks": 40,
+        "label": "Down into the Ravine",
+        "returnLabel": "Climb Out"
+      }
+    ],
+    "desc": "Endless hunt: cliff hawks and goblins, level 8 to 10 (up to double that while your attributes are higher than theirs). Look Over the Edge (24 s) finds a hawk nest and spots the raid camp below. The path down leads to the Raid Camp."
+  },
+  {
+    "id": "f4_ravine_floor",
+    "name": "The Raid Camp",
+    "icon": "⛺",
+    "areaId": "ascent_f4_area",
+    "map": {
+      "x": 55,
+      "y": 70
+    },
+    "fightLimit": 1,
+    "modifierWeights": {
+      "normal": 100
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Raid the Camp",
+        "icon": "⚔️"
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "goblin_raid_leader",
+        "weight": 1,
+        "once": true,
+        "level": [
+          9,
+          9
+        ]
+      }
+    ],
+    "connections": [],
+    "desc": "The raid camp. One fight, started when you choose: the Goblin Raid Leader (level 9) and two goblins. Killing the leader clears floor 4."
+  },
+  {
+    "id": "f5_causeway",
+    "name": "The Causeway",
+    "icon": "🪵",
+    "areaId": "ascent_f5_area",
+    "map": {
+      "x": 50,
+      "y": 6
+    },
+    "activities": [
+      {
+        "id": "camp_f5",
+        "kind": "rest",
+        "name": "Camp on the Causeway",
+        "icon": "🏕️"
+      }
+    ],
+    "connections": [
+      {
+        "to": "f5_bog",
+        "ticks": 25
+      }
+    ],
+    "desc": "Landing of floor 5, a plank causeway into the swamp. Camp on the Causeway is a rest activity, and the landing is a haven. Gate: 12 goblins killed in total."
+  },
+  {
+    "id": "f5_bog",
+    "name": "The Bog",
+    "icon": "🟤",
+    "areaId": "ascent_f5_area",
+    "map": {
+      "x": 50,
+      "y": 20
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Hunt the Bog",
+        "icon": "🏹"
+      },
+      {
+        "id": "explore",
+        "kind": "explore",
+        "name": "Wade the Bog",
+        "icon": "🌿"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 70
+      },
+      {
+        "size": 2,
+        "weight": 30
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "slime_water",
+        "weight": 30,
+        "level": [
+          9,
+          10
+        ]
+      },
+      {
+        "monsterId": "slime_zombie",
+        "weight": 20,
+        "level": [
+          9,
+          10
+        ]
+      },
+      {
+        "monsterId": "goblin_firetongue",
+        "weight": 25,
+        "level": [
+          9,
+          10
+        ]
+      },
+      {
+        "monsterId": "goblin",
+        "weight": 25,
+        "level": [
+          9,
+          10
+        ]
+      }
+    ],
+    "exploreTicks": 300,
+    "finds": [
+      {
+        "id": "f5_bog_herbs",
+        "at": 0.3,
+        "material": {
+          "id": "common_herb",
+          "qty": 5
+        },
+        "desc": "🌿 Five common herbs on a dry hummock."
+      },
+      {
+        "id": "f5_bog_purse",
+        "at": 0.8,
+        "gold": {
+          "min": 50,
+          "max": 90
+        },
+        "desc": "💰 A drowned purse: 50 to 90 gold."
+      }
+    ],
+    "connections": [
+      {
+        "to": "f5_drowned_village",
+        "ticks": 30
+      },
+      {
+        "to": "f5_cave_mouth",
+        "ticks": 30
+      }
+    ],
+    "desc": "Endless hunt: water slimes, zombie slimes, goblin firetongues and goblins, level 9 to 10 (up to double that while your attributes are higher than theirs). Firetongues cast fire that can set you On Fire. Wade the Bog explores (30 s) for herbs and a purse."
+  },
+  {
+    "id": "f5_drowned_village",
+    "name": "The Drowned Village",
+    "icon": "🛖",
+    "areaId": "ascent_f5_area",
+    "map": {
+      "x": 18,
+      "y": 32
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Clear the Huts",
+        "icon": "⚔️"
+      },
+      {
+        "id": "explore",
+        "kind": "explore",
+        "name": "Search the Huts",
+        "icon": "🔍"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 60
+      },
+      {
+        "size": 2,
+        "weight": 30
+      },
+      {
+        "size": 3,
+        "weight": 10
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "goblin_firetongue",
+        "weight": 45,
+        "level": [
+          9,
+          11
+        ]
+      },
+      {
+        "monsterId": "goblin",
+        "weight": 55,
+        "level": [
+          9,
+          11
+        ]
+      }
+    ],
+    "exploreTicks": 300,
+    "finds": [
+      {
+        "id": "f5_village_salves",
+        "at": 0.4,
+        "material": {
+          "id": "healing_salve",
+          "qty": 2
+        },
+        "desc": "🧴 Two healing salves in a hut that stayed dry."
+      },
+      {
+        "id": "f5_village_cache",
+        "at": 0.8,
+        "gold": {
+          "min": 70,
+          "max": 120
+        },
+        "desc": "💰 A goblin cache under the floorboards: 70 to 120 gold."
+      }
+    ],
+    "connections": [
+      {
+        "to": "f5_cave_mouth",
+        "ticks": 35
+      }
+    ],
+    "desc": "Endless hunt: firetongues and goblins, level 9 to 11 (up to double that while your attributes are higher than theirs), up to three at once. Search the Huts explores (30 s) for two healing salves and a cache. Joins the Bog and the Cave Mouth."
+  },
+  {
+    "id": "f5_cave_mouth",
+    "name": "The Cave Mouth",
+    "icon": "🕳️",
+    "areaId": "ascent_f5_area",
+    "map": {
+      "x": 50,
+      "y": 38
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Hunt the Cave Mouth",
+        "icon": "🏹"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 70
+      },
+      {
+        "size": 2,
+        "weight": 30
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "hobgoblin",
+        "weight": 40,
+        "level": [
+          9,
+          11
+        ]
+      },
+      {
+        "monsterId": "slime_spider",
+        "weight": 25,
+        "level": [
+          9,
+          11
+        ]
+      },
+      {
+        "monsterId": "goblin",
+        "weight": 35,
+        "level": [
+          9,
+          11
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "to": "f5_hollows",
+        "ticks": 30
+      }
+    ],
+    "desc": "Endless hunt: hobgoblins, spider slimes and goblins, level 9 to 11 (up to double that while your attributes are higher than theirs). Hobgoblins fight with techniques; with martial open, seeing one used on you 50 times teaches it."
+  },
+  {
+    "id": "f5_hollows",
+    "name": "The Hollows",
+    "icon": "🦇",
+    "areaId": "ascent_f5_area",
+    "map": {
+      "x": 50,
+      "y": 54
+    },
+    "tags": [
+      "dark",
+      "indoor"
+    ],
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Hunt the Hollows",
+        "icon": "🏹"
+      },
+      {
+        "id": "explore",
+        "kind": "explore",
+        "name": "Map the Hollows",
+        "icon": "🔦"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 70
+      },
+      {
+        "size": 2,
+        "weight": 30
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "hobgoblin",
+        "weight": 50,
+        "level": [
+          10,
+          11
+        ]
+      },
+      {
+        "monsterId": "slime_spider",
+        "weight": 30,
+        "level": [
+          10,
+          11
+        ]
+      },
+      {
+        "monsterId": "stone_golem",
+        "weight": 20,
+        "level": [
+          10,
+          11
+        ]
+      }
+    ],
+    "exploreTicks": 360,
+    "finds": [
+      {
+        "id": "f5_hollows_ore",
+        "at": 0.3,
+        "material": {
+          "id": "copper_ore",
+          "qty": 4
+        },
+        "desc": "⛏️ Four chunks of copper ore in a seam."
+      },
+      {
+        "id": "f5_hollows_door",
+        "at": 0.6,
+        "stat": {
+          "key": "flag:f5_back_door"
+        },
+        "desc": "🚪 A draught from a crack in the rock: a guarded door into the goblin warren. The way to the Back Door is open."
+      },
+      {
+        "id": "f5_hollows_scrap",
+        "at": 0.9,
+        "material": {
+          "id": "iron_scrap",
+          "qty": 4
+        },
+        "desc": "🔩 Four iron scrap from a broken cart."
+      }
+    ],
+    "connections": [
+      {
+        "to": "f5_back_door",
+        "ticks": 30,
+        "label": "To the Back Door",
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:f5_back_door",
+            "value": 1
+          }
+        ],
+        "revealWhen": [
+          {
+            "type": "stat",
+            "key": "flag:f5_back_door",
+            "value": 1
+          }
+        ]
+      }
+    ],
+    "desc": "Dark: your dodge is cut by 25% and your attacks gain a 15% extra miss chance; Darkvision shrinks both, to nothing at level 50. Endless hunt: hobgoblins, spider slimes and stone golems, level 10 to 11 (up to double that while your attributes are higher than theirs). Map the Hollows explores (36 s) for copper ore, the warren's back door and iron scrap."
+  },
+  {
+    "id": "f5_back_door",
+    "name": "The Back Door",
+    "icon": "🚪",
+    "areaId": "ascent_f5_area",
+    "map": {
+      "x": 50,
+      "y": 70
+    },
+    "fightLimit": 1,
+    "modifierWeights": {
+      "normal": 100
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Take the Door",
+        "icon": "⚔️"
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "hobgoblin_champion",
+        "weight": 1,
+        "once": true,
+        "level": [
+          8,
+          8
+        ]
+      }
+    ],
+    "connections": [],
+    "desc": "One fight, started when you choose: the Hobgoblin Champion (level 8) and one hobgoblin. Killing the champion clears floor 5."
+  },
+  {
+    "id": "f6_warren_mouth",
+    "name": "The Warren Mouth",
+    "icon": "🕳️",
+    "areaId": "ascent_f6_area",
+    "map": {
+      "x": 50,
+      "y": 6
+    },
+    "activities": [
+      {
+        "id": "camp_f6",
+        "kind": "rest",
+        "name": "Camp at the Mouth",
+        "icon": "🏕️"
+      }
+    ],
+    "connections": [
+      {
+        "to": "f6_tunnels",
+        "ticks": 20
+      }
+    ],
+    "desc": "Landing of floor 6, the goblins' warren. Camp at the Mouth is a rest activity, and the landing is a haven. Gate: 40 goblins killed in total."
+  },
+  {
+    "id": "f6_tunnels",
+    "name": "The Tunnels",
+    "icon": "🪨",
+    "areaId": "ascent_f6_area",
+    "map": {
+      "x": 50,
+      "y": 20
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Fight Through the Tunnels",
+        "icon": "⚔️"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 50
+      },
+      {
+        "size": 2,
+        "weight": 30
+      },
+      {
+        "size": 3,
+        "weight": 20
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "goblin",
+        "weight": 40,
+        "level": [
+          10,
+          12
+        ]
+      },
+      {
+        "monsterId": "hobgoblin",
+        "weight": 30,
+        "level": [
+          10,
+          12
+        ]
+      },
+      {
+        "monsterId": "goblin_firetongue",
+        "weight": 15,
+        "level": [
+          10,
+          12
+        ]
+      },
+      {
+        "monsterId": "goblin_witch_doctor",
+        "weight": 15,
+        "level": [
+          10,
+          12
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "to": "f6_pens",
+        "ticks": 20
+      },
+      {
+        "to": "f6_kitchens",
+        "ticks": 20
+      },
+      {
+        "to": "f6_shrine",
+        "ticks": 25
+      }
+    ],
+    "desc": "Endless hunt: goblins, hobgoblins, firetongues and witch doctors, level 10 to 12 (up to double that while your attributes are higher than theirs), up to three at once. Witch doctors heal their allies. Leads to the Pens, the Kitchens and the Shrine."
+  },
+  {
+    "id": "f6_pens",
+    "name": "The Pens",
+    "icon": "🐗",
+    "areaId": "ascent_f6_area",
+    "map": {
+      "x": 18,
+      "y": 20
+    },
+    "activities": [
+      {
+        "id": "explore",
+        "kind": "explore",
+        "name": "Break Open the Pens",
+        "icon": "🔓"
+      }
+    ],
+    "exploreTicks": 300,
+    "finds": [
+      {
+        "id": "f6_pens_meat",
+        "at": 0.3,
+        "material": {
+          "id": "raw_meat",
+          "qty": 4
+        },
+        "desc": "🥩 Four raw meat from the store pens."
+      },
+      {
+        "id": "f6_pens_sabotage",
+        "at": 0.7,
+        "stat": {
+          "key": "flag:f6_sabotage"
+        },
+        "desc": "🔓 The pens are open and the war boars gone into the tunnels. Sabotage: the warchief loses a level."
+      }
+    ],
+    "connections": [],
+    "desc": "Break Open the Pens explores (30 s) for meat and one of the three sabotages. Each sabotage takes a level off the warchief."
+  },
+  {
+    "id": "f6_kitchens",
+    "name": "The Kitchens",
+    "icon": "🍲",
+    "areaId": "ascent_f6_area",
+    "map": {
+      "x": 82,
+      "y": 20
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [
+      {
+        "id": "explore",
+        "kind": "explore",
+        "name": "Foul the Stores",
+        "icon": "🧪"
+      }
+    ],
+    "exploreTicks": 300,
+    "finds": [
+      {
+        "id": "f6_kitchens_food",
+        "at": 0.3,
+        "material": {
+          "id": "rustic_loaf",
+          "qty": 3
+        },
+        "desc": "🍞 Three loaves from the goblins' stores."
+      },
+      {
+        "id": "f6_kitchens_sabotage",
+        "at": 0.7,
+        "stat": {
+          "key": "flag:f6_sabotage"
+        },
+        "desc": "🧪 The war band's stores are spoiled. Sabotage: the warchief loses a level."
+      }
+    ],
+    "connections": [],
+    "desc": "Foul the Stores explores (30 s) for bread and one of the three sabotages."
+  },
+  {
+    "id": "f6_shrine",
+    "name": "The Shrine",
+    "icon": "🗿",
+    "areaId": "ascent_f6_area",
+    "map": {
+      "x": 50,
+      "y": 34
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Clear the Shrine",
+        "icon": "⚔️"
+      },
+      {
+        "id": "explore",
+        "kind": "explore",
+        "name": "Desecrate the Shrine",
+        "icon": "🔥"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 60
+      },
+      {
+        "size": 2,
+        "weight": 40
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "goblin_witch_doctor",
+        "weight": 50,
+        "level": [
+          11,
+          12
+        ]
+      },
+      {
+        "monsterId": "goblin_firetongue",
+        "weight": 50,
+        "level": [
+          11,
+          12
+        ]
+      }
+    ],
+    "exploreTicks": 300,
+    "finds": [
+      {
+        "id": "f6_shrine_offering",
+        "at": 0.3,
+        "gold": {
+          "min": 80,
+          "max": 140
+        },
+        "desc": "💰 The shrine's offering bowl: 80 to 140 gold."
+      },
+      {
+        "id": "f6_shrine_sabotage",
+        "at": 0.7,
+        "stat": {
+          "key": "flag:f6_sabotage"
+        },
+        "desc": "🔥 The shrine is overturned and its fire out. Sabotage: the warchief loses a level."
+      }
+    ],
+    "connections": [
+      {
+        "to": "f6_drop",
+        "ticks": 30,
+        "label": "Down the Drop",
+        "returnLabel": "Back Up the Drop"
+      }
+    ],
+    "desc": "Endless hunt: witch doctors and firetongues, level 11 to 12 (up to double that while your attributes are higher than theirs). Desecrate the Shrine explores (30 s) for an offering and one of the three sabotages. The drop down to the deep encampment starts here."
+  },
+  {
+    "id": "f6_drop",
+    "name": "The Drop",
+    "icon": "🕳️",
+    "areaId": "ascent_f6_area",
+    "map": {
+      "x": 50,
+      "y": 52
+    },
+    "tags": [
+      "dark",
+      "indoor"
+    ],
+    "activities": [
+      {
+        "id": "camp_f6_deep",
+        "kind": "rest",
+        "name": "Camp in the Drop",
+        "icon": "🏕️"
+      },
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Hold the Drop",
+        "icon": "⚔️"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 40
+      },
+      {
+        "size": 2,
+        "weight": 35
+      },
+      {
+        "size": 3,
+        "weight": 25
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "hobgoblin",
+        "weight": 45,
+        "level": [
+          11,
+          13
+        ]
+      },
+      {
+        "monsterId": "goblin_witch_doctor",
+        "weight": 20,
+        "level": [
+          11,
+          13
+        ]
+      },
+      {
+        "monsterId": "goblin_firetongue",
+        "weight": 20,
+        "level": [
+          11,
+          13
+        ]
+      },
+      {
+        "monsterId": "goblin",
+        "weight": 15,
+        "level": [
+          11,
+          13
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "to": "f6_great_hall",
+        "ticks": 30,
+        "label": "Into the Great Hall"
+      }
+    ],
+    "desc": "The deep encampment, second map of the warren. Dark: your dodge is cut by 25% and your attacks gain a 15% extra miss chance; Darkvision shrinks both, to nothing at level 50. Camp in the Drop is a rest activity and a haven. Endless hunt: hobgoblins, witch doctors, firetongues and goblins, level 11 to 13 (up to double that while your attributes are higher than theirs), up to three at once."
+  },
+  {
+    "id": "f6_great_hall",
+    "name": "The Great Hall",
+    "icon": "🔥",
+    "areaId": "ascent_f6_area",
+    "map": {
+      "x": 50,
+      "y": 70
+    },
+    "tags": [
+      "indoor"
+    ],
+    "forced": true,
+    "fightLimit": 1,
+    "modifierWeights": {
+      "normal": 100
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Face the Warchief",
+        "icon": "⚔️"
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "goblin_warchief",
+        "weight": 1,
+        "once": true,
+        "level": [
+          11,
+          11
+        ],
+        "requires": [
+          {
+            "type": "statMax",
+            "key": "flag:f6_sabotage",
+            "value": 0
+          }
+        ]
+      },
+      {
+        "monsterId": "goblin_warchief",
+        "weight": 1,
+        "once": true,
+        "level": [
+          10,
+          10
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:f6_sabotage",
+            "value": 1
+          },
+          {
+            "type": "statMax",
+            "key": "flag:f6_sabotage",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "goblin_warchief",
+        "weight": 1,
+        "once": true,
+        "level": [
+          9,
+          9
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:f6_sabotage",
+            "value": 2
+          },
+          {
+            "type": "statMax",
+            "key": "flag:f6_sabotage",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "monsterId": "goblin_warchief",
+        "weight": 1,
+        "once": true,
+        "level": [
+          8,
+          8
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:f6_sabotage",
+            "value": 3
+          }
+        ]
+      }
+    ],
+    "connections": [],
+    "desc": "Arriving starts a fight that cannot be fled: the Goblin Warchief and two escorts (witch doctors, firetongues or hobgoblins). The warchief is level 11 with no sabotage, one level less for each of the three (8 with all three). Killing it clears floor 6 and opens prestige."
+  },
+  {
+    "id": "f0_cell",
+    "name": "The Holding Cell",
+    "icon": "🔒",
+    "areaId": "ascent_f0_area",
+    "map": {
+      "x": 15,
+      "y": 22
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [
+      {
+        "id": "rest_f0",
+        "kind": "rest",
+        "name": "Sleep on the Straw",
+        "icon": "🛏️"
+      }
+    ],
+    "connections": [
+      {
+        "to": "f0_cellblock",
+        "ticks": 20,
+        "label": "the cell door"
+      }
+    ],
+    "desc": "Floor 0, where a new life starts. Sleep on the Straw is a rest activity, so the cell is a haven. The rack here is the tutorial’s weapon choice. The cell door leads to the Cellblock (2 s)."
+  },
+  {
+    "id": "f0_cellblock",
+    "name": "The Cellblock",
+    "icon": "🚪",
+    "areaId": "ascent_f0_area",
+    "map": {
+      "x": 27.5,
+      "y": 50
+    },
+    "tags": [
+      "indoor"
+    ],
+    "fightLimit": 1,
+    "modifierWeights": {
+      "normal": 100
+    },
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 100
+      }
+    ],
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Fight the Cell Slime",
+        "icon": "⚔️"
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "slime_cell",
+        "weight": 100,
+        "level": [
+          1,
+          1
+        ],
+        "once": true
+      }
+    ],
+    "connections": [
+      {
+        "to": "f0_field",
+        "ticks": 30,
+        "label": "the yard door"
+      }
+    ],
+    "desc": "Corridor outside the cell. Fight the Cell Slime is one fight: the slime deals 1 damage per hit and is gone once beaten. The yard door leads to the Field (3 s)."
+  },
+  {
+    "id": "f0_field",
+    "name": "The Field",
+    "icon": "🌾",
+    "areaId": "ascent_f0_area",
+    "map": {
+      "x": 67.5,
+      "y": 32.5
+    },
+    "fightLimit": 3,
+    "modifierWeights": {
+      "normal": 100
+    },
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 100
+      }
+    ],
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Fight in the Field",
+        "icon": "⚔️"
+      },
+      {
+        "id": "train_int_f0",
+        "kind": "train",
+        "attr": "int",
+        "name": "Study the Gate Plaque",
+        "icon": "📖"
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "slime_cell",
+        "weight": 100,
+        "level": [
+          1,
+          2
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "to": "f0_gate",
+        "ticks": 30,
+        "label": "the path to the gate"
+      }
+    ],
+    "desc": "Open ground between the cellblock and the gate. Fight in the Field holds three fights against Cell Slimes (levels 1 to 2), then spawns no more fights. Study the Gate Plaque trains Intelligence. The path leads to the Gate (3 s)."
+  },
+  {
+    "id": "f0_gate",
+    "name": "The Gate",
+    "icon": "🚧",
+    "areaId": "ascent_f0_area",
+    "map": {
+      "x": 80,
+      "y": 11
+    },
+    "activities": [],
+    "connections": [
+      {
+        "to": "ascent_foot",
+        "ticks": 30,
+        "oneWay": true,
+        "label": "through the gate into Threshold"
+      }
+    ],
+    "desc": "The way out of floor 0. The road through it into Threshold (3 s) is one-way: the Foot of the Ascent is on the other side and the floor closes behind you."
+  }
+]

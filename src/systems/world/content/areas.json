@@ -1,0 +1,91 @@
+[
+  {
+    "id": "scholars_quarter",
+    "name": "Scholars' Quarter",
+    "regionId": "threshold"
+  },
+  {
+    "id": "temple_rise",
+    "name": "Temple Rise",
+    "regionId": "threshold"
+  },
+  {
+    "id": "the_ironyard",
+    "name": "The Ironyard",
+    "regionId": "threshold"
+  },
+  {
+    "id": "alembic_row",
+    "name": "Alembic Row",
+    "regionId": "threshold"
+  },
+  {
+    "id": "the_chancery",
+    "name": "The Chancery",
+    "regionId": "threshold"
+  },
+  {
+    "id": "the_assize",
+    "name": "The Assize",
+    "regionId": "threshold"
+  },
+  {
+    "id": "wrights_ward",
+    "name": "Wrights' Ward",
+    "regionId": "threshold"
+  },
+  {
+    "id": "the_granaries",
+    "name": "The Granaries",
+    "regionId": "threshold"
+  },
+  {
+    "id": "ascent_foot_area",
+    "name": "The Foot",
+    "regionId": "threshold"
+  },
+  {
+    "id": "ascent_f0_area",
+    "name": "The Holding Level",
+    "regionId": "holding_level",
+    "scene": "hall"
+  },
+  {
+    "id": "ascent_f1_area",
+    "name": "The Flooded Offices",
+    "regionId": "the_ascent",
+    "scene": "hall"
+  },
+  {
+    "id": "ascent_f2_area",
+    "name": "The Long Hall",
+    "regionId": "the_ascent",
+    "scene": "hall"
+  },
+  {
+    "id": "ascent_f3_area",
+    "name": "The Descent",
+    "regionId": "the_ascent",
+    "scene": "hall"
+  },
+  {
+    "id": "ascent_f4_area",
+    "name": "The Greenwood",
+    "regionId": "the_ascent",
+    "sheltered": false
+  },
+  {
+    "id": "ascent_f5_area",
+    "name": "The Mire",
+    "regionId": "the_ascent",
+    "sheltered": false,
+    "scene": "cistern"
+  },
+  {
+    "id": "ascent_f6_area",
+    "name": "The Warren",
+    "regionId": "the_ascent",
+    "sheltered": false,
+    "scene": "crypt"
+  }
+]

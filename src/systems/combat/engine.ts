@@ -986,7 +986,8 @@ function endFight(ctx: C, outcome: FightOutcome, cause?: string): void {
  * The player loses the fight. The old `onDefeat`, up to the knockout: this
  * system closes the fight, doubles the respawn delay, stops the hunt (the
  * old retreat cleared the activity) and emits `combat/defeat`. Setting HP to
- * 1, `recovering`, the retreat and the return belong to the world port.
+ * 1, `recovering`, the retreat and the return are done by the `knockout` and
+ * `world` systems (spine port 6).
  */
 export function onDefeat(ctx: C, outcome: FightOutcome = 'knocked_out', cause = ''): void {
   const c = ctx.state.fight!;
@@ -1014,7 +1015,7 @@ export function onDefeat(ctx: C, outcome: FightOutcome = 'knocked_out', cause = 
  * abandoned (the respawn delay is the short one), and the hunt is turned off
  * as the old retreat cleared the activity. The old code emitted no `defeat`
  * bus event here, so the counter `defeats` is not bumped. The "knocks you
- * out" line names the condition and belongs to the knockout (port 6).
+ * out" line names the condition and is written by the `knockout` system.
  */
 export function fallToCondition(ctx: C): void {
   const c = ctx.state.fight;

@@ -67,21 +67,23 @@ A fight is saved. The old build dropped the fight at save; its
 
 ### The site
 
-Locations arrive in port 6. Combat does not read a location registry. It
-takes an `EncounterSite` as data:
+Combat does not read a location registry. It takes an `EncounterSite` as
+data, which `world` builds from a spot (`siteOf`, spine port 6):
 
 `{ id, name, encounters[], groupWeights?, modifierWeights?, fightLimit?,
 stampOnClear?, levelStep?, dynamicLevel?, clearedMsg? }`.
 
 An encounter line is the old `SpotEncounter`. `levelStep` is the old
 `bandLevelStep` result and `dynamicLevel` the band's `{ factor, capShare }`;
-port 6 computes both from its floor and band data when it sends the site.
+`world` reads both from `ladder` when it sends the site. A `sky` line rolls
+only under the weather kinds it lists: the reader of the sky over a site is
+registered by `weather` (`registerSiteSky` in `spawn.ts`).
 
 ### Commands
 
 | Command | Does |
 |---|---|
-| `combat/hunt` `{ site }` | Set the site and turn the hunt loop on. Port 6 sends it from the hunt activity; the panel sends it with a site built from one monster. A fight open at another site is abandoned. |
+| `combat/hunt` `{ site }` | Set the site and turn the hunt loop on. The panel sends it with a site built from one monster; the hunt activity of `world` uses the request `combat/set-hunt`. A fight open at another site is abandoned. |
 | `combat/stop` | Turn the hunt loop off and walk away from the fight. |
 | `combat/set-hunt-rest` `{ at, toFull }` | Old `setHuntRest`. |
 | `combat/keep-fight`, `combat/drop-fight` `{ id }` | The notebook. |
@@ -93,6 +95,8 @@ port 6 computes both from its floor and band data when it sends the site.
 |---|---|---|
 | `combat/start-forced` `{ site }` | `startForcedFight` | true when a fight began |
 | `combat/start-staged` `{ site, members }` | `startStagedGroup`, `startStagedFight` | void |
+| `combat/set-hunt` `{ site }` | The hunt case of `tickAction` | The hunt loop on at the site, from a system. False when the site is unsound or the open fight cannot be left. Spine port 6. |
+| `combat/stop-hunt` | - | The hunt loop off, without leaving a fight. Spine port 6. |
 | `combat/abandon` | `abandonCombat` | true when there was a fight. Never refuses; the caller checks `inForcedFight` first. |
 | `combat/damage-enemy` `{ entity, strikes[], source, penetration?, kind? }` | The body of a strike on an enemy from outside the normal attack (`abilityStrike`, each strike of `castCraftedAttack`): `monsterSlice` per strike, HP, `lastHit`, the ledger, `enemyTookDamage`, the graft harvest. | `{ dealt, killed, slices }`, or null for an entity that is not a living enemy |
 | `combat/stamp-action` `{ entity, index, cooldown }` | `spendMonsterAction` and the clock stamp | false for an unknown entity |
@@ -380,9 +384,9 @@ Other old files: `ledger.ts` is `ledger.ts` whole. `huntrest.ts`:
 | Coatings (`spendCoating`) | `registerBlowRider`: `perHit` for the typed slices of each hit, `afterBlow` for the conditions and the "used up" line; alchemy port. A test registers one. |
 | Statues and rubble, `standAside` | No monster of floors 0 to 6 has the rule. A statue condition on an enemy is reported once through the skip log. |
 | Skill actives (`strike`, `spell`, `buff`) | No skill record in the registry is an active. A player kind for skill ids when one exists. Combat buffs exist since port 5 (`combat/add-buff`). |
-| The approach (`pendingApproach`) | The world port applies it after `combat/fight-started`, or through a field of `combat/start-forced`. |
+| The approach (`pendingApproach`) | No road of floors 0 to 6 has one. Step 4: `world` applies it after `combat/fight-started`, or through a field of `combat/start-forced`. |
 | Practice shaping (`practiceXp`) | `skills` and `attributes` have no hook for shaping a grant by the receiving level. A fight against training equipment pays unshaped XP. |
-| Toll golem reward and spell reactions, wards, festival, sea | Not ported. The 30-tick address of the toll golem is ported (`introTicks`). |
+| Toll golem spell reactions, wards, festival, sea | Not ported. The 30-tick address of the toll golem is ported (`introTicks`); its reward is in `world` (spine port 6). |
 
 ## Skip reasons
 
@@ -406,7 +410,10 @@ Other old files: `ledger.ts` is `ledger.ts` whole. `huntrest.ts`:
 - `combat/rotation`: no system has registered the action kind; a monster's
   entry whose supply is spent; a reason the kind gave (listed in the README
   of `martial` and of `spellcraft`). One line per fight, entry and reason.
-- `combat/encounter`: a line needs the sky (world port).
+- `combat/encounter`: a line needs the sky and no weather system is
+  registered.
+- `combat/set-hunt`: the site has no id or no encounter list, or names an
+  unknown monster.
 - `combat/statue`: an enemy holds a statue condition.
 - `combat/close-ledger`: no ledger is open.
 
@@ -416,22 +423,16 @@ skip.
 
 ## Left behind
 
-- The knockout: `combat/defeat` is emitted, the fight is closed, the respawn
-  delay is doubled and the hunt is turned off (the old retreat cleared the
-  activity). Setting HP to 1, `recovering`, the retreat, `captureFall` and
-  the return are port 6. Until then the player stays at the HP the blow left
-  and recovers at the idle rate.
-- A condition that finishes the player in a fight (its damage or its
-  detonation leaves 0 HP, or it is fatal): this system closes the fight as a
-  knockout (`byCondition: true`, the short respawn delay, no `defeats` bump,
-  as the old `tickPlayerStatuses` did). The "knocks you out"
-  line names the condition and is the knockout's (port 6).
-- `sky` lines of an encounter table (weather, port 6).
-- `returnRecoverTarget` of `huntrest.ts` (port 6).
+- Filled by spine port 6: the knockout (`knockout` hears `combat/defeat`
+  and the condition events: 1 HP, the retreat, the recovery, the return,
+  the "knocks you out" line, `returnRecoverTarget`); `sky` lines (`weather`
+  registers the reader with `registerSiteSky`); `combat/darkness` (stated by
+  `weather`); the site (`world` builds it from a spot and sends it with
+  `combat/set-hunt`); the floor clears (`ladder` hears `combat/kill` and
+  `combat/fight-won`). This system still closes the fight, sets the respawn
+  delay and turns the hunt loop off at a defeat.
 - The bestiary (`recordEncounter`, `recordKill`, `spawnLevels`): hears
   `combat/fight-started` and `combat/kill`.
-- `checkFloorClears` on a kill and a win (port 6): hears `combat/kill` and
-  `combat/fight-won`.
 - The notebook has commands and no panel part.
 - Monster portraits: the view carries the file name (`art`); the panel shows
   the emoji icon.

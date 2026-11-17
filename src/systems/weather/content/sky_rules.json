@@ -1,0 +1,61 @@
+[
+  {
+    "id": "gale",
+    "every": 3,
+    "self": [
+      {
+        "id": "buffeted",
+        "intensity": 0.5
+      }
+    ]
+  },
+  {
+    "id": "rain",
+    "every": 3,
+    "self": [
+      {
+        "id": "wet",
+        "intensity": 1
+      }
+    ]
+  },
+  {
+    "id": "snow",
+    "every": 3,
+    "self": [
+      {
+        "id": "chilled",
+        "intensity": 0.15
+      }
+    ]
+  },
+  {
+    "id": "storm",
+    "every": 3,
+    "self": [
+      {
+        "id": "wet",
+        "intensity": 1
+      },
+      {
+        "id": "jolted",
+        "intensity": 0.5
+      }
+    ]
+  },
+  {
+    "id": "heatwave",
+    "every": 3,
+    "self": [
+      {
+        "id": "sweltering",
+        "intensity": 0.5
+      },
+      {
+        "id": "dazzled",
+        "intensity": 1,
+        "chance": 0.25
+      }
+    ]
+  }
+]

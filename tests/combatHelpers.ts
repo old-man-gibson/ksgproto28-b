@@ -1,15 +1,17 @@
 /**
  * Shared set-up of the ported combat tests.
  *
- * The old tests stood on spots of the location registry. Locations arrive
- * with the world port; until then the encounter tables of those spots are
- * data in `tests/sites.json`, written by `scripts/dump-test-sites.mjs` from
- * the old repository.
+ * The old tests stood on spots of the location registry. A spot that is in
+ * this repository (floors 0 to 6, Threshold) is read from the world registry
+ * as the encounter site the world system sends. A spot that is not here yet
+ * (the shelved countryside, the hold, floor 17) is data in
+ * `tests/sitesOutside.json`, written by `scripts/dump-outside-sites.mjs`
+ * from the old repository.
  *
- * The knockout (1 HP, forced rest, recovery) is the world port's too.
- * `keepHunting` stands in for it where an old test relied on the character
- * getting back up: it rests the character at the rest rate until the old
- * recovery threshold and sends the hunt again.
+ * `keepHunting` is for tests that send `combat/hunt` directly, with no hunt
+ * activity for the knockout return to resume: after a defeat the hunt is
+ * off, and once the recovery of the knockout system is over it sends the
+ * hunt again.
  */
 import type { Ctx, Kernel, KernelOptions } from '../src/kernel';
 import combat, {
@@ -24,12 +26,41 @@ import combat, {
 } from '../src/systems/combat';
 import type { CountersState } from '../src/systems/counters';
 import type { FeedEntry, LogState } from '../src/systems/log';
-import { setPace, type ResourcesState } from '../src/systems/resources';
+import type { ResourcesState } from '../src/systems/resources';
 import { statBlockOf, type DerivedStats } from '../src/systems/stats';
-import { ask, emit, equip, makeGame, patch, reads, run, setMods, slice } from './helpers';
-import sitesData from './sites.json';
+import { ask, equip, makeGame, patch, reads, run, setMods, slice } from './helpers';
+import { bandDynamicLevel } from '../src/systems/ladder';
+import { SPOTS, type WorldState } from '../src/systems/world';
+import sitesOutside from './sitesOutside.json';
 
-export const SITES = sitesData as unknown as Record<string, EncounterSite & { forced?: boolean }>;
+type TestSite = EncounterSite & { forced?: boolean };
+
+/** The site of a spot of the world registry, as `siteOf` builds it, plus `forced`. No band here has level steps. */
+function siteOfSpot(id: string): TestSite {
+  const spot = SPOTS[id];
+  const dynamicLevel = bandDynamicLevel(spot.areaId);
+  return {
+    id: spot.id,
+    name: spot.name,
+    encounters: spot.encounters ?? [],
+    ...(spot.groupWeights ? { groupWeights: spot.groupWeights } : {}),
+    ...(spot.modifierWeights ? { modifierWeights: spot.modifierWeights } : {}),
+    ...(spot.fightLimit ? { fightLimit: spot.fightLimit } : {}),
+    ...(spot.stampOnClear ? { stampOnClear: spot.stampOnClear } : {}),
+    ...(dynamicLevel ? { dynamicLevel } : {}),
+    ...(spot.forced ? { forced: true } : {}),
+  };
+}
+
+/** Every spot with an encounter table, by id, and the six tables of spots that are not here yet. */
+export const SITES: Record<string, TestSite> = {
+  ...(sitesOutside as unknown as Record<string, TestSite>),
+  ...Object.fromEntries(
+    Object.values(SPOTS)
+      .filter((spot) => spot.encounters?.length)
+      .map((spot) => [spot.id, siteOfSpot(spot.id)]),
+  ),
+};
 
 /** The share of max HP the old recovery ran to (`RECOVER_THRESHOLD`). */
 export const RECOVER_THRESHOLD = 0.6;
@@ -80,18 +111,13 @@ export function huntingGame(seed = 7, site: string | EncounterSite = 'woods_edge
 }
 
 /**
- * Stand-in for the knockout and its recovery. After a defeat the hunt is
- * off: rest at the rest rate until the old threshold, then hunt again.
+ * After a defeat the hunt is off and the knockout system rests the
+ * character. Once it has recovered, hunt again.
  */
 export function keepHunting(kernel: Kernel, site: string | EncounterSite): void {
   const c = combatOf(kernel);
   if (c.hunting || c.fight) return;
-  const share = hpOf(kernel) / playerStats(kernel).maxHp;
-  if (share < RECOVER_THRESHOLD) {
-    emit(kernel, setPace, { hpMult: 15, healKind: 'rest', resting: true });
-    return;
-  }
-  emit(kernel, setPace, { hpMult: 1, healKind: 'idle', resting: false });
+  if (slice<WorldState>(kernel, 'world').recovering) return;
   kernel.dispatch(hunt({ site: typeof site === 'string' ? SITES[site] : site }));
 }
 

@@ -115,7 +115,8 @@ that reads either declares `dependsOn: [LOCKS_SOURCE]`.
 
 ## Left behind
 
-- Which activity gives which pace, recovery after a knockout: world.
+- Filled by spine port 6: `world` sends the pace of each activity, of travel
+  and of the recovery; `knockout` sends `resources/defeat`.
 - The Facet `hitTaken` signal: from `resources/damaged`. The fight ledger's
   attribution is in `combat` (spine port 4), from `resources/healed` and
   `resources/damaged`.

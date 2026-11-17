@@ -1,21 +1,45 @@
 /**
  * Port of the old `tests/combatStart.test.ts`.
  *
- * `soleCombatActivity` reads a spot's activity list, which arrives with the
- * world port: its four cases are `it.todo`. The two cases of "starting it"
- * are ported on the commands the hunt activity will send: `combat/hunt` and
- * `combat/stop`.
+ * `soleCombatActivity` is the one of `src/systems/world`. The two cases of
+ * "starting it" are ported on the commands the hunt activity sends:
+ * `combat/hunt` and `combat/stop`.
  */
 import { describe, expect, it } from 'vitest';
 import { hunt, startForced, stopHunt } from '../src/systems/combat';
+import { soleCombatActivity, SPOTS, type ActivityDef, type SpotDef } from '../src/systems/world';
 import { combatOf, SITES } from './combatHelpers';
 import { ask, makeGame } from './helpers';
 
+const huntOf = (id: string): ActivityDef => ({ id, kind: 'hunt', name: id, icon: '⚔️' });
+const spar: ActivityDef = { id: 'spar', kind: 'train', attr: 'str', name: 'Spar', icon: '⚔️', tags: ['combat'] };
+const withActivities = (activities: ActivityDef[]): SpotDef => ({ ...SPOTS.the_sand, activities });
+
 describe('soleCombatActivity', () => {
-  it.todo('no hunt: null, even beside a combat-tagged train activity (port 6: activities)');
-  it.todo('exactly one hunt: that hunt; a combat-tagged train activity does not count (port 6: activities)');
-  it.todo('several hunts: null (port 6: activities)');
-  it.todo('live spots: the Sand offers Beat the Post, the Training Area its dummies (port 6: activities)');
+  it('no hunt: null, even beside a combat-tagged train activity', () => {
+    expect(soleCombatActivity(withActivities([]))).toBeNull();
+    expect(soleCombatActivity(withActivities([spar]))).toBeNull();
+  });
+
+  it('exactly one hunt: that hunt; a combat-tagged train activity does not count', () => {
+    expect(soleCombatActivity(withActivities([huntOf('a')]))?.id).toBe('a');
+    expect(soleCombatActivity(withActivities([spar, huntOf('a')]))?.id).toBe('a');
+  });
+
+  it('several hunts: null', () => {
+    expect(soleCombatActivity(withActivities([huntOf('a'), huntOf('b')]))).toBeNull();
+    expect(soleCombatActivity(withActivities([huntOf('a'), spar, huntOf('b')]))).toBeNull();
+  });
+
+  it('live spots: the Sand offers Beat the Post, the Training Area its dummies', () => {
+    expect(soleCombatActivity(SPOTS.the_sand)?.name).toBe('Beat the Post');
+    // The Training Area (`base_training_area`, "Work the Dummies") is a spot
+    // of the hold: step 4.
+    for (const spot of Object.values(SPOTS)) {
+      const hunts = spot.activities.filter((a) => a.kind === 'hunt');
+      expect(soleCombatActivity(spot), spot.id).toBe(hunts.length === 1 ? hunts[0] : null);
+    }
+  });
 });
 
 describe('starting it', () => {

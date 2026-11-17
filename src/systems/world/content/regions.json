@@ -1,0 +1,37 @@
+[
+  {
+    "id": "holding_level",
+    "name": "The Holding Level",
+    "terrain": "plains",
+    "tags": [
+      "settlement"
+    ],
+    "world": {
+      "x": 14.3,
+      "y": 22.4
+    }
+  },
+  {
+    "id": "threshold",
+    "name": "Threshold",
+    "terrain": "plains",
+    "mapped": true,
+    "tags": [
+      "settlement"
+    ],
+    "world": {
+      "x": 14,
+      "y": 22
+    }
+  },
+  {
+    "id": "the_ascent",
+    "name": "The Ascent",
+    "terrain": "plains",
+    "sheltered": true,
+    "world": {
+      "x": 14.3,
+      "y": 21.6
+    }
+  }
+]

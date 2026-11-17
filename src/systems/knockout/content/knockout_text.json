@@ -1,0 +1,110 @@
+[
+  {
+    "id": "return",
+    "text": "Returning to {spot}."
+  },
+  {
+    "id": "retry",
+    "text": "Retrying {spot}."
+  },
+  {
+    "id": "streak_fallback",
+    "text": "{count} knockouts in a row at {spot}. Hunting {fallback} for {wins} wins."
+  },
+  {
+    "id": "fallback_failed",
+    "text": "{count} knockouts in a row at {spot}. Retrying {target} in {minutes} min."
+  },
+  {
+    "id": "blocked_fallback",
+    "text": "{spot}: {why}. Hunting {fallback} for {wins} wins."
+  },
+  {
+    "id": "blocked_idle",
+    "text": "{spot}: {why}. No safer hunt known."
+  },
+  {
+    "id": "blocked_hold",
+    "text": "{spot}: {why}. No safer hunt known. Retrying in {minutes} min."
+  },
+  {
+    "id": "blocked_retry",
+    "text": "{spot}: {why}. Hunting {fallback} for {wins} wins or {hours} h, then retrying."
+  },
+  {
+    "id": "hold",
+    "text": "No safer hunt known. Retrying {spot} in {minutes} min."
+  },
+  {
+    "id": "stay",
+    "text": "Return cancelled. Staying here."
+  },
+  {
+    "id": "stay_leg",
+    "text": "Return cancelled. Stopping at {spot}."
+  },
+  {
+    "id": "spent_fallback",
+    "text": "{spot}: no fights left. Hunting {fallback}."
+  },
+  {
+    "id": "spent_hold",
+    "text": "{spot}: no fights left. No safer hunt known. Retrying {target} in {minutes} min."
+  },
+  {
+    "id": "spent_idle",
+    "text": "{spot}: no fights left. No safer hunt known."
+  },
+  {
+    "id": "lost_fallback",
+    "text": "{spot}: knocked out there. Hunting {fallback}."
+  },
+  {
+    "id": "lost_hold",
+    "text": "{spot}: knocked out there. No safer hunt known. Retrying {target} in {minutes} min."
+  },
+  {
+    "id": "lost_idle",
+    "text": "{spot}: knocked out there. No safer hunt known."
+  },
+  {
+    "id": "why_forced_spot",
+    "text": "forced fight, not re-entered"
+  },
+  {
+    "id": "why_forced_road",
+    "text": "forced road in, not re-entered"
+  },
+  {
+    "id": "why_wall",
+    "text": "ends the run on its last win, not re-entered"
+  },
+  {
+    "id": "why_festival",
+    "text": "festival floor, not re-entered"
+  },
+  {
+    "id": "why_route",
+    "text": "no known route back"
+  },
+  {
+    "id": "why_start",
+    "text": "its activity cannot start"
+  },
+  {
+    "id": "condition_knocks_out",
+    "text": "💀 {name} knocks you out. Recovering."
+  },
+  {
+    "id": "reason_plain",
+    "text": "Knocked out."
+  },
+  {
+    "id": "reason_forced",
+    "text": "There was no fleeing that fight, and you lost it."
+  },
+  {
+    "id": "reason_forced_condition",
+    "text": "There was no fleeing that fight, and it finished you."
+  }
+]

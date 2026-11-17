@@ -1,0 +1,58 @@
+[
+  {
+    "id": "plains",
+    "temp": 0,
+    "precipMult": 1,
+    "windMult": 1.1,
+    "swingMult": 1
+  },
+  {
+    "id": "forest",
+    "temp": -1,
+    "precipMult": 1.15,
+    "windMult": 0.7,
+    "swingMult": 0.85
+  },
+  {
+    "id": "hills",
+    "temp": -3,
+    "precipMult": 1.05,
+    "windMult": 1.15,
+    "swingMult": 1
+  },
+  {
+    "id": "mountains",
+    "temp": -8,
+    "precipMult": 1.1,
+    "windMult": 1.4,
+    "swingMult": 1.1
+  },
+  {
+    "id": "coast",
+    "temp": 1,
+    "precipMult": 1.2,
+    "windMult": 1.3,
+    "swingMult": 0.6
+  },
+  {
+    "id": "desert",
+    "temp": 4,
+    "precipMult": 0.25,
+    "windMult": 1.2,
+    "swingMult": 1.5
+  },
+  {
+    "id": "volcanic",
+    "temp": 3,
+    "precipMult": 0.7,
+    "windMult": 1.1,
+    "swingMult": 1.2
+  },
+  {
+    "id": "caves",
+    "temp": -2,
+    "precipMult": 0,
+    "windMult": 0,
+    "swingMult": 0.1
+  }
+]

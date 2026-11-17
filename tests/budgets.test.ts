@@ -9,12 +9,15 @@
  * the same cases took up to three times as long and failed under load.
  *
  * - No fight, no condition: catch-up of a new game.
- * - A condition held: a timerless bleed, which deals damage on every tick.
+ * - A condition held: a timerless poison, which deals damage on every tick.
  * - Fights at floor 1: a new character with the rusty sword hunts the Vermin
  *   Hall table with no fight limit, with the rest rule at 50%. A defeat turns
  *   the hunt off (the knockout is the world port's), so the hunt command is
  *   sent again every 60 seconds; it changes nothing while a hunt is on.
  * - Fights at floor 6: the Tunnels, with the firetongue and the witch doctor.
+ * - Two more runs, through the world system, are in
+ *   `tests/budgetsWorld.test.ts`: one file would run past the 60 seconds
+ *   vitest gives a worker to answer.
  */
 import { describe, expect, it } from 'vitest';
 import {
@@ -97,16 +100,20 @@ describe('offline catch-up', () => {
 });
 
 describe('offline catch-up with a condition held', () => {
-  it(`simulates 8 hours of a bleeding character within ${HELD_EIGHT_HOUR_BUDGET_MS} ms`, () => {
+  // Spine port 6: the knockout is live. A bleed ends at the first knockout,
+  // because the forced rest tends it. A poison with no timer is not removed
+  // by rest: it deals damage on every tick for the 8 hours and knocks the
+  // character out again each time the recovery ends.
+  it(`simulates 8 hours of a poisoned character within ${HELD_EIGHT_HOUR_BUDGET_MS} ms`, () => {
     const g = makeGame({ seed: 9 });
-    ask(g, applyStatus, { entity: PLAYER, app: { id: 'bleeding', intensity: 2 } });
+    ask(g, applyStatus, { entity: PLAYER, app: { id: 'poison', intensity: 2, duration: 'permanent' } });
     ask(g, applyStatus, { entity: PLAYER, app: { id: 'tainted', intensity: 2, duration: 'permanent' } });
     const envelope = g.save(0);
     const started = performance.now();
     const result = catchUp({ systems: [...systems, probe], envelope, ticks: 288_000, now: 0 });
     const elapsed = performance.now() - started;
-    console.log(`8 hours, a bleed held: ${elapsed.toFixed(0)} ms`);
-    expect((result.slices.statuses.data as unknown as StatusesState).held[PLAYER].map((h) => h.id)).toEqual(['bleeding', 'tainted']);
+    console.log(`8 hours, a poison held: ${elapsed.toFixed(0)} ms`);
+    expect((result.slices.statuses.data as unknown as StatusesState).held[PLAYER].map((h) => h.id)).toEqual(['poison', 'tainted']);
     expect(elapsed, `8 hours took ${elapsed.toFixed(0)} ms`).toBeLessThan(HELD_EIGHT_HOUR_BUDGET_MS);
   }, HELD_EIGHT_HOUR_BUDGET_MS * 3);
 });

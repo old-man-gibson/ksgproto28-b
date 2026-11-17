@@ -1,0 +1,12 @@
+{
+  "pendingReturn": {
+    "target": { "spot": "f2_hall_1", "activity": "hunt" },
+    "phase": "fallback",
+    "fallback": { "spot": "f1_storerooms", "activity": "hunt" },
+    "wins": 3,
+    "until": 80000,
+    "probes": 1,
+    "from": "f2_hall_1"
+  },
+  "proven": { "spot": "f4_woods_edge", "activity": "hunt" }
+}

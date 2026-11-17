@@ -1,0 +1,22 @@
+[
+  {
+    "id": "ascent_lower",
+    "name": "The Lower Reaches",
+    "towerId": "the_ascent",
+    "index": 1,
+    "clearsToAdvance": 2,
+    "desc": "Floors 1 to 3: the Old Toll Level, the Flooded Stair and the Silk Gallery. Each floor must be cleared before the next opens."
+  },
+  {
+    "id": "ascent_middle",
+    "name": "The Wilds",
+    "towerId": "the_ascent",
+    "index": 2,
+    "clearsToAdvance": 2,
+    "dynamicLevel": {
+      "factor": 1,
+      "capShare": 1
+    },
+    "desc": "Floors 4 to 6: the Greenwood, the Mire and the Warren. A goblin war band holds the wilds above the Lower Reaches; its warchief waits at the bottom of the Warren."
+  }
+]

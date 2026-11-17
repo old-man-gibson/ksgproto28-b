@@ -82,8 +82,8 @@ rule. Any other entity always resists.
 | `resources/damaged` | resources | resources (port 1) | Fires `damageTaken` with type and amount lost. |
 | `resources/spent` | resources | resources (port 1) | `noteResourceSpent`: a condition that eats effort grows its debt. |
 | `statuses/hook` | here | Alchemy and consumables: `cure` with a tag. (`combat` fires `barFill`, `barDeplete`, `combatEnd` and a monster's `damageTaken` with the `statuses/fire` request: it reads what they changed in the same handler.) | `fireStatusEvent`. |
-| `statuses/inflict` | here | Port 6 weather: the sky rules, with a source that starts with `Weather: `. Cooking, alchemy, mutagens: grants. (`combat` applies a monster's `wears` with the `statuses/apply-all` request.) | `applyStatuses`. |
-| `statuses/situation` | here | `combat`: `inCombat` at fight start and end. Port 6: `down` at knockout and recovery. | Sets the two flags. |
+| `statuses/inflict` | here | `weather` applies the sky rules with the `statuses/apply` request, under a source that starts with `Weather: `. Cooking, alchemy, mutagens: grants. (`combat` applies a monster's `wears` with the `statuses/apply-all` request.) | `applyStatuses`. |
+| `statuses/situation` | here | `combat`: `inCombat` at fight start and end. `world`: `down` at knockout and recovery (spine port 6). | Sets the two flags. |
 | `statuses/forget` | here | `combat`: a monster entity is gone. The emitter also calls `ctx.dropEntity`. | Deletes the entity's list. |
 
 A caller that needs the answer in its own handler (combat applying a bite

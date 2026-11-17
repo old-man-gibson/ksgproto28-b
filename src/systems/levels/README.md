@@ -34,7 +34,8 @@ Port of: old `systems/levels.ts` and `data/levels.data.ts`.
 ## Content
 
 `levels_text`: the four log templates of the old `levels.*` keys. `up` is
-used here; `floor`, `floor_lapsed` and `band` are for the world port.
+used here; `floor` and `band` are written by `ladder` (spine port 6);
+`floor_lapsed` waits for the ward windows (step 4).
 
 ## Skip reasons
 
@@ -43,9 +44,8 @@ used here; `floor`, `floor_lapsed` and `band` are for the world port.
 ## Left behind
 
 - `dynamicLevelBonus`: ported in `combat` (`spawn.ts`, spine port 4). It
-  reads the band's rule from the encounter site; the world port puts it there.
-- `checkFloorClears`, `syncBandPositions`: need floors, bands and the ladder
-  (world).
+  reads the band's rule from the encounter site; `world` puts it there.
+- `checkFloorClears`, `syncBandPositions`: ported in `ladder` (spine port 6).
 - What pays level XP: kills (`combat` emits `levels/grant-xp`, spine port
-  4), quest turn-ins, floor clears. The quests and world ports emit theirs.
+  4), floor clears (`ladder`, spine port 6), quest turn-ins (port 7).
 - `applyStartingLevel`: the prestige port emits `levels/raise-start`.

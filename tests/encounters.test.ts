@@ -2,7 +2,7 @@
  * Port of the old `tests/encounters.test.ts`: group composition, positional
  * modifiers, and how an encounter resolves. The cases keep their names.
  *
- * Call shape changes: a spot is an `EncounterSite` from `tests/sites.json`;
+ * Call shape changes: a spot is an `EncounterSite` built from the world registry;
  * `spawnGroup` takes a context.
  */
 import { describe, expect, it } from 'vitest';

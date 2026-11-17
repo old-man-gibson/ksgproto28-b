@@ -88,12 +88,23 @@ export function encounterPowerRatio(ctx: C, line: DeepReadonly<EncounterLine>): 
 }
 
 /**
+ * The reader of the sky over a site, for `sky` lines: the weather kind, or
+ * null where there is no open sky. The weather system registers it at module
+ * load, as a rotation kind is registered. With no reader a `sky` line does
+ * not roll and the skip log says so.
+ */
+export type SiteSkyReader = (ctx: Pick<C, 'read'>, siteId: string) => string | null;
+let siteSky: SiteSkyReader | null = null;
+
+export function registerSiteSky(reader: SiteSkyReader): void {
+  siteSky = reader;
+}
+
+/**
  * The lines the site can still roll: a `once` line whose kill is on record
  * is gone, a gated line waits for its conditions, a `daypart` line follows
- * the clock, a `window` line follows the power ratio.
- *
- * A `sky` line needs the weather over the site, which arrives with the world
- * port. Until then it does not roll, and the skip log says so.
+ * the clock, a `window` line follows the power ratio, a `sky` line follows
+ * the weather over the site.
  */
 export function eligibleEncounters(ctx: C, site: DeepReadonly<EncounterSite>): DeepReadonly<EncounterLine>[] {
   const night = naturalDarkness(clockOf(totalTicksOf(ctx.read(clock))).hour) >= 0.5;
@@ -102,8 +113,12 @@ export function eligibleEncounters(ctx: C, site: DeepReadonly<EncounterSite>): D
     if (e.once && counterValue(counts, slainKey(site.id, e.monsterId)) > 0) return false;
     if (e.daypart && (e.daypart === 'night') !== night) return false;
     if (e.sky) {
-      ctx.skip('combat/encounter', `line "${e.monsterId}" of "${site.id}" needs the sky (world port)`);
-      return false;
+      if (!siteSky) {
+        ctx.skip('combat/encounter', `line "${e.monsterId}" of "${site.id}" needs the sky and no weather system is registered`);
+        return false;
+      }
+      const kind = siteSky(ctx, site.id);
+      if (kind === null || !e.sky.includes(kind)) return false;
     }
     if (e.window) {
       const ratio = encounterPowerRatio(ctx, e);

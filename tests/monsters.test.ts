@@ -9,8 +9,8 @@
  * assertions are kept here on the loaded records.
  *
  * Left behind, as `it.todo`: the portrait files (licensed art, not in this
- * repository) and the generated art list; the floor half of the penetration
- * rule (port 6: spots and floors).
+ * repository) and the generated art list. The floor half of the penetration
+ * rule builds its list from the spots and floors of `world` and `ladder`.
  */
 import { describe, expect, it } from 'vitest';
 import { conditionIssues, type ConditionRecord } from '../src/systems/counters';
@@ -23,6 +23,7 @@ import {
   MONSTERS,
   monsterIssues,
   monsterTagsOf,
+  NO_PENETRATION_THROUGH_FLOOR,
   penetrationOf,
   penetrationProblems,
   TAG_ARMOR,
@@ -32,6 +33,8 @@ import {
 } from '../src/systems/monsters';
 import { DAMAGE_TYPES } from '../src/systems/stats';
 import { STATUSES } from '../src/systems/statuses';
+import { FLOORS } from '../src/systems/ladder';
+import { SPOTS } from '../src/systems/world';
 import { readJson } from './helpers';
 
 const VALID_DAMAGE_TYPES = new Set<string>(DAMAGE_TYPES);
@@ -181,7 +184,30 @@ describe('monster penetration', () => {
     // The share half. The floor half needs the spots of the early floors.
     expect(penetrationProblems(MONSTERS, TIERS).map((p) => p.message)).toEqual([]);
   });
-  it.todo('is zero for everything that can appear on floors 1 to 3: the floor half (port 6: spots and floors build the `early` list)');
+  it('is zero for everything that can appear on floors 1 to 3: the floor half', () => {
+    // The list the old `penetrationProblems` built from its spots and floors:
+    // every encounter line, escort and dare on a floor at or below
+    // `NO_PENETRATION_THROUGH_FLOOR`. Floor 0 is one of them.
+    const earlyFloors = new Map(
+      Object.values(FLOORS)
+        .filter((f) => f.index <= NO_PENETRATION_THROUGH_FLOOR)
+        .map((f) => [f.areaId, f] as const),
+    );
+    expect([...earlyFloors.values()].map((f) => f.id).sort()).toEqual(['ascent_f0', 'ascent_f1', 'ascent_f2', 'ascent_f3']);
+    const early: { monsterId: string; where: string }[] = [];
+    for (const spot of Object.values(SPOTS)) {
+      const floor = earlyFloors.get(spot.areaId);
+      if (!floor) continue;
+      const where = `${spot.id} (${floor.id})`;
+      for (const enc of spot.encounters ?? []) {
+        early.push({ monsterId: enc.monsterId, where });
+        for (const escort of MONSTERS[enc.monsterId]?.escorts ?? []) early.push({ monsterId: escort, where });
+      }
+      if (spot.dare) early.push({ monsterId: spot.dare.monsterId, where });
+    }
+    expect(early.length).toBeGreaterThan(0);
+    expect(penetrationProblems(MONSTERS, TIERS, early).map((p) => p.message)).toEqual([]);
+  });
 
   // New here: the function with the list a later port will build.
   it('reports a species that erodes resistance on an early floor, and one out of range', () => {

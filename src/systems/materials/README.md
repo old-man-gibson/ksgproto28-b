@@ -85,4 +85,5 @@ them:
   `gradedUnitPrice`, `materialSellPrice`): port 7, shops.
 - Using a consumable: the consumables and cooking ports.
 - Bench slots (`slotAccepts`, `usableIn`, placements): the disciplines port.
-- Gathering: port 6.
+- Gathering: the activity kind is in `world` (spine port 6). No spot of
+  floors 0 to 6 has a gather activity.

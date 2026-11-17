@@ -164,7 +164,9 @@ describe("the player's tick", () => {
     expect(booms).toHaveLength(1);
     expect(booms[0].type).toBe('arcane');
     expect(booms[0].dealt).toBeGreaterThanOrEqual(1);
-    expect(before - hp(g)).toBeCloseTo(Math.min(before, booms[0].dealt), 3);
+    // A detonation that takes all the health is a knockout: 1 HP is left (spine port 6).
+    const fatal = booms[0].dealt >= before;
+    expect(before - hp(g)).toBeCloseTo(fatal ? before - 1 : booms[0].dealt, 3);
     expect(slice<LogState>(g, 'log').log.some((l) => l.msg.includes('detonates for'))).toBe(true);
     sound(g);
   });

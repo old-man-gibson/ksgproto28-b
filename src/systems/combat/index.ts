@@ -124,6 +124,15 @@ export const setTrigger = defineCommand<{ id: string; trigger: SkillTrigger | nu
 export const startForced = defineRequest<{ site: EncounterSite }, boolean>('combat/start-forced');
 /** Start a staged, forced formation. An open fight is abandoned first. The old `startStagedGroup`. */
 export const startStaged = defineRequest<{ site: EncounterSite; members: StagedMember[] }, void>('combat/start-staged');
+/**
+ * The hunt loop set from a system: the site, and the loop on. What the hunt
+ * activity of the world system sends, where `combat/hunt` is the command of
+ * the panel. A fight open at another site is abandoned. False when the site
+ * is unsound or the open fight cannot be left.
+ */
+export const setHunt = defineRequest<{ site: EncounterSite }, boolean>('combat/set-hunt');
+/** The hunt loop off, without leaving a fight: the caller abandons it first. */
+export const stopHuntLoop = defineRequest<void, void>('combat/stop-hunt');
 /** Leave the fight. Never refuses. True when there was one. The old `abandonCombat`. */
 export const abandon = defineRequest<void, boolean>('combat/abandon');
 /**
@@ -391,6 +400,24 @@ const combat = defineSystem<CombatState, CombatView>({
       if (issue) return ctx.skip(startStaged.type, issue);
       if (members.length === 0) return ctx.skip(startStaged.type, 'a staged fight needs a member');
       startStagedGroup(ctx, copy(site), members);
+    }),
+    answer(setHunt, (ctx, { site }) => {
+      const issue = siteIssue(site);
+      if (issue) {
+        ctx.skip(setHunt.type, issue);
+        return false;
+      }
+      if (ctx.state.fight) {
+        if (inForcedFight(ctx.state)) return false;
+        if (ctx.state.site?.id !== site.id) abandonCombat(ctx);
+      }
+      ctx.state.site = copy(site);
+      ctx.state.hunting = true;
+      return true;
+    }),
+    answer(stopHuntLoop, (ctx) => {
+      ctx.state.hunting = false;
+      setResting(ctx, false);
     }),
     answer(abandon, (ctx) => {
       const had = ctx.state.fight !== null;

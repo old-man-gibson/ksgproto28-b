@@ -1,0 +1,65 @@
+[
+  {
+    "id": "malgeri",
+    "fronts": [
+      {
+        "kind": "gale",
+        "weight": 24,
+        "temp": 5,
+        "precip": 0.3,
+        "wind": 0.8
+      },
+      {
+        "kind": "snow",
+        "weight": 22,
+        "temp": -4,
+        "precip": 0.8,
+        "wind": 0.35
+      },
+      {
+        "kind": "rain",
+        "weight": 20,
+        "temp": 7,
+        "precip": 0.8,
+        "wind": 0.35
+      },
+      {
+        "kind": "storm",
+        "weight": 18,
+        "temp": 8,
+        "precip": 0.85,
+        "wind": 0.8
+      },
+      {
+        "kind": "heatwave",
+        "weight": 14.5,
+        "temp": 38,
+        "precip": 0.05,
+        "wind": 0.2
+      }
+    ],
+    "calm": {
+      "temp": 14,
+      "precip": 0.1,
+      "wind": 0.02
+    },
+    "excluded": [
+      {
+        "season": "summer",
+        "kind": "snow"
+      },
+      {
+        "season": "winter",
+        "kind": "heatwave"
+      },
+      {
+        "season": "spring",
+        "kind": "storm"
+      },
+      {
+        "season": "autumn",
+        "kind": "rain"
+      }
+    ]
+  }
+]

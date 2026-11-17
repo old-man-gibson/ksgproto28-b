@@ -23,7 +23,7 @@ export interface EncounterLine {
   requires?: Condition[];
   /** The line rolls by day or by night only. */
   daypart?: 'day' | 'night';
-  /** The line rolls under these skies only. Needs weather: port 6. */
+  /** The line rolls under these weather kinds only. The weather system registers the reader. */
   sky?: string[];
   /** A boss of the site: its kill bumps `boss:<site>`. */
   boss?: boolean;
@@ -36,7 +36,7 @@ export interface EncounterLine {
 
 /**
  * Where fights are rolled from: what combat read of the old `SpotDef`, as
- * data. The world port builds one from its location registry. `levelStep`
+ * data. The world system builds one from a spot (`siteOf`). `levelStep`
  * and `dynamicLevel` are what the old code read from the floor's band.
  */
 export interface EncounterSite {

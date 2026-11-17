@@ -1,11 +1,11 @@
 /**
- * One-off: writes tests/sites.json, the encounter tables of the old spots
- * the ported combat tests stand on, in the `EncounterSite` shape of
- * `src/systems/combat`. Locations arrive with the world port; until then the
- * tests carry the tables as data. Reads the old repository, writes nothing
- * there.
+ * One-off: writes tests/sitesOutside.json, the encounter tables of the old
+ * spots that ported combat tests stand on and that are not in this
+ * repository's content yet: the shelved countryside, the hold and floor 17.
+ * The spots that are here are read from the world registry by
+ * `tests/combatHelpers.ts`. Reads the old repository, writes nothing there.
  *
- * Usage: node scripts/dump-test-sites.mjs
+ * Usage: node scripts/dump-outside-sites.mjs
  */
 import { build } from 'esbuild';
 import fs from 'node:fs';
@@ -17,23 +17,15 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const OLD = (process.env.OLD_REPO ?? 'D:/ksgproto28').split(String.fromCharCode(92)).join('/');
 
 const SPOTS = [
+  // The shelved countryside.
   'woods_edge',
   'ravine_floor',
+  // The hold.
   'benchmark_post',
   'training_grounds',
   'base_training_area',
-  'f3_hearing_room',
-  'the_sand',
-  'f2_hall_1',
-  'f4_ravine_floor',
-  'f4_woods_edge',
-  'f1_toll_hall',
+  // Floor 17.
   'malgeri_base',
-  'the_cages',
-  'f1_storerooms',
-  'f6_great_hall',
-  // Spine port 5: the floor 6 table with both casters, for the fourth 8-hour budget.
-  'f6_tunnels',
 ];
 
 const entry = path.join(os.tmpdir(), `ksgb-sites-entry-${process.pid}.ts`);
@@ -75,5 +67,5 @@ for (const id of SPOTS) {
     }),
   );
 }
-fs.writeFileSync(path.join(ROOT, 'tests/sites.json'), JSON.stringify(out, null, 2) + '\n');
-console.log(`wrote ${Object.keys(out).length} sites to tests/sites.json`);
+fs.writeFileSync(path.join(ROOT, 'tests/sitesOutside.json'), JSON.stringify(out, null, 2) + '\n');
+console.log(`wrote ${Object.keys(out).length} sites to tests/sitesOutside.json`);

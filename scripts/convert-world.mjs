@@ -56,8 +56,8 @@ const areaIds = new Set(areas.map((a) => a.id));
 const spots = Object.values(m.SPOTS).filter((s) => areaIds.has(s.areaId));
 const spotIds = new Set(spots.map((s) => s.id));
 
-/** Fields of a spot that belong to a system not ported yet. Listed in the world README. */
-const LEFT_SPOT_FIELDS = ['recipes', 'benches', 'caged', 'healBetweenBouts', 'dare'];
+/** Fields of a spot to drop. None: a field of an unported system is kept as data and not read. */
+const LEFT_SPOT_FIELDS = [];
 const left = { edges: [], fields: {}, activities: [] };
 
 function spotRecord(s) {

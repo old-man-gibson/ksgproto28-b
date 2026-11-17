@@ -88,10 +88,11 @@ describe('the world clock', () => {
   });
 
   it('a new life opens at 09:00 on the first day', () => {
-    // Old test also checked the starting spot (`f0_cell`): left to the world port.
     const opening = clockOf(clock.initial().totalTicks);
     expect([opening.hour, opening.minute, opening.dayOfYear]).toEqual([9, 0, 0]);
     expect(clock.initial().totalTicks).toBe(START_TICKS);
+    // The starting spot, as the old test checked it: the `world` slice of a new kernel.
+    expect((makeKernel().snapshot().slices.world as { spot: string }).spot).toBe('f0_cell');
   });
 
   it('the clock slice advances one tick per kernel tick', () => {

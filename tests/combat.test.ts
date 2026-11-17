@@ -2,14 +2,14 @@
  * Port of the old `tests/combat.test.ts`. The cases keep their old names.
  *
  * Call shape changes:
- * - a spot is an `EncounterSite` from `tests/sites.json` (`combatHelpers.ts`);
+ * - a spot is an `EncounterSite` built from the world registry (`combatHelpers.ts`);
  * - `spawnMonster(state, spot)` is `spawn(kernel, site)`;
  * - `monsterStats(m)` of a live enemy is its entity's stat block; of a
  *   monster outside a fight it is `monsterStatsFromAttrs(m.attrs)`;
  * - `applyStatus(state, foe, app)` is the `statuses/apply` request.
  *
- * Left behind, as `it.todo`: the knockout and its recovery (port 6), combat
- * styles (the styles port), achievement tiers (the achievements port).
+ * Left behind, as `it.todo`: combat styles (the styles port), achievement
+ * tiers (the achievements port).
  */
 import { describe, expect, it } from 'vitest';
 import { monsterSlice, playerDefeated } from '../src/systems/combat';
@@ -42,11 +42,13 @@ import {
   hpOf,
   huntingGame,
   keepHunting,
+  playerStats,
   spawn,
   stage,
 } from './combatHelpers';
 import { ask, reads, setMods, slice } from './helpers';
 import type { Kernel } from '../src/kernel';
+import { STARTING_SPOT, type WorldState } from '../src/systems/world';
 
 const held = (kernel: Kernel) => slice<StatusesState>(kernel, 'statuses').held.player ?? [];
 
@@ -134,7 +136,30 @@ describe('combat resolution', () => {
     expect(str.xp > 0 || str.level > 1).toBe(true);
   });
 
-  it.todo('knockout triggers recovery instead of death, at the last haven (port 6: the knockout, the retreat, recovery)');
+  it('knockout triggers recovery instead of death, at the last haven', () => {
+    // A level 1 character straight into the ravine floor (level 8 to 14 monsters).
+    const g = huntingGame(13, 'ravine_floor');
+    const world = () => slice<WorldState>(g, 'world');
+    let defeated = false;
+    g.onEvent((event) => {
+      if (event.type === playerDefeated.type) defeated = true;
+    });
+    for (let i = 0; i < 3000 && !defeated; i++) g.tick();
+    expect(defeated).toBe(true);
+    expect(hpOf(g)).toBeGreaterThan(0);
+    expect(world().recovering).toBe(true);
+    // Every knockout retreats: nothing is recorded yet, so the start catches
+    // the character, and the hunt it was on is dropped.
+    expect(world().spot).toBe(STARTING_SPOT);
+    expect(world().activity).toBeNull();
+    expect(combatOf(g).hunting).toBe(false);
+
+    // Recovery: hp climbs back to the threshold, then recovering clears.
+    const maxHp = playerStats(g).maxHp;
+    for (let i = 0; i < 500 && world().recovering; i++) g.tick();
+    expect(world().recovering).toBe(false);
+    expect(hpOf(g)).toBeGreaterThanOrEqual(maxHp * 0.5);
+  });
 
   // New here: the part of the old knockout case that is combat's.
   it('a defeat emits combat/defeat, closes the fight and stops the hunt', () => {

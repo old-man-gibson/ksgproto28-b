@@ -73,11 +73,11 @@ None. A roll that comes up `nothing` is an outcome.
 
 ## Left behind
 
-- The drop tables inside location data: port 6. The monster tables are in
+- No spot of floors 0 to 6 carries a drop table. The monster tables are in
   `src/systems/monsters` and `combat` makes the call on a kill (spine port
   4), with `rewardMult` the product of the rarity's `lootMult` and the
   modifier tier's `rewardMult`.
-- Finds from searching: port 6.
+- Finds from searching and exploring: ported in `world` (spine port 6).
 
 ## Old rules ported as they are
 

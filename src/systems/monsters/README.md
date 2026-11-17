@@ -57,7 +57,7 @@ in this repository.
 - The bestiary (knowledge, field notes, `veil`): `veil` is kept as data and
   not read.
 - `penetrationProblems` takes the list of early-floor appearances as an
-  argument. The world port (6) builds it from its spots.
+  argument. `tests/monsters.test.ts` builds it from the spots of `world`.
 - `monsterMind` and `mindInDebt` are in `combat`: they read a live specimen.
 
 ## Old rules ported as they are

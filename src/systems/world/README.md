@@ -1,0 +1,145 @@
+# world
+
+Where the character stands, travel, the map, activities, finds, havens and
+the retreat. Spine port 6.
+
+Port of the old `systems/locations.ts`, `systems/actions.ts` (without the
+condition tick), `systems/mapped.ts`, `systems/safety.ts`,
+`systems/search.ts`, `systems/activitydrops.ts`, `systems/keyitems.ts`, the
+moving half of `systems/towers.ts` (`climbTo`, `rideLeg`, `ride`),
+`officeArrival` and `rewardTollGolem` of `systems/floodedFloor.ts`, and
+`data/locations.data.ts`.
+
+## Files
+
+| File | Holds |
+|---|---|
+| `defs.ts` | Registries and schemas, the mirrored roads (`ADJACENCY`), lookups with no state |
+| `engine.ts` | The slice type and every rule: roads, the pathfinder, rides, travel, arrival, activities, finds, drops, the retreat, the office block of floor 1 |
+| `index.ts` | The declaration: commands, requests, events, the view |
+| `LocationPanel.svelte`, `panel.ts` | The Location panel |
+| `content/regions.json`, `areas.json`, `spots.json`, `key_items.json`, `world_text.json` | 3 regions, 16 areas, 80 spots, 3 key items, the log lines |
+
+## Slice (version 1)
+
+`spot`, `discovered`, `travel { from, to, ticksLeft, total, fresh? }`,
+`travelPlan`, `travelIntent`, `activity`, `activityProgress`,
+`resumeActivity`, `explored`, `finds`, `safeSpots { nearest, unconditional }`,
+`recovering`. Each is the old `GameState` field of the same name.
+
+`travel.fresh` is set when another system starts a leg inside a tick, before
+this system ticked. The first tick clears it and does not count: the old loop
+returned after the step that set out.
+
+## Commands
+
+| Command | Old function | Refused when |
+|---|---|---|
+| `world/travel-to { to }` | `travelPlanTo` | unknown spot; a journey is under way; knocked out; standing there; in a forced fight; no known route |
+| `world/go-and-do { spot, activity }` | `goAndDo` | unknown spot or activity; knocked out; the activity cannot start now; a journey is under way; no known route |
+| `world/select-activity { activity }` | `selectActivity` | a journey is under way; knocked out; the spot has no such activity; a search with nothing left to pay; in a forced fight |
+| `world/set-intent { activity }` | `setJourneyIntent` | no journey is under way; the end of the journey has no such activity |
+| `world/cancel-plan` | `cancelTravelPlan` | no further leg is planned |
+| `world/climb { floor }` | `climbTo` | a journey is under way; knocked out; no ladder answers here, the floor is not unlocked, or the fight cannot be left |
+| `world/fast-travel { to }` | `fastTravelTo` | not waypoint to waypoint, not discovered, a forced fight, or the fee is not held |
+
+Every accepted command emits `world/player-command`, which ends a knockout
+return in flight.
+
+## Requests answered
+
+For `knockout`, which needs the outcome inside its tick or handler:
+`world/start-activity`, `world/go`, `world/ride`, `world/retreat`,
+`world/recover`, `world/stay`.
+
+## Requests made
+
+`combat/set-hunt`, `combat/stop-hunt`, `combat/start-forced`,
+`combat/abandon`; `gold/add`, `gold/spend`; `materials/grant`,
+`materials/grant-graded`; `items/grant`, `items/grant-rune`; `mercy/chance`.
+
+## Events
+
+Emitted: `world/arrived { spot, from, ambushed }`, `world/activity-changed`,
+`world/player-command`, `world/cycle` (a train, job or gather cycle
+completed), `world/discovered`.
+
+Sent to other systems: `resources/set-pace`, `statuses/situation { down }`,
+`counters/bump` and `counters/set`, `skills/grant-xp`,
+`skills/check-discovery`, `attributes/grant-xp-split`, `ladder/check`,
+`log/line`.
+
+Heard: `ladder/floor-cleared` (the hunt site is sent again), `combat/kill`
+(the toll collector: the toll stamp and `flag:toll_brute_force`).
+
+## Rules
+
+- **Roads.** A road that is not `oneWay` is mirrored. The mirror carries the
+  label and never `forced`, `requires`, `revealWhen` or `hidden`.
+- **Pathfinder.** Shortest by base ticks, over discovered spots, visible
+  roads and the rides of the ladder. Not through a shut road. Not through a
+  forced spot or a forced road that is not cleared; such a spot may be the
+  destination. The last hop may be undiscovered.
+- **Rides.** A ride goes to a discovered stop whose gate is open. The first
+  ride onto a floor is `world/climb`. Price: 45 ticks per rung, at least one.
+- **Arrival.** Discovery, the mapped region, the haven (a peaceful arrival
+  only), `world/arrived`, then the forced fight, the next leg, or the settle:
+  the intent of the journey if it names this spot, else the activity last
+  chosen here.
+- **Activities.** `rest`, `hunt`, `train`, `search`, `explore`, `job`,
+  `gather`. The hunt keeps the hunt loop of `combat` on with the site of the
+  spot. A forced spot that is not cleared starts its fight on every tick with
+  no fight, whatever is selected.
+- **Pace.** `resources/set-pace` on every change: `halted` while travelling
+  (pools and conditions do not tick), `RECOVERY_MULT` per activity kind,
+  resting at a rest activity and while knocked out.
+- **The retreat.** The nearest haven that can still be used, else the last
+  unconditional haven, else the starting spot.
+- **Floor 1 offices.** The doors lead where they say only in the order
+  scribe, auditor, break room, scribe, toll hall, with the office key. A
+  wrong door resets the sequence and lets out in another office.
+
+## The site
+
+`siteOf(ctx, spot)` builds the `EncounterSite` of `combat` from a spot, with
+`levelStep` and `dynamicLevel` from `ladder`.
+
+## Left behind
+
+- Fields kept in the data and not read: `recipes`, `benches` (crafting and
+  the benches, step 3), `caged` (the bestiary), `healBetweenBouts` and `dare`
+  (the keeper of the Cages and the hold of play, step 3), `scene` and `map`
+  (the UI step).
+- Craft activities, bench runs, performances.
+- `cardSpent` of the old activity drops: a card is not rolled while one is
+  held; whether its recipe, word or technique is already known cannot be read
+  until those systems exist.
+- The approach of a road (`ApproachSpec`, `pendingApproach`): no road in
+  scope has one. Step 4.
+- Band hubs (`climbToHub`), the festival forfeit, the seam verb of floor 20.
+- `noteTravelSkies` (Weathersense), bonus time.
+- The toll collector's spell flag (`noteTollSpell`) and its reactions to
+  heat, cold and lightning: with the spells of the player (step 3). Until
+  then every kill of it sets `flag:toll_brute_force`.
+- The surveyed plan of the map and the Stations row.
+
+## Differences from the old build
+
+- The hunt site is stored in the `combat` slice. It is sent when the hunt
+  starts and again when a floor is cleared.
+- Counter writes are events. The search counts its own roll before the
+  counter shows it.
+- A command returns a reason. The old functions returned `false`.
+
+## Old rules ported as they are
+
+- `world/fast-travel` has no button, as in the old build. The scope has one
+  waypoint (`ascent_foot`), so it cannot run.
+- A find is claimed before its payload is handed over.
+- A fully explored spot still rolls 0.8% per tick for 1 to 4 gold and more.
+- The fully explored line names hidden roads by label; no road in scope is
+  hidden.
+- `the_cages` carries `caged`, `dare` and `healBetweenBouts`; nothing reads
+  them here.
+- The Great Hall's description names two escorts. The escorts are monster
+  data (`combat`), not the spot's table.
