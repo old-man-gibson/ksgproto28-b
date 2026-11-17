@@ -234,13 +234,15 @@ An answer returns copies, never a reference into its slice.
   systems of spine port 1: 470 to 530 ms alone, up to 840 ms inside the full
   test run (the toy system alone took about 60 ms). Measured on 2026-11-16
   with spine port 2, same machine and same hour: 700 ms alone, against 650 ms
-  for port 1, and 1,150 ms inside the full test run. Lower or raise the budget as real systems land; do not delete
-  the test.
+  for port 1, and 1,150 ms inside the full test run. Spine port 3 (five more
+  systems, none with a tick), same machine: 700 to 715 ms alone, 1,106 ms
+  inside the full test run. Lower or raise the budget as real systems land;
+  do not delete the test.
 - That test runs a character with no condition. `tests/statusSystem.test.ts`
   has a second budget, 8,000 ms, for 8 hours with a condition that deals
   damage on every tick: measured 2,650 ms alone and 4,070 ms inside the full
   test run (1,450 ms alone with a condition that only changes stats). The cost is the events of the damage, four per
-  tick.
+  tick. Spine port 3: 3,096 ms alone, 3,944 ms inside the full test run.
 
 ## 9. Content
 

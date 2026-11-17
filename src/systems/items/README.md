@@ -112,6 +112,19 @@ in this repository, so a panel shows the emoji), facts as label and fact,
 `canEquip`, `requires`, and per slot it may take the wield note and the
 comparison with the worn piece. `runesOpen`, `runes`, `stash`, `arms`.
 
+## Panel
+
+`panel.ts` declares the equipment panel (`EquipmentPanel.svelte`): one row
+per slot of the view, each `--tap` high whether filled or not, a `Take off`
+button per row (disabled on an empty slot), and the facts of the selected
+slot in a box of fixed height that scrolls inside. `Pack.svelte` is the pack
+list, mounted by the inventory panel of the `materials` folder: stacks
+(`arrangeInventory`), a sort choice, the facts of the selected item, one
+`Equip: <slot>` button per slot it may take with the wield note and the
+comparison against the worn piece. The list and the detail box have fixed
+heights. Checked in a browser at 1280 and 375 pixels wide: equipping and
+unequipping moved no element.
+
 ## Content
 
 - `items`: 47 records, the whole old registry except the generated

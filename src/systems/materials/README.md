@@ -48,6 +48,13 @@ held is absent; an emptied bucket is removed.
 `heldOf`, `QUALITY_TIERS`, `qualityMult`, `qualityAtLeast`,
 `huntMaterialLabel` (the label of a material in the hunt tally).
 
+## Panel
+
+`panel.ts` declares the inventory panel (`InventoryPanel.svelte`): gold, the
+pack (`Pack.svelte` of the `items` folder), the held materials with their
+grades in a box of fixed height, and the rune pile once runecarving is open.
+The discard commands have no button yet.
+
 ## Content
 
 - `materials`: 189 records, the whole old registry.
