@@ -1,0 +1,36 @@
+{
+  "held": {
+    "player": [
+      {
+        "id": "poison",
+        "intensity": 2,
+        "peak": 2,
+        "stacks": 1,
+        "ticksLeft": 120,
+        "source": "a fang",
+        "data": { "dealt": 1.5 }
+      },
+      {
+        "id": "bleeding",
+        "intensity": 3,
+        "peak": 2,
+        "stacks": 3,
+        "ticksLeft": null,
+        "removal": [{ "on": "cure", "tag": "bleed", "effect": "remove" }],
+        "data": {}
+      },
+      {
+        "id": "rot_recovery",
+        "intensity": 1,
+        "peak": 1,
+        "stacks": 1,
+        "ticksLeft": null,
+        "source": "Rotting",
+        "data": { "debt": 0.2 },
+        "debtPool": "stamina"
+      }
+    ]
+  },
+  "inCombat": false,
+  "down": false
+}

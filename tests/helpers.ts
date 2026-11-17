@@ -15,6 +15,7 @@ import {
   type Kernel,
   type KernelOptions,
   type Modifier,
+  type RequestDef,
   type SystemDef,
 } from '../src/kernel';
 import { systems } from '../src/systems';
@@ -68,6 +69,23 @@ export function makeGame(options: Partial<KernelOptions> = {}): Kernel {
 export function emit<P>(kernel: Kernel, event: EventDef<P>, payload: P): void {
   const result = kernel.dispatch(probeRun((ctx) => ctx.emit(event, payload)));
   if (!result.ok) throw new Error(result.reason);
+}
+
+/** Run a function with a real system context and return what it returns. Needs a kernel from `makeGame`. */
+export function run<T>(kernel: Kernel, fn: (ctx: Ctx<unknown>) => T): T {
+  let out!: T;
+  const result = kernel.dispatch(
+    probeRun((ctx) => {
+      out = fn(ctx as Ctx<unknown>);
+    }),
+  );
+  if (!result.ok) throw new Error(result.reason);
+  return out;
+}
+
+/** Make a request the way a system would and return the answer. Needs a kernel from `makeGame`. */
+export function ask<P, R>(kernel: Kernel, request: RequestDef<P, R>, payload: P): R {
+  return run(kernel, (ctx) => ctx.request(request, payload));
 }
 
 /** Replace the modifiers the probe gives one entity. Needs a kernel from `makeGame`. */

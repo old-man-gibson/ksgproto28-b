@@ -1,0 +1,18 @@
+[
+  {
+    "id": "condition_detonates",
+    "text": "{icon} {name} detonates for {dealt} {type}!"
+  },
+  {
+    "id": "condition_passed",
+    "text": "{icon} {name} has passed."
+  },
+  {
+    "id": "condition_fatal",
+    "text": "{icon} {name} knocks you out. It stays on you at reduced intensity."
+  },
+  {
+    "id": "suffer_prefix",
+    "text": "🩸 You suffer:"
+  }
+]
