@@ -13,7 +13,9 @@
  * every John climb near the third floor's gate: every John segment from
  * there on), and on branch `step3-alchemy` after the alchemy port (the new
  * slices `benches`, `alchemy` and `consumables`: every state hash, nothing
- * else; no run and no John brews or uses an item).
+ * else; no run and no John brews or uses an item), and on branch
+ * `step3-cooking` after the cooking port (the new slices `cooking` and
+ * `meals`: every state hash, nothing else; no run and no John cooks or eats).
  * A change that only makes the simulation faster leaves every one
  * of them equal. A change to a rule, a formula or content changes them;
  * record them again then, and say why in the commit.
@@ -29,7 +31,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 1,
     'gold': 0,
-    'state': 'd5b38528'
+    'state': 'c5517e3a'
   },
   'poison': {
     'tick': 288000,
@@ -38,7 +40,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 1,
     'gold': 0,
-    'state': '2bded025'
+    'state': '40b8e76f'
   },
   'floor1': {
     'tick': 288000,
@@ -47,7 +49,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 9,
     'gold': 33028,
-    'state': '04c8f24e'
+    'state': 'da87d732'
   },
   'floor6': {
     'tick': 288000,
@@ -56,7 +58,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 26,
     'gold': 1581408,
-    'state': '5dc8d61b'
+    'state': '8b9b1ffb'
   },
   'world4': {
     'tick': 288000,
@@ -65,7 +67,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 4,
     'level': 17,
     'gold': 356591,
-    'state': '1d4a4134'
+    'state': '0445382a'
   },
   'world6': {
     'tick': 288000,
@@ -74,7 +76,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 26,
     'gold': 1581409,
-    'state': 'd7c80001'
+    'state': '71800223'
   }
 };
 
@@ -160,7 +162,7 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'defeats': 0,
       'level': 1,
       'gold': 0,
-      'state': 'f6420ff2'
+      'state': '71542102'
     }
   },
   '42': {
@@ -244,7 +246,7 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'defeats': 0,
       'level': 1,
       'gold': 0,
-      'state': '4218e48d'
+      'state': '7bedfdf7'
     }
   },
   '1234': {
@@ -328,7 +330,7 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'defeats': 0,
       'level': 1,
       'gold': 0,
-      'state': '28b351c4'
+      'state': 'b68d1892'
     }
   }
 };
