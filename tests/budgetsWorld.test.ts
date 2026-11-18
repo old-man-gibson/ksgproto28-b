@@ -23,10 +23,11 @@ import { RUN_DIGESTS } from './outcomeDigests';
  * Port 6, measured on 2026-11-17: floor 4 18,900 to 19,700 ms alone, floor 6
  * 18,600 to 19,600 ms alone; budget 30,000 ms each. After the catch-up work
  * (docs/KERNEL.md section 8): floor 4 9,157 to 9,515 ms, floor 6 9,297 to
- * 9,649 ms. Budget about 1.5 times that.
+ * 9,649 ms. Pass 2: floor 4 8,597 to 8,662 ms, floor 6 8,578 to 8,817 ms.
+ * Budget about 1.5 times that.
  */
-const WORLD_FLOOR_FOUR_BUDGET_MS = 15000;
-const WORLD_FLOOR_SIX_BUDGET_MS = 15000;
+const WORLD_FLOOR_FOUR_BUDGET_MS = 13000;
+const WORLD_FLOOR_SIX_BUDGET_MS = 13000;
 
 describe('offline catch-up through the world system', () => {
   it(`simulates 8 hours of the hunt activity at the Woods Edge of floor 4 within ${WORLD_FLOOR_FOUR_BUDGET_MS} ms`, () => {

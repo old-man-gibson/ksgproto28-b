@@ -352,6 +352,56 @@ An answer returns copies, never a reference into its slice.
   damage tick), the per-tick work of combat, statuses and resources, and one
   stat block per monster. Further gains need work in those systems' tick
   paths, each checked against the digests.
+- Catch-up pass 2, measured on 2026-11-17, same machine, each run alone,
+  two rounds. Before is `main` at 243f981 (pass 1) the same day.
+
+  | Run of 8 hours | Pass 1 | Pass 2 | Budget |
+  |---|---|---|---|
+  | No fight, no condition | 1,293 to 1,331 ms | 1,316 to 1,359 ms | 2,000 ms |
+  | A poison held | 4,792 to 4,961 ms | 4,692 to 4,912 ms | 7,500 ms |
+  | Floor 1 table sent to combat | 4,554 to 4,834 ms | 4,506 to 4,548 ms | 7,000 ms |
+  | Floor 6 Tunnels sent to combat | 9,007 to 10,381 ms | 8,853 to 8,917 ms | 13,500 ms (was 15,000) |
+  | World: hunt, floor 4 Woods Edge | 9,157 to 9,515 ms | 8,597 to 8,662 ms | 13,000 ms (was 15,000) |
+  | World: hunt, floor 6 Tunnels | 9,272 to 10,638 ms | 8,578 to 8,817 ms | 13,000 ms (was 15,000) |
+
+  Every outcome digest is unchanged. The poison run after pass 1, measured
+  alone five times alternating with `main` at 7b59ba1 (a worktree at
+  63bac7c, same source): 4,682 to 4,836 ms before, 4,792 to 4,961 ms after,
+  about 2.6% slower in every pair. Cause: pass 1 made each status operation
+  read the `stats/` resolver output at its start as well as the table. Pass
+  2 reads it from the frozen table on first use (`resolvedOf`, decision
+  33). Five pairs again: 4,656 to 4,825 ms before, 4,692 to 4,844 ms after,
+  means 4,750 and 4,761, one pair in favour of the branch: no longer
+  measurably slower.
+
+  Profile at the start of pass 2 (floor 6, a wrapper timing every tick hook,
+  event handler and request answer, inclusive and with its own overhead):
+  combat tick 17.9 microseconds per tick, statuses tick 4.7, resources tick
+  3.9; per event, `resources/damage` 3.0 and its subscribers 2 to 3 each
+  (148,000 per 8 hours); per kill, `loot/roll` 33 and the ladder's floor
+  check 18; about 1.9 million table reads and 1.8 million resolver-output
+  reads. Pass 2 changes: resolver lookup by a map and the plain variant held
+  in a slot; one shared empty split for sources that return nothing (most
+  sources for a monster); a monster block built without the applied-modifier
+  list the table does not read; the pool hooks read with precomputed ids;
+  the swing's tag list built when the bar fills, not on every tick; the
+  status operation fix above.
+
+  Tried and dropped: a table that builds one merged map after 16 reads
+  (floor 6 slower); a status operation that captures its frozen table on
+  first read (a dirty record could then be collected after the operation
+  changed the list, which changes results); the resolver's own block object
+  handed to `statBlockOf` (its keys are not in `STAT_KEYS` order, so a
+  reader that iterates it would see another order).
+
+- Not met after pass 2: 5,000 ms for floor 6 and the world runs. The
+  combat tick is half of each run, and it is many small steps per tick
+  (cooldowns, enemy conditions and regeneration, the buff rotation asked of
+  every action kind, the player's and each enemy's bar) and one stat block
+  per new monster; the statuses and resources ticks and the event traffic
+  are most of the rest. No step is above 10% of a run. Reaching 5 s needs a
+  rework of those tick paths, for example combat keeping per-fight values
+  that it now reads again each tick, with the digests as the check.
 
 ## 9. Content
 
@@ -605,3 +655,10 @@ point. Each took the simpler option.
     every monster rolls its attributes and the decaying ceiling never
     repeats. Monster blocks are still built once per monster; they were made
     cheaper (precomputed table keys), not avoided.
+33. **`resolvedOf` (catch-up pass 2).** A reader that holds a table from
+    `ctx.stats()` across a change, as a status operation holds the player's
+    table from its start, can ask which resolver output that table was
+    built from: `resolvedOf(table, prefix)`. Alternative: read
+    `ctx.resolved` at the start as well, which cost the poison run about
+    2.6%; or read it on first use, which gives a later block when the
+    record was dirty at the start.

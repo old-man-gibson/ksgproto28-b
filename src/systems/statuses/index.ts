@@ -19,6 +19,7 @@ import {
   on,
   PLAYER,
   registry,
+  resolvedOf,
   TPS,
   type Ctx,
   type DeepReadonly,
@@ -355,8 +356,8 @@ export function conditionReadout(
 class Operation implements BearerEnv {
   private signature: string;
   private readonly frozen: ReadonlyMap<string, number> | undefined;
-  /** The `stats/` resolver output at the start, for the player. */
-  private readonly frozenStats: Readonly<Record<string, number>> | undefined;
+  /** The `stats/` resolver output of the frozen table, read on first use. */
+  private frozenStats: Readonly<Record<string, number>> | undefined;
 
   constructor(
     private readonly ctx: Ctx<StatusesState>,
@@ -366,7 +367,6 @@ class Operation implements BearerEnv {
   ) {
     this.signature = sourceSignature(list);
     this.frozen = entity === PLAYER ? ctx.stats(PLAYER) : undefined;
-    this.frozenStats = entity === PLAYER ? ctx.resolved(STATS_PREFIX, PLAYER) : undefined;
   }
 
   /** Touch the source when what it reads of the list changed since the last check. */
@@ -385,8 +385,11 @@ class Operation implements BearerEnv {
   }
 
   resolved(prefix: string, entity?: string, variant?: string): Readonly<Record<string, number>> {
-    if (this.frozenStats) {
+    if (this.frozen) {
       if (prefix !== STATS_PREFIX) throw new Error(`a status operation reads "${STATS_PREFIX}" only, not "${prefix}"`);
+      // The output the frozen table was built from: the block as it stood when the operation began.
+      this.frozenStats ??= resolvedOf(this.frozen, STATS_PREFIX);
+      if (!this.frozenStats) throw new Error('the frozen stat table has no stats/ output');
       return this.frozenStats;
     }
     this.sync();

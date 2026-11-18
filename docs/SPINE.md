@@ -997,6 +997,10 @@ and the new budgets is in `docs/KERNEL.md` section 8. After: no fight 1.3 s,
 poison 4.9 s, floor 1 4.6 s, floor 6 9.4 to 9.8 s, world floor 4 9.2 to
 9.5 s, world floor 6 9.3 to 9.6 s, every run on the outcome digest of
 `main`. Budgets now 2,000, 7,500, 7,000, 15,000, 15,000 and 15,000 ms.
+Pass 2: floor 6 8.9 s, world floor 4 8.6 to 8.7 s, world floor 6 8.6 to
+8.8 s, the others unchanged; the floor 6 and world budgets are 13,500 and
+13,000 ms. The poison run is no longer slower than before pass 1 (means
+4,750 and 4,761 ms over five alternating pairs).
 
 | Run of 8 hours | Port 6 | Port 7 | Budget |
 |---|---|---|---|
@@ -1033,9 +1037,11 @@ What the catch-up session inherits:
   outcome digests (`tests/outcomeDigests.ts`). The player's stat block is
   kept while only stats outside `stats/` change, and
   `skills/check-discovery` visits only the skills its tags train. The target
-  of 5 s (old build 3 to 5 s) is not met. What remains is spread over the
-  tick paths of combat, statuses and resources, about 1.4 million events per
-  8 hours, and one stat block per monster.
+  of 5 s (old build 3 to 5 s) is not met. Pass 2 took the world runs to
+  8.6 to 8.8 s and floor 6 to 8.9 s. What remains is spread over the tick
+  paths of combat (half of each run), statuses and resources, about 1.4
+  million events per 8 hours, and one stat block per monster; no single
+  step is above 10%. `docs/KERNEL.md` section 8 lists what was tried.
 
 What step 3 inherits (every `it.todo` tagged step 3, and per system the
 README's "Left behind"):

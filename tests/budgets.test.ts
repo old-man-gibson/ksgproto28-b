@@ -37,8 +37,8 @@ const EIGHT_HOUR_BUDGET_MS = 2000;
 const HELD_EIGHT_HOUR_BUDGET_MS = 7500;
 /** Floor 1 table sent to combat. Port 6: 5,237 to 5,368 ms alone, 9,673 kills. Catch-up work: 4,554 to 4,621 ms. */
 const FIGHT_EIGHT_HOUR_BUDGET_MS = 7000;
-/** Floor 6 Tunnels sent to combat. Port 6: 14,368 to 14,899 ms alone, 11,328 kills. Catch-up work: 9,386 to 9,777 ms. */
-const CASTER_EIGHT_HOUR_BUDGET_MS = 15000;
+/** Floor 6 Tunnels sent to combat. Port 6: 14,368 to 14,899 ms alone, 11,328 kills. Catch-up work: 9,386 to 9,777 ms; pass 2 8,853 to 8,917 ms. */
+const CASTER_EIGHT_HOUR_BUDGET_MS = 13500;
 
 describe('offline catch-up', () => {
   it(`simulates 8 hours of ticks within ${EIGHT_HOUR_BUDGET_MS} ms`, () => {

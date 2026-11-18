@@ -129,6 +129,16 @@ for (const id of RESOURCE_IDS) {
 
 const HOOKS = new WeakMap<ReadonlyMap<string, number>, PoolHooks>();
 
+/** The hook stat ids per pool, built once: the hooks are read again on every change of the table. */
+const hookIds = (name: (id: ResourceId) => string) =>
+  Object.fromEntries(RESOURCE_IDS.map((id) => [id, name(id)])) as Record<ResourceId, string>;
+const HOOK_IDS = {
+  ceiling: hookIds(hookStat.ceiling),
+  costMult: hookIds(hookStat.costMult),
+  regenBlocked: hookIds(hookStat.regenBlocked),
+  headroom: hookIds(hookStat.headroom),
+};
+
 /**
  * The hook values of an entity, read from the stat table. The object is
  * shared by every caller until a modifier source changes.
@@ -137,12 +147,15 @@ export function poolHooks(ctx: Pick<DerivedReads, 'stats'>, entity: string = PLA
   const table = ctx.stats(entity);
   let hooks = HOOKS.get(table);
   if (!hooks) {
-    const per = (name: (id: ResourceId) => string) =>
-      Object.fromEntries(RESOURCE_IDS.map((id) => [id, table.get(name(id))!])) as Record<ResourceId, number>;
-    const ceiling = per(hookStat.ceiling);
-    const costMult = per(hookStat.costMult);
-    const regenBlocked = per(hookStat.regenBlocked);
-    const headroom = per(hookStat.headroom);
+    const per = (ids: Record<ResourceId, string>) => {
+      const out = {} as Record<ResourceId, number>;
+      for (const id of RESOURCE_IDS) out[id] = table.get(ids[id])!;
+      return out;
+    };
+    const ceiling = per(HOOK_IDS.ceiling);
+    const costMult = per(HOOK_IDS.costMult);
+    const regenBlocked = per(HOOK_IDS.regenBlocked);
+    const headroom = per(HOOK_IDS.headroom);
     const regenMult = table.get(hookStat.regenMult)!;
     const healAllowance =
       table.get(hookStat.healCapped)! > 0 ? Math.max(0, table.get(hookStat.healAllowance)!) : Infinity;

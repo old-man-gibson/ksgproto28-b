@@ -144,7 +144,8 @@ export default defineSystem<Record<string, never>, StatsView>({
   version: 1,
   migrations,
   initial: () => ({}),
-  resolve: ({ mods, variant }) => tableOf(computeBlock(mods, variant)),
+  // `tableOf` reads no applied-modifier list; a monster block is built without one.
+  resolve: ({ mods, variant }) => tableOf(computeBlock(mods, variant, false)),
   view: (ctx) => {
     const effective = {} as Record<AttributeId, number>;
     for (const a of ATTRIBUTE_IDS) effective[a] = effectiveAttr(ctx, a);

@@ -1533,7 +1533,6 @@ export function runCombatTick(ctx: C): void {
  */
 function playerPhase(ctx: C, c: Fight, monster: Enemy, stats: Readonly<DerivedStats>): boolean {
   const state = ctx.state;
-  const tags = combatTags(ctx);
   const exertion = state.style.exertion;
   const attackExertion = exertion?.on === 'attack' ? exertion : undefined;
 
@@ -1549,6 +1548,8 @@ function playerPhase(ctx: C, c: Fight, monster: Enemy, stats: Readonly<DerivedSt
   }
 
   if (reversed || c.playerBar < stats.actionBar) return false;
+  // Read here and not on every tick: nothing above changes what it reads.
+  const tags = combatTags(ctx);
 
   c.playerBar -= stats.actionBar;
   // Whatever is riding the bar discharges as it completes, before the swing.

@@ -77,6 +77,8 @@ interface EntityRecord {
   groupMods: Modifier[][];
   /** Per resolver, variant to output. */
   outputs: Map<string, Resolved>[];
+  /** Per resolver, the output of the plain variant `''`, the most read: no map lookup. */
+  plainOutputs: (Resolved | undefined)[];
   /** The stats with a base, computed; null when their group changed. */
   plain: Map<string, number> | null;
   /** Variant to the whole table. */
@@ -92,6 +94,7 @@ function newRecord(): EntityRecord {
     mods: [],
     groupMods: [],
     outputs: [],
+    plainOutputs: [],
     plain: null,
     tables: new Map(),
   };
@@ -134,6 +137,12 @@ function sameList(a: readonly Modifier[], b: readonly Modifier[]): boolean {
  * one group costs that group alone. Iteration builds a plain map once.
  */
 class Table implements ReadonlyMap<string, number> {
+  /** The output of the resolver of `prefix` this table reads, or undefined. */
+  outputOf(prefix: string): Resolved | undefined {
+    const r = this.prefixes.indexOf(prefix);
+    return r < 0 ? undefined : this.outs[r];
+  }
+
   private all: Map<string, number> | null = null;
 
   constructor(
@@ -192,6 +201,16 @@ class Table implements ReadonlyMap<string, number> {
   }
 }
 
+/**
+ * The output of the resolver of `prefix` that a table from `stats()` was
+ * built from: what `resolved(prefix)` returned when the table was current.
+ * For a reader that holds a table across a change and reads the block of
+ * that moment. Undefined for a map the kernel did not make.
+ */
+export function resolvedOf(table: ReadonlyMap<string, number>, prefix: string): Resolved | undefined {
+  return table instanceof Table ? table.outputOf(prefix) : undefined;
+}
+
 export class Derived {
   private readonly stats = new Map<string, number>();
   private readonly sources: Source[] = [];
@@ -199,6 +218,9 @@ export class Derived {
   private readonly resolvers: Resolver[] = [];
   /** The prefix of each resolver, in resolver order. */
   private readonly prefixes: string[] = [];
+  private readonly prefixIndex = new Map<string, number>();
+  /** The split of an empty list. Never written to: `fresh` copies group lists. */
+  private emptySplit: Modifier[][] = [[]];
   private readonly entities = new Map<string, EntityRecord>([[PLAYER, newRecord()]]);
   /** Target to group index, filled on first sight of a target. */
   private readonly groupOf = new Map<string, number>();
@@ -224,7 +246,9 @@ export class Derived {
   registerResolver(prefix: string, resolve: Resolver['resolve']): void {
     if (this.resolvers.some((r) => r.prefix === prefix)) throw new Error(`resolver "${prefix}" is registered twice`);
     this.resolvers.push({ prefix, resolve });
+    this.prefixIndex.set(prefix, this.prefixes.length);
     this.prefixes.push(prefix);
+    this.emptySplit = this.prefixes.map(() => []).concat([[]]);
     this.invalidateAll();
   }
 
@@ -312,8 +336,8 @@ export class Derived {
    * so a reader may key its own cache on it.
    */
   resolved(prefix: string, entity: string = PLAYER, variant = ''): Resolved {
-    const r = this.resolvers.findIndex((resolver) => resolver.prefix === prefix);
-    if (r < 0) throw new Error(`no resolver for "${prefix}"`);
+    const r = this.prefixIndex.get(prefix);
+    if (r === undefined) throw new Error(`no resolver for "${prefix}"`);
     return this.output(this.fresh(entity), entity, r, variant);
   }
 
@@ -380,6 +404,8 @@ export class Derived {
   }
 
   private split(mods: readonly Modifier[]): Modifier[][] {
+    // Most sources return nothing for most entities: one shared empty split.
+    if (mods.length === 0) return this.emptySplit;
     const byGroup: Modifier[][] = [];
     for (let g = 0; g <= this.resolvers.length; g++) byGroup.push([]);
     for (const mod of mods) byGroup[this.group(mod.stat)].push(mod);
@@ -419,7 +445,10 @@ export class Derived {
       const list: Modifier[] = [];
       for (const source of this.sources) for (const mod of record.collected.get(source.id)!.byGroup[g]) list.push(mod);
       record.groupMods[g] = list;
-      if (g < this.resolvers.length) record.outputs[g] = new Map();
+      if (g < this.resolvers.length) {
+        record.outputs[g] = new Map();
+        record.plainOutputs[g] = undefined;
+      }
       else record.plain = null;
     }
     if (any) record.tables = new Map();
@@ -434,10 +463,15 @@ export class Derived {
   }
 
   private output(record: EntityRecord, entity: string, r: number, variant: string): Resolved {
+    if (variant === '') {
+      const plain = record.plainOutputs[r];
+      if (plain) return plain;
+    }
     let out = record.outputs[r].get(variant);
     if (!out) {
       out = this.compute(r, entity, variant, record.groupMods[r]);
       record.outputs[r].set(variant, out);
+      if (variant === '') record.plainOutputs[r] = out;
       this.rebuilds++;
     }
     return out;

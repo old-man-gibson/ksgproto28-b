@@ -402,9 +402,9 @@ export interface StatBlock {
   mods: ActiveMod[];
 }
 
-export function computeBlock(collected: readonly Modifier[], variant = ''): StatBlock {
+export function computeBlock(collected: readonly Modifier[], variant = '', withMods = true): StatBlock {
   const { facts, plain } = readFacts(collected);
-  if (facts.monster) return monsterBlock(facts, plain);
+  if (facts.monster) return monsterBlock(facts, plain, withMods);
   const mods = activate(facts, plain, vsTagsOf(variant));
 
   // Layer 1: effective attributes feed the base formulas.
@@ -530,7 +530,7 @@ export function computeBlock(collected: readonly Modifier[], variant = ''): Stat
  * applied: the old monster pipeline read the raw modifiers of its conditions.
  * The variant is ignored: a monster has no target-gated bonus.
  */
-function monsterBlock(facts: Facts, plain: readonly StatMod[]): StatBlock {
+function monsterBlock(facts: Facts, plain: readonly StatMod[], withMods: boolean): StatBlock {
   const block = computeMonsterBlock(
     {
       fact: facts.monster!,
@@ -541,7 +541,8 @@ function monsterBlock(facts: Facts, plain: readonly StatMod[]): StatBlock {
     },
     plain,
   );
-  const mods: ActiveMod[] = plain.map((mod) => ({
+  // The table does not read the list: the resolver asks for none.
+  const mods: ActiveMod[] = !withMods ? [] : plain.map((mod) => ({
     target: mod.stat.slice(STATS_PREFIX.length),
     op: mod.kind,
     value: mod.value,
