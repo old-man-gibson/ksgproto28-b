@@ -111,7 +111,8 @@ requests of other systems: `resources/drain`, `resources/heal`,
   sheds. The mutagens port moves it (old `fastGuard`).
 - Immunity from another system: `namedFact('statusImmune:<status id>', 1)`
   or `namedFact('statusImmuneElement:<damage type>', 1)` for an entity. The
-  titles port states an earned title's `immune` this way.
+  `titles` source states an earned title's `immune` this way (divine
+  port).
 
 ## Content
 
@@ -153,7 +154,7 @@ outcome, not a skip: the request answers null.
 - The surplus ledger (`data.surplus`): the engine sheds it; the writer is
   forced healing (`healEnemy`, port 5 or arcane), which needs a request that
   adds to it.
-- Titles (`TitleDef.immune`), styles (`effectiveStyleId` reads
+- Styles (`effectiveStyleId` reads
   `statusForcedStyle`), the fast's dulling of penalties and its ward
   (mutagens), weather doses, food grants.
 - The full tooltip (`statusTipLines` of the old interface): the view carries

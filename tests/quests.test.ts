@@ -31,7 +31,8 @@
  *   save starts at version 1.
  *
  * New cases: `npcs/talk` (the met counter and its skip reasons), the
- * `quest:<id>` fact after a turn-in, and the rewards of `the_first_ascent`.
+ * `quest:<id>` fact after a turn-in, the rewards of `the_first_ascent`, and
+ * its divine favour (step 3, divine).
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { Kernel } from '../src/kernel';

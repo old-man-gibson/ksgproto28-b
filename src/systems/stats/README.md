@@ -75,7 +75,7 @@ tested with a test-only source; the system that feeds it is not ported yet.
 
 | Old read | The later system does this |
 |---|---|
-| Achievement tiers, titles, the festival bonus, combat buffs | Each registers a source with its modifiers. |
+| Achievement tiers, the festival bonus, combat buffs | Each registers a source with its modifiers. Titles do since the divine port (`titles/held`). |
 | The style fought in, style mods, exertion mods, momentum | The styles system returns `styleFact(id)` and its modifiers. A source that reads `exerting` or a pool lock declares `dependsOn: ['resources/locks']`. |
 | The fast's dulling of penalties (`fastGuard(...).ward` in `collectBaseMods`) | Not decided. The old code multiplied every negative status modifier by (1 - ward). A source may not read a derived value, so the mutagens port states the ward as a fact and the pipeline applies it to negative modifiers of origin `status`. |
 | Fused super-attributes (`state.fused`) | `fuseFact(a, b)`. The fusion's name in the attribute breakdown is not carried. |

@@ -1,13 +1,18 @@
 # divine
 
 Miracles and the deities they come from: the registries, the spell a miracle
-resolves to and how two deities stand toward one another.
+resolves to, how two deities stand toward one another, favour with each
+deity, the gods a life knows, and receiving a miracle for favour. The panel
+`DivinePanel.svelte` is the old Divine tab of the Spellcrafting Table.
 
 Port of: `MIRACLES` of old `data/spellcraft.data.ts`, `data/deities.data.ts`,
-`miracleSpec` of old `systems/divine.ts`, `deityRelation` of old
-`systems/deities.ts`.
+all of old `systems/divine.ts` and `systems/deities.ts`, the known gods of
+old `systems/unlocks.ts`, the favour of the old quest turn-in. Spine port 5
+ported the registries and the relation; step 3 the rest, and the new system
+`titles` (`src/systems/titles/README.md`).
 
-Section "Design" was written and committed before the code.
+Sections "Design" (port 5) and "Step 3 design" were written and committed
+before their code.
 
 ## Design
 
@@ -245,6 +250,81 @@ written here. The outcome digests are recorded again in their own commit.
 - The worn title in the resource bars: the UI step.
 - The yShicna miracles that act on words.
 
+### Changed while building (step 3)
+
+- The miracles, deities and tags moved from `index.ts` to `defs.ts`, so
+  `favor.ts` and `shelf.ts` can read them without importing the system.
+- `queryDeities`, `deityGroups` and `deitiesInRelation` take an optional
+  list (default all deities); the panel passes the known gods. The old
+  panel filtered the result of `queryDeities` the same way.
+- The quest favour case of the old `onboarding.test.ts` ("quest 1's
+  favor makes the cheapest miracle exactly affordable") stays an `it.todo`:
+  it reads the record `faces_of_threshold`, which waits for the last of
+  the six system people. The turn-in favour of `the_first_ascent` is
+  tested in `tests/quests.test.ts`.
+
+## Left behind
+
+- The votive token (`consumable.votive`, `votive_token` drops at the Nine
+  Chapels): the consumables port. It bumps `votive:tokens`, asks
+  `divine/grant-favor-all` with 2 and bumps `votive:baseline` by 2 on the
+  first token, and bumps `favor:floating` on each later one. The divine
+  half (floating favour, the baseline paid by `divine/meet`) is tested.
+- Meeting a god: nothing calls `divine/meet` yet, as in the old build
+  ("future authored encounters").
+- `faces_of_threshold` (its +4 favour) and `a_taste_of_everything` (the
+  miracle objective at the Nine Chapels): the last of the six system
+  people. `miracles:learned` is bumped.
+- Titles whose deed is not ported: `friend_of_the_court` (the case file
+  card), `david_and_goslimath` (the dare), `iron_stomach` (spoiled food),
+  `first_through_the_door` (festival). Their records, modifiers and checks
+  are ported and tested with the counter set directly.
+- The worn title in the resource bars: the UI step.
+- Deity portraits: the art files are licensed and not in this repository.
+  The panel shows the icon.
+- The yShicna miracles that act on words.
+
+## Old rules ported as they are
+
+- `checkMiracle` does not ask whether the god is known. Eight miracles cost
+  0 favour (`sproutbringer`, `tuigamalas_mighty_stick`, `spear_and_fang`
+  and the five of yShicna'), so the command receives them in a fresh life;
+  the panel lists known gods only, so they are not offered there, as in
+  the old interface. Six of them have an empty spell name and a cooldown
+  of 0 (port 5, "Content").
+- Devotion is checked before favour: a miracle short on both says
+  "Needs Devotion <level>".
+- `divine/meet` with an id no deity has stamps `met:deity:<id>`, pays
+  nothing and answers true, as the old `meetDeity`.
+- `iconoclast` latches at the next check after the tenth miracle (a kill,
+  an arrival, a level-up, a quest), not when the tenth is received: the
+  old `learnMiracle` called no title check.
+- Holy days carry no divine rule in the old build. Nothing ported here.
+
 ## Skip reasons
 
-See "Step 3 design", Commands. Port 5 had no command.
+Command `divine/learn { miracle }`, each also a log line "🔒 <reason>":
+
+- No such miracle
+- Already received
+- Needs Devotion <level>
+- Needs <cost> favor with <deity> (you have <held>)
+
+Command `divine/assign-favor { deity }` (old: false and silent):
+
+- No unassigned favor
+- No such deity: <id>
+- <name> is not known yet
+
+No tick.
+
+## Files
+
+| File | Holds |
+|---|---|
+| `defs.ts` | The miracle, deity and tag registries, their record types, `deityRelation`. |
+| `favor.ts` | The slice type, the known gods, favour reads and writes, `checkMiracle`. |
+| `shelf.ts` | `PANTHEONS`, `queryDeities`, `pantheonOf`, `deityGroups`, `deitiesInRelation`. |
+| `index.ts` | The school registration, `miracleSpec`, commands, requests, the view. |
+| `DivinePanel.svelte`, `panel.ts` | The panel. |
+| `content/` | `miracles.json` (30), `deities.json` (11), `deity_tags.json` (44), `divine_text.json`. |

@@ -201,11 +201,11 @@ recorded again in their own commit.
   bumped already): the last of the six system people.
 - Word slips (`consumable.unlocksWord`): the consumables port sets
   `flag:word:<id>`.
-- Divine: `learnMiracle` and the favour; the deity conflict is ported here
-  with the book, and its test waits for `learnMiracle`.
+- Divine: `learnMiracle` and the favour (done in the divine port; the
+  veto's old case runs).
 - Psionic: `shapePsionic`, the gear bias reading (`reading` of the psionic
   school), `utility` for psionic workings.
-- The title that defies dogma (titles).
+- The title that defies dogma (done in the divine port, system `titles`).
 - The yShicna miracles that act on words.
 - The drag-to-reorder sentence strip and the word merge gestures of the old
   bench: the UI step. Deep forms are typed by tapping the word again when

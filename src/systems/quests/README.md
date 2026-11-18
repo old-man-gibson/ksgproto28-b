@@ -40,10 +40,16 @@ Heard: `combat/kill` (kill objectives), `world/arrived` (reach objectives).
 Source `quests/done`: `namedFact('quest:<id>', 1)` per quest turned in. The
 condition kind `quest` reads it.
 
+## Divine favour
+
+Since the divine port (step 3) the turn-in asks `divine/grant-favor-all`
+with `1 + rewards.favor`, at the old spot (after the discovery XP, before
+`quests/completed` and the completed line): favour with every known god.
+`the_first_ascent` pays 2. A request and not an event, so the favour line
+is logged before the completed line, as the old order.
+
 ## Left behind
 
-- Divine favour on turn-in (`grantFavorAll`, 1 + `rewards.favor`): divine
-  favour, step 3. `the_first_ascent` names 1 favour in its reward.
 - Craft objectives advance on a `craft` event that crafting sends (step 3).
 - `faces_of_threshold`, `a_taste_of_everything` (step 3); the floor 11 and
   harbor quests (step 4).

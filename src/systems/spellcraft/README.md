@@ -175,9 +175,8 @@ and the veto read the bare `resolveSpell`, as the old code did.
 
 ### Left behind (step 3)
 
-- The title that defies dogma (titles): the veto always applies.
-- `learnMiracle`, favour: divine. Its veto case in `tests/spellcraft.test.ts`
-  stays `it.todo`; the veto itself has a new case.
+- The title that defies dogma, `learnMiracle` and favour: done in the
+  divine port (below).
 - `shapePsionic`, the psionic school and its `reading`: psionic.
 - Loadouts that re-prepare spells: the UI step (the old `applyLoadout`
   called `setPrepared`).
@@ -202,6 +201,16 @@ and the veto read the bare `resolveSpell`, as the old code did.
 | `spellcraft/set-prepared` | no spell has the uid; all <cap> prepared pages are in use (also the log line "🔒 Prepared spell limit is <cap>."); "<deity> refuses to share a page with <deity>." (also a log line) |
 | `spellcraft/forget`, `spellcraft/rename` | no spell has the uid |
 | `spellcraft/cast-utility` | No such spell; <name> needs a target; In combat: prepare it instead; <name> on cooldown; Not enough mana; Not enough focus. Each also a log line "🔒 <reason>". |
+
+## Step 3 (the divine port)
+
+- `spellcraft/set-prepared` skips the deity veto while the player's fact
+  `defiesDogma` is 1. The `titles` source states it while a title with
+  `defiesDogma` is worn (`iconoclast`). The old `dogmaDefied`. This system
+  reads the fact through `factValue` and imports nothing of `titles`.
+- `divine/learn` writes a miracle through `spellcraft/add`, unprepared.
+- The old veto case ("hostile deities refuse to share a prepared page,
+  unless dogma is defied") runs in `tests/spellcraft.test.ts`.
 
 ## Files
 

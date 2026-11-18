@@ -119,6 +119,10 @@ describe('floating favour and meeting a god (the divine half of the votive token
     expect(ask(g, meetDeity, { deity: 'ikthelthe' })).toBe(false);
     expect(ask(g, meetDeity, { deity: 'denjalle' })).toBe(false);
     expect(favorOf(g).ikthelthe).toBe(2);
+    // Old rule: an id no deity has is stamped met, paid nothing, and answers true.
+    expect(ask(g, meetDeity, { deity: 'no_such_god' })).toBe(true);
+    expect(counterOf(g, 'met:deity:no_such_god')).toBe(1);
+    expect(favorOf(g).no_such_god).toBeUndefined();
   });
 });
 

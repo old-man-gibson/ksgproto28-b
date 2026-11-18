@@ -75,7 +75,7 @@ export const grantFavorAll = defineRequest<{ amount: number }, void>('divine/gra
 
 /**
  * Meet a god: set `met:deity:<id>` and pay the votive baseline. False for a
- * god already known or an unknown id. The old `meetDeity`.
+ * god already known. The old `meetDeity`.
  */
 export const meetDeity = defineRequest<{ deity: string }, boolean>('divine/meet');
 
@@ -152,7 +152,8 @@ const divine = defineSystem<DivineState, DivineView>({
     }),
 
     answer(meetDeity, (ctx, { deity }) => {
-      if (!DEITIES[deity] || deityKnown(ctx, deity)) return false;
+      // An unknown id is stamped met and paid nothing, as the old `meetDeity`.
+      if (deityKnown(ctx, deity)) return false;
       ctx.emit(setCounter, { key: deityMetKey(deity), value: 1 });
       grantFavor(ctx.state, deity, counterValue(ctx.read(counters), VOTIVE_BASELINE_KEY));
       return true;

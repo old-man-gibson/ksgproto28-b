@@ -160,6 +160,8 @@ left behind.
 | 3: arcane | The book half of `systems/spellcraft.ts` (`preparedCap`, `setPrepared`, `deityConflict`, `addSpell`, `forgetSpell`, `renameSpell`, `hasSpell`, `castUtility` and its checks, `resolveSpellFor`); `legacyPreparedPages` as read by `preparedCap` | `spellcraft` (slice version 2: `utilityReady`; `book.ts`, `lines.ts`; request `spellcraft/add`, event `spellcraft/practised`, `registerHeldSpell`, the school's `reading`) | `tests/spellcraft.test.ts`: the prepared cap (3), 2 new (the veto, casting outside a fight); `tests/prestige.test.ts`: the page half of "ceilings and pages"; `tests/antimagic.test.ts`: the two assertions left in port 5 | `learnMiracle` and the veto's old case (divine), the title that defies dogma, psionic |
 | 3: arcane | The readied spell of `systems/martial.ts` and `systems/combat.ts` (`readyableSpell`, `spellIsHeld`, `releaseReadiedSpell`, `setPosition` dropping the seat, the Ready Spell form, the Spell Parry delivery) | `martial` (request `martial/hold-spell`), `combat` (`registerPositionWatch`) | `tests/martial.test.ts`: the 6 `it.todo` of "readied spells", 2 new | Nothing. Spell Parry never arms in a fight, as in the old build (`src/systems/martial/README.md`) |
 | 3: arcane | `chooseTutorialSpell`, `TUTORIAL_SPELLS`, `TUTORIAL_SPELL_INT` | `tutorial` (`tutorial/choose-spell`; the card shows the three spells) | `tests/tutorial.test.ts`: the walk with the spell step, the two spell cases; `tests/john.test.ts`: the rack climbs take `fire`, the vermin bound of the old case is held again | Nothing |
+| 3: divine | All of `systems/divine.ts` and `systems/deities.ts` left by port 5 (favour, `checkMiracle`, `learnMiracle`, `grantFavorAll`, floating favour, `queryDeities`, `pantheonOf`, `deityGroups`, `deitiesInRelation`); the known gods of `systems/unlocks.ts`; the favour of the quest turn-in; `chapel_priest` of `data/npcs.data.ts` | `divine` (slice version 2: `favor`; `favor.ts`, `shelf.ts`; commands `divine/learn`, `divine/assign-favor`; requests `divine/grant-favor-all`, `divine/meet`; the panel), `quests` (the turn-in asks for favour), `npcs` (1 record) | `tests/spellcraft.test.ts`: "browsing the powers" (4), the favour case and the veto's old case; `tests/onboarding.test.ts`: "a fresh life knows two"; `tests/goblins.test.ts`: the known gods half; `tests/quests.test.ts`: 1 new (the turn-in favour); `tests/divine.test.ts` (new, 6, and the votive half of the old `rarefinds.test.ts` case) | The votive token (consumables), `faces_of_threshold`, `a_taste_of_everything`, meeting a god: `src/systems/divine/README.md` "Left behind" |
+| 3: divine | `systems/titles.ts`, `data/titles.data.ts`, `text/titles.text.ts`; the title half of `collectBaseMods` (`systems/attributes.ts`), of the player's immunity (`systems/statuses.ts`) and `dogmaDefied` (`systems/spellcraft.ts`) | `titles` (new system: slice version 1, source `titles/held`, event `titles/check`, command `titles/wear`, the panel); `spellcraft` (the veto reads the fact `defiesDogma`) | `tests/titles.test.ts` (4 of 6, and 4 new); `tests/training.test.ts`: "David and Goslimath" (2) | The deeds of four titles (case file, dare, spoiled food, festival); the weapon families case (shelved spot) and the v6 save migration: `src/systems/titles/README.md` |
 
 Port 1 notes:
 
@@ -1189,3 +1191,84 @@ segment are the same as on `main`; only the state hash changed (the
 spellcraft slice field `utilityReady`), and the digests are recorded again
 in their own commit.
 
+## 12. Step 3: divine
+
+Done 2026-11-17 on branch `step3-divine`. Design and the full account:
+`src/systems/divine/README.md` ("Step 3 design", "Changed while building
+(step 3)", "Left behind", "Old rules ported as they are"),
+`src/systems/titles/README.md` (new system), "Divine favour" in
+`src/systems/quests/README.md`, "Step 3 (the divine port)" in
+`src/systems/spellcraft/README.md`.
+
+### 12.1 John
+
+John's play changed: titles now latch, as in the old build. Every skipping
+John earns Procedural Objection on floor 1 (no modifier) and Wanderer
+(+5% travel speed at 50 journeys) near the third floor's gate (ticks 6918,
+6340, 6850 for seeds 42, 7, 1234). The turn-in of `the_first_ascent` pays
+2 favour with each known god; John receives no miracle. Old: section 10.1.
+New: this branch, `npm run pacing`. Game time per segment, m:ss.
+
+| Floor | Old 42 | Old 7 | Old 1234 | Old mean | Arcane mean | New 42 | New 7 | New 1234 | New mean | New vs old |
+|---|---|---|---|---|---|---|---|---|---|---|
+| f1 vermin | 1:29 | 1:11 | 1:34 | 1:25 | 1:21 | 1:31 | 1:28 | 1:03 | 1:21 | -5% |
+| f1 | 2:24 | 2:29 | 2:18 | 2:24 | 2:29 | 1:31 | 2:29 | 3:28 | 2:29 | +4% |
+| f2 | 2:09 | 3:03 | 2:53 | 2:42 | 2:38 | 2:55 | 2:41 | 2:18 | 2:38 | -2% |
+| f3 gate | 4:47 | 3:19 | 4:03 | 4:03 | 4:04 | 3:43 | 3:42 | 4:48 | 4:04 | +1% |
+| f3 stairs | 1:22 | 1:12 | 1:16 | 1:17 | 1:15 | 1:17 | 1:16 | 1:16 | 1:16 | -1% |
+| f3 | 0:50 | 0:20 | 0:20 | 0:30 | 0:50 | 0:52 | 0:47 | 1:48 | 1:09 | +130% |
+| f4 | 8:44 | 5:07 | 7:28 | 7:06 | 7:09 | 5:34 | 10:22 | 8:35 | 8:10 | +15% |
+| f5 gate | 0:03 | 0:03 | 0:03 | 0:03 | 0:04 | 0:04 | 0:04 | 0:04 | 0:04 | +33% |
+| f5 | 1:00 | 1:32 | 0:38 | 1:03 | 0:58 | 1:31 | 0:39 | 0:37 | 0:56 | -12% |
+| f6 gate | 3:38 | 4:17 | 3:18 | 3:44 | 4:00 | 3:21 | 3:21 | 3:09 | 3:17 | -12% |
+| f6 | 0:15 | 0:19 | 0:21 | 0:18 | 0:25 | 0:35 | 1:15 | 0:17 | 0:42 | +135% |
+| Total to the warchief | 26:41 | 22:52 | 24:13 | 24:35 | 25:13 | 22:54 | 28:04 | 27:22 | 26:07 | +6% |
+
+Against the tolerance of section 9.1 (total within 15%, each segment over
+two minutes of old mean within 35%): total +6%; the long segments -12% to
++15%. Boss segments are reported, not held. Before Wanderer latches the
+climbs are the arcane port's to the tick: seed 42 through the stairs,
+seed 7 through the third floor's gate; seed 1234 reaches that gate 6 ticks
+sooner. Floor 4 carries the spread: 5:34 to 10:22, knockouts 10, 19, 16
+(arcane: 15, 12, 11; old 17, 9, 14). Boss tries/lost: floor 3 2/1, 2/1,
+4/3; warchief 2/2, 5/4, 1/0. Level at the warchief 8, 9, 9 (old 9, 8, 8).
+Gold earned 13,357, 14,124, 14,601, mean 14,027 (arcane 12,447; old
+12,324). Every climb ends in the first prestige (harvest 11 points each).
+
+### 12.2 Offline budgets
+
+Each run of 8 hours alone through `scripts/budget-runs.ts`, two rounds,
+same machine. Step 3 arcane is section 11.2.
+
+| Run of 8 hours | Step 3 arcane | Step 3 divine | Budget |
+|---|---|---|---|
+| No fight, no condition | 1,396 to 1,420 ms | 1,404 to 1,417 ms | 2,000 ms |
+| A poison held | 4,991 to 4,994 ms | 4,481 to 5,005 ms | 7,500 ms |
+| Floor 1 table sent to combat | 4,471 to 4,657 ms | 4,204 to 4,655 ms | 7,000 ms |
+| Floor 6 Tunnels sent to combat | 8,457 to 8,730 ms | 7,807 to 8,555 ms | 13,500 ms |
+| World: hunt, floor 4 Woods Edge | 8,499 to 8,726 ms | 8,446 to 9,071 ms | 13,000 ms |
+| World: hunt, floor 6 Tunnels | 8,761 to 8,926 ms | 8,484 to 8,490 ms | 13,000 ms |
+
+Every budget holds. World 4 measured 8,446 and 9,071 ms: one round 4%
+over the arcane range, the other under it. The rest are inside or under
+the arcane range.
+What this port adds to a fight run: one `titles/check` event per kill, per
+arrival and per level-up, each a scan of the 11 titles (only the unearned
+ones read their conditions). The floor 6 and both world runs earn Slayer
+(+2% damage at 100 kills), and their kills, generator and gold changed:
+floor 6 11,328 to 11,347 kills, 1 defeat to 0; world 4 9,834 to 9,885;
+world 6 11,360 to 11,347, 1 defeat to 0. Floor 1 also earns Slayer and its
+kills, generator and gold are unchanged. The digests are recorded again in
+their own commit.
+
+### 12.3 Browser check
+
+Desktop width and 375 px. On a dev save edited from the forge page for
+favour and an earned title (`ksgb:development:save` only): Receive, the
+filter chips, the search box, +1 favor (unassigned) and Wear clicked; no
+horizontal overflow at 375 px. Both panels sampled every 0.5 s while a
+fight ran at the Cages: no element moved.
+
+Not verified in a browser: a title earned by play (the save was edited),
+the turn-in favour (tested headless), the forge form of the `titles`
+registry.
