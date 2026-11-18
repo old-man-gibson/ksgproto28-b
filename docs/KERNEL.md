@@ -403,6 +403,30 @@ An answer returns copies, never a reference into its slice.
   rework of those tick paths, for example combat keeping per-fight values
   that it now reads again each tick, with the digests as the check.
 
+- Budgets raised 10% (user decision, 2026-11-18, step 3 cooking port).
+  On this machine on 2026-11-18, `main` at 57912c9 failed four limits
+  with no change: floor 1 7,043 ms (7,000), floor 6 13,963 ms (13,500),
+  world floor 4 14,270 ms (13,000), world floor 6 14,952 ms (13,000). The
+  cooking port adds two tick hooks (`cooking` at order -50, `meals` at 50;
+  the old `Game.advance` ran meal steps before and after the conditions)
+  and costs 3 to 6%, about 0.4 microseconds per tick; with both hooks
+  removed the no-fight run equals `main`. Same hour, alternating,
+  `scripts/budget-runs.ts`, ms:
+
+  | Run of 8 hours | `main` | Cooking branch | Budget |
+  |---|---|---|---|
+  | No fight, no condition (5 pairs) | 1,796 to 1,888, mean 1,842 | 1,894 to 2,018, mean 1,952 | 2,200 (was 2,000) |
+  | A poison held | 7,087 to 7,118 | 6,924 to 7,275 | 8,250 (was 7,500) |
+  | Floor 1 table sent to combat | 6,333 to 6,708 | 6,716 to 7,496 | 7,700 (was 7,000) |
+  | Floor 6 Tunnels sent to combat | 13,257 to 13,348 | 13,825 to 13,988 | 14,850 (was 13,500) |
+  | World: hunt, floor 4 Woods Edge | 13,318 to 13,353 | 13,813 | 14,300 (was 13,000) |
+  | World: hunt, floor 6 Tunnels | 13,187 to 15,082 | 13,804 to 16,405 | 14,300 (was 13,000) |
+
+  The two-hook port is kept (folding the early step into the late hook of
+  the tick before would change when a queued dish is eaten relative to a
+  command between ticks). The machine's spread is wide: world floor 6 on
+  `main` ran 13,187 to 15,082 ms within one hour.
+
 ## 9. Content
 
 - A registry is one JSON file: a list of records, each with an `id`.

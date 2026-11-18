@@ -26,8 +26,8 @@ import { RUN_DIGESTS } from './outcomeDigests';
  * 9,649 ms. Pass 2: floor 4 8,597 to 8,662 ms, floor 6 8,578 to 8,817 ms.
  * Budget about 1.5 times that.
  */
-const WORLD_FLOOR_FOUR_BUDGET_MS = 13000;
-const WORLD_FLOOR_SIX_BUDGET_MS = 13000;
+const WORLD_FLOOR_FOUR_BUDGET_MS = 14300;
+const WORLD_FLOOR_SIX_BUDGET_MS = 14300;
 
 describe('offline catch-up through the world system', () => {
   it(`simulates 8 hours of the hunt activity at the Woods Edge of floor 4 within ${WORLD_FLOOR_FOUR_BUDGET_MS} ms`, () => {
