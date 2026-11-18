@@ -3,8 +3,15 @@
  * `main` at 7b59ba1, before the catch-up work (docs/KERNEL.md decision 32);
  * recorded again on branch `step3-martial` after the martial port (new
  * slices and fields: every state hash; the floor 2 tutor: every John
- * climb), and on branch `step3-arcane` after the arcane port (the
- * spellcraft slice field `utilityReady`: every state hash, nothing else).
+ * climb), on branch `step3-arcane` after the arcane port (the
+ * spellcraft slice field `utilityReady`: every state hash, nothing else),
+ * and on branch `step3-divine` after the divine port (the new slices
+ * `divine` v2 and `titles`: every state hash; titles now latch and give
+ * their modifiers. Slayer, +2% damage at 100 kills, in the four fight runs:
+ * the floor 6 and the two world runs change generator, kills and gold, the
+ * floor 1 run its hash only. Wanderer, +5% travel speed at 50 journeys, in
+ * every John climb near the third floor's gate: every John segment from
+ * there on).
  * A change that only makes the simulation faster leaves every one
  * of them equal. A change to a rule, a formula or content changes them;
  * record them again then, and say why in the commit.
@@ -20,7 +27,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 1,
     'gold': 0,
-    'state': 'ecdc2e59'
+    'state': 'd00bd7f6'
   },
   'poison': {
     'tick': 288000,
@@ -29,7 +36,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 1,
     'gold': 0,
-    'state': 'd2dbd5ac'
+    'state': '7f03435b'
   },
   'floor1': {
     'tick': 288000,
@@ -38,34 +45,34 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 9,
     'gold': 33028,
-    'state': '63dd1853'
+    'state': 'fbfeef20'
   },
   'floor6': {
     'tick': 288000,
-    'rng': 82601846,
-    'kills': 11328,
-    'defeats': 1,
+    'rng': 504130528,
+    'kills': 11347,
+    'defeats': 0,
     'level': 26,
-    'gold': 1587917,
-    'state': '3c2c496d'
+    'gold': 1581408,
+    'state': '66f58d5f'
   },
   'world4': {
     'tick': 288000,
-    'rng': 3414344434,
-    'kills': 9834,
+    'rng': 2571287070,
+    'kills': 9885,
     'defeats': 4,
     'level': 17,
-    'gold': 350792,
-    'state': '5d425fee'
+    'gold': 356591,
+    'state': '1a721cae'
   },
   'world6': {
     'tick': 288000,
-    'rng': 3012075105,
-    'kills': 11360,
-    'defeats': 1,
+    'rng': 504130528,
+    'kills': 11347,
+    'defeats': 0,
     'level': 26,
-    'gold': 1590950,
-    'state': 'e155e6f7'
+    'gold': 1581409,
+    'state': 'd64f9d0f'
   }
 };
 
@@ -77,13 +84,13 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'floor1': 2375,
       'floor2': 3980,
       'gate3': 6204,
-      'descent': 6970,
-      'floor3': 7461,
-      'floor4': 11658,
-      'gate5': 11698,
-      'floor5': 12365,
-      'gate6': 14814,
-      'floor6': 15037
+      'descent': 6966,
+      'floor3': 7436,
+      'floor4': 13652,
+      'gate5': 13690,
+      'floor5': 14084,
+      'gate6': 16093,
+      'floor6': 16841
     },
     'knockouts': {
       'tutorial': 0,
@@ -93,11 +100,11 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'gate3': 0,
       'descent': 0,
       'floor3': 1,
-      'floor4': 12,
+      'floor4': 19,
       'gate5': 0,
-      'floor5': 1,
-      'gate6': 6,
-      'floor6': 1
+      'floor5': 0,
+      'gate6': 4,
+      'floor6': 4
     },
     'levels': {
       'tutorial': 1,
@@ -119,13 +126,13 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'floor1': 186,
       'floor2': 474,
       'gate3': 611,
-      'descent': 722,
-      'floor3': 870,
-      'floor4': 3458,
-      'gate5': 3458,
-      'floor5': 5246,
-      'gate6': 7224,
-      'floor6': 13216
+      'descent': 711,
+      'floor3': 829,
+      'floor4': 4132,
+      'gate5': 4132,
+      'floor5': 5836,
+      'gate6': 7849,
+      'floor6': 14124
     },
     'bossTries': {
       'tutorial': 0,
@@ -137,21 +144,21 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'floor3': 2,
       'floor4': 2,
       'gate5': 0,
-      'floor5': 2,
+      'floor5': 1,
       'gate6': 0,
-      'floor6': 1
+      'floor6': 5
     },
-    'fights': 84,
-    'goldEarned': 13216,
+    'fights': 101,
+    'goldEarned': 14124,
     'harvest': 11,
     'end': {
-      'tick': 15085,
-      'rng': 3165442549,
+      'tick': 16891,
+      'rng': 3309978928,
       'kills': 0,
       'defeats': 0,
       'level': 1,
       'gold': 0,
-      'state': '5b58f6ca'
+      'state': '00edb8d2'
     }
   },
   '42': {
@@ -163,11 +170,11 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'gate3': 5799,
       'descent': 6566,
       'floor3': 7084,
-      'floor4': 11730,
-      'gate5': 11770,
-      'floor5': 12430,
-      'gate6': 14677,
-      'floor6': 15019
+      'floor4': 10428,
+      'gate5': 10466,
+      'floor5': 11377,
+      'gate6': 13390,
+      'floor6': 13737
     },
     'knockouts': {
       'tutorial': 0,
@@ -177,10 +184,10 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'gate3': 0,
       'descent': 0,
       'floor3': 1,
-      'floor4': 15,
+      'floor4': 10,
       'gate5': 0,
-      'floor5': 1,
-      'gate6': 5,
+      'floor5': 2,
+      'gate6': 4,
       'floor6': 2
     },
     'levels': {
@@ -191,11 +198,11 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'gate3': 3,
       'descent': 3,
       'floor3': 5,
-      'floor4': 7,
-      'gate5': 7,
+      'floor4': 6,
+      'gate5': 6,
       'floor5': 7,
       'gate6': 8,
-      'floor6': 9
+      'floor6': 8
     },
     'gold': {
       'tutorial': 0,
@@ -205,11 +212,11 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'gate3': 610,
       'descent': 699,
       'floor3': 788,
-      'floor4': 3698,
-      'gate5': 3698,
-      'floor5': 5138,
-      'gate6': 7277,
-      'floor6': 12200
+      'floor4': 2555,
+      'gate5': 2555,
+      'floor5': 4126,
+      'gate6': 5984,
+      'floor6': 13357
     },
     'bossTries': {
       'tutorial': 0,
@@ -221,21 +228,21 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'floor3': 2,
       'floor4': 1,
       'gate5': 0,
-      'floor5': 2,
+      'floor5': 3,
       'gate6': 0,
       'floor6': 2
     },
-    'fights': 85,
-    'goldEarned': 12200,
+    'fights': 75,
+    'goldEarned': 13357,
     'harvest': 11,
     'end': {
-      'tick': 15043,
-      'rng': 4286078930,
+      'tick': 13800,
+      'rng': 2899685405,
       'kills': 0,
       'defeats': 0,
       'level': 1,
       'gold': 0,
-      'state': '964184ba'
+      'state': 'c08a1ac7'
     }
   },
   '1234': {
@@ -244,14 +251,14 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'vermin': 633,
       'floor1': 2712,
       'floor2': 4091,
-      'gate3': 6974,
-      'descent': 7678,
-      'floor3': 8167,
-      'floor4': 12189,
-      'gate5': 12229,
-      'floor5': 12643,
-      'gate6': 15128,
-      'floor6': 15318
+      'gate3': 6968,
+      'descent': 7727,
+      'floor3': 8805,
+      'floor4': 13951,
+      'gate5': 13989,
+      'floor5': 14357,
+      'gate6': 16248,
+      'floor6': 16419
     },
     'knockouts': {
       'tutorial': 0,
@@ -260,12 +267,12 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'floor2': 0,
       'gate3': 0,
       'descent': 0,
-      'floor3': 1,
-      'floor4': 11,
+      'floor3': 3,
+      'floor4': 16,
       'gate5': 0,
       'floor5': 0,
-      'gate6': 7,
-      'floor6': 1
+      'gate6': 4,
+      'floor6': 0
     },
     'levels': {
       'tutorial': 1,
@@ -287,13 +294,13 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'floor1': 204,
       'floor2': 430,
       'gate3': 616,
-      'descent': 699,
-      'floor3': 793,
-      'floor4': 3601,
-      'gate5': 3601,
-      'floor5': 5909,
-      'gate6': 8103,
-      'floor6': 11924
+      'descent': 689,
+      'floor3': 878,
+      'floor4': 3852,
+      'gate5': 3852,
+      'floor5': 7063,
+      'gate6': 8864,
+      'floor6': 14601
     },
     'bossTries': {
       'tutorial': 0,
@@ -302,24 +309,24 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'floor2': 0,
       'gate3': 0,
       'descent': 0,
-      'floor3': 2,
+      'floor3': 4,
       'floor4': 1,
       'gate5': 0,
       'floor5': 1,
       'gate6': 0,
       'floor6': 1
     },
-    'fights': 91,
-    'goldEarned': 11924,
+    'fights': 90,
+    'goldEarned': 14601,
     'harvest': 11,
     'end': {
-      'tick': 15347,
-      'rng': 4173350328,
+      'tick': 16481,
+      'rng': 1904188527,
       'kills': 0,
       'defeats': 0,
       'level': 1,
       'gold': 0,
-      'state': '572df9cb'
+      'state': 'cbe79972'
     }
   }
 };
