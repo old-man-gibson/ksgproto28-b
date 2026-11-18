@@ -57,6 +57,7 @@ import {
   type PrestigeState,
 } from '../src/systems/prestige';
 import { conditionReader, skillCap, SKILLS, type SkillsState } from '../src/systems/skills';
+import { preparedCap } from '../src/systems/spellcraft';
 import { attrBreakdown, attrValue, computeBlock, statOf } from '../src/systems/stats';
 import { TUTORIAL_EXIT } from '../src/systems/tutorial';
 import { CALM_SEEN_KEY, type WeatherState } from '../src/systems/weather';
@@ -359,7 +360,6 @@ describe('boons', () => {
   });
 
   it('ceilings and pages are read at their use sites, manifested or not', () => {
-    // The skill-cap half. The page half is `it.todo` below.
     const k = bandOneCleared();
     patchPrestige(k, (p) => {
       p.points = 20;
@@ -368,12 +368,14 @@ describe('boons', () => {
     expect(k.dispatch(buyBoon({ boon: 'chronosense_ceiling' })).ok).toBe(true);
     expect(skillCap(reads(k), 'chronosense')).toBe(base + 5);
     expect(slice<SkillsState>(k, 'skills').skills.chronosense).toBeUndefined();
+    const pages = preparedCap(reads(k));
+    expect(k.dispatch(buyBoon({ boon: 'grimoire_page' })).ok).toBe(true);
+    expect(preparedCap(reads(k))).toBe(pages + 1);
     // Carried into the next run without re-buying.
     prestige(k);
     expect(skillCap(reads(k), 'chronosense')).toBe(base + 5);
+    expect(preparedCap(reads(k))).toBe(pages + 1);
   });
-
-  it.todo('ceilings and pages: a grimoire page raises preparedCap, and carries (step 3: the grimoire)');
 });
 
 describe('the post-prestige review', () => {

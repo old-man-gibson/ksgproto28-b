@@ -17,14 +17,12 @@
  * - `prestigeNow(state)` is the command `prestige/now` on a run with the
  *   warchief counter set.
  *
- * The step list here passes over the spell step (`shownSteps`) until arcane
- * is ported. The walk through the floor runs the eight shown steps; its
- * spell lines are left out. `chooseTutorialStance` is the command
- * `tutorial/choose-stance` (the martial port).
+ * `chooseTutorialStance` is the command `tutorial/choose-stance` (the
+ * martial port), `chooseTutorialSpell` the command `tutorial/choose-spell`
+ * (the arcane port). `state.grimoire` is the `spellcraft` slice,
+ * `getDerivedStats(s).maxMana` the stat `maxMana`.
  *
  * `it.todo`:
- * - spell: "step 3 (arcane: the spell step)": the Intelligence floor of the
- *   spell pick, the three offered words.
  * - the two save migrations: there is no importer of the old save.
  * - every case of the old `tutorialfocus.test.ts`: it tests the UI helper
  *   `tutorialFocus` ("UI step"), but for its stance case, ported here.
@@ -40,7 +38,10 @@ import type { LogState } from '../src/systems/log';
 import { statOf } from '../src/systems/stats';
 import type { ResourcesState } from '../src/systems/resources';
 import { STYLES, styleUnlocked, type StylesState } from '../src/systems/styles';
+import type { AttributesState } from '../src/systems/attributes';
+import type { SpellcraftState } from '../src/systems/spellcraft';
 import {
+  chooseSpell,
   chooseStance,
   chooseWeapon,
   shownSteps,
@@ -50,6 +51,7 @@ import {
   TUTORIAL_FLAGS,
   TUTORIAL_RACK,
   TUTORIAL_STANCES,
+  TUTORIAL_SPELLS,
   TUTORIAL_STEP_LIST,
   tutorialActive,
   tutorialStep,
@@ -65,7 +67,7 @@ import {
   towerAt,
   visibleEdges,
 } from '../src/systems/world';
-import { makeGame, reads, run, slice } from './helpers';
+import { makeGame, patch, reads, run, slice } from './helpers';
 import { counterOf, hop, setCounters, worldOf } from './worldHelpers';
 
 const counts = (g: Kernel): CountersState => slice<CountersState>(g, 'counters');
@@ -127,8 +129,6 @@ describe('floor 0 — where a life opens', () => {
 
 describe('the tutorial — nine panels read off the world', () => {
   it('walks in order: rack, stance, cellblock, fight, field, spell, cast, gate, foot', () => {
-    // The spell step is passed over here (arcane, step 3); the other eight
-    // are walked in the old order.
     const g = makeGame({ seed: 7 });
     const view = () => g.view().systems.tutorial as TutorialView;
 
@@ -159,6 +159,17 @@ describe('the tutorial — nine panels read off the world', () => {
     g.dispatch(selectActivity({ activity: null }));
     expect(hop(g, 'f0_field')).toBe(true);
     walk(g);
+    expect(stepId(g)).toBe('spell');
+
+    expect(slice<ResourcesState>(g, 'resources').values.mana).toBeLessThan(2);
+    expect(g.dispatch(chooseSpell({ word: 'spark' })).ok).toBe(true);
+    const book = slice<SpellcraftState>(g, 'spellcraft').grimoire;
+    expect(book).toHaveLength(1);
+    expect(book[0].prepared).toBe(true);
+    expect(book[0].source).toEqual({ school: 'arcane', words: ['spark'] });
+    expect(slice<AttributesState>(g, 'attributes').attrs.int.level).toBe(2);
+    expect(statOf(reads(g), 'maxMana')).toBe(2);
+    expect(g.dispatch(chooseSpell({ word: 'fire' })).ok).toBe(false);
     expect(stepId(g)).toBe('cast');
 
     winOneFight(g, 'f0_field');
@@ -188,7 +199,6 @@ describe('the tutorial — nine panels read off the world', () => {
     expect(g.dispatch(chooseStance({ style: 'crush' })).ok).toBe(false);
     expect(slice<StylesState>(g, 'styles').style).toBe('defensive');
   });
-  it.todo('the spell pick prepares a one-word spell and raises Intelligence to 2 (step 3 (arcane: the spell step))');
 
   it('the sword pick equips the sword already in the pack, and a shield beside it', () => {
     const g = makeGame({ seed: 2 });
@@ -210,9 +220,23 @@ describe('the tutorial — nine panels read off the world', () => {
     expect(counterOf(g, TUTORIAL_FLAGS.weapon)).toBe(1);
   });
 
-  it.todo('the spell pick never lowers Intelligence a plaque-reader already earned (step 3 (arcane: the spell step))');
+  it('the spell pick never lowers Intelligence a plaque-reader already earned', () => {
+    const g = makeGame({ seed: 5 });
+    patch(g, (slices) => {
+      slices.attributes.attrs.int = { level: 4, xp: 3 };
+    });
+    expect(g.dispatch(chooseSpell({ word: 'ice' })).ok).toBe(true);
+    expect(slice<AttributesState>(g, 'attributes').attrs.int).toEqual({ level: 4, xp: 3 });
+  });
 
-  it.todo('offers exactly the three words the user named, each a legal one-word sentence (step 3 (arcane: the spell step))');
+  it('offers exactly the three words the user named, each a legal one-word sentence', () => {
+    expect([...TUTORIAL_SPELLS]).toEqual(['fire', 'ice', 'spark']);
+    for (const word of TUTORIAL_SPELLS) {
+      const g = makeGame({ seed: 6 });
+      expect(g.dispatch(chooseSpell({ word })).ok).toBe(true);
+      expect(slice<SpellcraftState>(g, 'spellcraft').grimoire[0].source).toEqual({ school: 'arcane', words: [word] });
+    }
+  });
 
   it('skip: defaults for every choice, the Foot, and the tutorial gone for good', () => {
     const g = makeGame({ seed: 8 });
@@ -223,6 +247,7 @@ describe('the tutorial — nine panels read off the world', () => {
     expect(w.discovered).toContain(TUTORIAL_EXIT);
     expect(itemsOf(g).inventory.map((i) => i.defId)).toEqual(['rusty_sword']);
     expect(slice<StylesState>(g, 'styles').style).toBe('crush'); // a choice already made is kept
+    expect(slice<SpellcraftState>(g, 'spellcraft').grimoire).toHaveLength(0);
     // The skip stamps the stance and spell flags as the old skip did.
     expect(counterOf(g, TUTORIAL_FLAGS.stance)).toBe(1);
     expect(counterOf(g, TUTORIAL_FLAGS.spell)).toBe(1);
@@ -243,10 +268,8 @@ describe('the tutorial — nine panels read off the world', () => {
   });
 
   it('a step done early stays done: the panel shows the first thing still open', () => {
-    // Out of order: the old case picked the spell first. That pick is step 3;
-    // its flag is what the step reads, so the flag is set here.
     const g = makeGame({ seed: 10 });
-    setCounters(g, { [TUTORIAL_FLAGS.spell]: 1 });
+    g.dispatch(chooseSpell({ word: 'fire' })); // out of order
     expect(stepId(g)).toBe('arm');
     g.dispatch(chooseWeapon({ weapon: 'dagger' }));
     g.dispatch(chooseStance({ style: 'balanced' }));
@@ -254,7 +277,7 @@ describe('the tutorial — nine panels read off the world', () => {
     expect(TUTORIAL_STEP_LIST.map((s) => s.id)).toEqual([
       'arm', 'stance', 'cellblock', 'fight', 'field', 'spell', 'cast', 'gate', 'leave',
     ]);
-    expect(shownSteps().map((s) => s.id)).toEqual(['arm', 'stance', 'cellblock', 'fight', 'field', 'cast', 'gate', 'leave']);
+    expect(shownSteps().map((s) => s.id)).toEqual(TUTORIAL_STEP_LIST.map((s) => s.id));
   });
 });
 

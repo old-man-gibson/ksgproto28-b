@@ -20,10 +20,13 @@ import {
   type DeepReadonly,
   type RecordOf,
 } from '../../kernel';
+import { composeArcane } from '../arcane';
+import attributes, { attrXpNeeded, grantAttrXp } from '../attributes';
 import combat, { abandon } from '../combat';
 import counters, { bumpCounter, counterValue, type CountersState } from '../counters';
 import items, { equipNow, grantItem, ITEMS } from '../items';
 import { fillText, logLine, textSchema, type TextRecord } from '../log';
+import { addSpell, specLines } from '../spellcraft';
 import styles, { pickStyleNow, STYLES, type StyleDef } from '../styles';
 import world, { arrived, placeNow, SPOTS, type WorldState } from '../world';
 import rackData from './content/tutorial_rack.json';
@@ -84,11 +87,21 @@ export const TUTORIAL_SHIELD = 'wooden_shield';
 export const STARTING_WEAPON = 'rusty_sword';
 
 /**
- * Choices whose control belongs to a system not ported yet: the spell
- * (arcane, step 3). The step reader passes over it; the skip stamps its flag
- * as the old skip did. The stance arrived with the martial port.
+ * Choices whose control belongs to a system not ported yet. The step reader
+ * passes over them; the skip stamps their flags as the old skip did. The
+ * stance arrived with the martial port, the spell with the arcane port.
  */
-export const WAITING_CHOICES: readonly string[] = ['spell'];
+export const WAITING_CHOICES: readonly string[] = [];
+
+/** The three words on offer; each becomes a one-word prepared sentence. The old `TUTORIAL_SPELLS`. */
+export const TUTORIAL_SPELLS = ['fire', 'ice', 'spark'] as const;
+
+/**
+ * Intelligence level the spell pick trains the player to: mana is 1 per
+ * point of Intelligence and a one-word sentence costs 2. The old
+ * `TUTORIAL_SPELL_INT`.
+ */
+export const TUTORIAL_SPELL_INT = 2;
 
 /**
  * The stances the card offers, in order: no modifiers, attack, defence. The
@@ -164,6 +177,15 @@ export const skipTutorial = defineCommand<void>('tutorial/skip');
  */
 export const chooseStance = defineCommand<{ style: string }>('tutorial/choose-stance');
 
+/**
+ * A one-word arcane sentence written straight into the grimoire, prepared,
+ * plus the Intelligence to cast it. Written through `spellcraft/add`, not
+ * the Spellcrafting Table: the table would refuse `spark` (Arcana 3) to a
+ * new speaker, and `spells:inscribed` (the Warden's second quest) is left to
+ * the table. Refused once stamped. The old `chooseTutorialSpell`.
+ */
+export const chooseSpell = defineCommand<{ word: string }>('tutorial/choose-spell');
+
 /** A stance's modifiers as "Label: fact" text for the card, one per line. */
 function modLines(def: StyleDef): string[] {
   return def.mods.map((m) => {
@@ -199,6 +221,8 @@ export interface TutorialView {
   canSkip: boolean;
   /** The stance buttons, while the stance step is shown. */
   stances: { id: string; name: string; icon: string; lines: string[]; current: boolean }[];
+  /** The spell buttons, while the spell step is shown. */
+  spells: { word: string; name: string; icon: string; lines: string[] }[];
 }
 
 export interface TutorialState {}
@@ -245,6 +269,22 @@ const system = defineSystem<TutorialState, TutorialView>({
       ctx.emit(bumpCounter, { key: TUTORIAL_FLAGS.stance });
       const def = STYLES[ctx.read(styles).style];
       ctx.emit(logLine, { msg: fillText(TEXT.tutorial_stance, { icon: def?.icon ?? '', name: def?.name ?? '' }), kind: 'quest' });
+      return OK;
+    }),
+
+    handle(chooseSpell, (ctx, { word }) => {
+      if (chosen(ctx, TUTORIAL_FLAGS.spell)) return skipped('the spell step is done');
+      if (!(TUTORIAL_SPELLS as readonly string[]).includes(word)) {
+        return skipped(`"${word}" is not one of the words on offer (${TUTORIAL_SPELLS.join(', ')})`);
+      }
+      ctx.request(addSpell, { source: { school: 'arcane', words: [word] }, prepared: true });
+      // Up to the level, never past it: Intelligence trained first keeps what it earned.
+      const int = ctx.read(attributes).attrs.int;
+      let need = -int.xp;
+      for (let level = int.level; level < TUTORIAL_SPELL_INT; level++) need += attrXpNeeded(level);
+      if (need > 0) ctx.emit(grantAttrXp, { attr: 'int', amount: need });
+      ctx.emit(bumpCounter, { key: TUTORIAL_FLAGS.spell });
+      ctx.emit(logLine, { msg: fillText(TEXT.tutorial_spell, { word }), kind: 'quest' });
       return OK;
     }),
 
@@ -314,6 +354,13 @@ const system = defineSystem<TutorialState, TutorialView>({
               lines: modLines(STYLES[id]),
               current: ctx.read(styles).style === id,
             }))
+          : [],
+      spells:
+        step?.choice === 'spell'
+          ? TUTORIAL_SPELLS.map((word) => {
+              const spec = composeArcane([word]);
+              return { word, name: spec?.name ?? word, icon: spec?.icon ?? '', lines: spec ? specLines(spec) : [] };
+            })
           : [],
     };
   },

@@ -52,10 +52,21 @@ import statuses, {
   stripStatuses,
 } from '../statuses';
 import { counterEfficiency, OTHERS_POWER } from './counter';
-import { leadingElement, schoolOf, sourceIssue, specForSource, undoWorking, workingSignature } from './spec';
+import { leadingElement, schoolOf, sourceIssue, specForSource, undoWorking, workingSignature, type SchoolReads } from './spec';
 import type { CraftedSpell, SpellSource, SpellSpec, SpellStrike } from './types';
 import spellcraft from './index';
-import { GRIMOIRE_PREFIX, noteCasting, noteMiracle, refute, sealed, spellCast, strikeLanded, type SpellcraftReads } from './state';
+import {
+  GRIMOIRE_PREFIX,
+  heldSpell,
+  noteCasting,
+  noteMiracle,
+  refute,
+  sealed,
+  spellCast,
+  spellPractised,
+  strikeLanded,
+  type SpellcraftReads,
+} from './state';
 
 type Foe = DeepReadonly<Enemy>;
 
@@ -240,12 +251,23 @@ export function spellOfId(state: SpellcraftReads, id: string): DeepReadonly<Craf
 }
 
 /**
- * The spell as it reads in the caster's hands. The old `resolveSpellFor`
- * read word levels and the gear bias here; both belong to step 3, so this is
- * the bare reading with the player's name for it.
+ * The bare reading of a book entry, with the player's name for it: what the
+ * grimoire lists. The old `resolveSpell`.
  */
 export function resolveSpell(spell: DeepReadonly<CraftedSpell>): SpellSpec {
   const spec = specForSource(spell.source as SpellSource);
+  return spell.name ? { ...spec, name: spell.name } : spec;
+}
+
+/**
+ * The spell as it reads in the caster's hands: the school's `reading` (the
+ * arcane word levels), else the bare reading. Not cached. The old
+ * `resolveSpellFor`.
+ */
+export function resolveSpellFor(reads: SchoolReads, spell: DeepReadonly<CraftedSpell>): SpellSpec {
+  const source = spell.source as SpellSource;
+  const spec = schoolOf(source.school)?.reading?.(reads, source);
+  if (!spec) return resolveSpell(spell);
   return spell.name ? { ...spec, name: spell.name } : spec;
 }
 
@@ -288,20 +310,30 @@ const announce = (ctx: ActionCtx, id: string, spec: SpellSpec): void =>
     ...(spec.deity ? { deity: spec.deity } : {}),
   });
 
+/**
+ * Saying a sentence is how its words are worn in: a grimoire working that
+ * paid its cast XP tells the schools. The old `grantCastWordXp` call sites.
+ */
+function practised(ctx: ActionCtx, id: string): void {
+  if (id.startsWith(GRIMOIRE_PREFIX)) ctx.emit(spellPractised, { id });
+}
+
 /** What casting on yourself teaches, whether or not anything survived to land. */
-function selfCastXp(ctx: ActionCtx, spec: SpellSpec): void {
+function selfCastXp(ctx: ActionCtx, id: string, spec: SpellSpec): void {
   ctx.emit(grantAttrXp, { attr: 'int', amount: 2 });
   const tags = ['magic', spec.school];
   ctx.emit(checkDiscovery, { tags });
   ctx.emit(grantSkillXp, { tags, amount: 3 });
+  practised(ctx, id);
 }
 
 /** What an offensive cast teaches. */
-function attackCastXp(ctx: ActionCtx, spec: SpellSpec): void {
+function attackCastXp(ctx: ActionCtx, id: string, spec: SpellSpec): void {
   ctx.emit(grantAttrXp, { attr: 'int', amount: 3 });
   const tags = ['combat', 'magic', spec.school];
   ctx.emit(checkDiscovery, { tags });
   ctx.emit(grantSkillXp, { tags, amount: 4 });
+  practised(ctx, id);
 }
 
 /**
@@ -323,7 +355,7 @@ export function castCraftedSelf(ctx: ActionCtx, id: string, spec: SpellSpec, pre
     if (answer.fatal || !openFight(ctx)) return;
     if (answer.remaining <= 0) {
       feed(ctx, `↩️ ${spec.name} is fully undone by the enemy's counterspell.`);
-      selfCastXp(ctx, spec);
+      selfCastXp(ctx, id, spec);
       return;
     }
     if (answer.remaining < 1) spec = undoWorking(spec, answer.remaining);
@@ -354,7 +386,7 @@ export function castCraftedSelf(ctx: ActionCtx, id: string, spec: SpellSpec, pre
       if (!alive(ctx)) return;
     }
   }
-  if (!prepaid) selfCastXp(ctx, spec);
+  if (!prepaid) selfCastXp(ctx, id, spec);
 }
 
 /**
@@ -393,7 +425,7 @@ export function castCraftedAttack(ctx: ActionCtx, id: string, spec: SpellSpec, a
     if (answer.fatal || !openFight(ctx)) return;
     if (answer.remaining <= 0) {
       feed(ctx, `↩️ ${spec.name} comes apart before it can land.`);
-      attackCastXp(ctx, spec);
+      attackCastXp(ctx, id, spec);
       return;
     }
     if (answer.remaining < 1) spec = undoWorking(spec, answer.remaining);
@@ -581,7 +613,7 @@ export function castCraftedAttack(ctx: ActionCtx, id: string, spec: SpellSpec, a
   if (ctx.request(retaliateAttack, undefined)) return;
 
   // A spring's payload was trained by the spring that carried it.
-  if (!spring) attackCastXp(ctx, spec);
+  if (!spring) attackCastXp(ctx, id, spec);
 }
 
 // ---- anti-magic: counterspells ----
@@ -616,7 +648,9 @@ function pickCounterspell(ctx: ActionCtx): ArmedCounterspell | null {
     if (!spell?.prepared) continue;
     if ((c.cooldowns[id] ?? 0) > 0) continue;
     if (sealed(ctx, id)) continue;
-    const spec = resolveSpell(spell);
+    // A working being held for a blade's opening is not also an undoing.
+    if (heldSpell(ctx) === spell.uid) continue;
+    const spec = resolveSpellFor(ctx, spell);
     if (!spec.counter) continue;
     // A rattled head cannot hold a spell together, an undoing included.
     if (statusBlocks(mine(ctx), 'spell')) continue;
@@ -690,6 +724,7 @@ function springCounterspell(ctx: ActionCtx, armed: ArmedCounterspell, caster: Fo
   const tags = ['combat', 'magic', spec.school];
   ctx.emit(checkDiscovery, { tags });
   ctx.emit(grantSkillXp, { tags, amount: 4 });
+  practised(ctx, id);
 
   // Whatever else the sentence carries goes off with it, at the caster.
   const payload = counterPayload(spec);
@@ -804,9 +839,12 @@ registerPlayerAction(GRIMOIRE_PREFIX, {
     // Only spells still prepared count: a stale uid in the rotation is inert.
     if (!spell?.prepared) return null;
     if (sealed(ctx, id)) return `${resolveSpell(spell).name} is sealed for this fight`;
+    // A working being held does not also go off by itself.
+    if (heldSpell(ctx) === spell.uid) return null;
     const issue = sourceIssue(spell.source as SpellSource);
     if (issue) return issue;
-    const spec = resolveSpell(spell);
+    // Read in the caster's hands: the one place combat reads a crafted spell.
+    const spec = resolveSpellFor(ctx, spell);
     // A counterspell is a trap: somebody else's casting springs it.
     if (spec.counter) return null;
     // Offensive spells swing on the action bar; wards, mendings and whatever

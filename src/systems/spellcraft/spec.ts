@@ -6,6 +6,7 @@
  * A school is registered by the system that owns it, at module load. This
  * file imports no school, so a new school edits no file in this folder.
  */
+import type { DeepReadonly, SystemDef } from '../../kernel';
 import type { StatusApplication } from '../statuses';
 import type { DamageType } from '../stats';
 import type { SpellSchool, SpellSource, SpellSpec } from './types';
@@ -20,6 +21,17 @@ export interface SchoolKind<S extends SpellSource = SpellSource> {
   spec(source: S): SpellSpec | null;
   /** The standing between two deities, for miracle synergy. */
   relation?(a: string, b: string): DeityRelation;
+  /**
+   * The source as this speaker reads it, or null for the bare reading. Not
+   * cached: it reads state (the arcane word levels). The school's case of
+   * the old `resolveSpellFor`.
+   */
+  reading?(reads: SchoolReads, source: S): SpellSpec | null;
+}
+
+/** What a school's contextual reading may look at: other systems' slices. */
+export interface SchoolReads {
+  read<T>(system: SystemDef<T, any>): DeepReadonly<T>;
 }
 
 const SCHOOLS = new Map<string, SchoolKind>();

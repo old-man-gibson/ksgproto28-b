@@ -17,8 +17,16 @@
  *   `combat/heal-enemy`.
  * - `castCraftedAttack(state, bus, id, spec)` is called with a context from
  *   `run`. Events it emits are delivered when the handler returns.
- * - The book is written by the test helper `inscribe`; nothing in the game
- *   writes it yet.
+ * - The book is written by the test helper `inscribe` where the old case
+ *   wrote it directly. `inscribeArcane(state, bus, words)` is the command
+ *   `arcane/inscribe` (`scribe` below: true when it ran);
+ *   `setPrepared`, `forgetSpell` are `spellcraft/*` commands;
+ *   `checkSentence(state, words)` and `resolveSpellFor(state, spell)` take
+ *   the reads of a kernel (`reads`); `grantCastWordXp(state, bus, uid)` is
+ *   the event `spellcraft/practised`; `grantWordXp` is the amount
+ *   `wordXpFor` paid through `skills/grant-xp-direct`.
+ * - `mage(g)` writes the skills, attributes and word latches of the old
+ *   helper through `patch`.
  * - `g.moveSkill(id, -1)` is `combat/set-rotation` with the order moved by one.
  * - `statsFromAttrs` is `monsterStatsFromAttrs` of `src/systems/stats`.
  * - `DEITY_TAG_CATEGORIES` is a list of ids here. `PANTHEONS` is empty in the
@@ -31,10 +39,6 @@
  * the goblin firetongue: ranged, and a rotation of workings only.
  *
  * Left as `it.todo`, under the old `describe` name:
- * - step 3, arcane: `checkSentence` and all legality, word mastery, word
- *   skills and word XP, inscription.
- * - step 3, spellcraft: writing the book (`inscribeArcane`, `setPrepared`,
- *   `preparedCap`), the reading in the caster's hands (`resolveSpellFor`).
  * - step 3, divine: favour, `learnMiracle`, the veto at preparation, the
  *   pantheon shelf (`queryDeities`, `deityGroups`, `pantheonOf`).
  * - step 3, psionic: the whole `describe('psionic shaping')` and the psionic
@@ -43,7 +47,7 @@
  *
  * A case that mixed a ported part with a part not ported is split: the
  * ported part keeps the old name, the rest is an `it.todo` with the old name
- * and what it waits for. Split cases: "deep words are earned", "a capped
+ * and what it waits for. Split cases: "a capped
  * condition says it is one dose from turning" (the tooltip line), "all three
  * schools reach the player through one path" and "every rotation entry
  * resolves" (the psionic entries).
@@ -53,9 +57,16 @@ import { PLAYER, type Kernel } from '../src/kernel';
 import {
   ARCANE_WORDS,
   INTENSITY_FLOOR,
+  WORD_MILESTONE_LEVELS,
   WORD_POWER_PER_LEVEL,
+  checkSentence,
   composeArcane,
+  inscribe as inscribeArcane,
+  maxSentenceWords,
   parseSentence,
+  wordSkillId,
+  wordTag,
+  wordXpFor,
 } from '../src/systems/arcane';
 import type { AttributesState } from '../src/systems/attributes';
 import { totalTicksOf, type ClockState } from '../src/systems/clock';
@@ -64,11 +75,21 @@ import { DEITIES, DEITY_TAGS, DEITY_TAG_CATEGORIES, MIRACLE_LIST, deityRelation,
 import { TECHNIQUES } from '../src/systems/martial';
 import { MONSTERS } from '../src/systems/monsters';
 import type { ResourcesState } from '../src/systems/resources';
+import { SKILLS, grantSkillXpDirect, skillXpNeeded, type SkillsState } from '../src/systems/skills';
 import {
+  BASE_PREPARED,
   castCraftedAttack,
+  castUtility,
+  isUtilityWorking,
+  forgetSpell,
+  preparedCap,
+  preparedSpells,
   resolveSpell,
+  resolveSpellFor,
+  setPrepared,
   specForSource,
   spellKey,
+  spellPractised,
   type SpellcraftState,
 } from '../src/systems/spellcraft';
 import { monsterStatsFromAttrs } from '../src/systems/stats';
@@ -106,9 +127,31 @@ import {
   setPool,
   stage,
 } from './combatHelpers';
-import { ask, makeGame, patch, run, setMods, slice } from './helpers';
+import { ask, emit, makeGame, patch, reads, run, setMods, slice } from './helpers';
 
 const fresh = (seed = 1): Kernel => makeGame({ seed });
+
+/** A mage competent enough that gating never gets in a test's way: Arcana, INT and WIS 20, the whole lexicon. */
+function mage(g: Kernel, level = 12): void {
+  patch(g, (slices) => {
+    slices.skills.skills.arcana = { level, xp: 0 };
+    slices.attributes.attrs.int.level = 20;
+    slices.attributes.attrs.wis.level = 20;
+    // The whole lexicon, not the starter eleven.
+    for (const id of Object.keys(ARCANE_WORDS)) slices.counters.counts[`flag:word:${id}`] = 1;
+  });
+}
+
+/** The old `inscribeArcane`: true when the table took the sentence. */
+const scribe = (g: Kernel, words: string[]): boolean => g.dispatch(inscribeArcane({ words })).ok;
+const book = (g: Kernel) => slice<SpellcraftState>(g, 'spellcraft').grimoire;
+const lastSpell = (g: Kernel) => book(g)[book(g).length - 1];
+const skillsOf = (g: Kernel) => slice<SkillsState>(g, 'skills').skills;
+const setSkill = (g: Kernel, id: string, level: number) =>
+  patch(g, (slices) => {
+    slices.skills.skills[id] = { level, xp: 0 };
+  });
+const prepare = (g: Kernel, uid: number, on = true): boolean => g.dispatch(setPrepared({ uid, prepared: on })).ok;
 
 const held = (g: Kernel, who: string = PLAYER) => heldOf(slice<StatusesState>(g, 'statuses'), who) as StatusInstance[];
 const find = (g: Kernel, id: string, who: string = PLAYER) => findStatus(held(g, who), id);
@@ -244,17 +287,31 @@ describe('arcane syntax', () => {
     expect(spoken.name).toBe('Fire Me Me');
   });
 
-  // The composer half of the old case. The mastery half is the todo below.
   it('deep words are earned: spoken enough, flame becomes a word of its own', () => {
+    const g = fresh();
+    mage(g);
+    // Unearned, the deep form refuses to be spoken directly.
+    expect(checkSentence(reads(g), ['fire:2', 'pierce']).reason).toMatch(/earned/);
+    // Mastery counts DISTINCT sentences: inscribing and forgetting the same
+    // one forever teaches nothing.
+    for (let i = 0; i < 10; i++) {
+      if (scribe(g, ['fire', 'fly'])) g.dispatch(forgetSpell({ uid: lastSpell(g).uid }));
+    }
+    expect(checkSentence(reads(g), ['fire:2', 'pierce']).reason).toMatch(/earned/);
+    // Five genuinely different workings, though, earn the flame.
+    for (const words of [['fire'], ['pierce', 'fire'], ['fire', 'quickly'], ['fly', 'fire']]) {
+      scribe(g, words);
+    }
+    expect(checkSentence(reads(g), ['fire:2', 'pierce']).ok).toBe(true);
     // One slot, but exactly the spell that saying it twice makes.
     expect(composeArcane(['fire:2', 'pierce'])).toEqual(composeArcane(['fire', 'fire', 'pierce']));
+    // The grimoire knows they are one spell.
+    expect(scribe(g, ['fire', 'fire', 'pierce'])).toBe(true);
+    expect(scribe(g, ['fire:2', 'pierce'])).toBe(false);
     // A mastered flame deepens with a plain fire — and two flames are a fourth.
     expect(composeArcane(['fire:2', 'fire'])!.name).toBe('Blaze');
     expect(composeArcane(['fire:2', 'fire:2'])).toBeNull();
   });
-  it.todo(
-    'deep words are earned: spoken enough, flame becomes a word of its own (step 3: arcane: checkSentence, word mastery over distinct sentences, inscribeArcane refusing the collapsed form)',
-  );
 
   it('"then" chains clauses: inherited opening, earned follow-through, no breadth tax', () => {
     const linked = composeArcane(['fire', 'pierce', 'then', 'ice', 'fly'])!;
@@ -685,16 +742,48 @@ describe('arcane syntax', () => {
     expect(composeArcane(['slowly', 'me'])).toBeNull();
   });
 
-  it.todo(
-    'checkSentence gates on the mage, not the grammar (step 3: arcane: checkSentence, maxSentenceWords, word unlocks, minLevel)',
-  );
+  it('checkSentence gates on the mage, not the grammar', () => {
+    const g = fresh();
+    // Level 0: three words at most, and no high words.
+    expect(maxSentenceWords(0)).toBe(3);
+    expect(checkSentence(reads(g), ['fire', 'pierce', 'ice', 'fly']).reason).toBe('Word limit is 3 (Arcana 0)');
+    // An unlearned word reads as UNKNOWN before any level talk: the starter
+    // lexicon sits in front of the minLevel gate on purpose.
+    expect(checkSentence(reads(g), ['zero']).reason).toBe('Unknown word: "zero"');
+    patch(g, (slices) => {
+      slices.counters.counts['flag:word:zero'] = 1;
+    });
+    expect(checkSentence(reads(g), ['zero']).reason).toMatch(/Arcana 10/);
+    expect(checkSentence(reads(g), ['fire', 'pierce']).ok).toBe(true);
+    mage(g);
+    expect(checkSentence(reads(g), ['zero']).ok).toBe(true);
+  });
 });
 
 // ---------- The grimoire ----------
 
 describe('the grimoire', () => {
-  it.todo('inscribes a sentence once, and refuses the exact recomposition (step 3: spellcraft: inscribeArcane, addSpell)');
-  it.todo('inscription manifests and pays the Arcana skill (step 3: arcane: inscribeArcane and its skill XP)');
+  it('inscribes a sentence once, and refuses the exact recomposition', () => {
+    const g = fresh();
+    mage(g);
+    expect(scribe(g, ['fire', 'pierce'])).toBe(true);
+    expect(book(g)).toHaveLength(1);
+    expect(scribe(g, ['fire', 'pierce'])).toBe(false);
+    // Different order is a different spell — that is the whole point.
+    expect(scribe(g, ['pierce', 'fire'])).toBe(true);
+    expect(book(g)).toHaveLength(2);
+  });
+
+  it('inscription manifests and pays the Arcana skill', () => {
+    const g = fresh();
+    patch(g, (slices) => {
+      slices.attributes.attrs.int.level = 15; // over the unlock bar; skill not yet manifested
+    });
+    expect(skillsOf(g).arcana).toBeUndefined();
+    scribe(g, ['fire', 'pierce']);
+    expect(skillsOf(g).arcana).toBeDefined();
+    expect(skillsOf(g).arcana.xp > 0 || skillsOf(g).arcana.level > 0).toBe(true);
+  });
 
   // The book is written by the test helper; the assertions are about the resolution.
   it('a spell resolves to the same spec as its sentence, under any given name', () => {
@@ -711,9 +800,86 @@ describe('the grimoire', () => {
     expect(renamed.strikes).toEqual(spec.strikes);
   });
 
-  it.todo('holds at most the prepared cap (step 3: spellcraft: setPrepared, BASE_PREPARED)');
-  it.todo('every twenty levels of a school buys another page (step 3: spellcraft: preparedCap)');
-  it.todo('a wider mind holds the spell the base cap refused (step 3: spellcraft: setPrepared, preparedCap)');
+  it('holds at most the prepared cap', () => {
+    const g = fresh();
+    mage(g);
+    const sentences = [['fire'], ['ice'], ['spark'], ['water']];
+    const uids = sentences.map((words) => {
+      scribe(g, words);
+      return lastSpell(g).uid;
+    });
+    for (const uid of uids.slice(0, BASE_PREPARED)) expect(prepare(g, uid)).toBe(true);
+    expect(prepare(g, uids[BASE_PREPARED])).toBe(false);
+    expect(preparedSpells(slice<SpellcraftState>(g, 'spellcraft'))).toHaveLength(BASE_PREPARED);
+  });
+
+  it('every twenty levels of a school buys another page', () => {
+    const g = fresh();
+    expect(preparedCap(reads(g))).toBe(BASE_PREPARED);
+    setSkill(g, 'arcana', 19);
+    expect(preparedCap(reads(g))).toBe(BASE_PREPARED);
+    setSkill(g, 'arcana', 40);
+    expect(preparedCap(reads(g))).toBe(BASE_PREPARED + 2);
+    // Each school counts on its own — a page earned anywhere is spendable
+    // anywhere — but the shared `magic` parent behind them never counts.
+    setSkill(g, 'devotion', 20);
+    setSkill(g, 'psionics', 20);
+    setSkill(g, 'magic', 60);
+    expect(preparedCap(reads(g))).toBe(BASE_PREPARED + 4);
+  });
+
+  it('a wider mind holds the spell the base cap refused', () => {
+    const g = fresh();
+    mage(g);
+    const uids = [['fire'], ['ice'], ['spark'], ['water']].map((words) => {
+      scribe(g, words);
+      return lastSpell(g).uid;
+    });
+    for (const uid of uids.slice(0, BASE_PREPARED)) prepare(g, uid);
+    expect(prepare(g, uids[BASE_PREPARED])).toBe(false);
+    setSkill(g, 'devotion', 20);
+    expect(prepare(g, uids[BASE_PREPARED])).toBe(true);
+  });
+
+  // New (step 3): the pantheon's veto at preparation, with the book written
+  // by the helper (learning a miracle is the divine port).
+  it('a miracle of a deity hostile to a prepared one refuses the page', () => {
+    const g = fresh();
+    inscribe(g, { school: 'divine', litany: 'litany_retribution' }, { prepared: false });
+    inscribe(g, { school: 'divine', litany: 'vermin_swarm' }, { prepared: false });
+    const [denjalle, goblinHunt] = book(g);
+    expect(deityRelation('denjalle', 'goblin_hunt')).toBe('hostile');
+    expect(prepare(g, denjalle.uid)).toBe(true);
+    const result = g.dispatch(setPrepared({ uid: goblinHunt.uid, prepared: true }));
+    expect(result.ok).toBe(false);
+    expect(result.ok ? '' : result.reason).toMatch(/refuses to share a page/);
+    // Standing one down lets the other on.
+    expect(prepare(g, denjalle.uid, false)).toBe(true);
+    expect(prepare(g, goblinHunt.uid)).toBe(true);
+  });
+
+  // New (step 3): casting outside a fight, on an arcane mending.
+  it('a mending can be cast with nobody to fight; a strike cannot', () => {
+    const g = fresh();
+    mage(g);
+    scribe(g, ['water', 'mend']);
+    const mend = lastSpell(g);
+    scribe(g, ['fire', 'pierce']);
+    const strike = lastSpell(g);
+    setPool(g, 'mana', 20);
+    setHp(g, 5);
+    const spec = resolveSpellFor(reads(g), mend);
+    expect(g.dispatch(castUtility({ uid: mend.uid })).ok).toBe(true);
+    expect(mana(g)).toBeCloseTo(20 - spec.manaCost * playerStats(g).manaEff, 5);
+    expect(slice<ResourcesState>(g, 'resources').values.hp).toBeGreaterThan(5);
+    // On the clock now, the clock consumables use in the old build.
+    const again = g.dispatch(castUtility({ uid: mend.uid }));
+    expect(again.ok ? '' : again.reason).toMatch(/on cooldown/);
+    const refused = g.dispatch(castUtility({ uid: strike.uid }));
+    expect(refused.ok ? '' : refused.reason).toBe('Fire Pierce needs a target');
+    // A ward is a buff, not a grant: the old `isUtilityWorking` reads grants and heals only.
+    expect(isUtilityWorking(composeArcane(['ice', 'ward'])!)).toBe(false);
+  });
 });
 
 // ---------- Divine ----------
@@ -759,7 +925,7 @@ describe('the pantheon', () => {
   });
 
   it.todo(
-    'hostile deities refuse to share a prepared page — unless dogma is defied (step 3: divine: learnMiracle, the deity conflict at preparation, a title that defies dogma)',
+    'hostile deities refuse to share a prepared page — unless dogma is defied (step 3: divine: learnMiracle; titles: the title that defies dogma. The veto itself is ported and tested in "the grimoire")',
   );
 });
 
@@ -1434,7 +1600,15 @@ describe('casting in combat', () => {
 // ---------- Skilling the vocabulary ----------
 
 describe('word skills', () => {
-  it.todo('every word has one, parented to Arcana, tagged only to itself (step 3: arcane: word skills)');
+  it('every word has one, parented to Arcana, tagged only to itself', () => {
+    for (const w of Object.values(ARCANE_WORDS)) {
+      const skill = SKILLS[wordSkillId(w.id)];
+      expect(skill, `${w.id} has no word skill`).toBeDefined();
+      expect(skill.parent).toBe('arcana');
+      // Saying "fire" must never teach "ice": one tag, its own.
+      expect(skill.tags).toEqual([wordTag(w.id)]);
+    }
+  });
 
   it('practice makes a word heavier — and only that word', () => {
     const bare = composeArcane(['fire', 'crush'])!;
@@ -1456,8 +1630,58 @@ describe('word skills', () => {
     );
   });
 
-  it.todo('the grimoire lists the BARE reading; the caster reads their own (step 3: spellcraft: resolveSpellFor reading word levels)');
-  it.todo('inscribing practises nothing; only a cast wears a word in (step 3: arcane: inscribeArcane, grantCastWordXp)');
-  it.todo('a costly sentence teaches more, but logarithmically (step 3: arcane: grantWordXp)');
-  it.todo('milestones give back the word’s own nature (step 3: arcane: word skill milestones)');
+  it('the grimoire lists the BARE reading; the caster reads their own', () => {
+    const g = fresh();
+    mage(g);
+    scribe(g, ['fire', 'crush']);
+    const bare = resolveSpell(lastSpell(g)).strikes[0].power;
+    setSkill(g, wordSkillId('fire'), 30);
+    // The cache still holds the sentence as the grammar has it…
+    expect(resolveSpell(lastSpell(g)).strikes[0].power).toBeCloseTo(bare, 5);
+    // …while the speaker's own reading counts what they know.
+    expect(resolveSpellFor(reads(g), lastSpell(g)).strikes[0].power).toBeGreaterThan(bare);
+  });
+
+  it('inscribing practises nothing; only a cast wears a word in', () => {
+    const g = fresh();
+    mage(g);
+    const before = { ...skillsOf(g) };
+    scribe(g, ['fire', 'crush']);
+    // The grammar learned something; the words did not — nobody spoke them.
+    expect(skillsOf(g)[wordSkillId('fire')]).toBeUndefined();
+    expect(skillsOf(g)[wordSkillId('crush')]).toBeUndefined();
+    expect(skillsOf(g).arcana?.xp ?? 0).toBeGreaterThanOrEqual(before.arcana?.xp ?? 0);
+    emit(g, spellPractised, { id: `grimoire:${lastSpell(g).uid}` });
+    expect(skillsOf(g)[wordSkillId('fire')]?.xp ?? 0).toBeGreaterThan(0);
+    expect(skillsOf(g)[wordSkillId('crush')]?.xp ?? 0).toBeGreaterThan(0);
+  });
+
+  it('a costly sentence teaches more, but logarithmically', () => {
+    const xpFor = (mana: number) => {
+      const g = fresh();
+      setSkill(g, 'magic', 1);
+      setSkill(g, 'arcana', 1);
+      setSkill(g, wordSkillId('fire'), 1);
+      // The old `grantWordXp(state, bus, ['fire'], mana)`: the amount, paid to the one word skill.
+      emit(g, grantSkillXpDirect, { skillId: wordSkillId('fire'), amount: wordXpFor(mana) });
+      // Total practice, not the residue in the current level.
+      const sk = skillsOf(g)[wordSkillId('fire')];
+      let total = sk.xp;
+      for (let l = 1; l < sk.level; l++) total += skillXpNeeded(wordSkillId('fire'), l);
+      return total;
+    };
+    const cheap = xpFor(4);
+    const dear = xpFor(80);
+    expect(dear).toBeGreaterThan(cheap);
+    // Twenty times the cost is worth far less than twenty times the practice.
+    expect(dear).toBeLessThan(cheap * 4);
+  });
+
+  it('milestones give back the word\u2019s own nature', () => {
+    const lightning = SKILLS[wordSkillId('spark')];
+    expect(lightning.milestones?.length).toBe(WORD_MILESTONE_LEVELS.length);
+    expect(lightning.milestones![0].bonus[0].stat).toBe('speed');
+    expect(SKILLS[wordSkillId('stone')].milestones![0].bonus[0].stat).toBe('armor');
+    expect(SKILLS[wordSkillId('gust')].milestones![0].bonus[0].stat).toBe('dodge');
+  });
 });

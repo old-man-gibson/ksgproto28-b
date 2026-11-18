@@ -1270,11 +1270,26 @@ export function playerPosition(state: DeepReadonly<CombatState>): string {
   return state.fight?.position ?? NEUTRAL_POSITION;
 }
 
+/**
+ * Told of every change of the player's position, inside the handler that
+ * moved the player, with the combat context: the old `setPosition` dropped
+ * a readied working when the player left its seat. Registered at module load
+ * by the system that owns what a position holds (martial).
+ */
+export type PositionWatch = (ctx: ActionCtx, from: string, to: string) => void;
+const POSITION_WATCHES: PositionWatch[] = [];
+
+export function registerPositionWatch(watch: PositionWatch): void {
+  POSITION_WATCHES.push(watch);
+}
+
 /** Where the player stands. The one place the position changes, so the source that states it is touched. The old `setPosition`. */
 export function setPlayerPosition(ctx: C, c: Fight, next: string): void {
   if (c.position === next) return;
+  const from = c.position;
   c.position = next;
   ctx.touch(POSITION_SOURCE, PLAYER);
+  for (const watch of POSITION_WATCHES) watch(ctx as ActionCtx, from, next);
 }
 
 /** Add a buff on the player for the fight. The old `c.buffs.push`. */

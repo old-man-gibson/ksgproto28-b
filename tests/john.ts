@@ -16,9 +16,11 @@
  * Floor 2's tutor teaches John Gather and Lunge (`martial/learn-technique`,
  * the old `learnFromTeacher`), since the martial port.
  *
+ * A rack pick plays the floor 0 tutorial: the stance as the old John did,
+ * and the spell (`tutorial/choose-spell`) at the Field, since the arcane
+ * port.
+ *
  * Differences from the old driver, each from a port not done yet:
- * - A rack pick plays the floor 0 tutorial without the spell step (arcane,
- *   step 3). The stance step is played as the old John did.
  * - Runs 2 and 3 (floors 7 to 20) are step 4. `through` stops at 6; the
  *   climb ends with the first prestige.
  *
@@ -35,7 +37,7 @@ import prestige, { buyBoon, leaveReview, prestigeNow } from '../src/systems/pres
 import resources from '../src/systems/resources';
 import { statOf } from '../src/systems/stats';
 import { learnFromTeacher, lessonsOf } from '../src/systems/martial';
-import { chooseStance, chooseWeapon, skipTutorial } from '../src/systems/tutorial';
+import { chooseSpell, chooseStance, chooseWeapon, skipTutorial } from '../src/systems/tutorial';
 import world, { climb, selectActivity, SPOTS, travelTo, type WorldState } from '../src/systems/world';
 import { makeGame, run } from './helpers';
 
@@ -74,6 +76,8 @@ export interface ClimbOptions {
   seed: number;
   /** A rack pick, or 'skip' for Skip tutorial (rusty sword in the pack, no stance, no spell). */
   weapon: string;
+  /** The floor 0 one-word spell: 'fire', 'ice' or 'spark'. Default 'fire'. Unused on 'skip'. */
+  spell?: string;
   attentive?: boolean;
   /** Give up after this many ticks of play. Default two hours. */
   budget?: number;
@@ -117,6 +121,7 @@ export function runJohn(options: ClimbOptions): ClimbReport {
   const through = options.through ?? 3;
   const opts: Required<ClimbOptions> = {
     attentive: false,
+    spell: 'fire',
     budget: 2 * 3600 * TPS,
     prestige: through >= 6,
     stopWhen: () => false,
@@ -261,6 +266,7 @@ export function runJohn(options: ClimbOptions): ClimbReport {
     walk('f0_cellblock');
     persist('f0_cellblock', 'hunt', () => stat('fights:f0_cellblock') >= (SPOTS.f0_cellblock.fightLimit ?? 1));
     walk('f0_field');
+    send(chooseSpell({ word: opts.spell }));
     persist('f0_field', 'hunt', () => stat('fights:f0_field') >= (SPOTS.f0_field.fightLimit ?? 1));
     walk('f0_gate');
     walk('ascent_foot');

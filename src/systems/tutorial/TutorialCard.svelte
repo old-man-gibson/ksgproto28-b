@@ -1,7 +1,7 @@
 <script lang="ts">
   import Button from '../../ui/components/Button.svelte';
   import { send, viewOf } from '../../ui/game.svelte';
-  import tutorial, { chooseStance, chooseWeapon, skipTutorial } from './index';
+  import tutorial, { chooseSpell, chooseStance, chooseWeapon, skipTutorial } from './index';
 
   // The floor 0 card, above every panel while the tutorial runs: the step,
   // the weapon rack while it is open, and the skip on the first step. The
@@ -39,6 +39,18 @@
               <Button onclick={() => send(chooseStance({ style: st.id }))}>{st.icon} {st.name}</Button>
               <ul class="lines dim">
                 {#each st.lines as line (line)}<li>{line}</li>{:else}<li>No modifiers</li>{/each}
+              </ul>
+            </div>
+          {/each}
+        </div>
+      {/if}
+      {#if view.spells.length > 0}
+        <div class="stances">
+          {#each view.spells as sp (sp.word)}
+            <div class="stance">
+              <Button onclick={() => send(chooseSpell({ word: sp.word }))}>{sp.icon} {sp.name}</Button>
+              <ul class="lines dim">
+                {#each sp.lines as line (line)}<li>{line}</li>{/each}
               </ul>
             </div>
           {/each}

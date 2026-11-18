@@ -24,10 +24,9 @@
  *   school is step 3, so the case that needs the slime to cast gives it an
  *   arcane sentence through its kit.
  *
- * Left as `it.todo`: nothing. Two assertions inside ported cases have no
- * counterpart yet and are marked where they stood:
- * - `isUtilityWorking` (step 3: spellcraft: casting outside a fight).
- * - `readyableSpell` (step 3: martial: the readied spell of the seat).
+ * Left as `it.todo`: nothing. `isUtilityWorking` and `readyableSpell` came
+ * with the arcane port (step 3); `readyableSpell(state, stats)` takes a
+ * context and a stat block.
  * Not in the old file and not here: the refuting body, the legality of a
  * sentence, the writing side of the book, the rotation screen's picker.
  */
@@ -53,6 +52,7 @@ import {
   castCraftedAttack,
   castMonsterWorking,
   counterEfficiency,
+  isUtilityWorking,
   MATCH_FIRST,
   matchCeiling,
   specForSource,
@@ -63,6 +63,8 @@ import {
   type SpellcraftState,
   type SpellSource,
 } from '../src/systems/spellcraft';
+import { readyableSpell } from '../src/systems/martial';
+import { statBlockOf } from '../src/systems/stats';
 import { applyStatus, heldOf, type StatusesState } from '../src/systems/statuses';
 import { combat, combatOf, feedOf, hardenFoes, inscribe, patchFight, playerStats, setHp, setPool, stage } from './combatHelpers';
 import { ask, makeGame, patch, run, setMods, slice } from './helpers';
@@ -78,8 +80,7 @@ describe('undo — a counterspell as the grammar composes it', () => {
     expect(spec.counter).toEqual({ tiers: 1, tuning: {}, burn: 1 });
     expect(spec.strikes).toEqual([]);
     expect(spec.heal).toBeUndefined();
-    // The old case also read `isUtilityWorking(spec)` as false. Casting
-    // outside a fight is step 3 (spellcraft); the function is not ported.
+    expect(isUtilityWorking(spec)).toBe(false);
   });
 
   it('deepening buys efficiency: 20%, 27.5%, 35%', () => {
@@ -315,8 +316,7 @@ describe('the trap: a prepared counterspell springs inside an enemy casting', ()
     expect(withCombatCtx(g, (ctx) => activeRotation(ctx as never, ctx.state.rotation))).toContain(trap.id);
     expect(withCombatCtx(g, (ctx) => pickActive(ctx as never, 'attack')?.id ?? '')).not.toMatch(/^grimoire:/);
     expect(withCombatCtx(g, (ctx) => pickActive(ctx as never, 'buff')?.id ?? '')).not.toMatch(/^grimoire:/);
-    // The old case also read `readyableSpell` as null. The readied spell of
-    // the seat is step 3 (martial); the function is not ported.
+    expect(withCombatCtx(g, (ctx) => readyableSpell(ctx as never, statBlockOf(ctx as never)))).toBeNull();
   });
 
   it('an enemy casting springs it: paid, clocked, the caster burned, the working thinned', () => {

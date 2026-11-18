@@ -188,6 +188,19 @@
     ]
   },
   {
+    "id": "lectory_wizard",
+    "name": "Docent Marell",
+    "icon": "🧙",
+    "spotId": "the_reading_hall",
+    "quests": [],
+    "desc": "Docent in the Reading Hall, beside the Spell Table where spells are inscribed. Sells nothing and gives no quests.",
+    "dialogue": [
+      "The Spell Table is behind me. One spell inscribed there counts for A Taste of Everything.",
+      "The table takes no fee. A spell costs mana each time you cast it.",
+      "Read Until It Sticks trains Intelligence here. Sit With a Hard Passage trains Wisdom and pays magic skill XP."
+    ]
+  },
+  {
     "id": "militia_captain",
     "name": "Captain Hurst",
     "icon": "💂",

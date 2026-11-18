@@ -1,0 +1,7 @@
+[
+  { "id": "locked", "text": "🔒 {reason}" },
+  { "id": "utility_cast", "text": "{icon} {name}{effects}." },
+  { "id": "effects", "text": ": {list}" },
+  { "id": "prepared_cap", "text": "🔒 Prepared spell limit is {cap}." },
+  { "id": "prepare_conflict", "text": "⚡ {conflict}" }
+]

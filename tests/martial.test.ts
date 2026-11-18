@@ -34,9 +34,18 @@
  * - `recoverGroundedWeapon` runs when the fight closes (`combat/abandon`);
  * - a test teacher is written into `TEACHERS` and `NPCS`.
  *
- * Left as `it.todo`: readied spells (not ported, README "Left behind"), the
- * loadout case (UI step), the study card (consumables), old save migrations
- * (the save here starts at version 1).
+ * The arcane port ported the readied spell. More call shape changes:
+ * - `inscribeArcane` and `setPrepared` are the commands `arcane/inscribe`
+ *   and `spellcraft/set-prepared`;
+ * - `g.state.combat.readiedSpell = uid` and `releaseReadiedSpell` are the
+ *   request `martial/hold-spell`; the slice holds `readiedSpell`;
+ * - `setPosition(state, x)` is the request `combat/move-player` (the old
+ *   function that drops the held working); the helper `setPosition` below
+ *   writes the fight directly, as the old `c.position = x`;
+ * - `activeRotation(state)` takes a context and the rotation order.
+ *
+ * Left as `it.todo`: the loadout case (UI step), the study card
+ * (consumables), old save migrations (the save here starts at version 1).
  */
 import { describe, expect, it } from 'vitest';
 import type { Kernel } from '../src/kernel';
@@ -44,9 +53,11 @@ import type { AttributesState } from '../src/systems/attributes';
 import {
   abandon,
   activeRotation,
+  armInterception,
   evaluateTrigger,
   hook,
   hunt,
+  movePlayer,
   setRotation,
   setTrigger,
   TRIGGER_EVENTS,
@@ -91,6 +102,9 @@ import martial, {
   positionAllows,
   positionGraph,
   positionKnown,
+  holdSpell,
+  readyableSpell,
+  spellIsHeld,
   reachablePositions,
   recordRequest,
   repsToNextTier,
@@ -145,6 +159,9 @@ import {
   stage,
 } from './combatHelpers';
 import { ask, emit, equip, giveItem, makeGame, patch, reads, run, setMods, slice } from './helpers';
+import { inscribe as inscribeArcane } from '../src/systems/arcane';
+import { setPrepared, type SpellcraftState } from '../src/systems/spellcraft';
+import { statBlockOf } from '../src/systems/stats';
 import { MAX_MASTERY_TIER } from '../src/systems/martial';
 
 const mOf = (kernel: Kernel): MartialState => slice<MartialState>(kernel, 'martial');
@@ -1482,17 +1499,140 @@ describe('rune technique surgery', () => {
 // ---------- The spellblade seat ----------
 
 describe('readied spells', () => {
-  it.todo('offers a prepared working you can actually pay for (step 3: martial: readyableSpell)');
+  const book = (g: Kernel) => slice<SpellcraftState>(g, 'spellcraft').grimoire;
+  const readyable = (g: Kernel) => run(g, (ctx) => readyableSpell(ctx, statBlockOf(ctx)));
+  const hold = (g: Kernel, uid: number | null) => ask(g, holdSpell, { uid });
 
-  it.todo('Spell Parry gates on something actually being held (step 3: martial: readied spells in the weapon-state gate)');
+  /** A spellblade with a prepared working and mana to hold it. */
+  function spellblade(seed: number): Kernel {
+    const g = fresh(seed);
+    setLevels(g, { attrs: { int: 30 } });
+    setPool(g, 'mana', 50);
+    learn(g, 'ready_spell');
+    learn(g, 'spell_parry');
+    expect(g.dispatch(inscribeArcane({ words: ['fire', 'pierce'] })).ok).toBe(true);
+    expect(g.dispatch(setPrepared({ uid: book(g)[0].uid, prepared: true })).ok).toBe(true);
+    inCombat(g);
+    return g;
+  }
 
-  it.todo('walking out of the seat drops the working — the mana is spent either way (step 3: martial: readied spells, the spell_ready seat)');
+  it('offers a prepared working you can actually pay for', () => {
+    const g = spellblade(70);
+    expect(readyable(g)).not.toBeNull();
+    // Nothing prepared: nothing to hold.
+    patch(g, (slices) => {
+      for (const sp of (slices.spellcraft as SpellcraftState).grimoire) sp.prepared = false;
+    });
+    expect(readyable(g)).toBeNull();
+    // Prepared but unaffordable is also a no — not a refusal, just not yet.
+    patch(g, (slices) => {
+      for (const sp of (slices.spellcraft as SpellcraftState).grimoire) sp.prepared = true;
+    });
+    setPool(g, 'mana', 0);
+    expect(readyable(g)).toBeNull();
+  });
 
-  it.todo('a fight that ends takes the held working with it (step 3: martial: releaseReadiedSpell)');
+  it('Spell Parry gates on something actually being held', () => {
+    const g = spellblade(71);
+    const gate = () => run(g, (ctx) => weaponStateGate(ctx, TECHNIQUES.spell_parry));
+    expect(gate()).toBe('readied');
+    hold(g, book(g)[0].uid);
+    expect(gate()).toBeNull();
+  });
 
-  it.todo('a held working does not also cast itself through the rotation (step 3: martial: spellIsHeld)');
+  it('walking out of the seat drops the working — the mana is spent either way', () => {
+    const g = spellblade(72);
+    setPosition(g, SPELL_READY_POSITION);
+    hold(g, book(g)[0].uid);
 
-  it.todo('readying pays mana up front and seats you; the position is discoverable (step 3: martial: readyableSpell, positionKnown)');
+    // Moving within the seat keeps it.
+    ask(g, movePlayer, { to: SPELL_READY_POSITION });
+    expect(mOf(g).readiedSpell).toBe(book(g)[0].uid);
+
+    // A plain swing recovers to neutral, and the held working is simply gone.
+    ask(g, movePlayer, { to: NEUTRAL_POSITION });
+    expect(mOf(g).readiedSpell).toBeNull();
+  });
+
+  it('a fight that ends takes the held working with it', () => {
+    const g = spellblade(73);
+    hold(g, book(g)[0].uid);
+    ask(g, abandon, undefined);
+    expect(mOf(g).readiedSpell).toBeNull();
+  });
+
+  it('a held working does not also cast itself through the rotation', () => {
+    const g = spellblade(75);
+    const uid = book(g)[0].uid;
+    // Prepared, so it is in the rotation…
+    expect(run(g, (ctx) => activeRotation(ctx as never, combatOf(g).rotation))).toContain(`grimoire:${uid}`);
+    // …but while HELD it is out of it: its mana is already spent and it is
+    // being carried to deliver through an opening, not left to go off alone.
+    expect(run(g, (ctx) => spellIsHeld(ctx, uid))).toBe(false);
+    hold(g, uid);
+    expect(run(g, (ctx) => spellIsHeld(ctx, uid))).toBe(true);
+  });
+
+  it('readying pays mana up front and seats you; the position is discoverable', () => {
+    const g = spellblade(74);
+    // The seat is known because Ready Spell exits into it.
+    expect(run(g, (ctx) => positionKnown(ctx, SPELL_READY_POSITION))).toBe(true);
+    const before = slice<ResourcesState>(g, 'resources').values.mana;
+    const pick = readyable(g)!;
+    expect(pick.cost).toBeGreaterThan(0);
+    expect(before).toBeGreaterThanOrEqual(pick.cost);
+  });
+
+  // New: the seat in a hunt. Ready Spell takes the working up and pays for
+  // it; the working never outlives the seat. Spell Parry never arms: its
+  // trigger event is `onParry`, and combat asks the interception for
+  // `onHit` only, as the old `pickCounter` was asked (an old rule ported as
+  // it is, README "Old rules ported as they are").
+  it('in a hunt, Ready Spell holds the working and never outlives the seat; Spell Parry is never asked', () => {
+    const g = fresh(76);
+    setLevels(g, { attrs: { int: 30, con: 30, dex: 30 } });
+    learn(g, 'ready_spell');
+    learn(g, 'spell_parry');
+    expect(g.dispatch(inscribeArcane({ words: ['fire', 'pierce'] })).ok).toBe(true);
+    expect(g.dispatch(setPrepared({ uid: book(g)[0].uid, prepared: true })).ok).toBe(true);
+    equip(g, 1);
+    startHunt(g, 'woods_edge');
+    let readied = false;
+    let heldOutside = false;
+    for (let i = 0; i < 4000; i++) {
+      g.tick();
+      keepHunting(g, 'woods_edge');
+      if (!readied) readied = texts(g).some((t) => t.includes('is readied (mana paid now)'));
+      if (mOf(g).readiedSpell !== null && combatOf(g).fight?.position !== SPELL_READY_POSITION) heldOutside = true;
+    }
+    expect(readied).toBe(true);
+    expect(heldOutside).toBe(false);
+    expect(techniqueExecutions(mOf(g), 'ready_spell')).toBeGreaterThan(0);
+    expect(techniqueExecutions(mOf(g), 'spell_parry')).toBe(0);
+  });
+
+  // New: the delivery, asked for the event it names.
+  it('Spell Parry delivers the held working in place of the weapon, and pays for it again', () => {
+    const g = spellblade(77);
+    setPosition(g, SPELL_READY_POSITION);
+    const uid = book(g)[0].uid;
+    hold(g, uid);
+    const before = slice<ResourcesState>(g, 'resources').values.mana;
+    const fired = run(g, (ctx) => {
+      const fight = ctx.read(combat).fight!;
+      const armed = armInterception(ctx as never, fight, 'onParry');
+      if (!armed) return false;
+      armed.fire(ctx as never, fight.enemies[0]!);
+      return true;
+    });
+    expect(fired).toBe(true);
+    expect(texts(g).some((t) => t.includes('your readied spell is cast in place of the weapon strike'))).toBe(true);
+    expect(mOf(g).readiedSpell).toBeNull();
+    expect(combatOf(g).fight?.position).toBe(TECHNIQUES.spell_parry.to);
+    // The old code cast the held working through `castCraftedAttack`, which pays it again.
+    expect(slice<ResourcesState>(g, 'resources').values.mana).toBeLessThan(before);
+    expect(techniqueExecutions(mOf(g), 'spell_parry')).toBe(1);
+  });
 });
 
 // ---------- The magiknight seam ----------

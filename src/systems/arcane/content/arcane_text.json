@@ -1,0 +1,4 @@
+[
+  { "id": "locked", "text": "🔒 {reason}" },
+  { "id": "inscribed", "text": "{icon} Inscribed: {name}" }
+]

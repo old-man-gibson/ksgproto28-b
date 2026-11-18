@@ -32,6 +32,7 @@ import combat, {
   damageEnemy,
   enableAction,
   fightClosed,
+  registerPositionWatch,
   hook,
   movePlayer,
   playerDamageType,
@@ -59,6 +60,14 @@ import prestige, { legacyTechniqueSlots } from '../prestige';
 import resources, { availableMax, drawNow, poolHooks, resourceValue, spendNow, type ResourceId } from '../resources';
 import skills, { conditionReader, enterSkill, grantSkillXp, SKILLS } from '../skills';
 import { statBlockOf, type DerivedStats } from '../stats';
+import spellcraft, {
+  castCraftedAttack,
+  preparedSpells,
+  registerHeldSpell,
+  resolveSpell,
+  resolveSpellFor,
+  type SchoolReads,
+} from '../spellcraft';
 import world from '../world';
 import statuses, { heldOf, heldWith, statusDisplacedExit } from '../statuses';
 import textData from './content/martial_text.json';
@@ -69,6 +78,7 @@ import {
   NEUTRAL_POSITION,
   positions,
   POSITIONS,
+  SPELL_READY_POSITION,
   teachers,
   TEACHERS,
   TECHNIQUE_LIST,
@@ -207,13 +217,30 @@ export function weaponStateGate(
   return null;
 }
 
-/** A readied spell: the seat is not ported (step 3 of arcane and martial together). */
-const READIED_REASON = 'it needs a readied spell (readied spells: not ported)';
+// ---- readied spells (the spell-ready seat) ----
 
-/** What a move does that this build does not run, or null. */
-function unportedEffect(move: TechniqueMove): string | null {
-  if (move.readiesSpell || move.deliversSpell) return 'its move readies or delivers a spell (readied spells: not ported)';
+/**
+ * The spell a Ready Spell form takes up: the first prepared one, in book
+ * order, that has something to deliver (a strike or a heal), is not a
+ * counterspell, and can be paid for now. The bare reading, as the old code
+ * read it. The old `readyableSpell`.
+ */
+export function readyableSpell(reads: SchoolReads, stats: Readonly<DerivedStats>): { uid: number; cost: number } | null {
+  const mana = resourceValue(reads.read(resources), 'mana');
+  for (const spell of preparedSpells(reads.read(spellcraft))) {
+    const spec = resolveSpell(spell);
+    if (spec.strikes.length === 0 && !spec.heal) continue;
+    if (spec.counter) continue;
+    const cost = spec.manaCost * stats.manaEff;
+    if (mana < cost) continue;
+    return { uid: spell.uid, cost };
+  }
   return null;
+}
+
+/** Whether this prepared working is held in the seat rather than left to cast on its own. The old `spellIsHeld`. */
+export function spellIsHeld(reads: Pick<ReadCtx, 'read'>, uid: number): boolean {
+  return reads.read(martial).readiedSpell === uid;
 }
 
 // ---- runes ----
@@ -600,6 +627,8 @@ export const fitSlots = defineRequest<void, number>('martial/fit-slots');
 export const recordRequest = defineRequest<{ technique: string }, { tier: number; name: string } | null>('martial/record');
 /** Request: the equipment side of a move, `pre` or `post`. */
 export const techniqueEquipment = defineRequest<{ technique: string; phase: 'pre' | 'post' }, void>('martial/equipment');
+/** Hold a prepared working in the spell-ready seat, or let it go (`uid: null`). The mana is never refunded. */
+export const holdSpell = defineRequest<{ uid: number | null }, void>('martial/hold-spell');
 
 export const learnFromTeacher = defineCommand<{ npc: string; technique: string }>('martial/learn-technique');
 export const learnSchool = defineCommand<{ npc: string; school: string }>('martial/learn-school');
@@ -652,9 +681,7 @@ const feed = (ctx: Pick<ActionCtx, 'emit'>, text: string, damage?: DamageReport)
 /** The gates every path into a player's technique shares, in the old order. A string is a reason. */
 function gate(ctx: ActionCtx, def: TechniqueDef, held: Held, fight: DeepReadonly<Fight>, baked: boolean): true | false | string {
   if (!techniqueArmed(ctx, def)) return false;
-  const state = weaponStateGate(ctx, def);
-  if (state === 'readied') return READIED_REASON;
-  if (state) return false;
+  if (weaponStateGate(ctx, def)) return false;
   // The baked reflex gates every way in; then one way must be open.
   if (baked && !triggerHolds(ctx, def.trigger)) return false;
   if (!openEntry(ctx, def, held, fight.position)) return false;
@@ -682,8 +709,6 @@ registerPlayerAction(PREFIX, {
     if (open !== true) return open === false ? null : open;
     const runes = runeModsOf(ctx, def.id);
     const move = moveOf(def, held, runes);
-    const unported = unportedEffect(move);
-    if (unported) return unported;
     const exit = exitOf(def, held, runes);
 
     if (offensive) {
@@ -717,6 +742,11 @@ registerPlayerAction(PREFIX, {
       return picked;
     }
 
+    // Readying a working pays its mana now. With nothing prepared that can
+    // be held and paid for, the form does not come (old: silently).
+    const readied = move.readiesSpell ? readyableSpell(ctx, statBlockOf(ctx)) : null;
+    if (move.readiesSpell && !readied) return 'no prepared spell with a strike or a heal can be paid for';
+
     // A defensive form: it fires from the buff slot as soon as its moment comes.
     return {
       id,
@@ -724,13 +754,23 @@ registerPlayerAction(PREFIX, {
       usesHands: false,
       cast(c) {
         const stats = statBlockOf(c);
+        if (readied) {
+          c.request(spendNow, { id: 'mana', amount: readied.cost });
+          c.request(holdSpell, { uid: readied.uid });
+        }
         if (move.buff) c.request(addBuff, { name: def.name, mods: move.buff.mods, ticksLeft: move.buff.duration });
         if (move.staminaCost) {
           c.request(drawNow, { id: 'stamina', amount: stats.maxStamina * move.staminaCost * stats.staminaEff });
         }
         c.request(movePlayer, { to: exit });
         practise(c, def);
-        feed(c, `${def.icon} ${def.name} — you settle ${POSITIONS[exit]?.name ?? exit}.`);
+        if (readied) {
+          const spell = c.read(spellcraft).grimoire.find((s) => s.uid === readied.uid);
+          feed(
+            c,
+            `🔮 ${def.name} — ${spell ? resolveSpellFor(c, spell).name : 'a spell'} is readied (mana paid now). You lose it, mana included, if you leave this position.`,
+          );
+        } else feed(c, `${def.icon} ${def.name} — you settle ${POSITIONS[exit]?.name ?? exit}.`);
         c.emit(grantAttrXp, { attr: 'dex', amount: 2 });
         c.emit(grantSkillXp, { tags: ['combat', ...(def.family ? [def.family] : [])], amount: 3 });
       },
@@ -810,6 +850,27 @@ function fireCounter(
   const pool = spec.pool as ResourceId | undefined;
   if (pool && spec.cost) ctx.request(spendNow, { id: pool, amount: counterPrice(ctx, stats, pool, spec.cost) });
 
+  // The technique chose when and from where; the grimoire decides what
+  // lands. The held working replaces the weapon answer entirely.
+  if (move.deliversSpell) {
+    const uid = ctx.read(martial).readiedSpell;
+    const held = uid === null ? undefined : ctx.read(spellcraft).grimoire.find((s) => s.uid === uid);
+    ctx.request(holdSpell, { uid: null });
+    ctx.request(stampCooldown, { id, ticks: move.cooldown });
+    const displacedTo = statusDisplacedExit((p) => ctx.rng.chance(p), heldOf(ctx.read(statuses)));
+    ctx.request(movePlayer, { to: displacedTo ?? exit });
+    practise(ctx, def);
+    ctx.emit(grantAttrXp, { attr: 'int', amount: 3 });
+    ctx.emit(grantSkillXp, { tags: ['combat', 'magic'], amount: 3 });
+    if (held) {
+      feed(ctx, `${def.icon} ${def.name} — your readied spell is cast in place of the weapon strike.`);
+      // The old code paid the working again here, and stamped its cooldown
+      // on the technique's id over the technique's own.
+      castCraftedAttack(ctx, id, resolveSpellFor(ctx, held));
+    }
+    return;
+  }
+
   const type = playerDamageType(ctx);
   const strikes: EnemyStrike[] = [];
   const steps: DamageStep[] = [];
@@ -852,6 +913,16 @@ function fireCounter(
 }
 
 registerInterception('martial/counter', { arm: pickCounter });
+
+// A held working is out of the rotation and out of the counterspell pick.
+registerHeldSpell((reads) => reads.read(martial).readiedSpell);
+
+// Leaving the seat drops the held working, mana and all. The old `setPosition`.
+registerPositionWatch((ctx, from, to) => {
+  if (from === SPELL_READY_POSITION && to !== SPELL_READY_POSITION && ctx.read(martial).readiedSpell !== null) {
+    ctx.request(holdSpell, { uid: null });
+  }
+});
 
 // ---- the planner's reads ----
 
@@ -1082,6 +1153,9 @@ const martial: SystemDef<MartialState, MartialView> = defineSystem<MartialState,
     }),
     answer(checkLearning, (ctx) => checkTechniqueLearning(ctx)),
     answer(fitSlots, (ctx) => fitTechniqueSlots(ctx)),
+    answer(holdSpell, (ctx, { uid }) => {
+      ctx.state.readiedSpell = uid;
+    }),
     answer(recordRequest, (ctx, { technique }) => {
       const def = TECHNIQUES[technique];
       if (!def) {
@@ -1199,6 +1273,9 @@ const martial: SystemDef<MartialState, MartialView> = defineSystem<MartialState,
     }),
     on(fightClosed, (ctx) => {
       if (ctx.state.grounded || ctx.state.impaled) recoverGroundedWeapon(ctx);
+      // A working held at the edge of release does not survive the fight it
+      // was held for. Its mana was spent when it was taken up.
+      ctx.state.readiedSpell = null;
     }),
   ],
 

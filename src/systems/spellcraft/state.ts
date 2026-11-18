@@ -5,7 +5,8 @@
 import { defineEvent, defineRequest, type DeepReadonly } from '../../kernel';
 import type { ActionCtx } from '../combat';
 import type { DamageType } from '../stats';
-import type { CraftedSpell, SpellSchool } from './types';
+import type { SchoolReads } from './spec';
+import type { CraftedSpell, SpellSchool, SpellSource } from './types';
 
 /** Rotation ids of prepared spells: `grimoire:<uid>`. */
 export const GRIMOIRE_PREFIX = 'grimoire:';
@@ -27,6 +28,11 @@ export interface SpellcraftState {
   casting: Casting | null;
   /** The last miracle cast in the fight. The old `CombatState.lastMiracle`. */
   lastMiracle: { deity: string; tick: number } | null;
+  /**
+   * Grimoire uid to the clock tick from which it may be cast outside a fight
+   * again. The old `state.useCooldowns['spell:<uid>']` (version 2).
+   */
+  utilityReady: Record<string, number>;
 }
 
 export type SpellcraftReads = DeepReadonly<SpellcraftState>;
@@ -50,6 +56,24 @@ export const spellCast = defineEvent<{
 /** A strike of the player's working dealt damage to an enemy. `first` marks the first landing of the strike. */
 export const strikeLanded = defineEvent<{ target: string; defId: string; type: DamageType; first: boolean }>(
   'spellcraft/strike-landed',
+);
+
+/**
+ * A grimoire working paid its cast XP: a self cast, an offensive cast, or a
+ * counterspell's spring. `id` is the rotation id. A school whose words wear
+ * in with use hears it. The old `grantCastWordXp` call sites.
+ */
+export const spellPractised = defineEvent<{ id: string }>('spellcraft/practised');
+
+// ---- requests ----
+
+/**
+ * Write a spell into the book. The caller has checked legality. `prepared`
+ * is written as given, with no cap check (the floor 0 spell). Answers a copy
+ * of the new entry. The old `addSpell`.
+ */
+export const addSpell = defineRequest<{ source: SpellSource; name?: string; prepared?: boolean }, CraftedSpell>(
+  'spellcraft/add',
 );
 
 // ---- requests of this system to itself ----
@@ -91,4 +115,26 @@ export function refute(ctx: ActionCtx, key: string, cost: number): Refusal {
 
 export function sealed(ctx: ActionCtx, key: string): boolean {
   return refuter ? refuter.sealed(ctx, key) : false;
+}
+
+// ---- the held working ----
+
+/**
+ * Whose working is held ready rather than left to cast on its own: the
+ * grimoire uid, or null. Registered by the system that owns the
+ * spell-ready seat (martial). The old `spellIsHeld`.
+ */
+export type HeldSpellReader = (reads: SchoolReads) => number | null;
+
+let heldReader: HeldSpellReader | null = null;
+
+/** Register the reader of the held working. Called at module load. */
+export function registerHeldSpell(reader: HeldSpellReader | null): void {
+  if (reader && heldReader) throw new Error('spellcraft: a held-spell reader is registered twice');
+  heldReader = reader;
+}
+
+/** The uid of the working held ready now, or null. */
+export function heldSpell(reads: SchoolReads): number | null {
+  return heldReader ? heldReader(reads) : null;
 }

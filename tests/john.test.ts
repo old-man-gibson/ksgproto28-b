@@ -3,12 +3,10 @@
  * two John cases of the old `tests/band2.test.ts` (band 2). The driver is
  * `tests/john.ts`.
  *
- * Differences from the old climbs, each from a port not done yet:
- * - The rack climbs play floor 0 without the spell step (arcane, step 3);
- *   the old ones took the spell 'fire'. No climb here learns floor 2's
- *   techniques (the tutor, martial, step 3).
- * - Old bounds a climb here misses are `it.todo` with the measured value and
- *   the reason; no rule was tuned to meet them.
+ * The rack climbs take the floor 0 spell 'fire', as the old ones did (since
+ * the arcane port); every climb learns floor 2's techniques from the tutor
+ * (since the martial port). Old bounds a climb here misses would be an
+ * `it.todo` with the measured value and the reason; none is left.
  *
  * Not ported: "the archive's club and the cut strings both answer the
  * bureaucrat" (a duel harness over forced fights with pinned attributes,
@@ -30,7 +28,7 @@ const rack: ClimbReport[] = [];
 beforeAll(() => {
   for (const seed of SEEDS) {
     john.push(runJohn({ seed, weapon: 'skip' }));
-    for (const weapon of RACK) rack.push(runJohn({ seed, weapon }));
+    for (const weapon of RACK) rack.push(runJohn({ seed, weapon, spell: 'fire' }));
   }
 }, 120_000);
 
@@ -59,14 +57,12 @@ describe('pacing — band 1 by the obvious road, every rack weapon', () => {
   });
 
   it('the first real fights after the tutorial are survivable with whatever the rack gave', () => {
+    // A slime shrugs off half a blade, so a lost fight here can happen, but
+    // once at most, and rarely: the rats come first.
     const all = [...john, ...rack];
     for (const r of all) expect(r.knockouts.vermin, label(r)).toBeLessThanOrEqual(1);
+    expect(all.filter((r) => r.knockouts.vermin > 0).length).toBeLessThanOrEqual(2);
   });
-
-  // Measured 2026-11-17: 3 of the 12 climbs lose one vermin fight (both
-  // Johns and the sword at seed 42); the old bound is 2. The rack climbs
-  // here have no spell.
-  it.todo('the first real fights: at most two of the climbs lose one (measured 3 of 12; the spell step is step 3)');
 
   it('the toll collector is a fight: it lasts, it can win, and it can be beaten', () => {
     for (const r of rack) {
@@ -98,7 +94,7 @@ describe('pacing — band 1 by the obvious road, every rack weapon', () => {
 
 describe('John through band 2', () => {
   // The old pair: seed 7 skipping, and seed 1234 with the spear, attentive.
-  // The spear climb here has no spell (step 3).
+  // The spear climb takes the floor 0 spell 'fire', as the old one did.
   let climbs: ClimbReport[] = [];
   beforeAll(() => {
     climbs = [
