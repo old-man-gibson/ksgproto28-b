@@ -3,5 +3,10 @@
 // step needs are written here as literals.
 import type { Json } from '../../kernel/json';
 
+type Obj = { [key: string]: Json };
+
 /** Step N takes slice data at version N to version N + 1. */
-export const migrations: Record<number, (data: Json) => Json> = {};
+export const migrations: Record<number, (data: Json) => Json> = {
+  /** Step 3 of the rebuild (divine): favour per deity. */
+  1: (data) => ({ ...(data as Obj), favor: {} }),
+};

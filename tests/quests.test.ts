@@ -37,8 +37,10 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { Kernel } from '../src/kernel';
 import { enemyKilled } from '../src/systems/combat';
 import { conditionsMet } from '../src/systems/counters';
+import type { DivineState } from '../src/systems/divine';
 import type { GoldState } from '../src/systems/gold';
 import { xpToReach, type LevelsState } from '../src/systems/levels';
+import type { LogState } from '../src/systems/log';
 import { grantGraded, stockOf, type MaterialsState } from '../src/systems/materials';
 import { metKey, NPCS, talkTo, type NpcDef } from '../src/systems/npcs';
 import {
@@ -340,5 +342,19 @@ describe('the_first_ascent', () => {
     expect(counterOf(g, 'quests:completed')).toBe(1);
     const after = slice<LevelsState>(g, 'levels');
     expect(xpToReach(after.level) + after.levelXp).toBeCloseTo(xpBefore + 100, 6);
+  });
+
+  // The old turn-in's `grantFavorAll(1 + rewards.favor)`: known gods only,
+  // logged before the completed line.
+  it('pays 1 favour plus its own 1 with every known god, and none with the rest', () => {
+    const g = finished(33);
+    expect(g.dispatch(turnInQuest({ quest: 'the_first_ascent' })).ok).toBe(true);
+    const favor = slice<DivineState>(g, 'divine').favor;
+    expect(favor).toEqual({ denjalle: 2, usvylgr: 2 });
+    const log = slice<LogState>(g, 'log').log.map((l) => l.msg);
+    const gained = log.findIndex((m) => m === '🕊️ +2 favor with every god you know.');
+    const done = log.findIndex((m) => m.startsWith('🎉 Quest complete: The First Ascent'));
+    expect(gained).toBeGreaterThanOrEqual(0);
+    expect(done).toBeGreaterThan(gained);
   });
 });

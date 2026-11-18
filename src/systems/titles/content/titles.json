@@ -1,0 +1,319 @@
+[
+  {
+    "id": "friend_of_the_court",
+    "name": "Friend of the Court",
+    "icon": "⚖️",
+    "secret": true,
+    "unlock": [
+      {
+        "type": "stat",
+        "key": "flag:assize_case_file",
+        "value": 1
+      }
+    ],
+    "passive": [
+      {
+        "stat": "goldGain",
+        "op": "mult",
+        "value": 0.02
+      }
+    ],
+    "equipped": [
+      {
+        "stat": "goldGain",
+        "op": "mult",
+        "value": 0.08
+      }
+    ],
+    "desc": "Read the unclaimed case file found on the Assize night watch. +2% gold gain always; +8% more while worn."
+  },
+  {
+    "id": "david_and_goslimath",
+    "name": "David and Goslimath",
+    "icon": "🪨",
+    "secret": true,
+    "unlock": [
+      {
+        "type": "stat",
+        "key": "kills:suspiciously_large_slime",
+        "value": 1
+      }
+    ],
+    "passive": [
+      {
+        "stat": "vsLarger",
+        "op": "add",
+        "value": 0.03
+      }
+    ],
+    "equipped": [
+      {
+        "stat": "vsLarger",
+        "op": "add",
+        "value": 0.15
+      }
+    ],
+    "desc": "Beat the Suspiciously Large Slime the Cages keeper dared you to fight. +3% damage per size step against anything larger than you, always; +15% more per step while worn."
+  },
+  {
+    "id": "procedural_objection",
+    "name": "Procedural Objection",
+    "icon": "✊",
+    "secret": true,
+    "unlock": [
+      {
+        "type": "stat",
+        "key": "flag:toll_brute_force",
+        "value": 1
+      }
+    ],
+    "desc": "Defeat the Toll Collector without casting a spell during that encounter."
+  },
+  {
+    "id": "iron_stomach",
+    "name": "Iron Stomach",
+    "icon": "🥣",
+    "secret": true,
+    "unlock": [
+      {
+        "type": "stat",
+        "key": "food:spoiled",
+        "value": 25
+      }
+    ],
+    "immune": {
+      "ids": [
+        "queasy"
+      ]
+    },
+    "desc": "Eat 25 spoiled dishes (refuse-grade food or Scorched Mess). Always: Queasy no longer lands on you."
+  },
+  {
+    "id": "iconoclast",
+    "name": "Iconoclast",
+    "icon": "⛓️‍💥",
+    "unlock": [
+      {
+        "type": "stat",
+        "key": "miracles:learned",
+        "value": 10
+      }
+    ],
+    "secret": true,
+    "defiesDogma": true,
+    "passive": [
+      {
+        "stat": "maxSpirit",
+        "op": "add",
+        "value": 5
+      }
+    ],
+    "equipped": [
+      {
+        "stat": "spellPower",
+        "op": "mult",
+        "value": 0.05
+      }
+    ],
+    "desc": "Learn ten miracles. Passive: +5 maximum spirit. Worn: +5% spell power, and miracles of hostile deities may be prepared together."
+  },
+  {
+    "id": "wanderer",
+    "name": "Wanderer",
+    "icon": "🥾",
+    "unlock": [
+      {
+        "type": "stat",
+        "key": "travel:trips",
+        "value": 50
+      }
+    ],
+    "passive": [
+      {
+        "stat": "travelSpeed",
+        "op": "mult",
+        "value": 0.05
+      }
+    ],
+    "equipped": [
+      {
+        "stat": "travelSpeed",
+        "op": "mult",
+        "value": 0.1
+      },
+      {
+        "stat": "loot",
+        "op": "add",
+        "value": 0.1
+      }
+    ],
+    "desc": "Complete 50 journeys between spots. Passive: +5% travel speed. Worn: +10% travel speed and +10% loot."
+  },
+  {
+    "id": "slayer",
+    "name": "Slayer",
+    "icon": "🗡️",
+    "unlock": [
+      {
+        "type": "stat",
+        "key": "kills",
+        "value": 100
+      }
+    ],
+    "passive": [
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": 0.02
+      }
+    ],
+    "equipped": [
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": 0.05
+      },
+      {
+        "stat": "crit",
+        "op": "add",
+        "value": 0.02
+      }
+    ],
+    "desc": "Kill 100 creatures. Passive: +2% damage. Worn: +5% damage and +2% crit."
+  },
+  {
+    "id": "titan_incarnate",
+    "name": "Titan Incarnate",
+    "icon": "🏔️",
+    "unlock": [
+      {
+        "type": "attr",
+        "attr": "str",
+        "level": 100
+      }
+    ],
+    "passive": [
+      {
+        "stat": "damage",
+        "op": "add",
+        "value": 10
+      }
+    ],
+    "equipped": [
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": 0.1
+      },
+      {
+        "stat": "maxHp",
+        "op": "mult",
+        "value": 0.05
+      }
+    ],
+    "desc": "Reach Strength 100. Passive: +10 damage. Worn: +10% damage and +5% maximum health."
+  },
+  {
+    "id": "first_blade",
+    "name": "Devotee of the First Blade",
+    "icon": "⚜️",
+    "unlock": [
+      {
+        "type": "stat",
+        "key": "kills:goblin_boss",
+        "value": 1
+      },
+      {
+        "type": "statMax",
+        "key": "weapon:families",
+        "value": 1
+      }
+    ],
+    "passive": [
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": 0.03
+      }
+    ],
+    "equipped": [
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": 0.08
+      },
+      {
+        "stat": "speed",
+        "op": "mult",
+        "value": 0.05
+      }
+    ],
+    "desc": "Defeat the Goblin Warchief having attacked with only one weapon family. Passive: +3% damage. Worn: +8% damage and +5% speed."
+  },
+  {
+    "id": "untouchable",
+    "name": "Untouchable",
+    "icon": "🌫️",
+    "secret": true,
+    "unlock": [
+      {
+        "type": "stat",
+        "key": "kills:goblin_boss",
+        "value": 1
+      },
+      {
+        "type": "statMax",
+        "key": "defeats",
+        "value": 0
+      }
+    ],
+    "passive": [
+      {
+        "stat": "dodge",
+        "op": "add",
+        "value": 0.02
+      }
+    ],
+    "equipped": [
+      {
+        "stat": "dodge",
+        "op": "add",
+        "value": 0.03
+      },
+      {
+        "stat": "actionBar",
+        "op": "mult",
+        "value": -0.03
+      }
+    ],
+    "desc": "Defeat the Goblin Warchief without ever having been knocked out. Passive: +2% dodge. Worn: +3% dodge and a 3% shorter action bar."
+  },
+  {
+    "id": "first_through_the_door",
+    "name": "First Through the Door",
+    "icon": "🚪",
+    "secret": true,
+    "unlock": [
+      {
+        "type": "stat",
+        "key": "festival:swift_wins",
+        "value": 1
+      }
+    ],
+    "passive": [
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": 0.02
+      }
+    ],
+    "equipped": [
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": 0.06
+      }
+    ],
+    "desc": "Win the Vermin Festival having climbed into the royale within half a festival day of the dark room door opening. Passive: +2% damage. Worn: +6% damage."
+  }
+]

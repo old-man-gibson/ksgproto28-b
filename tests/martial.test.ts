@@ -1588,6 +1588,7 @@ describe('readied spells', () => {
   // trigger event is `onParry`, and combat asks the interception for
   // `onHit` only, as the old `pickCounter` was asked (an old rule ported as
   // it is, README "Old rules ported as they are").
+  // About 3 s alone; past the 5 s default under the full suite.
   it('in a hunt, Ready Spell holds the working and never outlives the seat; Spell Parry is never asked', () => {
     const g = fresh(76);
     setLevels(g, { attrs: { int: 30, con: 30, dex: 30 } });
@@ -1609,7 +1610,7 @@ describe('readied spells', () => {
     expect(heldOutside).toBe(false);
     expect(techniqueExecutions(mOf(g), 'ready_spell')).toBeGreaterThan(0);
     expect(techniqueExecutions(mOf(g), 'spell_parry')).toBe(0);
-  });
+  }, 30000);
 
   // New: the delivery, asked for the event it names.
   it('Spell Parry delivers the held working in place of the weapon, and pays for it again', () => {

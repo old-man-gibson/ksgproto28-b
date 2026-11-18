@@ -201,6 +201,19 @@
     ]
   },
   {
+    "id": "chapel_priest",
+    "name": "Prior Ashvane",
+    "icon": "🕯️",
+    "spotId": "the_nine_chapels",
+    "quests": [],
+    "desc": "Prior of the Nine Chapels. Miracles are learned here for favor, on the Divine tab of the Spellcrafting Table. Sells nothing and gives no quests.",
+    "dialogue": [
+      "Miracles are on the Divine tab of the Spellcrafting Table behind me. Each costs favor with its own god; quest turn-ins earn favor with every god you know.",
+      "D’Enjalle, the Shining Rapier, is a god of honor, fire and order. Usvýlgr, the Crafty Hammer, is a god of crafting and earth.",
+      "Two of the nine doors are locked. Nothing behind them can be learned yet."
+    ]
+  },
+  {
     "id": "militia_captain",
     "name": "Captain Hurst",
     "icon": "💂",

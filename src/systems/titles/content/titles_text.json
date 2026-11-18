@@ -1,0 +1,4 @@
+[
+  { "id": "earned", "text": "👑 Title earned: {icon} {name}." },
+  { "id": "worn", "text": "👑 Title worn: {name}." }
+]

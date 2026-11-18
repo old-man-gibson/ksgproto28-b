@@ -244,6 +244,13 @@ const JOBS = [
     // slug; `tag` is the old id, which deities and relation rules name.
     pick: (m) => Object.values(m.DEITY_TAGS).map(({ id, ...rest }) => ({ id: slug(id), tag: id, ...rest })),
   },
+  {
+    name: 'titles',
+    out: 'titles/content/titles.json',
+    module: 'src/core/data/titles.data.ts',
+    // `desc` is merged in from the old text table by `prose`.
+    pick: (m) => Object.values(m.TITLES),
+  },
 ];
 
 const applications = (apps) => (apps ? apps.map(statusApplication) : undefined);

@@ -1,0 +1,6 @@
+[
+  { "id": "locked", "text": "🔒 {reason}" },
+  { "id": "favor_gained", "text": "🕊️ +{amount} favor with every god you know." },
+  { "id": "favor_assigned", "text": "🕊️ 1 unassigned favor placed with {deity}." },
+  { "id": "received", "text": "{icon} Received: {name} ({deity})." }
+]

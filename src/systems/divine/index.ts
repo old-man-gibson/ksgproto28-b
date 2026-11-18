@@ -1,170 +1,48 @@
 /**
- * The divine school: miracles and the deities they come from. Port of
- * `MIRACLES`, `DEITIES` and `DEITY_TAGS` of the old data, `miracleSpec` of
- * the old `systems/divine.ts` and `deityRelation` of the old
- * `systems/deities.ts`. See README.md in this folder for the cut: favour,
- * receiving a miracle and the pantheon shelf are step 3.
+ * The divine school: miracles and the deities they come from, favour with
+ * each deity, and receiving a miracle for favour. Port of old
+ * `systems/divine.ts`, `systems/deities.ts`, the known gods of
+ * `systems/unlocks.ts` and the divine data. See README.md in this folder.
  *
- * The school registers itself with `spellcraft` at module load. This system
- * holds no state.
+ * The school registers itself with `spellcraft` at module load.
  */
-import { defineSystem, registry, s } from '../../kernel';
+import { answer, defineCommand, defineRequest, defineSystem, handle, OK, registry, skipped } from '../../kernel';
+import counters, { bumpCounter, counterValue, setCounter } from '../counters';
+import { fillText, logLine, textSchema, type TextRecord } from '../log';
+import { checkDiscovery, grantSkillXp } from '../skills';
+import { addSpell, registerSchool, type SpellSpec } from '../spellcraft';
+import world, { SPOTS } from '../world';
+import textData from './content/divine_text.json';
+import { DEITIES, DEITY_LIST, deities, deityRelation, deityTags, MIRACLE_LIST, MIRACLES, miracles } from './defs';
 import {
-  registerSchool,
-  spellSpecSchema,
-  statedSpec,
-  type DeityRelation,
-  type RawSpellSpec,
-  type SpellSpec,
-} from '../spellcraft';
-import deitiesData from './content/deities.json';
-import deityTagsData from './content/deity_tags.json';
-import miraclesData from './content/miracles.json';
+  checkMiracle,
+  deityKnown,
+  deityMetKey,
+  devotionLevel,
+  favorWith,
+  FLOATING_FAVOR_KEY,
+  floatingFavor,
+  grantFavor,
+  MIRACLES_LEARNED_KEY,
+  spendFavor,
+  VOTIVE_BASELINE_KEY,
+  type DivineState,
+} from './favor';
 import { migrations } from './migrations';
 
-// ---- registries ----
+export * from './defs';
+export * from './favor';
+export * from './shelf';
 
-const relationRule = s.object({
-  anyOf: s.array(s.string(), { help: 'Applies to a deity carrying one of these tags.' }),
-  unless: s.optional(s.array(s.string(), { help: 'Not when it also carries one of these.' })),
-  waiver: s.optional(s.array(s.string(), { help: 'The exception is waived by one of these.' })),
-});
+const TEXT = Object.fromEntries((textData as TextRecord[]).map((r) => [r.id, r.text]));
+const divineText = registry(textSchema, textData, 'Divine text');
 
-export const DEITY_TAG_CATEGORIES = ['scope', 'nature', 'membership', 'alignment', 'temperament', 'domain'] as const;
-
-export const deityTags = registry(
-  s.object({
-    id: s.id(),
-    tag: s.string({ minLength: 1, help: 'The tag as deities and relation rules name it. Three hold a space.' }),
-    name: s.string({ minLength: 1 }),
-    icon: s.string(),
-    category: s.enum(DEITY_TAG_CATEGORIES),
-    desc: s.optional(s.string()),
-  }),
-  deityTagsData,
-  'Deity tags',
-);
-
-export const deities = registry(
-  s.object({
-    id: s.id(),
-    name: s.string({ minLength: 1 }),
-    epithet: s.string(),
-    icon: s.string(),
-    art: s.optional(s.string({ help: 'Portrait file name. The file is not in this repository.' })),
-    desc: s.string(),
-    tags: s.array(s.string(), { help: 'Its aspects: `tag` values of the deity tag registry.' }),
-    pantheon: s.optional(s.string()),
-    synergies: s.optional(s.array(relationRule)),
-    hostilities: s.optional(s.array(relationRule)),
-  }),
-  deitiesData,
-  'Deities',
-);
-
-export const miracles = registry(
-  s.object({
-    id: s.id(),
-    deity: s.ref('deities'),
-    name: s.string({ minLength: 1 }),
-    icon: s.string(),
-    desc: s.optional(s.string()),
-    favorCost: s.number({ min: 0, help: 'Favour spent once to receive it (step 3).' }),
-    minLevel: s.optional(s.number({ help: 'Devotion level required (step 3).' })),
-    spec: spellSpecSchema,
-  }),
-  miraclesData,
-  'Miracles',
-);
-
-// ---- record types ----
-
-/** One clause of a deity's disposition toward other deities. */
-export interface DeityRelationRule {
-  anyOf: string[];
-  unless?: string[];
-  waiver?: string[];
-}
-
-export interface DeityDef {
-  id: string;
-  name: string;
-  epithet: string;
-  icon: string;
-  art?: string;
-  desc: string;
-  tags: string[];
-  pantheon?: string;
-  synergies?: DeityRelationRule[];
-  hostilities?: DeityRelationRule[];
-}
-
-export interface DeityTagDef {
-  id: string;
-  tag: string;
-  name: string;
-  icon: string;
-  category: (typeof DEITY_TAG_CATEGORIES)[number];
-  desc?: string;
-}
-
-/** A miracle: a divine working, stated whole. */
-export interface MiracleDef {
-  id: string;
-  deity: string;
-  name: string;
-  icon: string;
-  desc?: string;
-  favorCost: number;
-  minLevel?: number;
-  spec: Omit<SpellSpec, 'school'>;
-}
-
-export const DEITY_LIST: readonly DeityDef[] = deitiesData as DeityDef[];
-export const DEITIES: Record<string, DeityDef> = Object.fromEntries(DEITY_LIST.map((d) => [d.id, d]));
-export const DEITY_TAGS: Record<string, DeityTagDef> = Object.fromEntries(
-  (deityTagsData as DeityTagDef[]).map((t) => [t.tag, t]),
-);
-export const MIRACLE_LIST: readonly MiracleDef[] = (
-  miraclesData as unknown as (Omit<MiracleDef, 'spec'> & { spec: RawSpellSpec })[]
-).map((m) => ({ ...m, spec: statedSpec(m.spec) }));
-export const MIRACLES: Record<string, MiracleDef> = Object.fromEntries(MIRACLE_LIST.map((m) => [m.id, m]));
-
-/** The miracles of one deity, in registry order. */
-export function miraclesOf(deityId: string): MiracleDef[] {
-  return MIRACLE_LIST.filter((m) => m.deity === deityId);
-}
-
-// ---- how the pantheon regards itself ----
-
-/** Does `rule` apply to a deity carrying `tags`? */
-function ruleMatches(rule: DeityRelationRule, tags: readonly string[]): boolean {
-  if (!rule.anyOf.some((t) => tags.includes(t))) return false;
-  if (rule.unless?.some((t) => tags.includes(t))) {
-    // The exception can itself be waived.
-    return rule.waiver?.some((t) => tags.includes(t)) ?? false;
-  }
-  return true;
-}
-
-function declares(rules: DeityRelationRule[] | undefined, other: DeityDef): boolean {
-  return (rules ?? []).some((rule) => ruleMatches(rule, other.tags));
-}
-
-/**
- * The standing between two deities. Order does not matter. Rules are declared
- * per deity; a pair is resolved from both sides, and hostility on either
- * side wins. A deity is in synergy with itself. The old `deityRelation`.
- */
-export function deityRelation(aId: string, bId: string): DeityRelation {
-  if (aId === bId) return 'synergy';
-  const a = DEITIES[aId];
-  const b = DEITIES[bId];
-  if (!a || !b) return 'neutral';
-  if (declares(a.hostilities, b) || declares(b.hostilities, a)) return 'hostile';
-  if (declares(a.synergies, b) || declares(b.synergies, a)) return 'synergy';
-  return 'neutral';
-}
+/** The tags receiving a miracle trains, and that its discovery checks. */
+const RECEIVE_TAGS = ['spellcraft', 'magic', 'divine'];
+/** Skill XP for receiving a miracle. */
+const RECEIVE_XP = 20;
+/** The bench whose Divine tab teaches miracles. */
+const SPELL_TABLE = 'spelltable';
 
 // ---- the school ----
 
@@ -181,10 +59,123 @@ registerSchool('divine', {
   relation: deityRelation,
 });
 
-export default defineSystem<Record<string, never>>({
+// ---- commands and requests ----
+
+/** Receive a miracle: spend favour with its deity, write it in the book. The old `learnMiracle`. */
+export const learnMiracle = defineCommand<{ miracle: string }>('divine/learn');
+/** Place one unassigned favour with a known god. The old `assignFloatingFavor`. */
+export const assignFavor = defineCommand<{ deity: string }>('divine/assign-favor');
+
+/**
+ * Favour with every known god, and the log line. The old `grantFavorAll`.
+ * A request so the line lands where the caller asks (the turn-in logs it
+ * before its own line, as the old order).
+ */
+export const grantFavorAll = defineRequest<{ amount: number }, void>('divine/grant-favor-all');
+
+/**
+ * Meet a god: set `met:deity:<id>` and pay the votive baseline. False for a
+ * god already known or an unknown id. The old `meetDeity`.
+ */
+export const meetDeity = defineRequest<{ deity: string }, boolean>('divine/meet');
+
+// ---- view ----
+
+export interface DivineView {
+  devotion: number;
+  floating: number;
+  /** Ids of the gods this life knows, in registry order. */
+  known: string[];
+  /** Favour per known god. */
+  favor: Record<string, number>;
+  /** Per miracle: null when it may be received now, else the reason. */
+  checks: Record<string, string | null>;
+  /** The player stands at a Spellcrafting Table. */
+  atTable: boolean;
+  /** Names of the spots that hold one. */
+  tables: string[];
+}
+
+const TABLE_SPOTS = Object.values(SPOTS).filter((spot) => spot.benches?.includes(SPELL_TABLE));
+
+const divine = defineSystem<DivineState, DivineView>({
   id: 'divine',
-  version: 1,
+  version: 2,
   migrations,
-  initial: () => ({}),
-  content: { miracles, deities, deity_tags: deityTags },
+  initial: () => ({ favor: {} }),
+  content: { miracles, deities, deity_tags: deityTags, divine_text: divineText },
+
+  commands: [
+    handle(learnMiracle, (ctx, { miracle: id }) => {
+      const check = checkMiracle(ctx, ctx.state, id);
+      if (!check.ok) {
+        const reason = check.reason ?? 'No such miracle';
+        ctx.emit(logLine, { msg: fillText(TEXT.locked, { reason }), kind: 'danger' });
+        return skipped(reason);
+      }
+      const miracle = MIRACLES[id];
+      spendFavor(ctx.state, miracle.deity, miracle.favorCost);
+      ctx.request(addSpell, { source: { school: 'divine', litany: id } });
+      ctx.emit(bumpCounter, { key: MIRACLES_LEARNED_KEY });
+      // Receiving a miracle is an act of devotion; it may be the first.
+      ctx.emit(checkDiscovery, { tags: RECEIVE_TAGS });
+      ctx.emit(grantSkillXp, { tags: RECEIVE_TAGS, amount: RECEIVE_XP, sourceKey: [`divine:${id}`] });
+      ctx.emit(logLine, {
+        msg: fillText(TEXT.received, {
+          icon: miracle.icon,
+          name: miracle.name,
+          deity: DEITIES[miracle.deity]?.name ?? miracle.deity,
+        }),
+        kind: 'item',
+      });
+      return OK;
+    }),
+
+    handle(assignFavor, (ctx, { deity }) => {
+      if (floatingFavor(ctx) < 1) return skipped('No unassigned favor');
+      if (!DEITIES[deity]) return skipped(`No such deity: ${deity}`);
+      if (!deityKnown(ctx, deity)) return skipped(`${DEITIES[deity].name} is not known yet`);
+      ctx.emit(bumpCounter, { key: FLOATING_FAVOR_KEY, amount: -1 });
+      grantFavor(ctx.state, deity, 1);
+      ctx.emit(logLine, { msg: fillText(TEXT.favor_assigned, { deity: DEITIES[deity].name }), kind: 'skill' });
+      return OK;
+    }),
+  ],
+
+  requests: [
+    answer(grantFavorAll, (ctx, { amount }) => {
+      if (amount <= 0) return;
+      for (const deity of DEITY_LIST) {
+        if (deityKnown(ctx, deity.id)) grantFavor(ctx.state, deity.id, amount);
+      }
+      ctx.emit(logLine, { msg: fillText(TEXT.favor_gained, { amount }), kind: 'skill' });
+    }),
+
+    answer(meetDeity, (ctx, { deity }) => {
+      if (!DEITIES[deity] || deityKnown(ctx, deity)) return false;
+      ctx.emit(setCounter, { key: deityMetKey(deity), value: 1 });
+      grantFavor(ctx.state, deity, counterValue(ctx.read(counters), VOTIVE_BASELINE_KEY));
+      return true;
+    }),
+  ],
+
+  view: (ctx): DivineView => {
+    const known = DEITY_LIST.filter((d) => deityKnown(ctx, d.id)).map((d) => d.id);
+    const checks: Record<string, string | null> = {};
+    for (const m of MIRACLE_LIST) {
+      const check = checkMiracle(ctx, ctx.state, m.id);
+      checks[m.id] = check.ok ? null : (check.reason ?? 'No such miracle');
+    }
+    return {
+      devotion: devotionLevel(ctx),
+      floating: floatingFavor(ctx),
+      known,
+      favor: Object.fromEntries(known.map((id) => [id, favorWith(ctx.state, id)])),
+      checks,
+      atTable: !!SPOTS[ctx.read(world).spot]?.benches?.includes(SPELL_TABLE),
+      tables: TABLE_SPOTS.map((t) => t.name),
+    };
+  },
 });
+
+export default divine;

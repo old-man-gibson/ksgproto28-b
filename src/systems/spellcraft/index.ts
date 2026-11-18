@@ -15,7 +15,7 @@ import { fightClosed, registerTriggerSubject } from '../combat';
 import { fillText, logLine, textSchema, type TextRecord } from '../log';
 import { healNow, spendNow } from '../resources';
 import { checkDiscovery, grantSkillXp } from '../skills';
-import { statBlockOf } from '../stats';
+import { factValue, statBlockOf } from '../stats';
 import { applyStatus } from '../statuses';
 import {
   canCastUtility,
@@ -110,7 +110,9 @@ const spellcraft = defineSystem<SpellcraftState, SpellcraftView>({
           return skipped(`all ${cap} prepared pages are in use`);
         }
       }
-      if (prepared) {
+      // A worn dogma-defying title (the fact `defiesDogma` of `titles`)
+      // waives the veto. The old `dogmaDefied`.
+      if (prepared && factValue(ctx, 'defiesDogma') <= 0) {
         const conflict = deityConflict(ctx.state, entry, (id) => ctx.content.get<{ name: string }>('deities', id)?.name ?? id);
         if (conflict) {
           ctx.emit(logLine, { msg: fillText(TEXT.prepare_conflict, { conflict }), kind: 'danger' });

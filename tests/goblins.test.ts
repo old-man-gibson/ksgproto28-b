@@ -14,15 +14,13 @@
  * - `checkTechniqueLearning` is the request `martial/check-learning`; a
  *   counter is written with `patch` so the check runs only when asked.
  *
- * Left as `it.todo`:
- * - step 3 (the divine port): `deityKnown`. The case that asserted it is split: its content
- *   half runs, the unlock half is an `it.todo`.
+ * - `deityKnown(state, id)` takes the reads of a kernel (`reads`).
  */
 import { describe, expect, it } from 'vitest';
 import type { Kernel } from '../src/kernel';
 import type { AttributesState } from '../src/systems/attributes';
 import type { Enemy } from '../src/systems/combat';
-import { DEITIES, MIRACLES } from '../src/systems/divine';
+import { DEITIES, deityKnown, MIRACLES } from '../src/systems/divine';
 import {
   checkLearning,
   learnRequest,
@@ -39,7 +37,7 @@ import { MONSTERS } from '../src/systems/monsters';
 import type { SkillsState } from '../src/systems/skills';
 import { castMonsterWorking } from '../src/systems/spellcraft';
 import { combatOf, counterOf, hardenFoes, patchFight, playerStats, setHp, stage } from './combatHelpers';
-import { ask, makeGame, patch, run, slice } from './helpers';
+import { ask, makeGame, patch, reads, run, slice } from './helpers';
 
 
 const fresh = (seed = 1): Kernel => makeGame({ seed });
@@ -167,15 +165,14 @@ describe('the witch doctor and its gods', () => {
     expect(Object.keys(last.cooldowns ?? {}).length).toBeGreaterThan(0);
   });
 
-  // Split: the old case also asserted `deityKnown(state, god) === false` for each god. That half is the todo below.
   it('fire, mud and the hunt each hold two miracles, and a new player knows none of them', () => {
+    const g = fresh();
     for (const god of ['goblin_fire', 'goblin_mud', 'goblin_hunt']) {
       expect(DEITIES[god].tags).toContain('goblin pantheon');
       expect(Object.values(MIRACLES).filter((m) => m.deity === god)).toHaveLength(2);
+      expect(deityKnown(reads(g), god)).toBe(false);
     }
   });
-
-  it.todo('fire, mud and the hunt each hold two miracles, and a new player knows none of them: a new player knows none of the three gods (step 3: divine: deityKnown)');
 
   it('the casters speak only what exists', () => {
     for (const id of ['goblin_firetongue', 'goblin_witch_doctor']) {

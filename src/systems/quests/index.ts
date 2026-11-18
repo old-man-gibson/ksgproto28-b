@@ -23,6 +23,7 @@ import {
 } from '../../kernel';
 import { enemyKilled } from '../combat';
 import counters, { bumpCounter, conditionSchema, conditionsMet, counterValue, setCounter, type Condition } from '../counters';
+import { grantFavorAll } from '../divine';
 import { addGold } from '../gold';
 import { grantItem, ITEMS } from '../items';
 import { grantLevelXp, questLevelXp } from '../levels';
@@ -64,7 +65,7 @@ const quests = registry(
     rewards: s.object({
       gold: s.optional(s.number({ min: 0 })),
       levelXp: s.optional(s.number({ min: 0 })),
-      favor: s.optional(s.number({ min: 0, help: 'Divine favour. Not paid until divine favour is ported (step 3).' })),
+      favor: s.optional(s.number({ min: 0, help: 'Divine favour with every known god, on top of the 1 every turn-in pays.' })),
       materials: s.optional(s.array(s.object({ id: s.ref('materials'), qty: s.number({ integer: true, min: 1 }) }))),
       items: s.optional(s.array(s.ref('items'))),
       skillXp: s.optional(s.array(s.object({ id: s.ref('skills'), xp: s.number({ min: 0 }) }))),
@@ -365,8 +366,9 @@ const system: SystemDef<QuestsState, QuestsView> = defineSystem<QuestsState, Que
       ctx.emit(bumpCounter, { key: 'quests:completed' });
       // Seeing a job through pays as a discovery, and never wears out.
       ctx.emit(grantDiscoveryXp, { domain: 'dialogue', weight: QUEST_COMPLETE_WEIGHT });
-      // The old turn-in also paid divine favour (`grantFavorAll`, 1 + r.favor):
-      // favour arrives with divine in step 3.
+      // A deed done for somebody earns favour with every known god: 1, plus
+      // the quest's own favour reward. The old `grantFavorAll` call.
+      ctx.request(grantFavorAll, { amount: 1 + (r.favor ?? 0) });
       ctx.emit(questCompleted, { quest: questId });
       ctx.emit(logLine, {
         msg: fillText(TEXT.quests_completed, {

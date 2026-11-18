@@ -3,13 +3,23 @@
  * dare.
  *
  * Neither is ported: both are step 3 (SPINE.md section 7.8). The spot record
- * carries their data, which the world system keeps and does not read. The one
- * case here asserts that data; every old case is an `it.todo` under its old
- * name.
+ * carries their data, which the world system keeps and does not read. The
+ * first case here asserts that data; the old cases of the keeper and the dare
+ * are `it.todo` under their old names.
+ *
+ * "David and Goslimath" runs since the titles port (step 3, divine): the
+ * counter the dare's win bumps is written with `patch`, `checkTitleUnlocks`
+ * is the event `titles/check`, `setTitle` is the command `titles/wear`, and
+ * the rematch is staged with `combat/start-staged` (`stage`).
  */
 import { describe, expect, it } from 'vitest';
+import type { CountersState } from '../src/systems/counters';
 import { MONSTERS } from '../src/systems/monsters';
+import { statOf } from '../src/systems/stats';
+import { checkTitles, hasTitle, wearTitle, type TitlesState } from '../src/systems/titles';
 import { SPOTS } from '../src/systems/world';
+import { combatOf, feedOf, stage } from './combatHelpers';
+import { emit, makeGame, patch, reads, slice } from './helpers';
 
 const CAGES = SPOTS.the_cages;
 const EVERY = CAGES.dare!.every;
@@ -40,6 +50,35 @@ describe("the keeper's dare holds play", () => {
 });
 
 describe('David and Goslimath', () => {
-  it.todo('beating the slime earns the hidden title; it pays per size step against larger things (step 3: the dare and the hold of play; titles)');
-  it.todo('the bonus shows up in the blow against something one size step up (step 3: the dare and the hold of play; titles)');
+  it('beating the slime earns the hidden title; it pays per size step against larger things', () => {
+    const g = makeGame({ seed: 1 });
+    expect(hasTitle(slice<TitlesState>(g, 'titles'), 'david_and_goslimath')).toBe(false);
+    patch(g, (slices) => {
+      (slices.counters as CountersState).counts['kills:suspiciously_large_slime'] = 1;
+    });
+    emit(g, checkTitles, undefined);
+    expect(hasTitle(slice<TitlesState>(g, 'titles'), 'david_and_goslimath')).toBe(true);
+    // Earned: the small part always applies. Worn: the large part on top.
+    expect(statOf(reads(g), 'vsLarger')).toBeCloseTo(0.03, 6);
+    expect(g.dispatch(wearTitle({ title: 'david_and_goslimath' })).ok).toBe(true);
+    expect(statOf(reads(g), 'vsLarger')).toBeCloseTo(0.18, 6);
+  });
+
+  it('the bonus shows up in the blow against something one size step up', () => {
+    const g = makeGame({ seed: 7 });
+    patch(g, (slices) => {
+      (slices.counters as CountersState).counts['kills:suspiciously_large_slime'] = 1;
+    });
+    emit(g, checkTitles, undefined);
+    g.dispatch(wearTitle({ title: 'david_and_goslimath' }));
+    // A rematch, staged directly: the dare itself is not ported.
+    stage(g, [{ monsterId: 'suspiciously_large_slime', level: CAGES.dare!.level }]);
+    for (let i = 0; i < 600 && combatOf(g).fight; i++) g.tick();
+    const mine = feedOf(g)
+      .map((l) => l.damage)
+      .filter((d) => d !== undefined && !d.incoming);
+    expect(mine.length).toBeGreaterThan(0);
+    const step = mine[0]!.steps.find((s) => s.label === 'Damage vs Larger');
+    expect(step?.mult).toBeCloseTo(1.18, 6);
+  });
 });

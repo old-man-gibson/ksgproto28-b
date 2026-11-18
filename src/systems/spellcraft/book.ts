@@ -93,8 +93,8 @@ export function canCastUtility(
 /**
  * The pantheon's veto: a miracle of a deity hostile to the deity of an
  * already prepared miracle refuses the page. Learning is not restricted;
- * this bites at preparation only. The old `deityConflict`. The title that
- * defies dogma is not ported (titles), so the veto always applies.
+ * this bites at preparation only. The old `deityConflict`. A worn title
+ * that defies dogma waives it; `spellcraft/set-prepared` checks that.
  */
 export function deityConflict(
   book: SpellcraftReads,

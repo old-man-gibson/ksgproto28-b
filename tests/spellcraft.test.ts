@@ -31,7 +31,12 @@
  * - `statsFromAttrs` is `monsterStatsFromAttrs` of `src/systems/stats`.
  * - `DEITY_TAG_CATEGORIES` is a list of ids here. `PANTHEONS` is empty in the
  *   old data and is not a registry here: a deity that claims a pantheon fails
- *   the content case, as it did.
+ *   the content case, as it did. `PANTHEONS` of `src/systems/divine` is the
+ *   old writable record, empty.
+ * - Divine (step 3): `grantFavor(state, deity, n)` writes the divine slice
+ *   (`giveFavor`); `learnMiracle(state, bus, id)` is the command
+ *   `divine/learn` (`receive`: true when it ran); the worn title is written
+ *   into the `titles` slice.
  *
  * A monster changed: the old cases "a monster spends its turn on a working,
  * and it lands" and "a working is not a blow: a bulwark does not stop one"
@@ -39,8 +44,6 @@
  * the goblin firetongue: ranged, and a rotation of workings only.
  *
  * Left as `it.todo`, under the old `describe` name:
- * - step 3, divine: favour, `learnMiracle`, the veto at preparation, the
- *   pantheon shelf (`queryDeities`, `deityGroups`, `pantheonOf`).
  * - step 3, psionic: the whole `describe('psionic shaping')` and the psionic
  *   content cases.
  * - Old save migrations: the save here starts at version 1.
@@ -71,7 +74,21 @@ import {
 import type { AttributesState } from '../src/systems/attributes';
 import { totalTicksOf, type ClockState } from '../src/systems/clock';
 import { activeRotation, healEnemy, hunt, setRotation, type Enemy } from '../src/systems/combat';
-import { DEITIES, DEITY_TAGS, DEITY_TAG_CATEGORIES, MIRACLE_LIST, deityRelation, miracleSpec } from '../src/systems/divine';
+import {
+  DEITIES,
+  DEITY_LIST,
+  DEITY_TAGS,
+  DEITY_TAG_CATEGORIES,
+  MIRACLE_LIST,
+  PANTHEONS,
+  deityGroups,
+  deityRelation,
+  learnMiracle,
+  miracleSpec,
+  pantheonOf,
+  queryDeities,
+  type DivineState,
+} from '../src/systems/divine';
 import { TECHNIQUES } from '../src/systems/martial';
 import { MONSTERS } from '../src/systems/monsters';
 import type { ResourcesState } from '../src/systems/resources';
@@ -130,6 +147,16 @@ import {
 import { ask, emit, makeGame, patch, reads, run, setMods, slice } from './helpers';
 
 const fresh = (seed = 1): Kernel => makeGame({ seed });
+
+/** Favour with one deity, written into the divine slice. The old `grantFavor`. */
+const giveFavor = (g: Kernel, deity: string, amount: number) =>
+  patch(g, (slices) => {
+    const favor = (slices.divine as DivineState).favor;
+    favor[deity] = (favor[deity] ?? 0) + amount;
+  });
+const favorOf = (g: Kernel) => slice<DivineState>(g, 'divine').favor;
+/** The old `learnMiracle`: the command `divine/learn`, true when it ran. */
+const receive = (g: Kernel, miracle: string) => g.dispatch(learnMiracle({ miracle })).ok;
 
 /** A mage competent enough that gating never gets in a test's way: Arcana, INT and WIS 20, the whole lexicon. */
 function mage(g: Kernel, level = 12): void {
@@ -885,10 +912,74 @@ describe('the grimoire', () => {
 // ---------- Divine ----------
 
 describe('browsing the powers', () => {
-  it.todo('tags OR within an axis and AND across them, like the bestiary (step 3: divine: queryDeities)');
-  it.todo('search reads names, epithets and what the god is like (step 3: divine: queryDeities)');
-  it.todo('a membership tag is the pantheon claim (step 3: divine: deityGroups)');
-  it.todo('groups by pantheon, with everyone unaffiliated together at the end (step 3: divine: deityGroups, pantheonOf)');
+  it('tags OR within an axis and AND across them, like the bestiary', () => {
+    const ids = (q: Parameters<typeof queryDeities>[0]) => queryDeities(q).map((d) => d.id).sort();
+    // Expectations are derived from the roster, so a new god is never a
+    // failing test; only a broken filter is.
+    const carrying = (...tags: string[]) =>
+      DEITY_LIST.filter((d) => tags.some((t) => d.tags.includes(t))).map((d) => d.id).sort();
+
+    // One axis, two tags: either will do.
+    expect(ids({ tags: ['bestial', 'gigantoid'] })).toEqual(carrying('bestial', 'gigantoid'));
+    // Two axes: both must be satisfied.
+    expect(ids({ tags: ['tribal', 'poison'] })).toEqual(
+      DEITY_LIST.filter((d) => d.tags.includes('tribal') && d.tags.includes('poison'))
+        .map((d) => d.id)
+        .sort(),
+    );
+    expect(ids({ tags: ['tribal', 'fire'] })).toEqual(['goblin_fire']);
+    // No filter is everybody.
+    expect(queryDeities()).toHaveLength(DEITY_LIST.length);
+  });
+
+  it('search reads names, epithets and what the god is like', () => {
+    expect(queryDeities({ search: 'rapier' }).map((d) => d.id)).toEqual(['denjalle']);
+    expect(queryDeities({ search: 'cold sun' }).map((d) => d.id)).toEqual(['xima']);
+    // It composes with tags rather than replacing them.
+    expect(queryDeities({ search: 'viper', tags: ['honorable'] })).toEqual([]);
+  });
+
+  it('a membership tag is the pantheon claim', () => {
+    for (const d of DEITY_LIST) {
+      const tag = d.tags.find((t) => DEITY_TAGS[t]?.category === 'membership');
+      const found = deityGroups().find((g) => g.deities.includes(d));
+      if (tag) {
+        expect(found?.pantheon?.id, `${d.id} should shelve under ${tag}`).toBe(tag);
+        expect(found?.pantheon?.name).toBe(DEITY_TAGS[tag].name);
+      } else {
+        expect(found?.pantheon, `${d.id} claims nothing and should stand alone`).toBeNull();
+      }
+    }
+    // Every power lands in exactly one group.
+    const shelved = deityGroups().flatMap((g) => g.deities);
+    expect(shelved).toHaveLength(DEITY_LIST.length);
+    expect(new Set(shelved.map((d) => d.id)).size).toBe(DEITY_LIST.length);
+  });
+
+  it('groups by pantheon, with everyone unaffiliated together at the end', () => {
+    const alone = deityGroups().find((g) => g.pantheon === null);
+    expect(alone?.deities.every((d) => !pantheonOf(d))).toBe(true);
+    expect(deityGroups().at(-1)?.pantheon ?? null).toBe(alone ? null : deityGroups().at(-1)!.pantheon);
+
+    // Give two of them a shared body and they shelve together, ahead of the rest.
+    PANTHEONS.test_court = { id: 'test_court', name: 'The Test Court', icon: '🏛️' };
+    const claimed = DEITY_LIST.filter((d) => d.id === 'xima' || d.id === 'denjalle');
+    for (const d of claimed) d.pantheon = 'test_court';
+    try {
+      const groups = deityGroups();
+      expect(groups[0].pantheon?.id).toBe('test_court');
+      expect(groups[0].deities.map((d) => d.id).sort()).toEqual(['denjalle', 'xima']);
+      expect(groups[groups.length - 1].pantheon).toBeNull();
+
+      // An unknown pantheon must not swallow its claimant.
+      claimed[0].pantheon = 'no_such_pantheon';
+      const orphaned = deityGroups();
+      expect(orphaned.flatMap((g) => g.deities.map((d) => d.id))).toContain(claimed[0].id);
+    } finally {
+      for (const d of claimed) delete d.pantheon;
+      delete PANTHEONS.test_court;
+    }
+  });
 });
 
 describe('the pantheon', () => {
@@ -912,21 +1003,46 @@ describe('the pantheon', () => {
     expect(deityRelation('xima', 'xima')).toBe('synergy');
   });
 
-  it.todo('favor is standing with ONE deity, spent there and nowhere else (step 3: divine: grantFavor, learnMiracle)');
+  it('favor is standing with ONE deity, spent there and nowhere else', () => {
+    const g = fresh();
+    giveFavor(g, 'xima', 5);
+    giveFavor(g, 'denjalle', 5);
+    expect(receive(g, 'litany_mending')).toBe(true); // Xima's, cost 3
+    expect(favorOf(g).xima).toBe(2);
+    expect(favorOf(g).denjalle).toBe(5);
+    // Already received; and D'Enjalle's favor cannot buy Xima's rime.
+    expect(receive(g, 'litany_mending')).toBe(false);
+    expect(receive(g, 'rime_of_the_cold_sun')).toBe(false);
+    expect(slice<SpellcraftState>(g, 'spellcraft').grimoire).toHaveLength(1);
+  });
 
-  // The book is written by the test helper; the assertions are about the resolution.
   it('a miracle resolves to its declared spec, wearing school and deity', () => {
     const g = fresh();
-    inscribe(g, { school: 'divine', litany: 'litany_mending' });
+    giveFavor(g, 'xima', 3);
+    receive(g, 'litany_mending');
     const spec = resolveSpell(slice<SpellcraftState>(g, 'spellcraft').grimoire[0]);
     expect(spec.school).toBe('divine');
     expect(spec.deity).toBe('xima');
     expect(spec.heal).toBe(2);
   });
 
-  it.todo(
-    'hostile deities refuse to share a prepared page — unless dogma is defied (step 3: divine: learnMiracle; titles: the title that defies dogma. The veto itself is ported and tested in "the grimoire")',
-  );
+  it('hostile deities refuse to share a prepared page — unless dogma is defied', () => {
+    const g = fresh();
+    giveFavor(g, 'denjalle', 20);
+    giveFavor(g, 'kenese_paea', 20);
+    const fire = receive(g, 'holy_fire');
+    const shroud = receive(g, 'night_shroud');
+    expect(fire && shroud).toBe(true);
+    const [a, b] = slice<SpellcraftState>(g, 'spellcraft').grimoire;
+    expect(g.dispatch(setPrepared({ uid: a.uid, prepared: true })).ok).toBe(true);
+    expect(g.dispatch(setPrepared({ uid: b.uid, prepared: true })).ok).toBe(false);
+    // The iconoclast's privilege: worn, the title waives the veto.
+    patch(g, (slices) => {
+      slices.titles.earned.push('iconoclast');
+      slices.titles.worn = 'iconoclast';
+    });
+    expect(g.dispatch(setPrepared({ uid: b.uid, prepared: true })).ok).toBe(true);
+  });
 });
 
 describe('miracle mechanics', () => {

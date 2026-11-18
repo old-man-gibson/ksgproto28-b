@@ -1,7 +1,8 @@
 /**
  * Port of the old `tests/onboarding.test.ts`, the cases of the arcane port
  * (step 3): the floor 0 word at the Spellcrafting Table and the starter
- * lexicon. The cases keep their old names.
+ * lexicon; and of the divine port: the known gods. The cases keep their old
+ * names.
  *
  * Call shape:
  * - `g.chooseTutorialSpell(word)` is the command `tutorial/choose-spell`.
@@ -10,7 +11,9 @@
  * - `g.inscribeArcane(words)` is the command `arcane/inscribe`; the old null
  *   is a result that is not `ok`.
  * - `state.stats[key]` is the `counters` slice.
- * - `wordUnlocked(state, id)` takes the reads.
+ * - `wordUnlocked(state, id)` and `deityKnown(state, id)` take the reads.
+ * - `grantFavorAll(state, bus, n)` is the request `divine/grant-favor-all`;
+ *   `favorWith(state, id)` reads the divine slice.
  *
  * `it.todo`, each with what it waits for:
  * - "the Nine Chapels, where the quest sends you, can teach a miracle":
@@ -19,7 +22,8 @@
  *   counter is ported in `tests/quests.test.ts`; the objectives that read it
  *   belong to `faces_of_threshold`, which waits like the quest above. The
  *   bench case waits for crafting.
- * - "the known gods": divine (step 3).
+ * - "quest 1's favor makes the cheapest miracle exactly affordable": the
+ *   record `faces_of_threshold` waits like the quest above.
  * - "the cages (defined bestiary rates)": the bestiary.
  * - "migration v47 → v48": the save starts at version 1 here.
  */
@@ -27,9 +31,10 @@ import { describe, expect, it } from 'vitest';
 import { checkInscription, checkSentence, STARTER_LEXICON, wordUnlocked } from '../src/systems/arcane';
 import { inscribe } from '../src/systems/arcane';
 import type { CountersState } from '../src/systems/counters';
+import { DEITY_LIST, deityKnown, favorWith, grantFavorAll, type DivineState } from '../src/systems/divine';
 import type { SpellcraftState } from '../src/systems/spellcraft';
 import { chooseSpell } from '../src/systems/tutorial';
-import { makeGame, patch, reads, slice } from './helpers';
+import { ask, makeGame, patch, reads, slice } from './helpers';
 
 const fresh = () => makeGame({ seed: 0 });
 const counts = (g: ReturnType<typeof fresh>) => slice<CountersState>(g, 'counters').counts;
@@ -90,8 +95,24 @@ describe('the starter lexicon', () => {
 });
 
 describe('the known gods', () => {
-  it.todo('a fresh life knows two, and favor accrues to them alone (step 3: divine)');
-  it.todo("quest 1's favor makes the cheapest miracle exactly affordable (step 3: divine; faces_of_threshold)");
+  it('a fresh life knows two, and favor accrues to them alone', () => {
+    const g = fresh();
+    expect(deityKnown(reads(g), 'denjalle')).toBe(true);
+    expect(deityKnown(reads(g), 'usvylgr')).toBe(true);
+    expect(deityKnown(reads(g), 'ikthelthe')).toBe(false);
+    ask(g, grantFavorAll, { amount: 5 });
+    const divine = slice<DivineState>(g, 'divine');
+    expect(favorWith(divine, 'denjalle')).toBe(5);
+    expect(favorWith(divine, 'usvylgr')).toBe(5);
+    for (const d of DEITY_LIST) {
+      if (d.id === 'denjalle' || d.id === 'usvylgr') continue;
+      expect(favorWith(divine, d.id), d.id).toBe(0);
+    }
+  });
+
+  it.todo(
+    "quest 1's favor makes the cheapest miracle exactly affordable (faces_of_threshold: the last of the six system people. The turn-in favour is ported and tested in tests/divine.test.ts)",
+  );
 });
 
 describe('the cages (defined bestiary rates)', () => {
