@@ -121,6 +121,7 @@ export function reads(kernel: Kernel) {
   return {
     derived: kernel.derived,
     stats: kernel.stats,
+    resolved: kernel.resolved,
     modifiers: kernel.modifiers,
     read: <T>(system: SystemDef<T, any>): DeepReadonly<T> => slices[system.id] as DeepReadonly<T>,
   };

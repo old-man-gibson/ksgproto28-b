@@ -49,6 +49,7 @@ import {
   ELEMENTAL_TYPES,
   factValue,
   RES_STAT_BY_TYPE,
+  STATS_PREFIX,
   statBlockOf,
   statOf,
   uncappedResistance,
@@ -301,7 +302,7 @@ export const conditionsExpired = defineEvent<{ entity: string; ids: string[] }>(
 
 // ---- the entity an operation works on ----
 
-type Reads = Pick<DerivedReads, 'derived' | 'stats'>;
+type Reads = Pick<DerivedReads, 'derived' | 'stats' | 'resolved'>;
 
 /** Immunity a system other than this one states for an entity, as named facts of the stat pipeline. */
 function outsideImmunity(reads: Reads, entity: string, def: StatusDef): boolean {
@@ -354,6 +355,8 @@ export function conditionReadout(
 class Operation implements BearerEnv {
   private signature: string;
   private readonly frozen: ReadonlyMap<string, number> | undefined;
+  /** The `stats/` resolver output at the start, for the player. */
+  private readonly frozenStats: Readonly<Record<string, number>> | undefined;
 
   constructor(
     private readonly ctx: Ctx<StatusesState>,
@@ -363,6 +366,7 @@ class Operation implements BearerEnv {
   ) {
     this.signature = sourceSignature(list);
     this.frozen = entity === PLAYER ? ctx.stats(PLAYER) : undefined;
+    this.frozenStats = entity === PLAYER ? ctx.resolved(STATS_PREFIX, PLAYER) : undefined;
   }
 
   /** Touch the source when what it reads of the list changed since the last check. */
@@ -378,6 +382,15 @@ class Operation implements BearerEnv {
     if (this.frozen) return this.frozen;
     this.sync();
     return this.ctx.stats(entity, variant);
+  }
+
+  resolved(prefix: string, entity?: string, variant?: string): Readonly<Record<string, number>> {
+    if (this.frozenStats) {
+      if (prefix !== STATS_PREFIX) throw new Error(`a status operation reads "${STATS_PREFIX}" only, not "${prefix}"`);
+      return this.frozenStats;
+    }
+    this.sync();
+    return this.ctx.resolved(prefix, entity, variant);
   }
 
   derived(stat: string, entity?: string, variant?: string): number {

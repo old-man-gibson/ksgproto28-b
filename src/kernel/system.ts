@@ -143,11 +143,18 @@ export interface ModifierSourceDef<S> {
   collect(ctx: SourceCtx<S>): Modifier[];
 }
 
-/** What a resolver gets. Like a source, it may not read derived values. */
-export interface ResolveCtx<S> extends SourceCtx<S> {
+/**
+ * What a resolver gets. It is a pure function of these fields (decision 32):
+ * no slice, no other system, no derived value. The kernel keeps its output
+ * while the modifiers under its prefix are unchanged.
+ */
+export interface ResolveCtx<S> {
+  readonly content: ContentIndex;
+  /** The entity the block is for. */
+  readonly entity: string;
   /** An opaque key the resolver defines. `''` is the plain block. */
   readonly variant: string;
-  /** Every modifier collected for the entity, from every source, in source order. */
+  /** Every modifier collected for the entity that targets `<system id>/`, from every source, in source order. */
   readonly mods: readonly Modifier[];
 }
 
@@ -156,6 +163,12 @@ export interface DerivedReads {
   derived(stat: string, entity?: string, variant?: string): number;
   /** Every stat of an entity. Read-only. */
   stats(entity?: string, variant?: string): ReadonlyMap<string, number>;
+  /**
+   * The output of the resolver of `prefix` (`<system id>/`): every stat under
+   * it. The same object while the modifiers under the prefix are unchanged, so
+   * a reader may key a cache of its own on it. Read-only.
+   */
+  resolved(prefix: string, entity?: string, variant?: string): Readonly<Record<string, number>>;
   /** Every modifier collected for an entity. Read-only. */
   modifiers(entity?: string): readonly Modifier[];
 }
@@ -223,7 +236,7 @@ export interface SystemDef<S, V = unknown> {
   modifiers?: ModifierSourceDef<S>[];
   /**
    * Computes every stat under `<system id>/` that has no base, from the
-   * modifiers collected for one entity. Every returned key starts with
+   * modifiers collected for one entity that target that prefix. Every returned key starts with
    * `<system id>/`. Modifier targets under that prefix are the resolver's to
    * check.
    */

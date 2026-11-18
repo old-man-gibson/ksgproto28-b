@@ -563,16 +563,26 @@ function monsterBlock(facts: Facts, plain: readonly StatMod[]): StatBlock {
   };
 }
 
+/** Kernel ids built once, not per table: the same strings in the same order. */
+const STAT_TABLE_IDS: readonly string[] = STAT_KEYS.map((key) => STATS_PREFIX + key);
+const ATTR_TABLE_IDS: readonly (readonly [AttributeId, string, string, string])[] = ATTRIBUTE_IDS.map((a) => [
+  a,
+  `${STATS_PREFIX}attr:${a}`,
+  `${STATS_PREFIX}eff:${a}`,
+  `${STATS_PREFIX}formula:${a}`,
+]);
+const UNARMED_ID = `${STATS_PREFIX}unarmedDamage`;
+
 /** The stat table of a block, keyed as the kernel serves it. */
 export function tableOf(block: StatBlock): Record<string, number> {
   const out: Record<string, number> = {};
-  for (const key of STAT_KEYS) out[STATS_PREFIX + key] = block.stats[key];
-  for (const a of ATTRIBUTE_IDS) {
-    out[`${STATS_PREFIX}attr:${a}`] = block.attrs[a];
-    out[`${STATS_PREFIX}eff:${a}`] = block.effective[a];
-    out[`${STATS_PREFIX}formula:${a}`] = block.formula[a];
+  for (let i = 0; i < STAT_KEYS.length; i++) out[STAT_TABLE_IDS[i]] = block.stats[STAT_KEYS[i]];
+  for (const [a, attr, eff, formula] of ATTR_TABLE_IDS) {
+    out[attr] = block.attrs[a];
+    out[eff] = block.effective[a];
+    out[formula] = block.formula[a];
   }
-  out[`${STATS_PREFIX}unarmedDamage`] = BARE_DAMAGE_FLAT + block.formula.str * BARE_DAMAGE_PER_STR;
+  out[UNARMED_ID] = BARE_DAMAGE_FLAT + block.formula.str * BARE_DAMAGE_PER_STR;
   for (const [key, value] of Object.entries(block.uncapped)) out[`${STATS_PREFIX}uncapped:${key}`] = value;
   for (const [target, { add, mult }] of block.scoped) {
     out[`${STATS_PREFIX}scopedAdd:${target}`] = add;

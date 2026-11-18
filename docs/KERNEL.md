@@ -317,6 +317,41 @@ An answer returns copies, never a reference into its slice.
   Tunnels of floor 6 with the probe character, 18,608 to 19,636 ms, 11,360
   kills, 1 knockout. Budget 30,000 ms each. `npm test` and `npm run verify`
   run `unit`, then `budget`, then `budget-world`.
+- Catch-up work (decision 32), measured on 2026-11-17, same machine, each
+  run alone through `scripts/budget-runs.ts`, two rounds. Before is `main`
+  at 7b59ba1 the same day.
+
+  | Run of 8 hours | Before | After | Budget |
+  |---|---|---|---|
+  | No fight, no condition | 1,281 to 1,370 ms | 1,293 to 1,331 ms | 2,000 ms (was 3,000) |
+  | A poison held | 4,841 to 4,939 ms | 4,857 ms | 7,500 ms (was 8,000) |
+  | Floor 1 table sent to combat | 5,278 to 5,579 ms | 4,554 to 4,621 ms | 7,000 ms (was 12,000) |
+  | Floor 6 Tunnels sent to combat | 14,383 to 15,643 ms | 9,386 to 9,777 ms | 15,000 ms (was 20,000) |
+  | World: hunt, floor 4 Woods Edge | 19,226 to 19,293 ms | 9,157 to 9,515 ms | 15,000 ms (was 30,000) |
+  | World: hunt, floor 6 Tunnels | 18,833 to 20,515 ms | 9,297 to 9,649 ms | 15,000 ms (was 30,000) |
+
+  Every run ends on the same outcome digest as before (`tests/outcomeDigests.ts`).
+  Profile before (`node --cpu-prof`, world floor 6, 19.9 s of simulation
+  under the profiler): stat table builds 5.0 s (`statBlockOf` to the kernel
+  `build`, the stats resolver, `tableOf`), the `skills/check-discovery`
+  handler 3.2 s, the rest spread over combat, statuses, resources and event
+  delivery. What changed: (1) decision 32: the player's `stats/` block is
+  kept while only stats outside `stats/` change; on floor 6 the player's
+  plain block is computed 206 times instead of 25,301, its target variants
+  529 times instead of about 3,000 (`scripts/cache-census.ts`); (2) `skillsTrainedBy` in
+  `skills` keeps the skills a tag list trains; (3) `tableOf` uses precomputed
+  keys; (4) event delivery holds each subscriber's context. Profile after
+  (same run, 10.3 s under the profiler): combat tick 4.5 s, event delivery
+  2.3 s, the player's status tick 1.2 s, the resources tick 1.0 s; by file,
+  `combat/engine.ts` 1.45 s, `statuses/index.ts` 1.26 s, `kernel/derived.ts`
+  0.96 s, `kernel/kernel.ts` 0.82 s. Monster blocks are still built once per
+  monster (11,500 on floor 6): each rolls its attributes.
+- Not met: the target of 5,000 ms for the world runs and floor 6. What is
+  left is no longer one hot spot: about 1.4 million events per 8 hours on
+  floor 6 (a `resources/healed` every tick, three events per condition
+  damage tick), the per-tick work of combat, statuses and resources, and one
+  stat block per monster. Further gains need work in those systems' tick
+  paths, each checked against the digests.
 
 ## 9. Content
 

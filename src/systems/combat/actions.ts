@@ -29,7 +29,7 @@ import type { StatusApplication } from '../statuses';
 import type { Enemy, Fight } from './types';
 
 /** What a handler may use of the kernel context. */
-export type ActionCtx = Pick<Ctx<unknown>, 'tick' | 'rng' | 'derived' | 'stats' | 'read' | 'request' | 'emit' | 'skip'>;
+export type ActionCtx = Pick<Ctx<unknown>, 'tick' | 'rng' | 'derived' | 'stats' | 'resolved' | 'read' | 'request' | 'emit' | 'skip'>;
 
 // ---- monsters ----
 

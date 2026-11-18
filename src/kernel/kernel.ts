@@ -75,6 +75,8 @@ export interface Kernel {
   derived(stat: string, entity?: string, variant?: string): number;
   /** Every stat of an entity. Read-only. */
   stats(entity?: string, variant?: string): ReadonlyMap<string, number>;
+  /** The output of the resolver of `prefix`. The same object while its inputs are unchanged. Read-only. */
+  resolved(prefix: string, entity?: string, variant?: string): Readonly<Record<string, number>>;
   /** Every modifier collected for an entity. Read-only. */
   modifiers(entity?: string): readonly Modifier[];
   /** Entities that have derived values, the player first. */
@@ -154,6 +156,7 @@ export function createKernel(options: KernelOptions): Kernel {
   const reads = {
     derived: (stat: string, entity: string = PLAYER, variant = '') => derived.get(stat, entity, variant),
     stats: (entity: string = PLAYER, variant = '') => derived.table(entity, variant),
+    resolved: (prefix: string, entity: string = PLAYER, variant = '') => derived.resolved(prefix, entity, variant),
     modifiers: (entity: string = PLAYER) => derived.modifiers(entity),
   };
 
@@ -229,7 +232,10 @@ export function createKernel(options: KernelOptions): Kernel {
 
   // Registration. Everything below is read from the declarations.
   const commandHandlers = new Map<string, { system: AnySystem; handle: (ctx: Ctx<any>, payload: any) => CommandResult }>();
-  const subscribers = new Map<string, { system: AnySystem; handle: (ctx: Ctx<any>, event: GameEvent<any>) => void }[]>();
+  const subscribers = new Map<
+    string,
+    { system: AnySystem; handle: (ctx: Ctx<any>, event: GameEvent<any>) => void; ctx: Ctx<any> }[]
+  >();
   const ticking = systems.filter((system) => system.tick);
   for (const system of systems) {
     for (const [stat, def] of Object.entries(system.stats ?? {})) derived.defineStat(stat, def.base);
@@ -240,7 +246,7 @@ export function createKernel(options: KernelOptions): Kernel {
     }
     if (system.resolve) {
       derived.registerResolver(system.id + '/', ({ entity, variant, mods }) =>
-        system.resolve!({ state: state.slices[system.id] as DeepReadonly<unknown>, content, read, entity, variant, mods }),
+        system.resolve!({ content, entity, variant, mods }),
       );
     }
     for (const handler of system.commands ?? []) {
@@ -254,7 +260,7 @@ export function createKernel(options: KernelOptions): Kernel {
     }
     for (const handler of system.events ?? []) {
       const list = subscribers.get(handler.event.type) ?? [];
-      list.push({ system, handle: handler.handle });
+      list.push({ system, handle: handler.handle, ctx: contexts.get(system.id)! });
       subscribers.set(handler.event.type, list);
     }
   }
@@ -273,10 +279,9 @@ export function createKernel(options: KernelOptions): Kernel {
       const event = queue.shift()!;
       if (++delivered > MAX_EVENTS_PER_DRAIN)
         throw new Error(`more than ${MAX_EVENTS_PER_DRAIN} events in one drain; last type "${event.type}"`);
-      for (const subscriber of subscribers.get(event.type) ?? []) {
-        subscriber.handle(contexts.get(subscriber.system.id)!, event);
-      }
-      for (const listener of listeners) listener(event);
+      const list = subscribers.get(event.type);
+      if (list) for (let i = 0; i < list.length; i++) list[i].handle(list[i].ctx, event);
+      if (listeners.size > 0) for (const listener of listeners) listener(event);
     }
   }
 

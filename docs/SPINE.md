@@ -991,7 +991,12 @@ should measure again against the old build with the lessons on.
 ### 9.2 Offline budgets
 
 Measured inside `npm run verify` (each budget project runs alone, after the
-unit tests), same machine. Not fixed here; the catch-up session owns it.
+unit tests), same machine. The catch-up work (kernel decision 32) measured
+each run alone through `scripts/budget-runs.ts`; the table of before, after
+and the new budgets is in `docs/KERNEL.md` section 8. After: no fight 1.3 s,
+poison 4.9 s, floor 1 4.6 s, floor 6 9.4 to 9.8 s, world floor 4 9.2 to
+9.5 s, world floor 6 9.3 to 9.6 s, every run on the outcome digest of
+`main`. Budgets now 2,000, 7,500, 7,000, 15,000, 15,000 and 15,000 ms.
 
 | Run of 8 hours | Port 6 | Port 7 | Budget |
 |---|---|---|---|
@@ -1022,13 +1027,15 @@ the first prestige starts the second run at the Foot, by commands only
 
 What the catch-up session inherits:
 
-- The world budgets (20.4 and 20.5 s for 8 hours, old build 3 to 5 s). Known
-  contributors (port 6 notes): the player's stat table rebuilt whenever the
-  place darkness changes under an open sky (each game minute at night), and
-  `skills/check-discovery` sent every tick by the hunt activity. Kernel
-  decision 4 (one cache for all stats) is the place to look; the floor 6
-  table sent to combat directly spends about a third of its time building
-  stat tables (port 5 profile).
+- Catch-up, done in part (kernel decision 32, section 8 of
+  `docs/KERNEL.md`): the world runs went from 20.4 and 20.5 s to 9.3 to
+  9.6 s for 8 hours, floor 6 from 15.6 to 9.4 to 9.8 s, with the same
+  outcome digests (`tests/outcomeDigests.ts`). The player's stat block is
+  kept while only stats outside `stats/` change, and
+  `skills/check-discovery` visits only the skills its tags train. The target
+  of 5 s (old build 3 to 5 s) is not met. What remains is spread over the
+  tick paths of combat, statuses and resources, about 1.4 million events per
+  8 hours, and one stat block per monster.
 
 What step 3 inherits (every `it.todo` tagged step 3, and per system the
 README's "Left behind"):

@@ -166,10 +166,17 @@ export function skillTierName(skillId: string, level: number): string | null {
 
 // ---- training ----
 
+const OWN_TAGS = new Map<string, readonly string[]>();
+
 /** A skill's own tags: the ones its parent does not already carry. */
-function ownTags(def: SkillDef): string[] {
-  const parent = def.parent ? SKILLS[def.parent] : undefined;
-  return parent ? def.tags.filter((t) => !parent.tags.includes(t)) : def.tags;
+function ownTags(def: SkillDef): readonly string[] {
+  let own = OWN_TAGS.get(def.id);
+  if (!own) {
+    const parent = def.parent ? SKILLS[def.parent] : undefined;
+    own = parent ? def.tags.filter((t) => !parent.tags.includes(t)) : def.tags;
+    OWN_TAGS.set(def.id, own);
+  }
+  return own;
 }
 
 /**
@@ -184,6 +191,28 @@ export function skillTrainedBy(def: SkillDef, tags: readonly string[]): boolean 
   const parent = def.parent ? SKILLS[def.parent] : undefined;
   if (parent) return skillTrainedBy(parent, tags);
   return own.length > 0;
+}
+
+const TRAINED_BY = new Map<string, { tags: readonly string[]; skills: readonly SkillDef[] }>();
+
+/**
+ * Every skill an action carrying `tags` trains, in `SKILL_LIST` order. The
+ * answer depends on the skill registry alone, which is fixed once loaded, so
+ * it is kept per tag list: the handlers below run on every tick of an
+ * activity and visit only these skills.
+ */
+export function skillsTrainedBy(tags: readonly string[]): readonly SkillDef[] {
+  const key = tags.join('|');
+  const known = TRAINED_BY.get(key);
+  if (known) {
+    // A tag holding the separator could share a key with another list:
+    // the stored list must equal this one.
+    if (known.tags.length === tags.length && known.tags.every((t, i) => t === tags[i])) return known.skills;
+    return SKILL_LIST.filter((def) => skillTrainedBy(def, tags));
+  }
+  const skills = SKILL_LIST.filter((def) => skillTrainedBy(def, tags));
+  TRAINED_BY.set(key, { tags: [...tags], skills });
+  return skills;
 }
 
 /**
@@ -505,9 +534,8 @@ const system: SystemDef<SkillsState, SkillsView> = defineSystem<SkillsState, Ski
   events: [
     on(checkDiscovery, (ctx, event) => {
       const { tags } = event.payload;
-      for (const def of SKILL_LIST) {
+      for (const def of skillsTrainedBy(tags)) {
         if (isUnlocked(ctx.state, def.id)) continue;
-        if (!skillTrainedBy(def, tags)) continue;
         if (!conditionsMet(conditionReader(ctx), def.unlock)) continue;
         manifest(ctx, def);
       }
@@ -523,8 +551,8 @@ const system: SystemDef<SkillsState, SkillsView> = defineSystem<SkillsState, Ski
         addSkillXp(ctx, id, amount * mult * consumeNovelty(ctx.state, def, sourceKey) * scale);
       }
       // After the held skills, so one that manifests here is not paid twice.
-      for (const def of SKILL_LIST) {
-        if (isUnlocked(ctx.state, def.id) || !manifestsByXp(def) || !skillTrainedBy(def, tags)) continue;
+      for (const def of skillsTrainedBy(tags)) {
+        if (isUnlocked(ctx.state, def.id) || !manifestsByXp(def)) continue;
         bankLatentXp(ctx, def, amount * mult * consumeNovelty(ctx.state, def, sourceKey));
       }
     }),

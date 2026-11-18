@@ -20,7 +20,7 @@ export * from './mods';
 export * from './monster';
 export * from './pipeline';
 
-type Reads = Pick<DerivedReads, 'derived' | 'stats'>;
+type Reads = Pick<DerivedReads, 'derived' | 'stats' | 'resolved'>;
 
 /** The kernel id of a derived stat. */
 export function statId(key: StatKey): string {
@@ -32,21 +32,23 @@ export function statOf(ctx: Reads, key: StatKey, entity?: string, variant?: stri
   return ctx.derived(STATS_PREFIX + key, entity, variant);
 }
 
-const BLOCKS = new WeakMap<ReadonlyMap<string, number>, DerivedStats>();
+const BLOCKS = new WeakMap<Readonly<Record<string, number>>, DerivedStats>();
 /** The kernel ids of the stat keys, in key order: built once, not per block. */
 const STAT_IDS: readonly string[] = STAT_KEYS.map((key) => STATS_PREFIX + key);
 
 /**
  * The whole stat block of an entity. The object is shared by every caller
- * until a modifier source changes: read it, do not write to it.
+ * until a modifier under `stats/` changes: read it, do not write to it.
  */
-export function statBlockOf(ctx: Reads, entity?: string, variant?: string): Readonly<DerivedStats> {
-  const table = ctx.stats(entity, variant);
-  let block = BLOCKS.get(table);
+export function statBlockOf(ctx: Pick<DerivedReads, 'resolved'>, entity?: string, variant?: string): Readonly<DerivedStats> {
+  // Keyed on the resolver's output, which the kernel keeps while the
+  // modifiers under `stats/` are unchanged (kernel decision 32).
+  const out = ctx.resolved(STATS_PREFIX, entity, variant);
+  let block = BLOCKS.get(out);
   if (!block) {
     block = {} as DerivedStats;
-    for (let i = 0; i < STAT_KEYS.length; i++) block[STAT_KEYS[i]] = table.get(STAT_IDS[i])!;
-    BLOCKS.set(table, block);
+    for (let i = 0; i < STAT_KEYS.length; i++) block[STAT_KEYS[i]] = out[STAT_IDS[i]];
+    BLOCKS.set(out, block);
   }
   return block;
 }

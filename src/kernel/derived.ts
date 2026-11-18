@@ -1,7 +1,6 @@
 /**
  * Derived values. Systems register modifier sources. Each source has a change
- * counter. The cache key is the list of counters of every registered source,
- * so a newly registered source is part of the key with no other edit.
+ * counter; a touch bumps it, and the next read collects that source again.
  *
  * Values are kept per entity. The player is the entity `PLAYER`; any other id
  * (a monster in a fight) gets its own record on first use and loses it with
@@ -12,8 +11,17 @@
  * A stat is computed in one of two ways:
  * - the default formula, `(base + sum of add) * product of mult`, for stats a
  *   system declares with a base;
- * - a resolver, a function a system declares, which gets every modifier
- *   collected for the entity and returns the stats under its own prefix.
+ * - a resolver, a function a system declares, which gets the modifiers that
+ *   target its prefix and returns the stats under that prefix.
+ *
+ * Groups (decision 32). The collected modifiers of an entity are split into
+ * groups by target: one group per resolver prefix, and one for the stats
+ * with a base. When a touched source is collected again, its modifiers are
+ * compared with what it returned before, group by group. A resolver whose
+ * group is equal keeps its output, every variant of it; only the groups that
+ * differ are computed again. A resolver is a pure function of its group's
+ * modifiers, the entity and the variant, so a kept output is the value a new
+ * computation would give.
  */
 import type { Modifier } from './system';
 
@@ -24,9 +32,12 @@ export interface ResolveInput {
   entity: string;
   /** An opaque key the resolver understands. `''` is the plain block. */
   variant: string;
-  /** Every modifier collected for the entity, in source order. */
+  /** Every modifier collected for the entity that targets the resolver's prefix, in source order. */
   mods: readonly Modifier[];
 }
+
+/** A resolver's output: stat id to value. Shared with the cache: do not change it. */
+export type Resolved = Readonly<Record<string, number>>;
 
 interface Source {
   id: string;
@@ -44,34 +55,141 @@ interface Resolver {
 }
 
 interface Collected {
-  /** The `stamp` the modifiers were collected at. */
-  at: string;
+  /** The source's counter at collection. */
+  global: number;
+  /** The entity's counter of the source at collection. */
+  local: number;
   mods: Modifier[];
+  /** `mods` split by group: index = resolver index, last = the stats with a base. */
+  byGroup: Modifier[][];
 }
 
 interface EntityRecord {
   /** Bumped by a touch that names this entity, per source id. */
   counters: Map<string, number>;
   collected: Map<string, Collected>;
-  key: string;
-  keyStale: boolean;
-  /** The key `tables` and `mods` were built at, or null. */
-  builtKey: string | null;
+  /** A source may have been touched since the last collection. */
+  dirty: boolean;
+  /** Every group has been computed once. */
+  ready: boolean;
   mods: Modifier[];
-  /** Variant to stat table. */
-  tables: Map<string, Map<string, number>>;
+  /** Per group, the modifiers of every source, in source order. */
+  groupMods: Modifier[][];
+  /** Per resolver, variant to output. */
+  outputs: Map<string, Resolved>[];
+  /** The stats with a base, computed; null when their group changed. */
+  plain: Map<string, number> | null;
+  /** Variant to the whole table. */
+  tables: Map<string, Table>;
 }
 
 function newRecord(): EntityRecord {
   return {
     counters: new Map(),
     collected: new Map(),
-    key: '',
-    keyStale: true,
-    builtKey: null,
+    dirty: true,
+    ready: false,
     mods: [],
+    groupMods: [],
+    outputs: [],
+    plain: null,
     tables: new Map(),
   };
+}
+
+/** Structural equality of two values a source returned. Numbers compare with `Object.is`. */
+function same(a: unknown, b: unknown): boolean {
+  if (Object.is(a, b)) return true;
+  if (typeof a !== 'object' || typeof b !== 'object' || a === null || b === null) return false;
+  if (Array.isArray(a)) {
+    if (!Array.isArray(b) || a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) if (!same(a[i], b[i])) return false;
+    return true;
+  }
+  if (Array.isArray(b)) return false;
+  // Only plain objects compare by content. Anything else (a Map, a Set, a
+  // class instance) is equal only to itself.
+  const pa = Object.getPrototypeOf(a);
+  if ((pa !== Object.prototype && pa !== null) || Object.getPrototypeOf(b) !== pa) return false;
+  const ka = Object.keys(a);
+  const kb = Object.keys(b);
+  if (ka.length !== kb.length) return false;
+  for (let i = 0; i < ka.length; i++) {
+    const k = ka[i];
+    if (k !== kb[i]) return false;
+    if (!same((a as Record<string, unknown>)[k], (b as Record<string, unknown>)[k])) return false;
+  }
+  return true;
+}
+
+function sameList(a: readonly Modifier[], b: readonly Modifier[]): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) if (!same(a[i], b[i])) return false;
+  return true;
+}
+
+/**
+ * The table of one entity and variant: the stats with a base, then each
+ * resolver's output, read in place. Making one copies nothing, so a change of
+ * one group costs that group alone. Iteration builds a plain map once.
+ */
+class Table implements ReadonlyMap<string, number> {
+  private all: Map<string, number> | null = null;
+
+  constructor(
+    private readonly plain: ReadonlyMap<string, number>,
+    private readonly prefixes: readonly string[],
+    private readonly outs: readonly Resolved[],
+  ) {}
+
+  get(stat: string): number | undefined {
+    // Resolver outputs first: most reads are of them. A resolver's keys all
+    // start with its prefix, which holds a slash, so no key inherited from
+    // Object.prototype can match. A stat with a base may share the prefix.
+    for (let r = 0; r < this.prefixes.length; r++) {
+      if (!stat.startsWith(this.prefixes[r])) continue;
+      const value = this.outs[r][stat];
+      if (value !== undefined) return value;
+      break;
+    }
+    return this.plain.get(stat);
+  }
+
+  has(stat: string): boolean {
+    return this.get(stat) !== undefined;
+  }
+
+  get size(): number {
+    return this.full().size;
+  }
+
+  entries() {
+    return this.full().entries();
+  }
+
+  keys() {
+    return this.full().keys();
+  }
+
+  values() {
+    return this.full().values();
+  }
+
+  forEach(fn: (value: number, key: string, map: ReadonlyMap<string, number>) => void, thisArg?: unknown): void {
+    this.full().forEach((value, key) => fn.call(thisArg, value, key, this));
+  }
+
+  [Symbol.iterator]() {
+    return this.full()[Symbol.iterator]();
+  }
+
+  private full(): Map<string, number> {
+    if (!this.all) {
+      this.all = new Map(this.plain);
+      for (const out of this.outs) for (const stat in out) this.all.set(stat, out[stat]);
+    }
+    return this.all;
+  }
 }
 
 export class Derived {
@@ -79,9 +197,13 @@ export class Derived {
   private readonly sources: Source[] = [];
   private readonly byId = new Map<string, Source>();
   private readonly resolvers: Resolver[] = [];
+  /** The prefix of each resolver, in resolver order. */
+  private readonly prefixes: string[] = [];
   private readonly entities = new Map<string, EntityRecord>([[PLAYER, newRecord()]]);
+  /** Target to group index, filled on first sight of a target. */
+  private readonly groupOf = new Map<string, number>();
 
-  /** Times a stat table was rebuilt. For tests. */
+  /** Times a resolver computed a block. For tests. */
   rebuilds = 0;
 
   defineStat(id: string, base: number): void {
@@ -102,6 +224,7 @@ export class Derived {
   registerResolver(prefix: string, resolve: Resolver['resolve']): void {
     if (this.resolvers.some((r) => r.prefix === prefix)) throw new Error(`resolver "${prefix}" is registered twice`);
     this.resolvers.push({ prefix, resolve });
+    this.prefixes.push(prefix);
     this.invalidateAll();
   }
 
@@ -129,11 +252,11 @@ export class Derived {
   private bump(source: Source, entity: string | undefined): void {
     if (entity === undefined) {
       source.counter++;
-      for (const record of this.entities.values()) record.keyStale = true;
+      for (const record of this.entities.values()) record.dirty = true;
     } else {
       const record = this.record(entity);
       record.counters.set(source.id, (record.counters.get(source.id) ?? 0) + 1);
-      record.keyStale = true;
+      record.dirty = true;
     }
     for (const dependent of source.dependents) this.bump(dependent, entity);
   }
@@ -144,7 +267,7 @@ export class Derived {
     // Entities other than the player are short-lived and belong to the state
     // that was replaced. Their records are made again on first read.
     for (const entity of [...this.entities.keys()]) if (entity !== PLAYER) this.entities.delete(entity);
-    this.entities.get(PLAYER)!.keyStale = true;
+    this.entities.get(PLAYER)!.dirty = true;
   }
 
   /** Forget an entity: its cache and its counters. The player cannot be dropped. */
@@ -158,14 +281,10 @@ export class Derived {
     return [...this.entities.keys()];
   }
 
-  /** The cache key of an entity, built from the registered sources. */
+  /** The change stamps of every registered source for an entity, as one string. For tests. */
   cacheKeyNow(entity: string = PLAYER): string {
     const record = this.record(entity);
-    if (record.keyStale) {
-      record.key = this.sources.map((source) => this.stamp(source, record)).join('|');
-      record.keyStale = false;
-    }
-    return record.key;
+    return this.sources.map((source) => `${source.id}:${source.counter}.${record.counters.get(source.id) ?? 0}`).join('|');
   }
 
   get(stat: string, entity: string = PLAYER, variant = ''): number {
@@ -179,11 +298,23 @@ export class Derived {
     const record = this.fresh(entity);
     let table = record.tables.get(variant);
     if (!table) {
-      table = this.build(entity, variant, record.mods);
+      const outs: Resolved[] = [];
+      for (let r = 0; r < this.resolvers.length; r++) outs.push(this.output(record, entity, r, variant));
+      table = new Table(this.plainOf(record), this.prefixes, outs);
       record.tables.set(variant, table);
-      this.rebuilds++;
     }
     return table;
+  }
+
+  /**
+   * The output of the resolver of `prefix` for an entity: every stat under the
+   * prefix. The same object while the modifiers of that group are unchanged,
+   * so a reader may key its own cache on it.
+   */
+  resolved(prefix: string, entity: string = PLAYER, variant = ''): Resolved {
+    const r = this.resolvers.findIndex((resolver) => resolver.prefix === prefix);
+    if (r < 0) throw new Error(`no resolver for "${prefix}"`);
+    return this.output(this.fresh(entity), entity, r, variant);
   }
 
   /** Every modifier collected for an entity. Shared with the cache: do not change it. */
@@ -224,50 +355,110 @@ export class Derived {
     return record;
   }
 
-  private stamp(source: Source, record: EntityRecord): string {
-    return `${source.id}:${source.counter}.${record.counters.get(source.id) ?? 0}`;
-  }
-
   private invalidateAll(): void {
+    this.groupOf.clear();
     for (const record of this.entities.values()) {
-      record.keyStale = true;
-      record.builtKey = null;
+      record.dirty = true;
+      record.ready = false;
+      record.collected.clear();
     }
   }
 
-  /** The record of an entity with its modifiers collected at the current key. */
-  private fresh(entity: string): EntityRecord {
-    // The common case: nothing was touched since the last build.
-    const known = this.entities.get(entity);
-    if (known && !known.keyStale && known.builtKey === known.key) return known;
-    const key = this.cacheKeyNow(entity);
-    const record = this.entities.get(entity)!;
-    if (record.builtKey === key) return record;
-    const mods: Modifier[] = [];
-    for (const source of this.sources) {
-      const at = this.stamp(source, record);
-      let collected = record.collected.get(source.id);
-      if (!collected || collected.at !== at) {
-        collected = { at, mods: source.collect(entity) };
-        record.collected.set(source.id, collected);
+  /** The group of a target: a resolver index, or `resolvers.length` for a stat with a base. */
+  private group(stat: string): number {
+    let g = this.groupOf.get(stat);
+    if (g === undefined) {
+      if (this.stats.has(stat)) g = this.resolvers.length;
+      else {
+        // A target under a resolver's prefix is the resolver's to check.
+        g = this.resolvers.findIndex((r) => stat.startsWith(r.prefix));
+        if (g < 0) throw new Error(`a modifier targets unknown stat "${stat}"`);
       }
-      for (const mod of collected.mods) mods.push(mod);
+      this.groupOf.set(stat, g);
     }
-    record.mods = mods;
-    record.tables = new Map();
-    record.builtKey = key;
+    return g;
+  }
+
+  private split(mods: readonly Modifier[]): Modifier[][] {
+    const byGroup: Modifier[][] = [];
+    for (let g = 0; g <= this.resolvers.length; g++) byGroup.push([]);
+    for (const mod of mods) byGroup[this.group(mod.stat)].push(mod);
+    return byGroup;
+  }
+
+  /** The record of an entity with every touched source collected again and changed groups cleared. */
+  private fresh(entity: string): EntityRecord {
+    // The common case: nothing was touched since the last read.
+    const known = this.entities.get(entity);
+    if (known && !known.dirty) return known;
+    const record = known ?? this.record(entity);
+    const groups = this.resolvers.length + 1;
+    const changed: boolean[] = new Array(groups).fill(!record.ready);
+    let recollected = !record.ready;
+    for (const source of this.sources) {
+      const local = record.counters.get(source.id) ?? 0;
+      const old = record.collected.get(source.id);
+      if (old && old.global === source.counter && old.local === local) continue;
+      const mods = source.collect(entity);
+      const byGroup = this.split(mods);
+      for (let g = 0; g < groups; g++) {
+        if (!changed[g] && (!old || !sameList(old.byGroup[g], byGroup[g]))) changed[g] = true;
+      }
+      record.collected.set(source.id, { global: source.counter, local, mods, byGroup });
+      recollected = true;
+    }
+    record.dirty = false;
+    if (!recollected) return record;
+    const all: Modifier[] = [];
+    for (const source of this.sources) for (const mod of record.collected.get(source.id)!.mods) all.push(mod);
+    record.mods = all;
+    let any = false;
+    for (let g = 0; g < groups; g++) {
+      if (!changed[g]) continue;
+      any = true;
+      const list: Modifier[] = [];
+      for (const source of this.sources) for (const mod of record.collected.get(source.id)!.byGroup[g]) list.push(mod);
+      record.groupMods[g] = list;
+      if (g < this.resolvers.length) record.outputs[g] = new Map();
+      else record.plain = null;
+    }
+    if (any) record.tables = new Map();
+    record.ready = true;
     return record;
   }
 
-  private build(entity: string, variant: string, mods: readonly Modifier[]): Map<string, number> {
+  /** The stats with a base, from the record's group. */
+  private plainOf(record: EntityRecord): Map<string, number> {
+    if (!record.plain) record.plain = this.defaults(record.groupMods[this.resolvers.length]);
+    return record.plain;
+  }
+
+  private output(record: EntityRecord, entity: string, r: number, variant: string): Resolved {
+    let out = record.outputs[r].get(variant);
+    if (!out) {
+      out = this.compute(r, entity, variant, record.groupMods[r]);
+      record.outputs[r].set(variant, out);
+      this.rebuilds++;
+    }
+    return out;
+  }
+
+  private compute(r: number, entity: string, variant: string, mods: readonly Modifier[]): Resolved {
+    const resolver = this.resolvers[r];
+    const out = resolver.resolve({ entity, variant, mods });
+    for (const stat in out) {
+      if (!stat.startsWith(resolver.prefix))
+        throw new Error(`resolver "${resolver.prefix}" returned stat "${stat}" outside its prefix`);
+      if (this.stats.has(stat)) throw new Error(`stat "${stat}" has a base and a resolver`);
+    }
+    return out;
+  }
+
+  /** `(base + sum of add) * product of mult` for every stat with a base. */
+  private defaults(mods: readonly Modifier[]): Map<string, number> {
     const add = new Map<string, number>();
     const mult = new Map<string, number>();
     for (const mod of mods) {
-      if (!this.stats.has(mod.stat)) {
-        // A target under a resolver's prefix is the resolver's to check.
-        if (this.resolvers.some((r) => mod.stat.startsWith(r.prefix))) continue;
-        throw new Error(`a modifier targets unknown stat "${mod.stat}"`);
-      }
       if (mod.kind === 'add') add.set(mod.stat, (add.get(mod.stat) ?? 0) + mod.value);
       else mult.set(mod.stat, (mult.get(mod.stat) ?? 1) * mod.value);
     }
@@ -275,13 +466,16 @@ export class Derived {
     for (const [stat, base] of this.stats) {
       table.set(stat, (base + (add.get(stat) ?? 0)) * (mult.get(stat) ?? 1));
     }
-    for (const resolver of this.resolvers) {
-      for (const [stat, value] of Object.entries(resolver.resolve({ entity, variant, mods }))) {
-        if (!stat.startsWith(resolver.prefix))
-          throw new Error(`resolver "${resolver.prefix}" returned stat "${stat}" outside its prefix`);
-        if (this.stats.has(stat)) throw new Error(`stat "${stat}" has a base and a resolver`);
-        table.set(stat, value);
-      }
+    return table;
+  }
+
+  /** A whole table from a collected list, with no cache. */
+  private build(entity: string, variant: string, mods: readonly Modifier[]): Map<string, number> {
+    const byGroup = this.split(mods);
+    const table = this.defaults(byGroup[this.resolvers.length]);
+    for (let r = 0; r < this.resolvers.length; r++) {
+      const out = this.compute(r, entity, variant, byGroup[r]);
+      for (const stat in out) table.set(stat, out[stat]);
     }
     return table;
   }
