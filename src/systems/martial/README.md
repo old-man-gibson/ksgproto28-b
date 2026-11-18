@@ -121,6 +121,105 @@ Makes: `combat/add-buff`, `combat/move-player`, `combat/stamp-cooldown`,
 - `entriesOf`, `moveOf` and `exitOf` are in `index.ts`, not in files of
   their own.
 
+## Step 3 design
+
+Written before the code (2026-11-17). Old sources read at `7c1267b`:
+`systems/martial.ts` (all of it), `systems/styles.ts`, `data/martial.data.ts`,
+`data/styles.data.ts`, `data/npcs.data.ts` (`hall_tutor`, `dojo_master`),
+`systems/tutorial.ts` (the stance step), `game.ts` (`setStyle`,
+`checkStyleSwap`, `learnFromTeacher`, `learnSchoolFromTeacher`,
+`chooseTutorialStance`), `docs/MARTIAL.md`, `tests/martial.test.ts`,
+`tests/john.ts`.
+
+### What is ported
+
+| Old | Here |
+|---|---|
+| `learnTechnique`, `eligibleToLearn`, `techniqueForm`, `techniqueKnown` | `ledger.ts`. A request `martial/learn { technique, form }` for other systems (a drill manual, step 3 of crafting). |
+| `checkTechniqueLearning`, `selfLearnProgress`, `watchLearnProgress`, `learnFrom` | `ledger.ts`. Run on `counters/changed` for a key some technique learns from (its `learn.self.stat` or its watch key), and on a learn. The old build ran it on every combat tick; the counters only move inside a fight, so the outcome is the same. Off while `flag:unlock_martial` is below 1, as old `subsystemUnlocked(state, 'martial')`. |
+| `reachablePositions`, `unreachedEntries`, `techniqueReachable` | `reach.ts`. |
+| Mastery: `masteryTier`, `effectiveReps`, `rungThreshold`, `masteryTierName`, `repsToNextTier`, the rough surcharge; `techniqueEntries` with `addFrom` | `ladder.ts`; `entriesOf`, `moveOf`, `exitOf` gain the mastery, fork and rune terms. The tuning constants go to `defs.ts`. |
+| `MAX_DRILLED`, drilling, `toggleDrill`, `recordExecution` (with `drillsAll`, `repMult`) | `ledger.ts`. `recordExecution` runs in the strike's `after`, the defensive form's `cast` and `fireCounter`, as the old three paths did. A new rung logs "🎓 <name> — <rung>." |
+| Technique slots: `techniqueSlots` (`MAX_DRILLED + 3 + legacyTechniqueSlots`), `techniqueSlotted`, `slottedTechniques`, `setTechniqueSlotted`, `fitTechniqueSlots`, the bench | `slots.ts`. The bench stays the player's trigger switch (`enabled: false` on `technique:<id>` in combat's `triggers`). Martial changes it through a new combat event `combat/enable-action { id, enabled }`. |
+| Forks: `chosenFork`, `forkOptions`, `forkAvailable`, `chooseFork`, `techniqueDisplayName`; `clearFork`, `resetTechnique` (debug) | `forks.ts`. Command `martial/choose-fork`. |
+| Teachers: `lessonState`, `teachTechnique`, `teachSchool`, `schoolTaughtKey`, `schoolTeacher` | `teachers.ts`. Commands `martial/learn-technique { npc, technique }`, `martial/learn-school { npc, school }`. |
+| `positionKnown`, `knownPositions`, `positionGraph`, `techniquesForFamilies`, `WEAPON_FAMILIES`, `techniqueBenched`, `techniqueStatus`, `techniqueHomeSkill`, `techniquesUnderSkill` | `graph.ts`; read by the panel through the view. |
+| The `technique.<id>` trigger subjects: shown in the picker only for a known technique | The view lists the known ids; combat's evaluator is unchanged. |
+| Weapon states: `sheathed`, `grounded`, `impaled`, `weaponStateGate`, `applyTechniqueEquipment`, `recoverGroundedWeapon`, `toggleSheathe` | `weapons.ts`. The held items live in the martial slice (`sheathed`, `grounded`, `impaled`), so a save holds them with no reclaim step. Two new requests in `items`: `items/take-weapon` (the instance leaves the hand) and `items/give-back { item }` (to the hand if free, else the pack: old `reclaim`). Recovery on `combat/fight-closed`. Command `martial/toggle-sheathe`. |
+| Readied spells: `readyableSpell`, `spellIsHeld`, `releaseReadiedSpell`, `setPosition` dropping the seat | `weapons.ts`; `readiedSpell` in the martial slice. Spellcraft's player kind must leave a held working out of the rotation: it reads `spellIsHeld` through a registration (`registerHeldSpell` of spellcraft), the pattern of `registerBandPass`. |
+| Rune surgery (`weaponTechniqueMods`): rename, tempo, exit, `grantsFork` | `runes.ts`, reading the runes of the wielded weapon through `items`. |
+| Styles: `styles.ts`, `styles.data.ts` (9 stances, 13 schools), `setStyle`, `checkStyleSwap`, the style part of `collectModifiers` | A new system folder `styles` (the stats README already names it). See below. |
+| Floor 0 stance step: `chooseTutorialStance`, `confirmTutorialStance` | `tutorial/choose-stance { style }` in `tutorial`: `styles/set-now` then the stamp. The step reader stops passing over the stance step. |
+| `hall_tutor` (floor 2, Gather, Lunge, the Magic Combat school), `dojo_master` (Threshold, the Sand) | Two records in `npcs` content (and their text). Their lessons in a martial registry `teachers`: `{ id: <npc id>, lessons: [{ technique? , school?, requires? }] }`. |
+| `legacyTechniqueSlots` (prestige) | Read by `techniqueSlots`. The boon is sold since port 7. |
+
+### Slices
+
+| Slice | Version | Change |
+|---|---|---|
+| `martial` | 2 | Adds `drilling: string[]`, `learnFrom: Record<string, number>`, `sheathed: ItemInstance \| null`, `grounded`, `impaled` (the same), `readiedSpell: number \| null`. Step 1 adds the six fields empty. Fixture `tests/fixtures/martial/v2.json`. |
+| `styles` | 1 | `{ style: 'balanced', effective: 'balanced' }`. `effective` is the style last stated to combat, for the swap line (old `lastEffectiveStyle`, which the old game kept outside the save). |
+
+### The styles system
+
+- Content: `styles` (22 records). A record: `name`, `icon`, `desc`, `mods`,
+  `exertion`, `unlock`, `replaces`, `skill`.
+- `effectiveStyleId`: the forced style of a held condition, else the stored
+  stance, then the school that claims that stance's slot (`claimScore`: number
+  of unlock conditions, then the school's level, then id).
+- Tick: computes the effective style; when it differs from `effective`,
+  stores it, emits `combat/set-style` with the exertion, touches its source
+  and logs the old swap line. The old build checked every tick
+  (`checkStyleSwap`).
+- Source `styles/style`: `styleFact(effective)`, the style's mods with
+  `perLevel` read against the school's level, the exertion mods while
+  exerting, and the momentum line `min(cap, momentum)` on the ramp's stat.
+  `dependsOn`: `resources/locks` (exerting), and a new combat source
+  `combat/momentum` that combat touches when `fight.momentum` changes.
+- Command `styles/set { style }`: old `setStyle` (a school id normalises to
+  the stance it replaces; a locked or unchanged stance is refused with a
+  reason). Request `styles/set-now` for the tutorial.
+
+### Requests and events
+
+New: `martial/learn` (request), `combat/enable-action` (event, combat
+declares and hears), `items/take-weapon` and `items/give-back` (requests),
+`styles/set-now` (request), source `combat/momentum`.
+
+Used: `combat/add-buff`, `combat/move-player`, `combat/stamp-cooldown`,
+`combat/take-prevented`, `combat/damage-enemy`, `resources/draw-now`,
+`resources/spend-now`, `counters/bump`, `counters/set`, `skills/unlock` (the
+school lesson), `log/line`, `log/feed`.
+
+Heard: `counters/changed` (learning), `combat/fight-closed` (recover the
+blade, drop the held working), `skills/levelup` (touch the style source when
+the school levels).
+
+### Panel
+
+`martial/panel.ts`: four blocks with reserved heights. Stance (the slot row,
+the exertion switch); slots (`n / cap`, slotted list with drill toggles and
+bench buttons, the bench); the plan (the rotation order of techniques, the
+entry and exit pills, live status line of fixed height); positions (the
+known positions with their effects). The planner graph of the old build (an
+SVG ring) is drawn as a list of edges grouped by entry position on a phone,
+the ring at desktop width. Teachers: a block in the quests panel's person
+row is not available (decision 29 allows a panel to mount another system's
+component), so the lessons show in the martial panel when a teacher stands
+at the player's spot.
+
+### Waits for a later port
+
+- `faces_of_threshold`, `a_taste_of_everything`: need all six system people;
+  they wait for the last of the six ports.
+- Drill manuals (`ConsumableSpec.teachesTechnique`, study cards): consumables
+  and crafting, a later step 3 port. `martial/learn` is the door they use.
+- Loadouts (`Loadout`, `fitTechniqueSlots` on apply): the UI step; the
+  function is ported and tested.
+- Syncretic acquisition: not built in the old build either.
+- Weakest Weapon Master: Facet abilities; `drillsAll` and `repMult` are read
+  already.
+
 ## Files
 
 | File | Holds |
