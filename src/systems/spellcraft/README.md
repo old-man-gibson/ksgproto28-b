@@ -10,7 +10,10 @@ synergy, the counterspell functions (old `combat.ts` 2224 to 2792 and 3229
 to 3520); the cast branch of `pickMonsterAction` and the grimoire branch of
 `pickActive`.
 
-Section "Design" was written and committed before the code.
+Section "Design" was written and committed before the code. The arcane
+port (step 3) added the book's writing side, casting outside a fight, the
+reading in the caster's hands and the held working: section "Step 3 (the
+arcane port)", designed in `src/systems/arcane/README.md` "Step 3 design".
 
 ## Design
 
@@ -141,10 +144,72 @@ ported: `noteTollSpell`, `reactTollGolem`, `facetSignal('miracleCast')`,
 - Two requests of this system to itself were added for its own slice:
   `spellcraft/note-casting` and `spellcraft/note-miracle`.
 
+## Step 3 (the arcane port)
+
+Ported:
+
+| Old | Here |
+|---|---|
+| `preparedCap`, `BASE_PREPARED`, `PREPARED_PER_LEVELS`, `PREPARED_SCHOOLS` | `book.ts`. The cap reads `legacyPreparedPages` of `prestige` (the boon `grimoire_page`) and the levels of `arcana`, `psionics` and `devotion` in `skills`. |
+| `findSpell`, `preparedSpells`, `hasSpell`, `hasDivine` | `book.ts`, over the slice. |
+| `setPrepared`, `deityConflict` | Command `spellcraft/set-prepared { uid, prepared }`. The veto reads the divine school's `relation` and the names of the `deities` content. |
+| `forgetSpell`, `renameSpell` | Commands `spellcraft/forget { uid }`, `spellcraft/rename { uid, name }`. |
+| `addSpell` | Request `spellcraft/add { source, name?, prepared? }`: answers a copy. |
+| `isUtilityWorking`, `utilityCooldown`, `canCastUtility`, `castUtility` | `book.ts` and command `spellcraft/cast-utility { uid }`. The clock is the slice's `utilityReady` (version 2), the old `useCooldowns['spell:<uid>']`. |
+| `resolveSpellFor` | `cast.ts`: a school's optional `reading(reads, source)`, else the bare reading. The arcane school reads the word levels; psionic will read the gear bias. |
+| `grantCastWordXp` call sites | Event `spellcraft/practised { id }`, emitted where the old code called it: the XP of a self cast, of an offensive cast, of a counterspell's spring. |
+| `spellIsHeld` in the pick and in `pickCounterspell` | `registerHeldSpell(reader)`, registered by `martial`; `heldSpell(reads)`. |
+| `specLines`, `targetLabel` (old `ui/lib/format.ts`) | `lines.ts`, short form: "Label: fact" lines. |
+
+Slice version 2: adds `utilityReady: Record<string, number>` (uid to the
+clock tick it may be cast outside a fight again). Migration step 1 adds
+`{}`. Fixture `tests/fixtures/spellcraft/v2.json`.
+
+The view: `prepared` (uids), `cap`, `book` (one row per spell: name, icon,
+school, source text, prepared, mana and cooldown in the caster's hands, the
+wait and the reason it cannot be cast outside a fight now).
+
+Combat now reads a prepared spell through `resolveSpellFor` (the pick, the
+counterspell pick), as the old `pickActive` did. `readyableSpell` (martial)
+and the veto read the bare `resolveSpell`, as the old code did.
+
+### Left behind (step 3)
+
+- The title that defies dogma (titles): the veto always applies.
+- `learnMiracle`, favour: divine. Its veto case in `tests/spellcraft.test.ts`
+  stays `it.todo`; the veto itself has a new case.
+- `shapePsionic`, the psionic school and its `reading`: psionic.
+- Loadouts that re-prepare spells: the UI step (the old `applyLoadout`
+  called `setPrepared`).
+- The refuting body (`registerRefuter`): mutagens.
+
+### Old rules ported as they are (step 3)
+
+- `isUtilityWorking` counts grants and a heal of the caster only. A ward
+  (a buff, `spec.buff`) cannot be cast outside a fight, though the old
+  comment named "a haste, a ward, a mending".
+- Casting outside a fight checks no condition that blocks spells, and pays
+  no word XP and no Intelligence XP: 3 skill XP to `['magic', school]`.
+- The tutorial's spell is written prepared with no cap check, as the old
+  direct write.
+- `forgetSpell` leaves a rotation entry and a held working that name the
+  uid; both are inert.
+
+### Skip reasons (step 3)
+
+| Command | Skip reasons |
+|---|---|
+| `spellcraft/set-prepared` | no spell has the uid; all <cap> prepared pages are in use (also the log line "🔒 Prepared spell limit is <cap>."); "<deity> refuses to share a page with <deity>." (also a log line) |
+| `spellcraft/forget`, `spellcraft/rename` | no spell has the uid |
+| `spellcraft/cast-utility` | No such spell; <name> needs a target; In combat: prepare it instead; <name> on cooldown; Not enough mana; Not enough focus. Each also a log line "🔒 <reason>". |
+
 ## Files
 
 | File | Holds |
 |---|---|
+| `book.ts` | The prepared cap, the book reads, casting outside a fight, the veto. |
+| `lines.ts` | A spell as "Label: fact" lines. |
+| `content/spellcraft_text.json` | Log templates. |
 | `types.ts` | `SpellSpec` and its parts, `SpellSource`, `CraftedSpell`, `spellSpecSchema` for a spell stated in content. |
 | `spec.ts` | The school registry, `specForSource`, `spellKey`, `sourceIssue`, the signature, `undoWorking`. |
 | `counter.ts` | `counterEfficiency` and its constants. |

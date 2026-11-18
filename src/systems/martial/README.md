@@ -5,7 +5,8 @@ Techniques: the registries, the ledger of what the player knows, learning
 slots and the bench, forks, rune surgery, weapon states, the teachers, and
 the execution of a technique from a rotation for monsters and the player.
 
-Port of: old `systems/martial.ts` (all but the readied spell), the
+Port of: old `systems/martial.ts` (the readied spell since the arcane
+port), the
 registries of `data/martial.data.ts`, `NpcDef.teaches` of
 `data/npcs.data.ts`, the technique branches of `pickActive`,
 `pickMonsterAction` and the buff slot in `systems/combat.ts`, `pickCounter`
@@ -268,16 +269,33 @@ at the player's spot.
   375 pixels: over 6 s of a fight with the statuses changing, no heading,
   row or line moved.
 
+## Readied spells (the arcane port)
+
+Designed in `src/systems/arcane/README.md` "Step 3 design", section "The
+readied spell".
+
+- `readyableSpell(reads, stats)`, `spellIsHeld(reads, uid)`: ported.
+- Request `martial/hold-spell { uid }` writes `readiedSpell` (null lets it
+  go). The mana is never refunded.
+- Ready Spell (`readiesSpell`): the defensive form's `cast` spends the mana
+  now, holds the working, then the buff, stamina, exit and feed line ("🔮
+  <form> — <spell> is readied (mana paid now). ..."), the rung, 2 DEX XP
+  and 3 skill XP.
+- Spell Parry (`deliversSpell`): the interception's `fire` releases the
+  working, stamps the technique's clock, moves to the displaced exit, counts
+  the rung, pays 3 INT XP and 3 skill XP to `['combat', 'magic']`, then
+  casts the held working through `castCraftedAttack` of `spellcraft` with
+  the rotation id `technique:<id>`, read in the caster's hands.
+- The seat: `registerPositionWatch` of `combat` (called inside
+  `setPlayerPosition`) lets the working go when the player leaves
+  `spell_ready`. `combat/fight-closed` lets it go.
+- `registerHeldSpell` of `spellcraft`: the held working is passed over by
+  the player kind and by the counterspell pick.
+- The weapon-state gate `readied` is an ordinary miss (no reason), as the
+  other weapon states.
+
 ## Left behind
 
-- Readied spells: the `spell_ready` seat, Ready Spell and Spell Parry
-  (`readyableSpell`, `spellIsHeld`, `releaseReadiedSpell`, the seat dropping
-  the working when the position changes). It needs spellcraft to cast a held
-  working through an opening and to keep a held working out of its own
-  rotation; the arcane port owns that side. Both techniques are refused with
-  the reason "it needs a readied spell (readied spells: not ported)" or "its
-  move readies or delivers a spell". The slice holds `readiedSpell` (always
-  null). Six `it.todo` in `tests/martial.test.ts`.
 - Loadouts (`saveLoadout`, `applyLoadout`): the UI step. `martial/fit-slots`
   is the call an apply makes.
 - Drill manuals and study cards (`ConsumableSpec.teachesTechnique`): the
@@ -333,8 +351,9 @@ In a fight, through `combat/rotation`, once per fight, entry and reason.
 
 - A monster's entry: no technique has the id.
 - The player's `technique:<id>`: no technique has the id; the technique is
-  not known; it needs a readied spell, or its move readies or delivers one
-  (readied spells: not ported).
+  not known; a Ready Spell form with no prepared spell that has a strike or
+  a heal and can be paid for ("no prepared spell with a strike or a heal
+  can be paid for"; the old form did not come, silently).
 
 Not a skip, the ordinary rhythm of a fight: the clock, the position, a
 trigger that does not hold, the weapon family not in hand, the slot (a
@@ -342,6 +361,24 @@ strike is not picked for the buff slot), an interception the pool cannot pay
 for.
 
 ## Old rules ported as they are
+
+The arcane port (readied spells):
+
+- Spell Parry never arms in a fight. It is a counter whose trigger event is
+  `onParry`; combat asks the interception for `onHit` only, as the old
+  `pickCounter` was asked only from the enemy phase with `'onHit'`. In the
+  old build too, Ready Spell pays for and holds a working that is lost when
+  the player leaves the seat, and no delivery happens. The delivery is
+  ported and tested by asking the interception for `onParry` directly.
+  (`electric_cross`, the other counter, names `onHit`.)
+- A delivered working pays its mana again: the old delivery called
+  `castCraftedAttack` without the spring option, which pays. The working's
+  cooldown is stamped on the technique's id (`technique:spell_parry`) over
+  the technique's own cooldown stamped just before.
+- `readyableSpell` reads the bare spec, not the reading in the caster's
+  hands; the feed line and the delivery read the caster's.
+- The held working is taken from the first prepared spell in book order
+  that has a strike or a heal, can be paid for and is not a counterspell.
 
 Step 3:
 

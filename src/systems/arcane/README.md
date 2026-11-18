@@ -1,13 +1,21 @@
 # arcane
 
-The arcane grammar: a sentence of words composed into a spell.
+The arcane school: the grammar that composes a sentence of words into a
+spell, who may speak which sentence, inscription at the Spellcrafting
+Table, word mastery, and the word skills worn in by casting. The panel
+`ArcanePanel.svelte` also shows the grimoire of `spellcraft`.
 
-Port of: the word registry of old `data/spellcraft.data.ts` (`ARCANE_WORDS`),
-`parseSentence`, `composeArcane`, `counterEfficiency`, `matchCeiling`,
-`splitWordId`, `displayWord` and the tuning constants of old
-`systems/arcane.ts`.
+Port of: the word registry of old `data/spellcraft.data.ts` (`ARCANE_WORDS`,
+`maxSentenceWords`), all of old `systems/arcane.ts`, the arcane half of old
+`systems/spellcraft.ts` (`checkInscription`, `inscribeArcane`,
+`grantCastWordXp`, the arcane case of `resolveSpellFor`), the starter
+lexicon of old `systems/unlocks.ts`, `wordSkillId`, `wordTag` and
+`WORD_MILESTONE_LEVELS` of old `data/wordskills.data.ts` (the word skills
+themselves are `skills` content since spine port 3). Spine port 5 ported
+the grammar; step 3 the rest.
 
-Section "Design" was written and committed before the code.
+Sections "Design" (port 5) and "Step 3 design" were written and committed
+before their code.
 
 ## Design
 
@@ -203,8 +211,92 @@ recorded again in their own commit.
   bench: the UI step. Deep forms are typed by tapping the word again when
   its tier is earned.
 
+### Changed while building (step 3)
+
+- Legality reads a plain object, `SpeakerFacts` (Arcana level, unlocked
+  words, distinct sentences per word, word levels), built by
+  `speakerFacts(reads)`. `checkSentence(reads, words)` is
+  `checkSentenceFor(speakerFacts(reads), words)`. The view publishes the
+  facts and the keys of the book, so the panel checks a draft sentence with
+  the same function and never reads state.
+- The discovery bonus of an inscription (`skills/grant-discovery-xp` of the
+  domain `arcana`) was decided before the XP grant at first. The old code
+  decided it after the grant, and the grant itself can manifest Arcana from
+  banked XP (Arcana manifests by XP: its unlock is an attribute condition).
+  A new event `arcane/inscribed { key, first }`, emitted after the grant,
+  is heard by this system, which pays the bonus when Arcana is held then.
+  Checked against the old build with a scratch script that imports the old
+  modules (nothing in the old repository written): after the floor 0 spell
+  and one inscription of "ice pierce quickly" at Intelligence 2, both builds
+  hold Arcana 5 with 18.248 XP and Magic 1 with 0.706 XP; after a second
+  sentence, Arcana 8 with 1.921 XP. One cast of each spell pays the same
+  word XP to the digit (fire 5.273, ice, pierce, quickly 6.777 each).
+- The deep forms are offered as their own buttons (the second and third
+  tier names) once earned, not by merging tiles.
+- Files: `legal.ts` (legality, mastery, the vocabulary), `index.ts`
+  (registration, inscription, the view). The design named no files.
+
+## Left behind
+
+- `faces_of_threshold` and `a_taste_of_everything`: the last of the six
+  system people. `lectory_wizard` is in `npcs`; `spells:inscribed` is
+  bumped.
+- Word slips (`consumable.unlocksWord`, the material `word_slip_stone`):
+  the consumables port. It sets the counter `flag:word:<id>`.
+- The yShicna miracles that act on words: divine.
+- Compound words: shelved in the old build (`docs/LONGTERM.md`), not
+  ported.
+- The drag-to-reorder sentence strip, tile merging, the folded word cards
+  and the full spell card of the old interface (`specLines` with condition
+  totals and overgrowth thresholds): the UI step. `specLines` of
+  `spellcraft` is a short form.
+- The tutorial card's spell buttons were not looked at in a browser: the
+  dev save had passed floor 0. The view that feeds them is tested.
+
+## Old rules ported as they are
+
+- Arcana manifests from the XP an inscription banks, whatever the
+  Intelligence (its unlock is an attribute condition, and banked XP
+  manifests a skill whose conditions are all attributes). The floor 0
+  player at Intelligence 2 who inscribes one three-word sentence holds
+  Arcana 5. The skill's description says "Manifests at Intelligence 10".
+- An inscription that the table refuses (unknown word, level, length,
+  unearned deep form, already written) logs the reason; one that runs pays
+  no word XP. Only a cast pays word XP, and only the cast's XP points pay
+  it: a working refused by a refuting body, or a cast whose retaliation
+  leaves the player at 0 HP, pays none.
+- Word XP is read from the bare reading's mana (`resolveSpell`), not the
+  reading in the speaker's hands.
+- The starter lexicon test of the old `onboarding.test.ts` checked that a
+  refusal does not contain "do not know the word", a phrase no text has
+  had since the refusal became "Unknown word". The case here checks
+  against "Unknown word".
+
 ## Skip reasons
 
-None: this system has no command, no request and no tick. A sentence that
-does not parse composes to null and `spellcraft` reads it as a faded
-inscription.
+Command `arcane/inscribe { words }`, each also a log line "🔒 <reason>":
+
+- the sentence is not a list of words;
+- The sentence is empty;
+- Word limit is <max> (Arcana <level>);
+- No such word: <id>;
+- Unknown word: "<word>" (its latch is not set);
+- "<word>" needs Arcana <level>;
+- "<deep form>" not yet earned: inscribe with "<word>" (<uses>/<need>);
+- the grammar's own refusal (`parseSentence`), or "These words make no
+  spell";
+- Already in your grimoire. Change or add a word to inscribe a new spell.
+
+No tick. A sentence that does not parse composes to null and `spellcraft`
+reads it as a faded inscription.
+
+## Files
+
+| File | Holds |
+|---|---|
+| `defs.ts` | The word registry and its record type. |
+| `grammar.ts` | The parser and the composer (port 5, written by `scripts/port-arcane.py`). |
+| `legal.ts` | Legality over `SpeakerFacts`, the starter lexicon, mastery, word levels and word XP. |
+| `index.ts` | The school registration, `sentenceKey`, `checkInscription`, the command and events, the view. |
+| `ArcanePanel.svelte`, `panel.ts` | The panel. |
+| `content/` | `arcane_words.json` (40), `arcane_text.json`. |

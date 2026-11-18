@@ -509,3 +509,12 @@ skip.
 - Source `combat/momentum` (states nothing) and `playerMomentum(state)`:
   touched when `fight.momentum` changes, and when a fight that built
   momentum closes. The styles source turns momentum into its ramp stat.
+
+## Step 3 (arcane) additions
+
+- `registerPositionWatch(watch)` in `engine.ts`: `watch(ctx, from, to)` is
+  called inside `setPlayerPosition`, in the handler that moved the player,
+  with the combat context. The old `setPosition` dropped a readied working
+  when the player left the spell-ready seat; martial registers the watch
+  and asks `martial/hold-spell` from it. Called only when the position
+  changes.

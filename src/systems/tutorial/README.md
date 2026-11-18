@@ -24,6 +24,7 @@ and spots stood in. `flag:tutorial_done` ends it.
 |---|---|---|
 | `tutorial/choose-weapon { weapon, shield }` | `chooseTutorialWeapon` | the rack was used, no such pick |
 | `tutorial/choose-stance { style }` | `chooseTutorialStance`, `confirmTutorialStance` | the stance step is done |
+| `tutorial/choose-spell { word }` | `chooseTutorialSpell` | the spell step is done; the word is not one of `fire`, `ice`, `spark` |
 | `tutorial/skip` | `skipTutorial` | the tutorial is over |
 
 The rack equips the pick through `items/equip-now` (the rusty sword in the
@@ -33,15 +34,25 @@ Foot through `world/place`; the arrival ends the tutorial.
 
 Heard: `world/arrived` at `ascent_foot` stamps `flag:tutorial_done`.
 
+## The stance and spell steps
+
+The stance step came with the martial port: the card shows
+`TUTORIAL_STANCES` (Neutral, Frenzy, Brace) with their modifiers; a pick
+goes through `styles/set-now` and stamps the step even when the set is
+refused (old behaviour: the old card called `setStyle`, which returned
+silently), and the refusal is logged with `ctx.skip`.
+
+The spell step came with the arcane port (`WAITING_CHOICES` is empty; all
+nine steps are shown). The card shows `TUTORIAL_SPELLS` (fire, ice, spark)
+with their spell lines. `tutorial/choose-spell` writes the one-word sentence
+through `spellcraft/add`, prepared with no cap check, raises Intelligence to
+`TUTORIAL_SPELL_INT` (2) by XP and never lowers it, stamps
+`flag:tutorial_spell` and logs the old line. It does not go through the
+Spellcrafting Table: the table would refuse `spark` (Arcana 3), and
+`spells:inscribed` belongs to the table. A pick is taken out of order too.
+
 ## Left behind
 
-- The spell step (arcane): step 3. The step reader passes over it
-  (`shownSteps`: 8 steps shown); the skip stamps its flag. The stance step
-  came with the martial port: the card shows `TUTORIAL_STANCES` (Neutral,
-  Frenzy, Brace) with their modifiers; a pick goes through `styles/set-now`
-  and stamps the step even when the set is refused (old behaviour: the old
-  card called `setStyle`, which returned silently), and the refusal is
-  logged with `ctx.skip`.
 - `tutorialFocus` (which tab each step opens and points at): UI step.
 
 ## Old data ported as it is

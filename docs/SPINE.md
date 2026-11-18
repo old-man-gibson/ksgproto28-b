@@ -156,6 +156,10 @@ left behind.
 | 3: martial | The rest of `systems/martial.ts` (ledger, learning and the martial unlock, reach, ladder, drilling, slots and the bench, forks, teachers, weapon states, rune surgery, `positionKnown`, `positionGraph`, `techniqueStatus`); `NpcDef.teaches`; `hall_tutor`, `dojo_master`, `militia_captain` of `data/npcs.data.ts`; `legacyTechniqueSlots` as read by `techniqueSlots` | `martial` (slice version 2, `ladder.ts`, the panel), `npcs` (3 records), `combat` (`combat/enable-action`, the `before` hook, `combat/momentum`), `items` (`items/take-weapon`, `items/give-back`), `skills` (`skills/enter`) | `tests/martial.test.ts`: 85 cases, 54 of the 68 `it.todo` of port 5 ported (2 more cases: the counter check, the stance of the skip); `tests/goblins.test.ts`: the 3 watch-learning cases | 12 `it.todo` left: readied spells (6), a loadout (UI step), the study card (consumables), 4 old save migrations. Readied spells, loadouts, drill manuals, the planner drawing: `src/systems/martial/README.md` "Left behind" |
 | 3: martial | `systems/styles.ts`, `data/styles.data.ts`, the style half of `collectModifiers` of `systems/derived.ts`, `setStyle` and `checkStyleSwap` of `game.ts` | `styles` (new) | `tests/styles.test.ts`: the old 11 cases plus 2 new; `tests/skills.test.ts`: the school-bonus case uses the real stance | Nothing of the old file |
 | 3: martial | `chooseTutorialStance`, `confirmTutorialStance`, `TUTORIAL_STANCES` | `tutorial` (`tutorial/choose-stance`; the card shows the three stances) | `tests/tutorial.test.ts`: the stance pick, the walk through floor 0 with the stance, the skip keeping a stance, the three stances offered | The spell step (arcane) |
+| 3: arcane | The rest of `systems/arcane.ts` (`checkSentence`, `knownWords`, `arcaneLevel`, word mastery, `wordLevels`, `grantWordXp`); `maxSentenceWords`; the starter lexicon of `systems/unlocks.ts`; `checkInscription`, `inscribeArcane`, `grantCastWordXp`; `lectory_wizard` of `data/npcs.data.ts` | `arcane` (`legal.ts`, command `arcane/inscribe`, event `arcane/inscribed`, the panel), `npcs` (1 record) | `tests/spellcraft.test.ts`: "deep words are earned" and "checkSentence gates on the mage" whole, "the grimoire" (2), "word skills" (4); `tests/onboarding.test.ts` (new file): the floor 0 word at the table, the starter lexicon (3) | Word slips (consumables), `faces_of_threshold`, `a_taste_of_everything`, the drag strip of the old bench (UI step): `src/systems/arcane/README.md` "Left behind" |
+| 3: arcane | The book half of `systems/spellcraft.ts` (`preparedCap`, `setPrepared`, `deityConflict`, `addSpell`, `forgetSpell`, `renameSpell`, `hasSpell`, `castUtility` and its checks, `resolveSpellFor`); `legacyPreparedPages` as read by `preparedCap` | `spellcraft` (slice version 2: `utilityReady`; `book.ts`, `lines.ts`; request `spellcraft/add`, event `spellcraft/practised`, `registerHeldSpell`, the school's `reading`) | `tests/spellcraft.test.ts`: the prepared cap (3), 2 new (the veto, casting outside a fight); `tests/prestige.test.ts`: the page half of "ceilings and pages"; `tests/antimagic.test.ts`: the two assertions left in port 5 | `learnMiracle` and the veto's old case (divine), the title that defies dogma, psionic |
+| 3: arcane | The readied spell of `systems/martial.ts` and `systems/combat.ts` (`readyableSpell`, `spellIsHeld`, `releaseReadiedSpell`, `setPosition` dropping the seat, the Ready Spell form, the Spell Parry delivery) | `martial` (request `martial/hold-spell`), `combat` (`registerPositionWatch`) | `tests/martial.test.ts`: the 6 `it.todo` of "readied spells", 2 new | Nothing. Spell Parry never arms in a fight, as in the old build (`src/systems/martial/README.md`) |
+| 3: arcane | `chooseTutorialSpell`, `TUTORIAL_SPELLS`, `TUTORIAL_SPELL_INT` | `tutorial` (`tutorial/choose-spell`; the card shows the three spells) | `tests/tutorial.test.ts`: the walk with the spell step, the two spell cases; `tests/john.test.ts`: the rack climbs take `fire`, the vermin bound of the old case is held again | Nothing |
 
 Port 1 notes:
 
@@ -1138,3 +1142,50 @@ counter change). Not profiled. The kills, the generator, the level and the
 gold of every run are the same as on `main`; only the state hash changed
 (the new slices and fields), and the digests are recorded again in their
 own commit.
+
+## 11. Step 3: arcane
+
+Done 2026-11-17 on branch `step3-arcane`. Design and the full account:
+`src/systems/arcane/README.md` ("Step 3 design", "Changed while building
+(step 3)", "Left behind", "Old rules ported as they are"), the step 3
+sections of `src/systems/spellcraft/README.md`, "Readied spells (the arcane
+port)" in `src/systems/martial/README.md`, and `src/systems/tutorial/README.md`.
+
+### 11.1 John
+
+The skipping John of `npm run pacing` and of the outcome digests plays no
+floor 0 and takes no spell: his climbs are the same as after the martial
+port, segment for segment (the digests differ in the state hash only), so
+section 10.1 stands and no new table was measured. The rack climbs of
+`tests/john.test.ts` take the spell `fire` at the Field, as the old ones
+did. With it, 2 of the 12 band 1 climbs lose one vermin fight (both
+skipping Johns; no rack climb), and the old bound (at most two) holds
+again; it was an `it.todo` measured at 3 of 12 without the spell. First
+toll collector, rack climbs, won / ticks: seed 42 sword yes 293, spear yes
+169, dagger no 349, hammer yes 198, unarmed no 324; seed 7 sword no 329,
+spear yes 135, dagger no 280, hammer no 304, unarmed yes 226.
+
+### 11.2 Offline budgets
+
+Each run of 8 hours alone through `scripts/budget-runs.ts`, two rounds,
+same machine, same hour. Step 3 martial is section 10.2.
+
+| Run of 8 hours | Step 3 martial | Step 3 arcane | Budget |
+|---|---|---|---|
+| No fight, no condition | 1,442 to 1,444 ms | 1,396 to 1,420 ms | 2,000 ms |
+| A poison held | 5,203 to 5,359 ms | 4,991 to 4,994 ms | 7,500 ms |
+| Floor 1 table sent to combat | 4,977 to 5,080 ms | 4,471 to 4,657 ms | 7,000 ms |
+| Floor 6 Tunnels sent to combat | 9,886 to 10,232 ms | 8,457 to 8,730 ms | 13,500 ms |
+| World: hunt, floor 4 Woods Edge | 9,526 to 9,748 ms | 8,499 to 8,726 ms | 13,000 ms |
+| World: hunt, floor 6 Tunnels | 9,648 to 9,939 ms | 8,761 to 8,926 ms | 13,000 ms |
+
+Every budget holds; no run is slower. The runs are 3 to 15% faster than
+the martial measurement. Nothing this port adds runs on the paths these
+runs take (no prepared spell, no readied spell; one more call per position
+change, a loop over one watch), so the difference is taken to be the
+machine between the two sessions, not this code; it was not traced. The
+kills, the generator, the level and the gold of every run and every John
+segment are the same as on `main`; only the state hash changed (the
+spellcraft slice field `utilityReady`), and the digests are recorded again
+in their own commit.
+
