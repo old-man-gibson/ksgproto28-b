@@ -1,6 +1,7 @@
 /**
  * The offline budgets: four runs of 8 hours (288,000 ticks), each held to a
- * wall-clock limit set from a measurement (docs/KERNEL.md section 8).
+ * wall-clock limit set from a measurement (docs/KERNEL.md section 8). The
+ * runs are in `tests/budgetRuns.ts`.
  *
  * This file is the vitest project `budget`. It runs alone, after the other
  * test files (`npm test` runs the project `unit`, then this one), and its
@@ -12,157 +13,84 @@
  * - A condition held: a timerless poison, which deals damage on every tick.
  * - Fights at floor 1: a new character with the rusty sword hunts the Vermin
  *   Hall table with no fight limit, with the rest rule at 50%. A defeat turns
- *   the hunt off (the knockout is the world port's), so the hunt command is
- *   sent again every 60 seconds; it changes nothing while a hunt is on.
+ *   the hunt off, so the hunt command is sent again every 60 seconds; it
+ *   changes nothing while a hunt is on.
  * - Fights at floor 6: the Tunnels, with the firetongue and the witch doctor.
  * - Two more runs, through the world system, are in
  *   `tests/budgetsWorld.test.ts`: one file would run past the 60 seconds
  *   vitest gives a worker to answer.
+ *
+ * Each run also compares its outcome digest with the one recorded on `main`
+ * before the catch-up work (`tests/outcomeDigests.ts`).
  */
 import { describe, expect, it } from 'vitest';
-import {
-  catchUp,
-  createKernel,
-  OFFLINE_CAP_MS,
-  offlineTicks,
-  PLAYER,
-  runHeadless,
-  type Modifier,
-  type ScheduledCommand,
-} from '../src/kernel';
-import { systems } from '../src/systems';
-import { hunt, setHuntRest, type EncounterSite } from '../src/systems/combat';
-import { buyStep } from '../src/systems/counter';
-import { applyStatus, type StatusesState } from '../src/systems/statuses';
+import { PLAYER } from '../src/kernel';
+import type { StatusesState } from '../src/systems/statuses';
 import { watchStatKey } from '../src/systems/martial';
-import { spellCast } from '../src/systems/spellcraft';
-import { combatOf, counterOf, SITES, skipsOf } from './combatHelpers';
-import { ask, equip, makeGame, probe, setMods } from './helpers';
+import { digestOf, RUNS } from './budgetRuns';
+import { combatOf, counterOf, skipsOf } from './combatHelpers';
+import { RUN_DIGESTS } from './outcomeDigests';
 
-/**
- * Measured on 2026-11-17: 3,931 ms alone, 7,126 ms inside the full test run
- * (three 8-hour runs in parallel workers), for 9,673 kills and no defeat.
- * Spine port 5, same day: 4,104 ms alone, 8,781 ms inside the full run, the
- * same 9,673 kills.
- */
-const FIGHT_EIGHT_HOUR_BUDGET_MS = 12000;
-const TICKS = 288_000;
-
-const floorOne: EncounterSite = { ...SITES.f1_storerooms, fightLimit: undefined };
-
-/**
- * Spine port 5: the Tunnels of floor 6 (goblin, hobgoblin, firetongue, witch
- * doctor, groups of up to three). Measured on 2026-11-17: 11,500 to 12,400 ms
- * alone, 11,700 ms inside the full test run, for 11,231 kills, 1 defeat,
- * 1,954 casts and 1,615 techniques (docs/KERNEL.md section 8).
- */
-const CASTER_EIGHT_HOUR_BUDGET_MS = 20000;
-const floorSix: EncounterSite = { ...SITES.f6_tunnels };
-const FLOOR_SIX_CHARACTER: Modifier[] = [
-  { stat: 'stats/maxHp', kind: 'add', value: 900 },
-  { stat: 'stats/damage', kind: 'add', value: 45 },
-  { stat: 'stats/armor', kind: 'add', value: 12 },
-];
-
-/**
- * No fight, no condition. Raised from 2,000 in spine port 4: the combat
- * system adds a tick and three event handlers. Measured 929 ms alone then,
- * 918 ms alone in spine port 5.
- */
+/** No fight, no condition. Port 6: 1,231 to 1,242 ms alone. */
 const EIGHT_HOUR_BUDGET_MS = 3000;
-
-/**
- * The same span with a condition that deals damage on every tick: a
- * timerless bleed, which sends four events per tick. Measured 2,650 ms alone
- * on 2026-11-16 (1,450 ms with a condition that only changes stats), 3,650 ms
- * alone in spine port 5.
- */
+/** A timerless poison held. Port 6: 4,952 to 5,003 ms alone. */
 const HELD_EIGHT_HOUR_BUDGET_MS = 8000;
+/** Floor 1 table sent to combat. Port 6: 5,237 to 5,368 ms alone, 9,673 kills. */
+const FIGHT_EIGHT_HOUR_BUDGET_MS = 12000;
+/** Floor 6 Tunnels sent to combat. Port 6: 14,368 to 14,899 ms alone, 11,328 kills. */
+const CASTER_EIGHT_HOUR_BUDGET_MS = 20000;
 
 describe('offline catch-up', () => {
   it(`simulates 8 hours of ticks within ${EIGHT_HOUR_BUDGET_MS} ms`, () => {
-    const ticks = offlineTicks(OFFLINE_CAP_MS);
-    expect(ticks).toBe(288_000);
-    const kernel = createKernel({ systems, seed: 9 });
-    kernel.tick(200);
-    kernel.dispatch(buyStep({ stepId: 'small_step' }));
-    const envelope = kernel.save(0);
-
-    const started = performance.now();
-    const result = catchUp({ systems, envelope, ticks, now: OFFLINE_CAP_MS });
-    const elapsed = performance.now() - started;
-
-    console.log(`8 hours, no fight: ${elapsed.toFixed(0)} ms`);
-    expect((result.kernel.data as { tick: number }).tick).toBe(200 + ticks);
-    expect(elapsed, `8 hours took ${elapsed.toFixed(0)} ms`).toBeLessThan(EIGHT_HOUR_BUDGET_MS);
+    const { ms, envelope } = RUNS.idle();
+    console.log(`8 hours, no fight: ${ms.toFixed(0)} ms`);
+    expect((envelope.kernel.data as { tick: number }).tick).toBe(200 + 288_000);
+    expect(digestOf(envelope)).toEqual(RUN_DIGESTS.idle);
+    expect(ms, `8 hours took ${ms.toFixed(0)} ms`).toBeLessThan(EIGHT_HOUR_BUDGET_MS);
     // The test's own time limit is above the budget, so the budget is what fails.
   }, EIGHT_HOUR_BUDGET_MS * 5);
 });
 
 describe('offline catch-up with a condition held', () => {
-  // Spine port 6: the knockout is live. A bleed ends at the first knockout,
-  // because the forced rest tends it. A poison with no timer is not removed
-  // by rest: it deals damage on every tick for the 8 hours and knocks the
-  // character out again each time the recovery ends.
+  // A bleed ends at the first knockout, because the forced rest tends it. A
+  // poison with no timer is not removed by rest: it deals damage on every
+  // tick for the 8 hours and knocks the character out again each time the
+  // recovery ends.
   it(`simulates 8 hours of a poisoned character within ${HELD_EIGHT_HOUR_BUDGET_MS} ms`, () => {
-    const g = makeGame({ seed: 9 });
-    ask(g, applyStatus, { entity: PLAYER, app: { id: 'poison', intensity: 2, duration: 'permanent' } });
-    ask(g, applyStatus, { entity: PLAYER, app: { id: 'tainted', intensity: 2, duration: 'permanent' } });
-    const envelope = g.save(0);
-    const started = performance.now();
-    const result = catchUp({ systems: [...systems, probe], envelope, ticks: 288_000, now: 0 });
-    const elapsed = performance.now() - started;
-    console.log(`8 hours, a poison held: ${elapsed.toFixed(0)} ms`);
-    expect((result.slices.statuses.data as unknown as StatusesState).held[PLAYER].map((h) => h.id)).toEqual(['poison', 'tainted']);
-    expect(elapsed, `8 hours took ${elapsed.toFixed(0)} ms`).toBeLessThan(HELD_EIGHT_HOUR_BUDGET_MS);
+    const { ms, envelope } = RUNS.poison();
+    console.log(`8 hours, a poison held: ${ms.toFixed(0)} ms`);
+    expect((envelope.slices.statuses.data as unknown as StatusesState).held[PLAYER].map((h) => h.id)).toEqual(['poison', 'tainted']);
+    expect(digestOf(envelope)).toEqual(RUN_DIGESTS.poison);
+    expect(ms, `8 hours took ${ms.toFixed(0)} ms`).toBeLessThan(HELD_EIGHT_HOUR_BUDGET_MS);
   }, HELD_EIGHT_HOUR_BUDGET_MS * 3);
 });
 
 describe('offline catch-up with fights', () => {
   it(`simulates 8 hours of hunting a floor 1 table within ${FIGHT_EIGHT_HOUR_BUDGET_MS} ms`, () => {
-    const g = makeGame({ seed: 9 });
-    equip(g, 1);
-    const commands: ScheduledCommand[] = [{ at: 0, command: setHuntRest({ at: 0.5, toFull: true }) }];
-    for (let at = 0; at < TICKS; at += 600) commands.push({ at, command: hunt({ site: floorOne }) });
-
-    const started = performance.now();
-    runHeadless(g, { ticks: TICKS, commands });
-    const elapsed = performance.now() - started;
-
+    const { ms, kernel, envelope } = RUNS.floor1();
+    const g = kernel!;
     // The run fought for the 8 hours: thousands of kills, and a fight or a hunt at the end.
     const kills = counterOf(g, 'kills');
-    console.log(`8 hours of fights: ${elapsed.toFixed(0)} ms, ${kills} kills, ${counterOf(g, 'defeats')} defeats`);
+    console.log(`8 hours of fights: ${ms.toFixed(0)} ms, ${kills} kills, ${counterOf(g, 'defeats')} defeats`);
     expect(kills).toBeGreaterThan(1000);
     expect(combatOf(g).hunting).toBe(true);
     expect(g.staleStats()).toEqual([]);
-    expect(elapsed, `8 hours took ${elapsed.toFixed(0)} ms`).toBeLessThan(FIGHT_EIGHT_HOUR_BUDGET_MS);
-    // The test's own time limit is above the budget, so the budget is what fails.
+    expect(digestOf(envelope)).toEqual(RUN_DIGESTS.floor1);
+    expect(ms, `8 hours took ${ms.toFixed(0)} ms`).toBeLessThan(FIGHT_EIGHT_HOUR_BUDGET_MS);
   }, FIGHT_EIGHT_HOUR_BUDGET_MS * 3);
 
   it(`simulates 8 hours of hunting a floor 6 table with casters within ${CASTER_EIGHT_HOUR_BUDGET_MS} ms`, () => {
-    const g = makeGame({ seed: 9 });
-    equip(g, 1);
     // A character that holds floor 6: the old climb arrives there with trained
     // attributes, skills and gear the spine does not grant yet. The probe
     // stands in for them.
-    setMods(g, FLOOR_SIX_CHARACTER);
-    let casts = 0;
-    g.onEvent((event) => {
-      if (event.type === spellCast.type) casts += 1;
-    });
-    const commands: ScheduledCommand[] = [{ at: 0, command: setHuntRest({ at: 0.5, toFull: true }) }];
-    for (let at = 0; at < TICKS; at += 600) commands.push({ at, command: hunt({ site: floorSix }) });
-
-    const started = performance.now();
-    runHeadless(g, { ticks: TICKS, commands });
-    const elapsed = performance.now() - started;
-
+    const { ms, kernel, envelope, casts } = RUNS.floor6();
+    const g = kernel!;
     const kills = counterOf(g, 'kills');
     const techniques = ['gather', 'hamstring', 'dirty_stab', 'lunge', 'pocket_sand']
       .map((id) => counterOf(g, watchStatKey(id)))
       .reduce((a, b) => a + b, 0);
     console.log(
-      `8 hours of floor 6 fights: ${elapsed.toFixed(0)} ms, ${kills} kills, ${counterOf(g, 'defeats')} defeats, ${casts} casts, ${techniques} techniques`,
+      `8 hours of floor 6 fights: ${ms.toFixed(0)} ms, ${kills} kills, ${counterOf(g, 'defeats')} defeats, ${casts} casts, ${techniques} techniques`,
     );
     // The run fought the table, and the casters and the hobgoblins used their rotations.
     expect(kills).toBeGreaterThan(1000);
@@ -172,6 +100,7 @@ describe('offline catch-up with fights', () => {
     expect(techniques).toBeGreaterThan(1000);
     expect(skipsOf(g, 'combat/rotation').filter((reason) => reason.includes('no system has registered'))).toEqual([]);
     expect(g.staleStats()).toEqual([]);
-    expect(elapsed, `8 hours took ${elapsed.toFixed(0)} ms`).toBeLessThan(CASTER_EIGHT_HOUR_BUDGET_MS);
+    expect(digestOf(envelope)).toEqual(RUN_DIGESTS.floor6);
+    expect(ms, `8 hours took ${ms.toFixed(0)} ms`).toBeLessThan(CASTER_EIGHT_HOUR_BUDGET_MS);
   }, CASTER_EIGHT_HOUR_BUDGET_MS * 3);
 });

@@ -19,14 +19,15 @@ export default defineConfig({
     // budget file each: their cases measure wall-clock time, so they do not
     // share the processor with other test files. `john` runs the headless
     // climbs, whose load made timed unit cases time out when they ran in
-    // parallel. `npm test` runs one project after the other.
+    // parallel, and the outcome digests of John's climbs. `npm test` runs one
+    // project after the other.
     projects: [
       {
         extends: true,
         test: {
           name: 'unit',
           include: ['tests/**/*.test.ts'],
-          exclude: ['tests/budgets.test.ts', 'tests/budgetsWorld.test.ts', 'tests/john.test.ts'],
+          exclude: ['tests/budgets.test.ts', 'tests/budgetsWorld.test.ts', 'tests/john.test.ts', 'tests/outcome.test.ts'],
           environment: 'node',
         },
       },
@@ -50,7 +51,7 @@ export default defineConfig({
         extends: true,
         test: {
           name: 'john',
-          include: ['tests/john.test.ts'],
+          include: ['tests/john.test.ts', 'tests/outcome.test.ts'],
           environment: 'node',
         },
       },

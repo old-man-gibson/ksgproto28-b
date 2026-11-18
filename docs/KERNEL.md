@@ -159,8 +159,10 @@ How a value is computed:
   `(base + sum of add modifiers) * product of mult modifiers`.
 - **Resolver.** A system that declares `resolve(ctx)` computes every stat
   under `<id>/` that has no base. It gets `ctx.mods`, every modifier
-  collected for the entity from every source in source order, and returns a
-  record of stat id to value. Every returned id starts with `<id>/`.
+  collected for the entity that targets `<id>/`, from every source in source
+  order, and returns a record of stat id to value. Every returned id starts
+  with `<id>/`. It is a pure function of `mods`, `entity`, `variant` and
+  `content`: the context has no slice and no `read` (decision 32).
 - A modifier may carry more fields than `stat`, `kind` and `value` (a label,
   a gate, an origin). The kernel passes them through; the resolver reads them.
 - A modifier must target a declared stat, or a target under the prefix of a
@@ -171,6 +173,22 @@ How a value is computed:
   string the resolver defines; `''` is the plain block. Variants are cached
   with the entity and rebuilt with it. The default formula ignores the
   variant.
+
+Groups (decision 32):
+
+- The collected modifiers of an entity are split by target into groups: one
+  per resolver prefix, and one for the stats with a base.
+- A touched source is collected again on the next read. Its modifiers are
+  compared with what it returned before, group by group, by value. A group
+  with no difference keeps its result: a resolver keeps its output for every
+  variant. Only the groups that differ are computed again.
+- `ctx.resolved(prefix, entity?, variant?)` returns a resolver's output. It
+  is the same object while the group's modifiers are unchanged, so a reader
+  may key its own cache on it: `statBlockOf` keys the stat block on the
+  output of `stats/`. A key on `ctx.stats()` changes whenever any group
+  changes.
+- `ctx.stats()` returns a table that reads the groups in place; making one
+  copies nothing.
 
 Dependencies between sources:
 
@@ -405,7 +423,8 @@ point. Each took the simpler option.
    tick. `staleStats()` is the check against a missing `touch`.
 4. **One cache for all stats.** Any touched source rebuilds the whole stat
    table, but only touched sources are collected again. Per-stat dependency
-   tracking is left until a measurement asks for it.
+   tracking is left until a measurement asks for it. Revised by decision 32:
+   the measurement came, and the cache is split into groups.
 5. **Change counters are not saved.** They are cache bookkeeping. A load
    touches every source.
 6. **Events are queued.** Delivery is after the emitting handler returns, not
@@ -521,3 +540,33 @@ point. Each took the simpler option.
     folder may export `overlay.ts` beside `panel.ts`; the shell mounts the
     list. Alternative: the shell imports the three components, which breaks
     "the shell imports the kernel and the lists only".
+32. **Stat groups (catch-up work).** Decision 4 rebuilt the whole player
+    table on any touch. The profile of the floor 6 run (section 8) put 5 to
+    6 of 15 seconds in stat table builds, about 145 microseconds each: 25,000
+    rebuilds of the player, one per change of `statuses/held`, and 11,500
+    monster blocks. Census of the touches: nearly all player rebuilds came
+    from a condition whose stamina ceiling (`resources/ceiling.stamina`, a
+    stat with a base) decays every few ticks; the 70 stats under `stats/`
+    did not change. Change: the collected modifiers are split into groups by
+    target (one per resolver prefix, one for stats with a base); a
+    re-collected source is compared with its last collection group by group,
+    by value; a resolver's output is kept while its group is equal. The
+    resolver now receives only the modifiers of its own prefix; the stats
+    pipeline already skipped every other target, so its output is the same.
+    Determinism: a resolver is a pure function of its group, the entity, the
+    variant and the content (its context lost `state` and `read`), so a kept
+    output equals what a new computation would give. Equality is by value
+    (numbers by `Object.is`, plain objects and arrays by content, anything
+    else by identity), so a source that returns new objects with the same
+    content keeps the output, and any difference recomputes it. Tests:
+    `tests/outcome.test.ts` and the budget files compare an outcome digest
+    (tick, generator, kills, defeats, level, gold, a hash of every slice)
+    with values recorded on `main` before the change;
+    `tests/staleSources.test.ts` checks one case per source of change.
+    Alternatives: (a) per-stat dependencies declared by each source; the
+    pipeline is one ordered computation (decision 23), so a stat cannot be
+    computed apart from the others; (b) a memo of whole blocks keyed by the
+    modifier content; measured 269 hits in 39,829 builds on floor 6, because
+    every monster rolls its attributes and the decaying ceiling never
+    repeats. Monster blocks are still built once per monster; they were made
+    cheaper (precomputed table keys), not avoided.
