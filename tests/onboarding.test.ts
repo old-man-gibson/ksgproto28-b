@@ -63,7 +63,7 @@ describe('meeting people (talk objectives)', () => {
   it.todo('a greeting stamps met:* once, at the right spot only (faces_of_threshold: the last of the six system people; the met counter is in tests/quests.test.ts)');
   it.todo('talk objectives read greetings live — met before accepting still counts (faces_of_threshold: the last of the six system people)');
   it.todo('stat objectives read their counters live (a_taste_of_everything: the last of the six system people)');
-  it.todo('bench work advances discipline craft objectives through the bus (step 3: crafting)');
+  it.todo('bench work advances discipline craft objectives through the bus (a_taste_of_everything: the last of the six system people; quests hears benches/crafted since the alchemy port)');
 });
 
 describe('the starter lexicon', () => {

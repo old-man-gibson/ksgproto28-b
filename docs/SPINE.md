@@ -1272,3 +1272,71 @@ fight ran at the Cages: no element moved.
 Not verified in a browser: a title earned by play (the save was edited),
 the turn-in favour (tested headless), the forge form of the `titles`
 registry.
+
+## 13. Step 3: alchemy
+
+Done 2026-11-17 on branch `step3-alchemy`. Design and the full account:
+`src/systems/alchemy/README.md` ("Step 3 design", "Changed while building
+(step 3)", "Old rules ported as they are", "Left behind"), and the READMEs
+of the two other new systems, `src/systems/benches` (disciplines and the
+bench run) and `src/systems/consumables` (cards and items used). Additions
+in other folders are listed in each folder's "Step 3 (the alchemy port)"
+section: `world`, `resources`, `combat`, `materials`, `quests`, plus notes
+in `martial`, `arcane`, `divine`, `items`, `titles`.
+
+### 13.1 John
+
+Unchanged. No John climb brews a flask or uses an item: every segment
+tick, knockout, level and gold figure equals the divine port's (section
+12.1); only the end state hash changed (the three new slices). No new
+pacing table was measured.
+
+### 13.2 Offline budgets
+
+Each run of 8 hours alone through `scripts/budget-runs.ts`, same machine,
+same hour, `main` (0faae8d) against this branch. The machine was slower
+this session than during the divine measurement (section 12.2) on both
+builds.
+
+| Run of 8 hours | Step 3 divine (12.2) | `main`, this session | Step 3 alchemy | Budget |
+|---|---|---|---|---|
+| No fight, no condition | 1,404 to 1,417 ms | 1,750 ms | 1,662 to 1,766 ms | 2,000 ms |
+| A poison held | 4,481 to 5,005 ms | 6,590 ms | 6,446 to 6,691 ms | 7,500 ms |
+| Floor 1 table sent to combat | 4,204 to 4,655 ms | 5,862 ms | 5,659 to 6,130 ms | 7,000 ms |
+| Floor 6 Tunnels sent to combat | 7,807 to 8,555 ms | 11,960 ms | 11,360 to 12,163 ms | 13,500 ms |
+| World: hunt, floor 4 Woods Edge | 8,446 to 9,071 ms | 11,811 ms | 12,071 to 12,160 ms | 13,000 ms |
+| World: hunt, floor 6 Tunnels | 8,484 to 8,490 ms | 11,919 ms | 11,976 to 12,151 ms | 13,000 ms |
+
+Every budget holds. Against `main` measured in the same hour the branch
+is within -5% to +3% on every run: no slowdown attributable to the port.
+What the port adds to a run: one `alchemy/spend-coating` request per hit
+of a weapon blow (no coating: it answers null at once), the `benches` tick
+(returns at once with no run), a subscriber to `world/activity-changed`.
+Against section 12.2 every run is 25 to 45% slower on both builds: the
+machine, not traced. The world runs now sit 7 to 8% under their budget.
+The kills, generator, level and gold of every run are unchanged; the
+state hash changed (the slices `benches`, `alchemy`, `consumables`), and
+the digests are recorded again in their own commit.
+
+Test change outside the new tests: `tests/job.test.ts` "keeps pct inside
+0..1 or null across a long mixed run" got a 30 s limit: 2.3 s alone on
+the branch, 2.2 s on `main`, over 5 s under the full parallel run.
+
+### 13.3 Browser check
+
+Desktop width and 375 px, on the dev server. On a dev save edited for the
+check (`ksgb:development:save` only: stood at the Alembics, 10 Fair and 4
+Fine of every reagent, Alchemy 40, healing salves, votive tokens; the save
+before the edit is at `ksgb:development:save.before-alchemy-check`): the
+step picker, the reading and preview of Smoulderer's Flask (potency 5.29,
+13 heat, as the old guide), a run of five (bar, Stop), the Satchel, a
+flask thrown at the Cages in a live fight ("hits the Forest Rat for 12"),
+the Provisions panel (a votive token offered, a salve used, the cooldown
+shown, facts opened on click). No horizontal overflow at 375 px. The
+Alchemy panel sampled every 0.5 s while the run went and while fights ran
+at the Cages: no box moved or changed size.
+
+Not verified in a browser: an oil worked into the blade and spent in a
+fight (tested headless, `tests/alchemy.test.ts`), a word slip or a drill
+manual used from the panel (tested headless), the forge forms of the new
+registries.

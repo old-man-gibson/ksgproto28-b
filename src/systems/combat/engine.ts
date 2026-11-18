@@ -1793,7 +1793,7 @@ function swing(
     // Registered riders (a coating) are spent per hit, because they are paid out per hit.
     for (const rider of blowRiders()) {
       const carried = rider.perHit(ctx as ActionCtx, monster);
-      if (!carried.length) continue;
+      if (!carried) continue;
       ridden.add(rider);
       for (const b of carried) {
         const extra = monsterSlice(
@@ -1949,6 +1949,23 @@ export function landSlices(
     type: monster.lastHit ?? 'bludgeoning',
   });
   return { dealt, bite, killed: monster.hp <= 0 };
+}
+
+/**
+ * A thrown flask's burst lands on one enemy: the bite of its conditions, at
+ * least 1, HP, `lastHit`, `damageTaken` told with no detail. The landing of
+ * the old `hurl` (systems/alchemy.ts), which wrote no ledger line, ran no
+ * graft harvest and sent no hit event. The caller has checked the slices
+ * dealt more than 0. Step 3 (alchemy).
+ */
+export function landBurst(ctx: C, monster: Enemy, slices: readonly TypedSlice[]): number {
+  const bite = statusIncomingDamageMult(heldBy(ctx, monster));
+  const total = slices.reduce((sum, s) => sum + s.dealt, 0);
+  const dealt = Math.max(1, Math.round(total * bite));
+  monster.hp -= dealt;
+  monster.lastHit = heaviestType(slices) ?? monster.lastHit;
+  ctx.request(fireStatusEvent, { entity: monster.entity, on: 'damageTaken' });
+  return dealt;
 }
 
 /** The share of a mending an overgrowth swallows before it can close a wound. */

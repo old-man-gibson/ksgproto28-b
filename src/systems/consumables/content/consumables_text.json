@@ -1,0 +1,18 @@
+[
+  {"id":"locked","text":"🔒 {reason}"},
+  {"id":"not_usable","text":"Not usable"},
+  {"id":"none_held","text":"None held"},
+  {"id":"cooldown","text":"Ready in {seconds}s"},
+  {"id":"recipe_known","text":"Recipe already known"},
+  {"id":"card_spent","text":"Already done"},
+  {"id":"technique_unreachable","text":"No technique you know leads into {name}’s position yet"},
+  {"id":"in_combat","text":"Not during a fight."},
+  {"id":"food_not_ported","text":"Food: eaten through cooking, which is not ported yet"},
+  {"id":"word_learned","text":"📝 Word learned: {word}. It is on the Spellcrafting Table (castable once Arcana reaches its level)."},
+  {"id":"technique_learned","text":"📘 Technique learned: {name} (canonical form)."},
+  {"id":"card_used","text":"{icon} {verb}: {name}."},
+  {"id":"votive_first","text":"🕯️ Votive token offered. Gods you meet later start with +{amount} favor too."},
+  {"id":"votive_floating","text":"🕯️ Votive token offered: +1 unassigned favor. Place it on a god of your choice on the Divine tab."},
+  {"id":"recipe_learned","text":"📜 Recipe learned: {name}. It is listed on the bench that cooks it."},
+  {"id":"used","text":"{icon} {verb} {grade} {name}."}
+]

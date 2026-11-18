@@ -221,3 +221,79 @@ coating (old `createInitialState`).
 - Shadow Clones at a bench (`cloneCraft`), bonus time, performances.
 - The festival's hold on flasks and the coating.
 - Facet signals `flaskUsed`, `itemUsed`, `eat`.
+
+## Files
+
+| File | Holds |
+|---|---|
+| `defs.ts` | The registries `reagents`, `brew_forms`, `brew_formulas`, `alchemy_text`; `formulaFor`; the base and longest durations |
+| `brew.ts` | The tuning constants, `composeBrew`, `formOf`, `resolveBrew`, `brewGrade`, `sequenceOf`, `knownReagents`, `checkBrew` (pure) |
+| `index.ts` | The slice, the bench and blow-rider registrations, the requests, the command, hurl, anoint, swallow, the view |
+| `AlchemyPanel.svelte`, `panel.ts` | The Alchemy panel: the Alembic and the Satchel |
+| `content/*.json` | 15 reagents, 7 forms, 4 formulas, the text lines |
+
+## Slice (version 1)
+
+`{ flasks: { steps }[], coating: { brew, weaponUid, blowsLeft } | null,
+flaskReady }`. Fixture `tests/fixtures/alchemy/v1.json`.
+
+## Requests and commands
+
+| Name | Kind | Old | Refused when |
+|---|---|---|---|
+| `alchemy/brew { placement }` | request (for `benches`) | `brew` | the check fails (logged as `🔒 <reason>`): `An alembic needs at least two reagents`; `<name> is not a reagent`; `<name> needs Alchemy <n>`; the bench reasons of `benches`; a take that fails puts back what was taken |
+| `alchemy/spend-coating` | request (for the blow rider) | `spendCoating` | null: no coating on the blade in hand |
+| `alchemy/use-flask { index }` | command | `useFlask` | `No such flask`; `Residue has no use`; `No weapon in hand to oil`; `Thrown flasks need a fight`; `Flask cooldown: <s>s left` (each also logged) |
+
+## Changed while building (step 3)
+
+- The design named `benches/crafted` as emitted by `benches` after a craft;
+  the owner emits it inside its craft instead (the old order: the quest
+  heard `craft` before the Brewed line).
+- The design listed "the spot has no such bench" as a refusal of
+  `benches/start`. The old `startBenchWork` did not check the spot; the
+  rule is ported as it was (see the benches README).
+- `combat`'s blow rider learned `null` against `[]`, so an oil of an
+  essence with no damage type still reaches `afterBlow`.
+- `materials` gained `consumable.cures` in its schema.
+- The Satchel is in the Alchemy panel, not on the equipment panel as in the
+  old build: one folder holds one panel.
+- The Provisions button reads "Use"; the record's verb is the log line's.
+
+## Old rules ported as they are
+
+- The form text of Residue says "Discard or sell". No command discards or
+  sells a flask, in the old build or here; residue stays in the Satchel.
+- An oil of an essence with no damage type (Mendroot, Bloodwort) coats the
+  blade, spends a blow per hit and does nothing else; its reading says so
+  ("Not used by an Oil").
+- Fixing Salt banks `quenched x max(0.2, grade)` and an ignite multiplies by
+  `1 + (mult - 1) x max(0.2, grade)`: at refuse grade both still act at 20%.
+- Mendroot's Elixir grants Well Fed, a food condition, at 0.5 x weight.
+- Odri Venn sells Grain Spirit and Brimstone from the start; they need
+  Alchemy 4 and 7 at the Alembic.
+- A thrown flask's afflictions on a strike land only when that strike dealt
+  damage; the Fume's afflictions land on every enemy regardless.
+- The recipe card names its dish by the bench outcome of the recipe; with
+  no cooking bench ported it names the dish material (same name).
+- A thrown flask writes no fight-ledger line and sends no `combat/hit`
+  (old `hurl`).
+
+## Left behind
+
+- The festival's hold on flasks and the coating (`festival.ts`).
+- Shadow Clones at the Alembic, Facet signals `flaskUsed`.
+- The `preparing` bench at the Alembics (cooking).
+- `base_alchemy_lab` and its training activity: the player base is not in
+  scope.
+- `faces_of_threshold` and `a_taste_of_everything` (Odri Venn's talk
+  objective, the Alembic's craft objective): after the last of the six
+  system people. Odri Venn and Sister Nim have no quest or lesson.
+
+## Tests
+
+`tests/alchemy.test.ts` (the old file, 55 cases, plus one thrown-flask
+case), `tests/benches.test.ts` (the bench run, the clock, the old
+`benchLayouts` cases), `tests/consumables.test.ts` (the old rarefinds
+consumable cases, the study card, the salve, food), the bench case of
+`tests/knockoutReturn.test.ts`.

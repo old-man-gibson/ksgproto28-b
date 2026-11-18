@@ -31,6 +31,7 @@ import {
   canStartActivity,
   climbTo,
   currentActivity,
+  dropActivity,
   exploreProgress,
   fastTravelTo,
   goAndDo,
@@ -113,6 +114,12 @@ export const travelHop = defineRequest<{ to: string }, boolean>('world/travel');
  * prestige. False for an unknown spot. Does not end a knockout return.
  */
 export const placeNow = defineRequest<{ spot: string; newRun?: boolean }, boolean>('world/place');
+
+/**
+ * Clear the activity and nothing else (`dropActivity` in engine.ts): the
+ * start of a bench run. Step 3 (benches).
+ */
+export const dropActivityNow = defineRequest<void, void>('world/drop-activity');
 
 // ---- view ----
 
@@ -320,6 +327,7 @@ const world = defineSystem<WorldState, WorldView>({
     answer(recoverNow, (ctx) => recover(ctx)),
     answer(travelHop, (ctx, { to }) => (SPOTS[to] ? startTravel(ctx, to) : false)),
     answer(placeNow, (ctx, { spot, newRun = false }) => placeAt(ctx, spot, newRun)),
+    answer(dropActivityNow, (ctx) => dropActivity(ctx)),
     answer(stayOnLeg, (ctx) => {
       const state = ctx.state;
       cancelTravelPlan(ctx);

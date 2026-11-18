@@ -5,8 +5,8 @@
  * and `rarefinds.test.ts` (the votive token, below).
  *
  * The old "Temple: the first token is +2 with every god now and later;
- * later ones are floating favor" case is split. The token itself is the
- * consumables port (`it.todo`). Its divine half runs here: the counters the
+ * later ones are floating favor" case is split. The token itself runs in
+ * `tests/consumables.test.ts` since the alchemy port. Its divine half runs here: the counters the
  * token writes (`favor:floating`, `votive:baseline`) are set with `patch`,
  * `g.assignFloatingFavor(id)` is the command `divine/assign-favor`, and
  * `meetDeity(state, bus, id)` is the request `divine/meet`.
@@ -90,9 +90,8 @@ describe('receiving a miracle', () => {
 });
 
 describe('floating favour and meeting a god (the divine half of the votive token)', () => {
-  it.todo(
-    'Temple: the first token is +2 with every god now and later; later ones are floating favor: the token itself (consumables port)',
-  );
+  // The token itself: tests/consumables.test.ts, "Temple: the first token is
+  // +2 with every god now and later; later ones are floating favor".
 
   it('floating favour goes to a known god, one at a time, and never to an unknown one', () => {
     const g = fresh();

@@ -1,0 +1,99 @@
+[
+  {
+    "id": "alchemy",
+    "name": "Alchemy",
+    "benchName": "Alembic",
+    "icon": "⚗️",
+    "verb": "Brew",
+    "skill": "alchemy",
+    "tag": "alchemy",
+    "ordered": true,
+    "work": {
+      "skillScaled": false
+    },
+    "ticks": 45,
+    "xp": 13,
+    "slots": [
+      {
+        "id": "step1",
+        "name": "First In",
+        "role": "base",
+        "accepts": [
+          "reagent"
+        ],
+        "optional": true,
+        "station": "centre"
+      },
+      {
+        "id": "step2",
+        "name": "Second",
+        "role": "component",
+        "accepts": [
+          "reagent"
+        ],
+        "optional": true,
+        "station": "centre"
+      },
+      {
+        "id": "step3",
+        "name": "Third",
+        "role": "component",
+        "accepts": [
+          "reagent"
+        ],
+        "optional": true,
+        "unlockLevel": 5,
+        "station": "centre"
+      },
+      {
+        "id": "step4",
+        "name": "Fourth",
+        "role": "component",
+        "accepts": [
+          "reagent"
+        ],
+        "optional": true,
+        "unlockLevel": 12,
+        "station": "centre"
+      },
+      {
+        "id": "step5",
+        "name": "Fifth",
+        "role": "component",
+        "accepts": [
+          "reagent"
+        ],
+        "optional": true,
+        "unlockLevel": 22,
+        "station": "centre"
+      },
+      {
+        "id": "step6",
+        "name": "Last In",
+        "role": "component",
+        "accepts": [
+          "reagent"
+        ],
+        "optional": true,
+        "unlockLevel": 35,
+        "station": "centre"
+      }
+    ],
+    "outcomes": [
+      {
+        "id": "brew",
+        "name": "Brew",
+        "icon": "⚗️",
+        "requires": [
+          {
+            "tag": "reagent",
+            "count": 2
+          }
+        ],
+        "result": {
+          "kind": "brewed"
+        }
+      }
+    ]
+  }
+]

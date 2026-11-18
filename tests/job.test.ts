@@ -87,7 +87,8 @@ describe('currentJob', () => {
   );
   it.todo('shows the walk, a knockout, a performance, bench work and rest-before-a-fight: a performance and bench work (step 3: performances and benches)');
 
-  it('keeps pct inside 0..1 or null across a long mixed run', () => {
+  // 30 s limit since the alchemy port: 2.3 s alone, over 5 s under the full parallel run.
+  it('keeps pct inside 0..1 or null across a long mixed run', { timeout: 30000 }, () => {
     const k = atTraining(5);
     patch(k, (slices) => {
       slices.levels.level = 30;

@@ -39,10 +39,12 @@
  * - the harbor waters and the roadstead: `kr_pit` and `kr_roadstead`.
  * - the Door of floor 19: a test spot with a boss line behind a forced road.
  * - `f11_wall`: a test spot under that id.
- * - the festival, the benches and prestige are `it.todo`.
+ * - the festival, performances and prestige are `it.todo`. The bench run
+ *   case runs since the alchemy port (step 3).
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { defineSystem, PLAYER, TPS, type Ctx, type DeepReadonly, type Kernel } from '../src/kernel';
+import { startBench } from '../src/systems/benches';
 import type { ClockState } from '../src/systems/clock';
 import combat, { abandon, fightWon, playerDefeated, setHuntRest, startForced, type CombatState } from '../src/systems/combat';
 import { setCounter, type CountersState } from '../src/systems/counters';
@@ -1011,7 +1013,17 @@ describe('player commands end the return', () => {
     expect(ko(g).pendingReturn).toBeNull();
   });
 
-  it.todo('a bench run or a performance is the player’s own work and ends it (step 3: benches and performances are not here)');
+  it('a bench run or a performance is the player’s own work and ends it: a bench run (performances are not here)', () => {
+    const g = pendingAtCamp(34);
+    expect(ko(g).pendingReturn).not.toBeNull();
+    patch(g, (slices) => {
+      slices.materials.stock.spring_water = { c: 1 };
+      slices.materials.stock.mendroot = { c: 1 };
+    });
+    const placement = { step1: { id: 'spring_water', quality: 'c' as const }, step2: { id: 'mendroot', quality: 'c' as const } };
+    expect(g.dispatch(startBench({ discipline: 'alchemy', placement, count: 1 })).ok).toBe(true);
+    expect(ko(g).pendingReturn).toBeNull();
+  });
 
   it.todo('a prestige clears it, and the proven hunt with it (port 7: prestige is not here)');
 });

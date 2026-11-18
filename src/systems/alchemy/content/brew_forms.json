@@ -1,0 +1,65 @@
+[
+  {
+    "id": "elixir",
+    "name": "Elixir",
+    "icon": "🧴",
+    "verb": "Drink",
+    "thrown": false,
+    "sustained": true,
+    "desc": "Calm water brew. Drink. Grants the essences' buffs for the duration (45 seconds, longer with Fixing Salt). Does not restore."
+  },
+  {
+    "id": "draught",
+    "name": "Draught",
+    "icon": "🥃",
+    "verb": "Drink",
+    "thrown": false,
+    "sustained": false,
+    "desc": "Roused water brew. Drink. Restores at once from the essences' restore values. Does not grant conditions, cure, or close wounds."
+  },
+  {
+    "id": "salve",
+    "name": "Salve",
+    "icon": "🫗",
+    "verb": "Apply",
+    "thrown": false,
+    "sustained": false,
+    "desc": "Calm oil brew. Apply. Restores at once. The only form that cures, and the only one that counts as treatment for wounds such as Bleeding."
+  },
+  {
+    "id": "oil",
+    "name": "Oil",
+    "icon": "🛢️",
+    "verb": "Coat",
+    "thrown": false,
+    "sustained": false,
+    "desc": "Roused oil brew. Coat your drawn weapon. Lasts 3 + potency × 0.8 blows (max 12); each blow adds typed damage and applies the essences' afflictions. A second oil replaces the first."
+  },
+  {
+    "id": "bomb",
+    "name": "Flask",
+    "icon": "💣",
+    "verb": "Throw",
+    "thrown": true,
+    "sustained": false,
+    "desc": "Roused spirit brew. Throw in a fight. Deals typed damage (potency × 2.4) and applies the essences' afflictions to what it hits."
+  },
+  {
+    "id": "fume",
+    "name": "Fume",
+    "icon": "🌫️",
+    "verb": "Throw",
+    "thrown": true,
+    "sustained": true,
+    "desc": "Calm spirit brew. Throw in a fight. Applies the essences' afflictions to every enemy for the duration (45 seconds, longer with Fixing Salt). Deals no damage."
+  },
+  {
+    "id": "residue",
+    "name": "Residue",
+    "icon": "🫧",
+    "verb": "Discard",
+    "thrown": false,
+    "sustained": false,
+    "desc": "A sequence with no base. No effect. Discard or sell."
+  }
+]

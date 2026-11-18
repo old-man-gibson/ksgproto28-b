@@ -1,0 +1,48 @@
+[
+  {
+    "id": "smoulder_flask",
+    "name": "Smoulderer's Flask",
+    "icon": "💥",
+    "sequence": [
+      "grain_spirit",
+      "quicksilver",
+      "emberbloom",
+      "brimstone"
+    ],
+    "desc": "Grain Spirit, Quicksilver, Emberbloom, Brimstone. Spirit and quicksilver put volatility past 1.2, so the brimstone ignites: a Flask of about 13 heat damage plus On Fire at Fair grade."
+  },
+  {
+    "id": "thief_draught",
+    "name": "Thief's Measure",
+    "icon": "🎭",
+    "sequence": [
+      "spring_water",
+      "gloomcap",
+      "fixing_salt"
+    ],
+    "desc": "Spring Water, Gloomcap, Fixing Salt. An Elixir granting Concealed (×0.65 at Fair grade) for 45 seconds. The salt has no effect: nothing roused the brew."
+  },
+  {
+    "id": "field_salve",
+    "name": "Field Salve",
+    "icon": "🩹",
+    "sequence": [
+      "pressed_oil",
+      "mendroot",
+      "mendroot",
+      "fixing_salt"
+    ],
+    "desc": "Pressed Oil, Mendroot, Mendroot, Fixing Salt. A Salve: about 19 HP at Fair grade, and cures poison and bleed. The salt has no effect: nothing roused the brew."
+  },
+  {
+    "id": "chokedamp",
+    "name": "Chokedamp",
+    "icon": "☠️",
+    "sequence": [
+      "grain_spirit",
+      "nightcap",
+      "fixing_salt"
+    ],
+    "desc": "Grain Spirit, Nightcap, Fixing Salt. The salt drops volatility from 0.5 to 0.15, so it is a Fume, not a Flask: Poisoned on every enemy for 53 seconds at Fair grade."
+  }
+]

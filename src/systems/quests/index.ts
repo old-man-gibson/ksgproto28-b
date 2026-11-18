@@ -21,6 +21,7 @@ import {
   type RecordOf,
   type SystemDef,
 } from '../../kernel';
+import { benchCrafted } from '../benches';
 import { enemyKilled } from '../combat';
 import counters, { bumpCounter, conditionSchema, conditionsMet, counterValue, setCounter, type Condition } from '../counters';
 import { grantFavorAll } from '../divine';
@@ -388,6 +389,16 @@ const system: SystemDef<QuestsState, QuestsView> = defineSystem<QuestsState, Que
       advanceObjectives(ctx, (o) => o.type === 'kill' && (!o.monsterId || o.monsterId === payload.defId)),
     ),
     on(arrived, (ctx, { payload }) => advanceObjectives(ctx, (o) => o.type === 'reach' && o.spotId === payload.spot, 1)),
+    // The old bus event `craft`: bench work (step 3) and, later, craft activities.
+    on(benchCrafted, (ctx, { payload }) =>
+      advanceObjectives(
+        ctx,
+        (o) =>
+          o.type === 'craft' &&
+          (!o.recipeId || o.recipeId === payload.recipe) &&
+          (!o.discipline || o.discipline === payload.discipline),
+      ),
+    ),
   ],
 
   view: (ctx) => {

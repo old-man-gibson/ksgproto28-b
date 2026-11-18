@@ -44,8 +44,9 @@
  *   writes the fight directly, as the old `c.position = x`;
  * - `activeRotation(state)` takes a context and the rotation order.
  *
- * Left as `it.todo`: the loadout case (UI step), the study card
- * (consumables), old save migrations (the save here starts at version 1).
+ * Left as `it.todo`: the loadout case (UI step), old save migrations (the
+ * save here starts at version 1). The study card runs in
+ * `tests/consumables.test.ts` since the alchemy port.
  */
 import { describe, expect, it } from 'vitest';
 import type { Kernel } from '../src/kernel';
@@ -916,7 +917,8 @@ describe('martial shut: teachers are the only way in', () => {
     expect(techniqueForm(mOf(g), 'lunge')).toBe('rough');
   });
 
-  it.todo('a study card for an unreachable technique is held back, not spent (consumables port: drill manuals use `martial/learn`)');
+  // A study card for an unreachable technique is held back, not spent:
+  // tests/consumables.test.ts since the alchemy port (step 3).
 
   it('Gather and Lunge chain: neutral → coiled → extended, with no third move', () => {
     expect(declaredPositions(TECHNIQUES.gather)).toEqual(['neutral']);

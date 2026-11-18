@@ -201,3 +201,9 @@ Converted with `node scripts/convert-content.mjs items affixes runes`.
   into the main hand included.
 - An item whose definition is missing can sit in the pack and cannot be
   equipped.
+
+## Step 3 (the alchemy port)
+
+- Weapon oils: the coating lives in the `alchemy` slice with the uid of
+  the weapon it was worked into. It rides only that weapon; `items` is
+  unchanged.

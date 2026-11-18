@@ -597,6 +597,20 @@ export function startActivity(ctx: W, activityId: string | null): boolean {
   return true;
 }
 
+/**
+ * Clear the activity and nothing else: the start of a bench run (old
+ * `startBenchWork`: `activity = null`, progress 0). No fight is left, no plan
+ * cleared, the resume choice kept. Step 3 (benches).
+ */
+export function dropActivity(ctx: W): void {
+  const state = ctx.state;
+  const had = state.activity !== null;
+  state.activity = null;
+  state.activityProgress = 0;
+  syncPace(ctx);
+  if (had) ctx.emit(activityChanged, { spot: state.spot, activity: null, kind: null });
+}
+
 /** An intent with this activity starts nothing on arrival. */
 export const ARRIVE_IDLE = '';
 
@@ -1199,14 +1213,25 @@ export function dropChance(ctx: Reads, d: NonNullable<ActivityDef['drops']>[numb
 
 /**
  * A card: a consumable that teaches or stamps once. The old `isCard`, on the
- * fields the material registry carries. `cardSpent` needs recipes, words and
- * techniques known, which are step 3: until then a card is not rolled while
- * one is held, and is rolled again once it is used.
+ * fields the material registry carries.
  */
 function isOneTimeCard(materialId: string): boolean {
   const spec = (MATERIALS[materialId] as { consumable?: Record<string, unknown> } | undefined)?.consumable;
   if (!spec || spec.votive) return false;
   return !!(spec.teaches || spec.unlocksWord || spec.teachesTechnique || spec.stamps);
+}
+
+/** Whether a card's effect has already happened. Registered by `consumables`. */
+export type CardSpentCheck = (reads: Reads, materialId: string) => boolean;
+
+let cardSpentCheck: CardSpentCheck = () => false;
+
+/**
+ * The old `cardSpent`, handed in by the system that owns it (`consumables`
+ * imports `martial`, which imports this system). Called at module load.
+ */
+export function registerCardSpent(check: CardSpentCheck): void {
+  cardSpentCheck = check;
 }
 
 function rollActivityDrops(ctx: W, act: ActivityDef): void {
@@ -1215,7 +1240,7 @@ function rollActivityDrops(ctx: W, act: ActivityDef): void {
     const def = MATERIALS[d.material];
     if (!def) continue;
     const held = heldOf(ctx.read(materials), d.material);
-    if (isOneTimeCard(d.material) && held > 0) continue;
+    if (isOneTimeCard(d.material) && (cardSpentCheck(ctx, d.material) || held > 0)) continue;
     if (d.unique && held > 0) continue;
     if (!ctx.request(rollMercyChance, { key: `drop:${act.id}:${d.material}`, rate: dropChance(ctx, d) })) continue;
     const qty = d.qty ?? 1;

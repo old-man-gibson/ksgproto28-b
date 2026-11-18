@@ -139,3 +139,10 @@ that reads either declares `dependsOn: [LOCKS_SOURCE]`.
   `resources/damaged` and `resources/spent`, after the handler that caused
   them returns. The old functions called the status module inside `heal`,
   `damagePlayer` and `spendResource`.
+
+## Step 3 (the alchemy port)
+
+- Request `resources/restore-now { id, amount }`: restore up to the
+  available max, or with a negative amount take, never under 0 (a
+  refuse-grade consumable: the old direct write). Answers the signed change.
+  Health that is taken this way does not knock out, as in the old build.

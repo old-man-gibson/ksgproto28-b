@@ -105,6 +105,7 @@ const materials = registry(
         ),
         grants: s.optional(s.array(applicationSchema)),
         signature: s.optional(s.array(applicationSchema)),
+        cures: s.optional(s.array(s.string(), { help: 'Cure tags fired on the user. No record carries one yet.' })),
         cooldown: s.optional(s.number({ help: 'Ticks.' })),
         votive: s.optional(s.boolean()),
         teaches: s.optional(s.string({ help: 'Dish id. A plain string until the cooking registry exists.' })),

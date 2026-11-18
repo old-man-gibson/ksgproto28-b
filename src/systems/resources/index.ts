@@ -35,6 +35,7 @@ import {
   RESOURCE_IDS,
   RESOURCE_LIST,
   restoreResource,
+  setResource,
   spendResource,
   tickResources,
   trueMax,
@@ -116,6 +117,13 @@ export const exertNow = defineRequest<{ spec: ExertionSpec | undefined }, Exerti
 export const drawNow = defineRequest<{ id: ResourceId; amount: number }, number>('resources/draw-now');
 /** Spend from a pool, ignoring the reserve floor. Answers the amount spent. */
 export const spendNow = defineRequest<{ id: ResourceId; amount: number }, number>('resources/spend-now');
+/**
+ * Restore a pool up to its available max, or with a negative amount take
+ * from it, never under 0 (a refuse-grade consumable: the old direct write
+ * `resources[r] = max(0, before + amount)`). Answers the signed change.
+ * Step 3 (alchemy, consumables).
+ */
+export const restoreNow = defineRequest<{ id: ResourceId; amount: number }, number>('resources/restore-now');
 
 // ---- stats: hooks for other systems ----
 
@@ -374,6 +382,17 @@ export default defineSystem<ResourcesState, ResourcesView>({
         return 0;
       }
       return spendResource(poolsOf(ctx), payload.id, payload.amount);
+    }),
+    answer(restoreNow, (ctx, { id, amount }) => {
+      if (!pool(id)) {
+        ctx.skip(restoreNow.type, `unknown pool "${id}"`);
+        return 0;
+      }
+      const pools = poolsOf(ctx);
+      if (amount >= 0) return restoreResource(pools, id, amount);
+      const before = resourceValue(ctx.state, id);
+      setResource(pools, id, Math.max(0, before + amount));
+      return resourceValue(ctx.state, id) - before;
     }),
   ],
 

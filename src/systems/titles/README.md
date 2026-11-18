@@ -60,3 +60,9 @@ The old `setTitle` returned silently in all three cases.
 | `index.ts` | Registry, slice, source, check, command, view. |
 | `TitlesPanel.svelte`, `panel.ts` | The panel. |
 | `content/` | `titles.json` (11), `titles_text.json`. |
+
+## Step 3 (the alchemy port)
+
+- `consumables` emits `titles/check` after a stamping card, where the old
+  `useCard` called `checkTitleUnlocks`: the case file earns Friend of the
+  Court.

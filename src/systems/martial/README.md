@@ -433,3 +433,13 @@ Spine port 5:
 - A defensive form's clock is stamped by the tick before the form runs; the
   old buff slot stamped it after the buff and the stamina. Nothing reads the
   clock in between.
+
+## Step 3 (the alchemy port)
+
+- Drill manuals and study cards (`consumable.teachesTechnique`) are used
+  through `consumables/use` of the `consumables` system. A card asks
+  `martial/learn` with `canonical`. It is held back, not spent, while no
+  known technique reaches its position (`techniqueReachable` over
+  `reachablePositions`); `cardSpent` reads the canonical form.
+- The study-card case of the old martial tests runs in
+  `tests/consumables.test.ts`.

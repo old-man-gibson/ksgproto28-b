@@ -328,3 +328,11 @@ No tick.
 | `index.ts` | The school registration, `miracleSpec`, commands, requests, the view. |
 | `DivinePanel.svelte`, `panel.ts` | The panel. |
 | `content/` | `miracles.json` (30), `deities.json` (11), `deity_tags.json` (44), `divine_text.json`. |
+
+## Step 3 (the alchemy port)
+
+- The votive token (`consumable.votive`) is used through
+  `consumables/use`. The first bumps `votive:tokens`, asks
+  `divine/grant-favor-all` with 2 and bumps `votive:baseline` by 2; each
+  later one bumps `favor:floating`. The old rarefinds case runs whole in
+  `tests/consumables.test.ts`.

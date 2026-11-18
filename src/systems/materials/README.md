@@ -95,3 +95,11 @@ carries the price of one unit per row and per grade. `materials` now imports
 - Bench slots (`slotAccepts`, `usableIn`, placements): the disciplines port.
 - Gathering: the activity kind is in `world` (spine port 6). No spot of
   floors 0 to 6 has a gather activity.
+
+## Step 3 (the alchemy port)
+
+- The `consumable` schema gained `cures` (cure tags, the old
+  `ConsumableSpec.cures`). No record carries one.
+- `consumable` is read by the `consumables` system; `craftTags` by
+  `benches`; graded reagents are spent by `alchemy/brew` through
+  `materials/take-graded`.

@@ -150,3 +150,19 @@ Heard: `ladder/floor-cleared` (the hunt site is sent again), `combat/kill`
   them here.
 - The Great Hall's description names two escorts. The escorts are monster
   data (`combat`), not the spot's table.
+
+## Step 3 (the alchemy port)
+
+- Request `world/drop-activity` (`dropActivity` in `engine.ts`): the
+  activity cleared, progress 0, the pace sent again, `world/activity-changed`
+  when there was one. No fight is left and no plan is cleared: the old
+  `startBenchWork` set `activity = null` and nothing else. `benches/start`
+  asks it.
+- `registerCardSpent(check)`: the old `cardSpent` of the activity drops.
+  `consumables` registers it at module load (this system cannot import
+  `consumables`, which imports `martial`, which imports this one). A
+  one-time card is not rolled while held or once spent.
+- `benches` hears `world/activity-changed` and drops its run when an
+  activity is picked; it emits `world/player-command` when a run starts.
+- The `benches` field of a spot is read by the Alchemy panel (`alchemy`).
+  Craft activities and performances still wait.

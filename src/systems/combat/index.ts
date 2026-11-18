@@ -59,6 +59,7 @@ import {
   healEnemy as healEnemyNow,
   hook,
   inForcedFight,
+  landBurst,
   landSlices as landSlicesNow,
   markCombatEvent,
   now,
@@ -72,6 +73,7 @@ import {
   startForcedFight,
   startStagedGroup,
   strikeEnemy,
+  sweepDead,
   type EnemyDamageResult,
   type EnemyStrike,
   type HitKind,
@@ -166,6 +168,13 @@ export const landSlices = defineRequest<
   { entity: string; slices: TypedSlice[]; crit?: boolean; kind?: HitKind },
   { dealt: number; bite: number; killed: boolean } | null
 >('combat/land-slices');
+/**
+ * A thrown flask's burst lands on one enemy (`landBurst` in engine.ts). The
+ * HP dealt, or null when no living enemy has the entity id. Step 3 (alchemy).
+ */
+export const landBurstRequest = defineRequest<{ entity: string; slices: TypedSlice[] }, number | null>('combat/land-burst');
+/** Process the enemies at 0 HP now: kills, loot, the end of the fight. The old `sweepDead`. Step 3 (alchemy). */
+export const sweepRequest = defineRequest<void, void>('combat/sweep');
 /** HP taken off a monster with no defence asked and nothing told: a backlash, a spill. */
 export const hurtEnemy = defineRequest<{ entity: string; amount: number; type: DamageType; outgoing?: boolean }, void>(
   'combat/hurt-enemy',
@@ -465,6 +474,18 @@ const combat = defineSystem<CombatState, CombatView>({
         return null;
       }
       return landSlicesNow(ctx, e, p.slices, !!p.crit, p.kind ?? 'strike');
+    }),
+    answer(landBurstRequest, (ctx, p) => {
+      const e = enemyOf(ctx.state, p.entity);
+      if (!e || e.hp <= 0) {
+        ctx.skip(landBurstRequest.type, `no living enemy has the entity id "${p.entity}"`);
+        return null;
+      }
+      return landBurst(ctx, e, p.slices);
+    }),
+    answer(sweepRequest, (ctx) => {
+      if (!ctx.state.fight) return ctx.skip(sweepRequest.type, 'no fight is open');
+      sweepDead(ctx);
     }),
     answer(hurtEnemy, (ctx, p) => {
       const e = enemyOf(ctx.state, p.entity);

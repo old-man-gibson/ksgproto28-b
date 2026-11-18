@@ -270,11 +270,13 @@ export interface BlowRiderKind {
   /**
    * Asked once per hit of a weapon blow, after the weapon's own typed bonuses
    * (the old `spendCoating`). The handler spends its supply through a request
-   * to its own system. An empty list: nothing rides this hit.
+   * to its own system. Null: nothing rides this hit. A list, empty or not:
+   * the supply was spent and `afterBlow` is asked (an oil of an essence with
+   * no damage type spends a blow and adds no slice; step 3, alchemy).
    */
-  perHit(ctx: ActionCtx, target: DeepReadonly<Enemy>): RiderSlice[];
+  perHit(ctx: ActionCtx, target: DeepReadonly<Enemy>): RiderSlice[] | null;
   /**
-   * Asked once after the blow when `perHit` returned a slice for any hit:
+   * Asked once after the blow when `perHit` returned a list for any hit:
    * conditions for the target (applied while it lives, with the blow's
    * penetration) and a feed line (a coating used up).
    */

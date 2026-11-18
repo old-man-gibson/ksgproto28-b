@@ -518,3 +518,18 @@ skip.
   when the player left the spell-ready seat; martial registers the watch
   and asks `martial/hold-spell` from it. Called only when the position
   changes.
+
+## Step 3 (alchemy) additions
+
+- `registerBlowRider`: `perHit` answers `null` for "nothing rides" and a
+  list, empty or not, for "spent". An oil of an essence with no damage type
+  spends a blow and adds no slice; its `afterBlow` (riders, the used-up
+  line) still runs, as the old `spendCoating` did. `alchemy/coating` is
+  the first registered rider.
+- Request `combat/land-burst { entity, slices }` (`landBurst` in
+  `engine.ts`): a thrown flask's total lands on one enemy: the bite of its
+  conditions, at least 1, HP, `lastHit`, `damageTaken` with no detail. No
+  ledger line, no graft harvest, no `combat/hit`: the old `hurl` did none of
+  these. Null for an entity that is not a living enemy.
+- Request `combat/sweep`: the old `sweepDead`, for a flask thrown from a
+  command between ticks.

@@ -300,3 +300,11 @@ reads it as a faded inscription.
 | `index.ts` | The school registration, `sentenceKey`, `checkInscription`, the command and events, the view. |
 | `ArcanePanel.svelte`, `panel.ts` | The panel. |
 | `content/` | `arcane_words.json` (40), `arcane_text.json`. |
+
+## Step 3 (the alchemy port)
+
+- Word slips (`consumable.unlocksWord`, `word_slip_stone`) are used
+  through `consumables/use`. The slip bumps `flag:word:<id>`;
+  `wordUnlocked` then holds, and the slip is refused as spent and no longer
+  rolled at the Chalk Yard (`cardSpent`, handed to `world` by
+  `registerCardSpent`).

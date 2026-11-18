@@ -1,0 +1,46 @@
+[
+  {
+    "id": "started",
+    "text": "▶️ {bench}: working{count}"
+  },
+  {
+    "id": "times",
+    "text": " ×{qty}"
+  },
+  {
+    "id": "until_stopped",
+    "text": " until stopped"
+  },
+  {
+    "id": "stopped",
+    "text": "⏹️ {bench}: {reason} ({done} done)"
+  },
+  {
+    "id": "locked",
+    "text": "🔒 {reason}"
+  },
+  {
+    "id": "slot_empty",
+    "text": "{slot} is empty"
+  },
+  {
+    "id": "wrong_slot",
+    "text": "{name} does not belong in {slot}"
+  },
+  {
+    "id": "no_stock_at_grade",
+    "text": "You have no {name} of that grade"
+  },
+  {
+    "id": "short_at_grade",
+    "text": "You have {held} {name} of that grade; this layout uses {need}"
+  },
+  {
+    "id": "slot_locked",
+    "text": "Slot locked"
+  },
+  {
+    "id": "no_outcome",
+    "text": "No recipe matches these inputs"
+  }
+]

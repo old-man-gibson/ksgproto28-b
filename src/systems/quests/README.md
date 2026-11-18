@@ -60,3 +60,12 @@ is logged before the completed line, as the old order.
 - A collect objective hands over grade c of a graded material
   (`materials/take-stack`); the old code read `state.materials` only, where
   graded goods are not kept. No quest in scope collects.
+
+## Step 3 (the alchemy port)
+
+- Heard: `benches/crafted { discipline, recipe? }` (the old bus event
+  `craft`) advances `craft` objectives whose `recipeId` and
+  `discipline` match. The owner of a bench emits it where the old code
+  emitted `craft`: `alchemy/brew` emits it before its Brewed line. No quest
+  in scope has a craft objective (`a_taste_of_everything` waits for the last
+  of the six system people).
