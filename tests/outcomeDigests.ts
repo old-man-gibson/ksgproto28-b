@@ -3,7 +3,9 @@
  * `main` at 7b59ba1, before the catch-up work (docs/KERNEL.md decision 32);
  * recorded again on branch `step3-martial` after the martial port (new
  * slices and fields: every state hash; the floor 2 tutor: every John
- * climb). A change that only makes the simulation faster leaves every one
+ * climb), and on branch `step3-arcane` after the arcane port (the
+ * spellcraft slice field `utilityReady`: every state hash, nothing else).
+ * A change that only makes the simulation faster leaves every one
  * of them equal. A change to a rule, a formula or content changes them;
  * record them again then, and say why in the commit.
  */
@@ -18,7 +20,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 1,
     'gold': 0,
-    'state': 'fe1e46a5'
+    'state': 'ecdc2e59'
   },
   'poison': {
     'tick': 288000,
@@ -27,7 +29,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 1,
     'gold': 0,
-    'state': '684c7598'
+    'state': 'd2dbd5ac'
   },
   'floor1': {
     'tick': 288000,
@@ -36,7 +38,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 9,
     'gold': 33028,
-    'state': '238ec297'
+    'state': '63dd1853'
   },
   'floor6': {
     'tick': 288000,
@@ -45,7 +47,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 1,
     'level': 26,
     'gold': 1587917,
-    'state': '372ba069'
+    'state': '3c2c496d'
   },
   'world4': {
     'tick': 288000,
@@ -54,7 +56,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 4,
     'level': 17,
     'gold': 350792,
-    'state': '11b5fcca'
+    'state': '5d425fee'
   },
   'world6': {
     'tick': 288000,
@@ -63,7 +65,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 1,
     'level': 26,
     'gold': 1590950,
-    'state': '9c56a6d3'
+    'state': 'e155e6f7'
   }
 };
 
@@ -149,7 +151,7 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'defeats': 0,
       'level': 1,
       'gold': 0,
-      'state': '06038436'
+      'state': '5b58f6ca'
     }
   },
   '42': {
@@ -233,7 +235,7 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'defeats': 0,
       'level': 1,
       'gold': 0,
-      'state': '2e4ff196'
+      'state': '964184ba'
     }
   },
   '1234': {
@@ -317,7 +319,7 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'defeats': 0,
       'level': 1,
       'gold': 0,
-      'state': '7a7c17bf'
+      'state': '572df9cb'
     }
   }
 };
