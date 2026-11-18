@@ -191,13 +191,12 @@ describe('the healing salve', () => {
   });
 });
 
-describe('food waits for the cooking port', () => {
-  it('a dish is refused with a reason and kept', () => {
+describe('food goes to the eater of the cooking port', () => {
+  it('a dish out of a fight is eaten: one is spent', () => {
     const g = fresh();
     const result = use(g, 'mushroom_broth');
-    expect(result.ok).toBe(false);
-    expect(result.ok ? '' : result.reason).toMatch(/^Food: /);
-    expect(slice<MaterialsState>(g, 'materials').stock.mushroom_broth?.c).toBe(1);
+    expect(result.ok).toBe(true);
+    expect(slice<MaterialsState>(g, 'materials').stock.mushroom_broth?.c ?? 0).toBe(0);
   });
 });
 

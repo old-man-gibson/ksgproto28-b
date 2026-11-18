@@ -1,0 +1,5 @@
+[
+  {"id":"replaced","text":"🍽️ {grade} {name} dropped for {by}: at most {limit} dishes can be active. {detail}"},
+  {"id":"ended","text":"Ended: {list}."},
+  {"id":"kept","text":"Still given by another dish or source: {list}."}
+]

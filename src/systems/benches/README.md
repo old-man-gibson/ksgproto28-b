@@ -89,10 +89,25 @@ remaining, batch. The alchemy view repeats it for its panel.
 - `checkCraft` reads graded stock only (`stockOf`); a plain material laid on
   a bench reads as none held. Every reagent is graded.
 
+## Step 3 (the cooking port)
+
+- Records `cooking` (Cooking Stove), `grilling`, `baking`, `assembling`,
+  `preparing` (Cutting Board), converted from the old literals with their
+  `desc` texts. Schema: slot role `adornment`, slot `at`, `favoredPrep`,
+  `timeline`, outcome `heat`, result `qty`, `desc`.
+- Heat rules: `timelineUnits`, `meanExposure`, `inHeatWindow`,
+  `HeatOverride`, `describeHeatWindow`, `heatWindowProblems`.
+  `matchOutcome(reads, disc, placement, duration?, override?)` and
+  `checkCraft(..., duration?)` as the old ones. `foodProblems` lives in
+  `cooking` (it reads the condition registry).
+- `benchJobTicks(disc, placement, craftSpeed, duration?)`: a timed bench
+  runs `duration x UNIT_TICKS` (10) ticks.
+- The job carries `duration`; `benches/start` takes `duration`; the owner's
+  `preview` gets it and its `craft` request gets `{ placement, duration }`.
+- `cooking` registers the five kitchen benches.
+
 ## Left behind
 
-- Heat windows, the timeline, `meanExposure`, `heatWindowProblems`,
-  `foodProblems`: cooking.
 - `assembles` (the anvil, `forgeTicks`), `refines` (the culture bench):
   smithing and mutagens.
 - Shadow Clones at a bench (`cloneCraft`), bonus time, performances.

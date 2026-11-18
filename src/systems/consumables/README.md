@@ -1,9 +1,8 @@
 # consumables
 
 Using a held material that has a `consumable` record. Step 3, the alchemy
-port. Port of old `systems/consumables.ts` without its food half
-(`foodScale`, signatures, meal slots, the eating queue, Iron Stomach's
-counter, calories), which is cooking. Design: `src/systems/alchemy/README.md`,
+port. Port of old `systems/consumables.ts`; its food half is eaten by
+`cooking` (see Food). Design: `src/systems/alchemy/README.md`,
 "Step 3 design".
 
 ## Slice (version 1)
@@ -25,7 +24,6 @@ the `alchemy` slice).
 | `No technique you know leads into <name>’s position yet` | a technique card whose position no known technique reaches |
 | `Not during a fight.` | food while a fight is open |
 | `Ready in <s>s` | the item's cooldown |
-| `Food: eaten through cooking, which is not ported yet` | any food, after the rules above |
 
 A refusal is logged as `🔒 <reason>` and spends nothing.
 
@@ -55,6 +53,22 @@ A refusal is logged as `🔒 <reason>` and spends nothing.
 - `cardSpent` is registered with `world` (`registerCardSpent`): a one-time
   card is not rolled as an activity drop once spent.
 
+## Food (step 3, the cooking port)
+
+Food passes the same check (`Not during a fight.` in a fight) and is
+taken from stock here; then the eater `cooking` registered
+(`registerEater`) eats it: the cook's scaling, the Signature, the eat line,
+the spoiled counter, the dish slot. This system sets the item's cooldown
+after the eater (no dish carries one). `canUseOutOfFight` is the check
+without the fight rule (the queued dish). The request
+`consumables/use-now { id, quality?, queued? }` is the command's body for a
+system that uses an item inside its own handler (`cooking/eat`, the eating
+queue). `applyRestore(ctx, spec, mult)` is shared with the eater.
+
+The Provisions panel sends food rows through `cooking/eat` and
+`cooking/cancel-meal`, reads their eat plan from the cooking view, and
+mounts `cooking/DishSlots.svelte` (decision 29).
+
 ## Reads
 
 `consumableSpec`, `isCard`, `cardSpent`, `canUse`, `cooldownLeft`,
@@ -81,7 +95,4 @@ on click.
 
 ## Left behind
 
-- Food: the cooking port (`eat`, the eating queue, meal slots, the cook's
-  scaling, signatures, Iron Stomach, calories). The three food cases of
-  `tests/conditionResist.test.ts` stay `it.todo` there.
 - Facet signals `itemUsed` and `eat`.

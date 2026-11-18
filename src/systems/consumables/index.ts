@@ -2,11 +2,14 @@
  * Consumables: using a held material that has a `consumable` record. Cards
  * (a recipe, a word, a technique, a stamp, a votive token) do their one
  * thing; everything else restores, grants and cures, scaled by its grade.
- * Port of old `systems/consumables.ts` without the food half (cooking). See
- * README.md in this folder.
+ * Port of old `systems/consumables.ts`. Food is eaten by the eater `cooking`
+ * registers (`registerEater`); this system checks, spends and hands it over.
+ * See README.md in this folder.
  */
 import {
+  answer,
   defineCommand,
+  defineRequest,
   defineSystem,
   handle,
   OK,
@@ -16,6 +19,7 @@ import {
   type Ctx,
   type DeepReadonly,
   type DerivedReads,
+  type RequestDef,
   type SystemDef,
 } from '../../kernel';
 import { wordUnlocked, wordUnlockKey } from '../arcane';
@@ -131,12 +135,36 @@ export function cooldownLeft(state: DeepReadonly<ConsumablesState>, id: string, 
   return Math.max(0, (state.cooldowns[id] ?? 0) - tick);
 }
 
-/** Whether it can be used now, and why not. The old `canUse`, with food refused (cooking). */
+/** Whether it can be used now, and why not. The old `canUse`. */
 export function canUse(
   ctx: ReadCtx & { tick: number },
   state: DeepReadonly<ConsumablesState>,
   id: string,
   quality: QualityTier,
+): { ok: boolean; reason?: string } {
+  return checkUse(ctx, state, id, quality, !!ctx.read(combat).fight);
+}
+
+/**
+ * `canUse` as if no fight were on: stock, cooldown and the card rules,
+ * without the one that keeps dishes out of a fight. The old
+ * `canUseOutOfFight`: what a queued dish is checked against.
+ */
+export function canUseOutOfFight(
+  ctx: ReadCtx & { tick: number },
+  state: DeepReadonly<ConsumablesState>,
+  id: string,
+  quality: QualityTier,
+): { ok: boolean; reason?: string } {
+  return checkUse(ctx, state, id, quality, false);
+}
+
+function checkUse(
+  ctx: ReadCtx & { tick: number },
+  state: DeepReadonly<ConsumablesState>,
+  id: string,
+  quality: QualityTier,
+  fighting: boolean,
 ): { ok: boolean; reason?: string } {
   const spec = consumableSpec(id);
   if (!spec) return { ok: false, reason: say('not_usable') };
@@ -151,10 +179,9 @@ export function canUse(
     }
   }
   // Dishes are eaten between fights only.
-  if (spec.food && ctx.read(combat).fight) return { ok: false, reason: say('in_combat') };
+  if (spec.food && fighting) return { ok: false, reason: say('in_combat') };
   const left = cooldownLeft(state, id, ctx.tick);
   if (left > 0) return { ok: false, reason: say('cooldown', { seconds: (left / 10).toFixed(1) }) };
-  if (spec.food) return { ok: false, reason: say('food_not_ported') };
   return { ok: true };
 }
 
@@ -162,6 +189,29 @@ export function canUse(
 
 /** Use one held consumable. The old `useConsumable`, not queued. */
 export const useConsumable = defineCommand<{ id: string; quality?: QualityTier }>('consumables/use');
+
+/** How a dish waited before it was eaten: through a fight, or through a knockout. */
+export type MealWait = 'fight' | 'recovery';
+
+/**
+ * The body of `consumables/use` as a request, for a system that uses an item
+ * inside its own handler (the eat command and the eating queue of `cooking`).
+ * True when it was used; a refusal is logged and spends nothing.
+ */
+export const useNow = defineRequest<{ id: string; quality?: QualityTier; queued?: MealWait }, boolean>(
+  'consumables/use-now',
+);
+
+/** What the eater answers: one dish already taken from stock, eaten. */
+export type EaterRequest = RequestDef<{ id: string; quality: QualityTier; queued?: MealWait }, void>;
+
+let EATER: EaterRequest | null = null;
+
+/** Register the system that eats food. Called at module load by `cooking`. */
+export function registerEater(request: EaterRequest): void {
+  if (EATER) throw new Error('consumables: an eater is registered twice');
+  EATER = request;
+}
 
 type K = Ctx<ConsumablesState>;
 
@@ -203,22 +253,37 @@ function useCard(ctx: K, def: MaterialDef, spec: ConsumableSpec): void {
   }
 }
 
-function useOne(ctx: K, id: string, quality: QualityTier): void {
+/**
+ * Instant: the whole restore, now, times `mult` (the grade, and for food the
+ * cook's potency). Health heals as kind `salve`; a negative amount takes,
+ * never under 0. Shared with the eater of `cooking`.
+ */
+export function applyRestore(ctx: Ctx<any>, spec: ConsumableSpec, mult: number): void {
+  const stats = statBlockOf(ctx);
+  for (const r of spec.restore ?? []) {
+    const amount = ((r.flat ?? 0) + (r.ofMax ?? 0) * availableMax(stats, poolHooks(ctx), r.resource)) * mult;
+    if (amount === 0) continue;
+    if (amount > 0 && r.resource === 'hp') ctx.request(healNow, { amount, kind: 'salve' });
+    else ctx.request(restoreNow, { id: r.resource, amount });
+  }
+}
+
+/** Use one, already taken from stock. Food goes to the eater. */
+function useOne(ctx: K, id: string, quality: QualityTier, queued?: MealWait): void {
   const spec = consumableSpec(id)!;
   const def = MATERIALS[id]!;
   if (isCard(spec)) {
     useCard(ctx, def, spec);
     return;
   }
-  const scale = qualityMult(quality);
-  const stats = statBlockOf(ctx);
-  // Instant: the whole restore, now. Food scaling by the cook is the cooking port.
-  for (const r of spec.restore ?? []) {
-    const amount = ((r.flat ?? 0) + (r.ofMax ?? 0) * availableMax(stats, poolHooks(ctx), r.resource)) * scale;
-    if (amount === 0) continue;
-    if (amount > 0 && r.resource === 'hp') ctx.request(healNow, { amount, kind: 'salve' });
-    else ctx.request(restoreNow, { id: r.resource, amount });
+  if (spec.food && EATER) {
+    ctx.request(EATER, { id, quality, ...(queued ? { queued } : {}) });
+    // The cooldown map is this slice's; no dish carries one today.
+    if (spec.cooldown) ctx.state.cooldowns[id] = ctx.tick + spec.cooldown;
+    return;
   }
+  const scale = qualityMult(quality);
+  applyRestore(ctx, spec, scale);
   // Sustained. A refuse grade does not feed weakly: it makes you ill, resisted.
   if (scale < 0) {
     ctx.request(applyStatus, { entity: PLAYER, app: { id: SPOILED, intensity: -scale }, source: def.name, resist: true });
@@ -241,6 +306,19 @@ function useOne(ctx: K, id: string, quality: QualityTier): void {
     msg: say('used', { icon: def.icon, verb: spec.useVerb ?? 'Used', grade: QUALITY_TIERS[quality].name, name: def.name }),
     kind: scale < 0 ? 'danger' : 'action',
   });
+}
+
+/** The old `useConsumable`: check, spend one, use it. Null when used, else the reason. */
+function useItem(ctx: K, id: string, quality: QualityTier, queued?: MealWait): string | null {
+  const check = canUse(ctx, ctx.state, id, quality);
+  if (!check.ok) {
+    const reason = check.reason ?? say('not_usable');
+    ctx.emit(logLine, { msg: say('locked', { reason }), kind: 'danger' });
+    return reason;
+  }
+  if (ctx.request(takeStack, { id, quality, qty: 1 }) < 1) return say('none_held');
+  useOne(ctx, id, quality, queued);
+  return null;
 }
 
 // ---- view ----
@@ -277,7 +355,7 @@ function effectLines(spec: ConsumableSpec): string[] {
   if (spec.unlocksWord) lines.push(`Word: ${spec.unlocksWord}`);
   if (spec.teachesTechnique) lines.push(`Technique: ${TECHNIQUES[spec.teachesTechnique]?.name ?? spec.teachesTechnique}`);
   if (spec.votive) lines.push('Offering: favour with the gods');
-  if (spec.food) lines.push('Food: eaten through cooking');
+  if (spec.food) lines.push('Food: eaten out of a fight');
   return lines;
 }
 
@@ -290,17 +368,12 @@ const consumables = defineSystem<ConsumablesState, ConsumablesView>({
 
   commands: [
     handle(useConsumable, (ctx, { id, quality = 'c' }) => {
-      const check = canUse(ctx, ctx.state, id, quality);
-      if (!check.ok) {
-        const reason = check.reason ?? say('not_usable');
-        ctx.emit(logLine, { msg: say('locked', { reason }), kind: 'danger' });
-        return skipped(reason);
-      }
-      if (ctx.request(takeStack, { id, quality, qty: 1 }) < 1) return skipped(say('none_held'));
-      useOne(ctx, id, quality);
-      return OK;
+      const reason = useItem(ctx, id, quality);
+      return reason === null ? OK : skipped(reason);
     }),
   ],
+
+  requests: [answer(useNow, (ctx, { id, quality = 'c', queued }) => useItem(ctx, id, quality, queued) === null)],
 
   view: (ctx): ConsumablesView => ({
     rows: heldConsumables(ctx).map(({ def, quality, qty }) => {

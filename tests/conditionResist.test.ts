@@ -5,6 +5,7 @@ import {
   applyStatus,
   conditionReadout,
   harmOf,
+  heldOf,
   isHarmful,
   removeStatus,
   resistanceProblems,
@@ -15,15 +16,19 @@ import {
   type StatusesState,
   type TitleImmunity,
 } from '../src/systems/statuses';
-import { ask, makeGame, setMods, slice } from './helpers';
+import { SPOILED, useConsumable } from '../src/systems/consumables';
+import { qualityMult, type QualityTier } from '../src/systems/materials';
+import { ask, makeGame, patch, setMods, slice } from './helpers';
 
 /**
  * Port of the status half of the old tests/conditionResist.test.ts: the
  * unresistable mark, the `resistanceProblems` lint, and the player's
  * resistance block. Changed: the call shape, as in tests/statuses.test.ts.
  *
- * Left behind, for the ports of the systems they need: queasy through food
- * (cooking, consumables), Iron Stomach (titles), overgrowth through forced
+ * Queasy through food (the three food cases) was ported with cooking: the
+ * dish is stocked with `patch` and eaten through `consumables/use`.
+ *
+ * Left behind, for the ports of the systems they need: Iron Stomach (titles), overgrowth through forced
  * healing (ported in spine port 5: tests/overgrowth.test.ts), tag resistances and the damage slices of monsters
  * (combat), monster penetration and its lint (combat, world).
  */
@@ -216,9 +221,54 @@ describe('queasy, overgrowth and proliferating are resisted through poison', () 
     expect(walled.staleStats()).toEqual([]);
   });
 
-  it.todo('refuse-grade food is thinned by poison resistance, because it is done to the eater (cooking, consumables)');
-  it.todo('the Scorched Mess, which grants Queasy outright, is thinned the same way (cooking, consumables)');
-  it.todo('nourishment is still not resisted: a dish’s own grants land in full (cooking, consumables)');
+  // The three food cases: port of the old ones. `steeped(g, state, n)` is
+  // the buff applied unresisted; `useConsumable(state, bus, id, q)` is the
+  // command `consumables/use`; `findStatus(state, id)` reads the held list.
+  const steeped = (g: Kernel, intensity: number) => apply(g, PLAYER, { id: 'steeped', intensity }, false);
+  const eatOne = (g: Kernel, id: string, quality: QualityTier) => {
+    patch(g, (slices) => {
+      slices.materials.stock[id] ??= {};
+      slices.materials.stock[id][quality] = (slices.materials.stock[id][quality] ?? 0) + 1;
+    });
+    expect(g.dispatch(useConsumable({ id, quality })).ok).toBe(true);
+  };
+  const heldIntensity = (g: Kernel, id: string) =>
+    heldOf(slice<StatusesState>(g, 'statuses'), PLAYER).find((s) => s.id === id)?.intensity;
+
+  it('refuse-grade food is thinned by poison resistance, because it is done to the eater', () => {
+    const eatSour = (poisonRes: number) => {
+      const g = fresh(11);
+      if (poisonRes > 0) steeped(g, poisonRes / 0.25);
+      eatOne(g, 'hearty_stew', 'f');
+      return heldIntensity(g, SPOILED) ?? 0;
+    };
+    const bare = eatSour(0);
+    expect(bare).toBeCloseTo(-qualityMult('f'));
+    expect(eatSour(0.5)).toBeCloseTo(bare * 0.5);
+    expect(eatSour(1)).toBe(0);
+  });
+
+  it('the Scorched Mess, which grants Queasy outright, is thinned the same way', () => {
+    const eatMess = (poisonRes: number) => {
+      const g = fresh(12);
+      if (poisonRes > 0) steeped(g, poisonRes / 0.25);
+      eatOne(g, 'scorched_mess', 'c');
+      return heldIntensity(g, SPOILED) ?? 0;
+    };
+    expect(eatMess(0)).toBe(1);
+    expect(eatMess(0.5)).toBeCloseTo(0.5);
+    expect(eatMess(1)).toBe(0);
+  });
+
+  it('nourishment is still not resisted: a dish’s own grants land in full', () => {
+    const eat = (poisonRes: number) => {
+      const g = fresh(13);
+      if (poisonRes > 0) steeped(g, poisonRes / 0.25);
+      eatOne(g, 'hearty_stew', 'c');
+      return heldIntensity(g, 'well_fed')!;
+    };
+    expect(eat(0.9)).toBeCloseTo(eat(0));
+  });
   // Ported in tests/overgrowth.test.ts (spine port 5): the two cases of overgrowth through forced healing (`healEnemy`).
 });
 

@@ -34,9 +34,9 @@ export type BenchReadCtx = DerivedReads & { read<T>(system: SystemDef<T, any>): 
 /** What the owner of a bench answers. The old `benchPreview` and `benchCraft`. */
 export interface BenchOwner {
   /** Whether the layout would make anything now, and why not. */
-  preview(ctx: BenchReadCtx, placement: Placement): { ok: boolean; reason?: string };
+  preview(ctx: BenchReadCtx, placement: Placement, duration?: number): { ok: boolean; reason?: string };
   /** Work it once: spend and make. False when it could not be made (the owner logs why). */
-  craft: RequestDef<{ placement: Placement }, boolean>;
+  craft: RequestDef<{ placement: Placement; duration?: number }, boolean>;
 }
 
 const OWNERS = new Map<string, BenchOwner>();
@@ -67,6 +67,8 @@ export interface BenchJob {
   batch: number;
   /** Crafts finished so far. */
   done: number;
+  /** A timed bench's chosen length in units; absent: its default. */
+  duration?: number;
 }
 
 export interface BenchesState {
@@ -76,7 +78,13 @@ export interface BenchesState {
 // ---- commands and events ----
 
 /** Start a run: `count` crafts, or until the stock runs out (null). The old `startBenchWork`. */
-export const startBench = defineCommand<{ discipline: string; placement: Placement; count: number | null }>(
+export const startBench = defineCommand<{
+  discipline: string;
+  placement: Placement;
+  count: number | null;
+  /** A timed bench's length in units. */
+  duration?: number;
+}>(
   'benches/start',
 );
 /** Stop the run. The old `stopBenchWork`. */
@@ -120,7 +128,7 @@ function tickJob(ctx: B): void {
   if (job.ticksLeft > 0) return;
   const owner = OWNERS.get(job.discipline);
   for (let i = 0; i < job.batch; i++) {
-    const made = owner ? ctx.request(owner.craft, { placement: job.placement }) : false;
+    const made = owner ? ctx.request(owner.craft, { placement: job.placement, ...(job.duration !== undefined ? { duration: job.duration } : {}) }) : false;
     if (!made) {
       // The owner already logged why (out of stock, usually).
       stopJob(ctx, 'out of stock');
@@ -167,12 +175,12 @@ const benches = defineSystem<BenchesState, BenchesView>({
   tick: (ctx) => tickJob(ctx),
 
   commands: [
-    handle(startBench, (ctx, { discipline, placement, count }) => {
+    handle(startBench, (ctx, { discipline, placement, count, duration }) => {
       const disc = DISCIPLINES[discipline];
       if (!disc) return skipped(`no bench has the id "${discipline}"`);
       const owner = OWNERS.get(discipline);
       if (!owner) return skipped(`no system works the bench "${discipline}"`);
-      const check = owner.preview(ctx, placement);
+      const check = owner.preview(ctx, placement, duration);
       if (!check.ok) {
         const reason = check.reason ?? `the ${disc.benchName ?? disc.name} cannot work this layout`;
         ctx.emit(logLine, { msg: fillText(TEXT.locked, { reason }), kind: 'danger' });
@@ -180,7 +188,7 @@ const benches = defineSystem<BenchesState, BenchesView>({
       }
       // The bench is the activity now.
       ctx.request(dropActivityNow, undefined);
-      const { ticksPer, batch } = benchJobTicks(disc, placement, statBlockOf(ctx).craftSpeed);
+      const { ticksPer, batch } = benchJobTicks(disc, placement, statBlockOf(ctx).craftSpeed, duration);
       ctx.state.job = {
         discipline,
         spot: ctx.read(world).spot,
@@ -190,6 +198,7 @@ const benches = defineSystem<BenchesState, BenchesView>({
         ticksPer,
         batch,
         done: 0,
+        ...(duration !== undefined ? { duration } : {}),
       };
       // A bench run is the player's own work: it ends a knockout return.
       ctx.emit(playerCommand, { type: startBench.type });

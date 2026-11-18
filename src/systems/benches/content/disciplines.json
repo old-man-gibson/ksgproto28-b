@@ -95,5 +95,783 @@
         }
       }
     ]
+  },
+  {
+    "id": "cooking",
+    "name": "Cooking",
+    "benchName": "Cooking Stove",
+    "icon": "🍳",
+    "verb": "Cook",
+    "skill": "cooking",
+    "tag": "cooking",
+    "favoredPrep": "diced",
+    "timeline": {
+      "options": [
+        {
+          "units": 8,
+          "name": "Quick simmer"
+        },
+        {
+          "units": 12,
+          "name": "Steady stew"
+        },
+        {
+          "units": 16,
+          "name": "Long braise"
+        }
+      ],
+      "default": 12
+    },
+    "work": {
+      "skillScaled": false
+    },
+    "ticks": 40,
+    "xp": 10,
+    "slots": [
+      {
+        "id": "main",
+        "name": "First Into the Pot",
+        "role": "base",
+        "accepts": [
+          "raw"
+        ],
+        "station": "centre",
+        "at": 0
+      },
+      {
+        "id": "second",
+        "name": "Added Midway",
+        "role": "component",
+        "accepts": [
+          "raw"
+        ],
+        "station": "centre",
+        "at": 0.33
+      },
+      {
+        "id": "third",
+        "name": "Late Addition",
+        "role": "component",
+        "accepts": [
+          "raw"
+        ],
+        "optional": true,
+        "unlockLevel": 8,
+        "station": "topLeft",
+        "at": 0.66
+      },
+      {
+        "id": "fourth",
+        "name": "Finishing Touch",
+        "role": "component",
+        "accepts": [
+          "raw"
+        ],
+        "optional": true,
+        "unlockLevel": 20,
+        "station": "topRight",
+        "at": 0.9
+      },
+      {
+        "id": "seasoning",
+        "name": "Seasoning",
+        "role": "adornment",
+        "accepts": [
+          "seasoning"
+        ],
+        "optional": true,
+        "station": "bottomLeft"
+      },
+      {
+        "id": "pot",
+        "name": "Cookware",
+        "role": "component",
+        "picks": "tool",
+        "accepts": [
+          "cookware"
+        ],
+        "optional": true,
+        "consumed": false,
+        "station": "bottomRight"
+      }
+    ],
+    "outcomes": [
+      {
+        "id": "feast",
+        "name": "Feast Platter",
+        "icon": "🍖",
+        "requires": [
+          {
+            "tag": "meat"
+          },
+          {
+            "tag": "vegetable"
+          },
+          {
+            "tag": "seasoning"
+          }
+        ],
+        "minQuality": "a",
+        "minLevel": 20,
+        "priority": 40,
+        "result": {
+          "kind": "material",
+          "id": "feast_platter"
+        },
+        "desc": "Meat, a vegetable and a seasoning, all Superb grade or better. Cooking 20."
+      },
+      {
+        "id": "stew",
+        "name": "Hearty Stew",
+        "icon": "🍲",
+        "requires": [
+          {
+            "tag": "meat"
+          },
+          {
+            "tag": "vegetable"
+          }
+        ],
+        "priority": 20,
+        "result": {
+          "kind": "material",
+          "id": "hearty_stew"
+        },
+        "desc": "Meat and a vegetable. What the same two make when the meat cooks for neither the Seared Stew time nor the Braised Meat time, or those recipes are not known."
+      },
+      {
+        "id": "broth",
+        "name": "Mushroom Broth",
+        "icon": "🍵",
+        "requires": [
+          {
+            "tag": "mushroom"
+          },
+          {
+            "tag": "herb"
+          }
+        ],
+        "priority": 25,
+        "result": {
+          "kind": "material",
+          "id": "mushroom_broth"
+        },
+        "desc": "A mushroom and an herb. What the same two make when the herb does not cook for the Steeped Broth time, or that recipe is not known."
+      },
+      {
+        "id": "herb_rubbed_meat",
+        "name": "Herb-Rubbed Meat",
+        "icon": "🍖",
+        "recipe": "herb_rubbed_meat",
+        "requires": [
+          {
+            "tag": "meat"
+          },
+          {
+            "tag": "herb"
+          }
+        ],
+        "priority": 30,
+        "result": {
+          "kind": "material",
+          "id": "herb_rubbed_meat"
+        }
+      },
+      {
+        "id": "fish_onion_pot",
+        "name": "Fish and Onion Pot",
+        "icon": "🐟",
+        "recipe": "fish_onion_pot",
+        "requires": [
+          {
+            "tag": "fish"
+          },
+          {
+            "tag": "vegetable"
+          }
+        ],
+        "priority": 30,
+        "result": {
+          "kind": "material",
+          "id": "fish_onion_pot"
+        }
+      },
+      {
+        "id": "lectory_porridge",
+        "name": "Lectory Porridge",
+        "icon": "🥣",
+        "recipe": "lectory_porridge",
+        "requires": [
+          {
+            "tag": "grain"
+          },
+          {
+            "tag": "sweet"
+          }
+        ],
+        "priority": 30,
+        "result": {
+          "kind": "material",
+          "id": "lectory_porridge"
+        }
+      },
+      {
+        "id": "seared_stew",
+        "name": "Seared Stew",
+        "icon": "🍛",
+        "recipe": "seared_stew",
+        "requires": [
+          {
+            "tag": "meat"
+          },
+          {
+            "tag": "vegetable"
+          }
+        ],
+        "heat": [
+          {
+            "tag": "meat",
+            "to": 6
+          }
+        ],
+        "priority": 22,
+        "result": {
+          "kind": "material",
+          "id": "seared_stew"
+        },
+        "desc": "Learned dish. Meat and a vegetable, with the meat cooking for under 6 units (put in midway on a Quick simmer)."
+      },
+      {
+        "id": "braised_meat",
+        "name": "Braised Meat",
+        "icon": "🍗",
+        "recipe": "braised_meat",
+        "requires": [
+          {
+            "tag": "meat"
+          },
+          {
+            "tag": "vegetable"
+          }
+        ],
+        "heat": [
+          {
+            "tag": "meat",
+            "from": 14
+          }
+        ],
+        "priority": 22,
+        "result": {
+          "kind": "material",
+          "id": "braised_meat"
+        },
+        "desc": "Learned dish. Meat and a vegetable, with the meat cooking for 14 units or more (put in first on a Long braise)."
+      },
+      {
+        "id": "steeped_broth",
+        "name": "Steeped Broth",
+        "icon": "🫖",
+        "recipe": "steeped_broth",
+        "requires": [
+          {
+            "tag": "mushroom"
+          },
+          {
+            "tag": "herb"
+          }
+        ],
+        "heat": [
+          {
+            "tag": "herb",
+            "from": 8
+          }
+        ],
+        "priority": 27,
+        "result": {
+          "kind": "material",
+          "id": "steeped_broth"
+        },
+        "desc": "Learned dish. A mushroom and an herb, with the herb cooking for 8 units or more (put in first, on any simmer)."
+      },
+      {
+        "id": "ration",
+        "name": "Traveler's Ration",
+        "icon": "🥖",
+        "requires": [
+          {
+            "tag": "ingredient",
+            "count": 2
+          }
+        ],
+        "priority": 5,
+        "result": {
+          "kind": "material",
+          "id": "travelers_ration"
+        },
+        "desc": "Any two ingredients that match nothing else."
+      },
+      {
+        "id": "mess",
+        "name": "Scorched Mess",
+        "icon": "🥘",
+        "requires": [
+          {
+            "tag": "ingredient"
+          }
+        ],
+        "maxQuality": "f",
+        "priority": 100,
+        "result": {
+          "kind": "material",
+          "id": "scorched_mess"
+        },
+        "desc": "Any basket whose best ingredient is Refuse grade. Harmful to eat."
+      }
+    ],
+    "desc": "Cooking Stove. Simmers two to four raw ingredients for 8, 12 or 16 units. Each slot adds its ingredient at a set point in the simmer. The dish depends on what is in the pot. Its grade comes from the ingredients' grades and how well each one cooked. Some dishes need an ingredient to cook for a set time; the recipe card says how long."
+  },
+  {
+    "id": "grilling",
+    "name": "Grilling",
+    "benchName": "Open Grill",
+    "icon": "🍢",
+    "verb": "Grill",
+    "skill": "cooking",
+    "tag": "cooking",
+    "favoredPrep": "julienned",
+    "work": {
+      "skillScaled": false
+    },
+    "ticks": 30,
+    "xp": 8,
+    "slots": [
+      {
+        "id": "main",
+        "name": "On the Grate",
+        "role": "base",
+        "accepts": [
+          "raw"
+        ],
+        "station": "centre"
+      },
+      {
+        "id": "second",
+        "name": "Alongside",
+        "role": "component",
+        "accepts": [
+          "raw"
+        ],
+        "optional": true,
+        "station": "centre"
+      },
+      {
+        "id": "glaze",
+        "name": "Glaze",
+        "role": "adornment",
+        "accepts": [
+          "seasoning"
+        ],
+        "optional": true,
+        "station": "bottomLeft"
+      }
+    ],
+    "outcomes": [
+      {
+        "id": "skewer",
+        "name": "Skewered Fish",
+        "icon": "🍢",
+        "requires": [
+          {
+            "tag": "fish"
+          }
+        ],
+        "priority": 20,
+        "result": {
+          "kind": "material",
+          "id": "skewered_fish"
+        },
+        "desc": "Any fish."
+      },
+      {
+        "id": "steak",
+        "name": "Seared Steak",
+        "icon": "🥩",
+        "requires": [
+          {
+            "tag": "meat"
+          }
+        ],
+        "priority": 15,
+        "result": {
+          "kind": "material",
+          "id": "seared_steak"
+        },
+        "desc": "Any meat."
+      },
+      {
+        "id": "roots",
+        "name": "Charred Roots",
+        "icon": "🍠",
+        "requires": [
+          {
+            "tag": "vegetable",
+            "count": 2
+          }
+        ],
+        "priority": 15,
+        "result": {
+          "kind": "material",
+          "id": "charred_roots"
+        },
+        "desc": "Two vegetables."
+      },
+      {
+        "id": "ration",
+        "name": "Traveler's Ration",
+        "icon": "🥖",
+        "requires": [
+          {
+            "tag": "ingredient"
+          }
+        ],
+        "priority": 5,
+        "result": {
+          "kind": "material",
+          "id": "travelers_ration"
+        },
+        "desc": "Any ingredient that matches nothing else."
+      },
+      {
+        "id": "mess",
+        "name": "Scorched Mess",
+        "icon": "🥘",
+        "requires": [
+          {
+            "tag": "ingredient"
+          }
+        ],
+        "maxQuality": "f",
+        "priority": 100,
+        "result": {
+          "kind": "material",
+          "id": "scorched_mess"
+        },
+        "desc": "Any basket whose best ingredient is Refuse grade. Harmful to eat."
+      }
+    ],
+    "desc": "Open Grill. One raw ingredient required; a second ingredient and a glaze are optional. The outcome is matched on ingredient tags. Cook time is fixed regardless of skill. Julienned cuts fit the grill best."
+  },
+  {
+    "id": "baking",
+    "name": "Baking",
+    "benchName": "Clay Oven",
+    "icon": "🍞",
+    "verb": "Bake",
+    "skill": "cooking",
+    "tag": "cooking",
+    "work": {
+      "skillScaled": false
+    },
+    "ticks": 50,
+    "xp": 11,
+    "slots": [
+      {
+        "id": "main",
+        "name": "First Measure",
+        "role": "base",
+        "accepts": [
+          "raw"
+        ],
+        "station": "centre"
+      },
+      {
+        "id": "second",
+        "name": "Second Measure",
+        "role": "component",
+        "accepts": [
+          "raw"
+        ],
+        "station": "centre"
+      },
+      {
+        "id": "third",
+        "name": "Third Measure",
+        "role": "component",
+        "accepts": [
+          "raw"
+        ],
+        "optional": true,
+        "unlockLevel": 10,
+        "station": "topLeft"
+      },
+      {
+        "id": "sweetening",
+        "name": "Sweetening",
+        "role": "adornment",
+        "accepts": [
+          "seasoning"
+        ],
+        "optional": true,
+        "station": "bottomLeft"
+      }
+    ],
+    "outcomes": [
+      {
+        "id": "cake",
+        "name": "Honey Cake",
+        "icon": "🍰",
+        "requires": [
+          {
+            "tag": "grain"
+          },
+          {
+            "tag": "sweet"
+          },
+          {
+            "tag": "egg"
+          }
+        ],
+        "minLevel": 12,
+        "priority": 30,
+        "result": {
+          "kind": "material",
+          "id": "honey_cake"
+        },
+        "desc": "A grain, a sweet and an egg. Cooking 12."
+      },
+      {
+        "id": "pie",
+        "name": "Berry Pie",
+        "icon": "🥧",
+        "requires": [
+          {
+            "tag": "grain"
+          },
+          {
+            "tag": "fruit"
+          }
+        ],
+        "priority": 25,
+        "result": {
+          "kind": "material",
+          "id": "berry_pie"
+        },
+        "desc": "A grain and a fruit."
+      },
+      {
+        "id": "loaf",
+        "name": "Rustic Loaf",
+        "icon": "🍞",
+        "requires": [
+          {
+            "tag": "grain",
+            "count": 2
+          }
+        ],
+        "priority": 20,
+        "result": {
+          "kind": "material",
+          "id": "rustic_loaf"
+        },
+        "desc": "Two grains."
+      },
+      {
+        "id": "ration",
+        "name": "Traveler's Ration",
+        "icon": "🥖",
+        "requires": [
+          {
+            "tag": "ingredient"
+          }
+        ],
+        "priority": 5,
+        "result": {
+          "kind": "material",
+          "id": "travelers_ration"
+        },
+        "desc": "Any ingredient that matches nothing else."
+      },
+      {
+        "id": "mess",
+        "name": "Scorched Mess",
+        "icon": "🥘",
+        "requires": [
+          {
+            "tag": "ingredient"
+          }
+        ],
+        "maxQuality": "f",
+        "priority": 100,
+        "result": {
+          "kind": "material",
+          "id": "scorched_mess"
+        },
+        "desc": "Any basket whose best ingredient is Refuse grade. Harmful to eat."
+      }
+    ],
+    "desc": "Clay Oven. Two raw measures required, a third at Cooking 10, sweetening optional. The outcome is matched on ingredient tags. Bake time is fixed regardless of skill. Bread it produces is edible and also counts as an ingredient at the Cold Counter."
+  },
+  {
+    "id": "assembling",
+    "name": "Assembling",
+    "benchName": "Cold Counter",
+    "icon": "🥪",
+    "verb": "Assemble",
+    "skill": "cooking",
+    "tag": "cooking",
+    "favoredPrep": "sliced",
+    "work": {
+      "per": "ingredient",
+      "skillScaled": true
+    },
+    "ticks": 20,
+    "xp": 6,
+    "slots": [
+      {
+        "id": "main",
+        "name": "Foundation",
+        "role": "base",
+        "accepts": [
+          "ingredient"
+        ],
+        "station": "centre"
+      },
+      {
+        "id": "second",
+        "name": "Layered On",
+        "role": "component",
+        "accepts": [
+          "ingredient"
+        ],
+        "station": "centre"
+      },
+      {
+        "id": "third",
+        "name": "Third Layer",
+        "role": "component",
+        "accepts": [
+          "ingredient"
+        ],
+        "optional": true,
+        "unlockLevel": 15,
+        "station": "topLeft"
+      },
+      {
+        "id": "garnish",
+        "name": "Garnish",
+        "role": "adornment",
+        "accepts": [
+          "seasoning",
+          "herb"
+        ],
+        "optional": true,
+        "station": "bottomLeft"
+      }
+    ],
+    "outcomes": [
+      {
+        "id": "sandwich",
+        "name": "Hearty Sandwich",
+        "icon": "🥪",
+        "requires": [
+          {
+            "tag": "bread"
+          },
+          {
+            "tag": "filling"
+          }
+        ],
+        "priority": 25,
+        "result": {
+          "kind": "material",
+          "id": "hearty_sandwich"
+        },
+        "desc": "A bread and a filling."
+      },
+      {
+        "id": "salad",
+        "name": "Forest Salad",
+        "icon": "🥗",
+        "requires": [
+          {
+            "tag": "vegetable",
+            "count": 2
+          }
+        ],
+        "priority": 20,
+        "result": {
+          "kind": "material",
+          "id": "forest_salad"
+        },
+        "desc": "Two vegetables."
+      },
+      {
+        "id": "ration",
+        "name": "Traveler's Ration",
+        "icon": "🥖",
+        "requires": [
+          {
+            "tag": "ingredient",
+            "count": 2
+          }
+        ],
+        "priority": 5,
+        "result": {
+          "kind": "material",
+          "id": "travelers_ration"
+        },
+        "desc": "Any two ingredients that match nothing else."
+      }
+    ],
+    "desc": "Cold Counter. Takes raw or cooked ingredients: two required, a third at Cooking 15, a garnish optional. The only bench that accepts cooked food, so bread from the oven can go in. No mess outcome. Work time grows with each ingredient and shrinks with skill. Sliced cuts fit the counter best."
+  },
+  {
+    "id": "preparing",
+    "name": "Preparing",
+    "benchName": "Cutting Board",
+    "icon": "🔪",
+    "verb": "Prepare",
+    "skill": "cooking",
+    "tag": "cooking",
+    "ticks": 15,
+    "xp": 4,
+    "slots": [
+      {
+        "id": "board",
+        "name": "On the Board",
+        "role": "base",
+        "accepts": [
+          "whole"
+        ],
+        "station": "centre"
+      },
+      {
+        "id": "technique",
+        "name": "Technique",
+        "role": "component",
+        "picks": "design",
+        "accepts": [
+          "technique"
+        ],
+        "station": "centre"
+      }
+    ],
+    "outcomes": [
+      {
+        "id": "prep",
+        "name": "Prepped Ingredient",
+        "icon": "🔪",
+        "requires": [
+          {
+            "tag": "whole"
+          }
+        ],
+        "result": {
+          "kind": "prepped"
+        },
+        "desc": "The same ingredient in the chosen cut, for a bench that favors that cut."
+      }
+    ],
+    "desc": "Cutting Board. Takes one whole ingredient and one cutting technique, and returns the ingredient in that cut. The output grade is the cut's uniformity: a higher grade narrows the range the ingredient's contribution rolls in at the next bench."
   }
 ]

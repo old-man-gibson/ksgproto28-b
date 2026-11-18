@@ -7,7 +7,6 @@
   {"id":"card_spent","text":"Already done"},
   {"id":"technique_unreachable","text":"No technique you know leads into {name}’s position yet"},
   {"id":"in_combat","text":"Not during a fight."},
-  {"id":"food_not_ported","text":"Food: eaten through cooking, which is not ported yet"},
   {"id":"word_learned","text":"📝 Word learned: {word}. It is on the Spellcrafting Table (castable once Arcana reaches its level)."},
   {"id":"technique_learned","text":"📘 Technique learned: {name} (canonical form)."},
   {"id":"card_used","text":"{icon} {verb}: {name}."},

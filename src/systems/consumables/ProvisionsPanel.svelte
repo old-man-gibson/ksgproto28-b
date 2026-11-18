@@ -1,6 +1,9 @@
 <script lang="ts">
   import Button from '../../ui/components/Button.svelte';
   import { send, viewOf } from '../../ui/game.svelte';
+  import cooking, { cancelMeal, eat, eatButton } from '../cooking';
+  import meals from '../meals';
+  import DishSlots from '../cooking/DishSlots.svelte';
   import consumables, { useConsumable } from './index';
 
   // Held consumables, best grade first, one row each. A row opens its facts
@@ -9,11 +12,40 @@
   const view = $derived(viewOf(consumables));
   let open = $state<string | null>(null);
   const key = (r: { id: string; quality: string }) => `${r.id}:${r.quality}`;
+  // Food is pressed through the kitchen's eat plan (decision 29): eaten now,
+  // or queued for the end of the fight or the knockout.
+  const plans = $derived(viewOf(cooking).plans);
+  const active = $derived(viewOf(meals).active);
+  // No dish carries a cooldown; the cooling argument is 0.
+  const buttonOf = (r: { id: string; quality: string }) => {
+    const plan = plans[key(r)];
+    return plan ? eatButton(plan.id, plan.quality, plan, active, 0) : null;
+  };
+  function label(r: { id: string; quality: string; verb: string }): string {
+    return buttonOf(r)?.label ?? 'Use';
+  }
+  function note(r: { id: string; quality: string; blocked: string | null; grade: string }): string {
+    const b = buttonOf(r);
+    if (b) {
+      const plan = plans[key(r)];
+      if (plan.mode === 'blocked') return plan.reason ?? 'Not usable';
+      if (b.replaces) return b.replaces;
+      return r.grade ? `Grade: ${r.grade}` : 'Ready';
+    }
+    return r.blocked ?? (r.grade ? `Grade: ${r.grade}` : 'Ready');
+  }
+  function press(r: { id: string; quality: string }): void {
+    const plan = plans[key(r)];
+    if (!plan) send(useConsumable({ id: r.id, quality: r.quality as never }));
+    else if (plan.queued) send(cancelMeal(undefined));
+    else send(eat({ id: r.id, quality: r.quality as never }));
+  }
 </script>
 
 <section class="panel" aria-label="Provisions">
   <h2>Provisions <span class="dim num">{view.rows.length} stacks</span></h2>
-  <p class="card dim note">Salves, cards and offerings are used here. Flasks are in the Satchel of the Alchemy panel.</p>
+  <p class="card dim note">Dishes, salves, cards and offerings are used here. Dishes are eaten between fights; Eat in a fight queues the dish. Flasks are in the Satchel of the Alchemy panel.</p>
+  <DishSlots />
   <ul class="card list" aria-label="Held consumables">
     {#each view.rows as r (key(r))}
       <li class="item" style="--tint: {r.color}">
@@ -22,10 +54,10 @@
             <span class="glyph">{r.icon}</span>
             <span class="ident">
               <span class="clip">{r.name}{r.qty > 1 ? ` ×${r.qty}` : ''}</span>
-              <span class="dim clip">{r.blocked ?? (r.grade ? `Grade: ${r.grade}` : 'Ready')}</span>
+              <span class="dim clip">{note(r)}</span>
             </span>
           </button>
-          <Button disabled={r.blocked !== null} onclick={() => send(useConsumable({ id: r.id, quality: r.quality }))}>Use</Button>
+          <span class="act"><Button disabled={buttonOf(r) ? buttonOf(r)!.disabled : r.blocked !== null} title={buttonOf(r)?.tip.join(' ') || undefined} onclick={() => press(r)}>{label(r)}</Button></span>
         </div>
         {#if open === key(r)}
           <div class="detail">
@@ -107,6 +139,19 @@
     font: inherit;
     text-align: left;
     cursor: pointer;
+  }
+
+  .act {
+    display: flex;
+    flex: none;
+    justify-content: flex-end;
+    width: 12rem;
+  }
+
+  @media (max-width: 640px) {
+    .act {
+      width: 10rem;
+    }
   }
 
   .glyph {

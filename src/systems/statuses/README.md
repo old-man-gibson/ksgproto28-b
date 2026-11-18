@@ -69,6 +69,12 @@ Requests (old function of the same name, with `entity` in the payload):
 `statusBarDamage`, `consumeMagnetCharge`, `tendOnDamage`, `dueGraftSpread`,
 `noteHealed`, `noteResourceSpent`.
 
+Step 3 (the cooking port): `setDose` (`statuses/set-dose { entity, id,
+intensity, ticksLeft, alwaysPeak? }`) puts a held condition at a stated dose
+and clock, for the dish slots of `meals` (the old `meals.ts` wrote the
+instance in place). The peak follows the intensity when it changes, or
+always with `alwaysPeak` (the old hand-off). No rule fires.
+
 `resist` in an application payload: for the player, true when the dose is
 done to the player (a bite, an enemy working, spoiled food) and absent for
 what the player grants to themselves. This is the old "pass the stat block"

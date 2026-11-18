@@ -227,6 +227,24 @@ export const reform = defineRequest<{ entity: string; app: StatusApplication; so
 );
 /** Remove one condition. No rule fires. */
 export const removeStatus = defineRequest<{ entity: string; id: string }, void>('statuses/remove');
+/**
+ * Put a held condition at a stated dose and clock: intensity and peak, and
+ * ticks left (null: no clock). No rule fires. Nothing when it is not held.
+ * For the dish slots of `meals` (old `meals.ts` wrote the instance in place).
+ */
+export const setDose = defineRequest<
+  {
+    entity: string;
+    id: string;
+    intensity: number;
+    ticksLeft: number | null;
+    /** Write the peak even when the intensity is unchanged (the old hand-off). */
+    alwaysPeak?: boolean;
+  },
+  void
+>(
+  'statuses/set-dose',
+);
 /** Remove every condition of an entity that stays in the game. */
 export const clearStatuses = defineRequest<{ entity: string }, void>('statuses/clear');
 /** Tell an entity's conditions that something happened. The ids that changed. */
@@ -656,6 +674,17 @@ export default defineSystem<StatusesState, StatusesView>({
       return copy(mutate(ctx, p.entity, false, (list, env) => engine.reform(env, list, p.app, p.source)));
     }),
     answer(removeStatus, (ctx, p) => mutate(ctx, p.entity, false, (list) => engine.removeStatus(list, p.id))),
+    answer(setDose, (ctx, p) =>
+      mutate(ctx, p.entity, false, (list) => {
+        const inst = list.find((h) => h.id === p.id);
+        if (!inst) return;
+        if (inst.intensity !== p.intensity || p.alwaysPeak) {
+          inst.intensity = p.intensity;
+          inst.peak = p.intensity;
+        }
+        if (inst.ticksLeft !== p.ticksLeft) inst.ticksLeft = p.ticksLeft;
+      }),
+    ),
     answer(clearStatuses, (ctx, p) => mutate(ctx, p.entity, false, (list) => engine.clearStatuses(list))),
     answer(fireStatusEvent, (ctx, p) =>
       mutate(ctx, p.entity, false, (list, env) => engine.fireStatusEvent(env, list, p.on, p.detail)),

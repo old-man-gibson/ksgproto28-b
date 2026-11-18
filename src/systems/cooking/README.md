@@ -183,3 +183,75 @@ desktop width and 375 px.
   (only the player base, not in scope). Their records are ported, so the
   dishes they make satisfy the food lint and the old tests.
 - `base_kitchen` and the player base.
+
+## Files
+
+| File | Holds |
+|---|---|
+| `defs.ts` | The `preps` registry (3 knife techniques), `cooking_text`, `UNIFORMITY`, `EXPOSURE`, the judgement cap, the Book thresholds, `COOKING_BENCHES` |
+| `cook.ts` | Exposure, contribution, `cookJudgement`, `cookLedger`, `dishQuality(Range)`, `rollDishQuality`, `previewCook` (pure over `BenchReads`) |
+| `cookbook.ts` | The Book over `BookReads` (counters, carried lists, Cook's Notes rank), `carriedCookbook` |
+| `food.ts` | `eatenApplication`, `doseTicks`, `foodScale`, `dishCalories`, `isSpoiledFood`, `foodProblems` |
+| `index.ts` | The slice, the bench and eater registrations, `cooking/cook`, `cooking/eat-food`, the eat and cancel commands, the queue, the early tick, the view, `newRun` |
+| `heatTrack.ts`, `gradeLedger.ts`, `bookView.ts`, `mealsView.ts` | The old pure UI helpers of `ui/lib`, words unchanged |
+| `KitchenPanel.svelte`, `DishSlots.svelte`, `panel.ts` | The Kitchen panel; the dish list Provisions mounts |
+
+## Slice (version 1)
+
+`{ queued: { dish, quality, why } | null, carried: { timed, signed },
+plate: { cooked, before } | null }`. Fixture `tests/fixtures/cooking/v1.json`.
+
+## Changed while building (step 3)
+
+- `benches` hands its owner a placement and a duration only, so each of
+  the five benches has its own craft request (`cooking/craft-<bench>`);
+  `cooking/cook { discipline, placement, duration }` answers the old
+  `cook` with its result, for tests and callers that need the dish.
+- The plate card's state is in the slice (`plate`: the last cook and the
+  dish's mark before it). The old UI kept it in the bench window.
+- The cook tick returns after one read while nothing is queued and no
+  claim is held.
+- The Kitchen panel's Cook's Book is a table (dish, made, best, cook time,
+  Signature); the old grade squares are in `bookView.ts` and tested, not
+  drawn.
+- The Eat button's tooltip is a `title`; the same facts are in the row's
+  second line (click, not hover).
+
+## Old rules ported as they are
+
+- The grill, the oven and the cold counter are ported with their dishes,
+  but no spot through floor 6 has them (only the player base).
+- Fair ingredients top out at Superb at the judgement cap; Divine needs
+  Superb ingredients.
+- A dish's restore follows the cook's potency; a dish's own `duration`
+  and the condition's default both follow the cook's duration.
+- `dishCalories` is computed and read by nothing (Facet's Calorie Burn is
+  not ported).
+- A thrown flask's grants are noted as foreign claims (see `meals`).
+
+## Found while porting (spine era, not cooking)
+
+The new `combat` ticks while the player is knocked out; the old
+`tickAction` returned early while recovering. With a hand-set knockout and
+a hunt still on, a fight opens on the tick recovery ends. A real knockout
+stops the hunt, so play is not affected. Not changed here; `docs/SPINE.md`
+section 14.4.
+
+## Left behind
+
+- Facet signals `eat`, `itemUsed`, `flaskUsed`; Calorie Burn.
+- Shadow Clones at a bench, bonus time, performances.
+- The festival's hold on meals.
+- `base_kitchen` and the player base (the only spot with the grill, the
+  oven and the cold counter).
+- The old `ui/lib/format.ts` stat tooltips (`sumMods`, `statTipLines`): two
+  `it.todo` in `tests/cookBookView.test.ts`.
+- Old save migrations v57 to v59: `it.todo` in `tests/cookbook.test.ts`
+  and `tests/meals.test.ts`.
+
+## Tests
+
+`tests/cooking.test.ts` (49), `recipes` (6), `cookbook` (61, 5 todo),
+`cookingWindows` (46), `heatTrack` (27), `gradeLedger` (10), `meals` (62,
+3 todo), `mealsView` (13), `cookBookView` (29, 2 todo), the three food
+cases of `conditionResist`, the food case of `consumables`.

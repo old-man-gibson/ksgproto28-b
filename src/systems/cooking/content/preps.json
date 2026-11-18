@@ -1,0 +1,28 @@
+[
+  {
+    "id": "sliced",
+    "name": "Slice",
+    "prefix": "Sliced",
+    "icon": "🔪",
+    "tag": "sliced",
+    "desc": "Knife technique. Sliced ingredients fit the Cold Counter; a basket of fitted cuts comes out about a grade better than the same basket whole."
+  },
+  {
+    "id": "diced",
+    "name": "Dice",
+    "prefix": "Diced",
+    "icon": "🎲",
+    "tag": "diced",
+    "minLevel": 4,
+    "desc": "Knife technique, Cooking 4. Diced ingredients fit the Cooking Stove; a basket of fitted cuts comes out about a grade better than the same basket whole."
+  },
+  {
+    "id": "julienned",
+    "name": "Julienne",
+    "prefix": "Julienned",
+    "icon": "🥢",
+    "tag": "julienned",
+    "minLevel": 10,
+    "desc": "Knife technique, Cooking 10. Julienned ingredients fit the Open Grill; a basket of fitted cuts comes out about a grade better than the same basket whole."
+  }
+]

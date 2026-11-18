@@ -1340,3 +1340,71 @@ Not verified in a browser: an oil worked into the blade and spent in a
 fight (tested headless, `tests/alchemy.test.ts`), a word slip or a drill
 manual used from the panel (tested headless), the forge forms of the new
 registries.
+
+## 14. Step 3: cooking
+
+Done 2026-11-18 on branch `step3-cooking`. Design and the full account:
+`src/systems/cooking/README.md` ("Step 3 design", "Changed while building
+(step 3)", "Old rules ported as they are", "Left behind") and the README
+of the new system `src/systems/meals` (dish slots and claims). Additions
+in other folders are listed in each folder's "Step 3 (the cooking port)"
+section or note: `benches` (five kitchen records, heat windows, the timed
+clock, `duration`), `consumables` (the eater, `consumables/use-now`),
+`statuses` (`statuses/set-dose`), `alchemy` (`alchemy/flask-used`).
+
+### 14.1 John
+
+Unchanged. No John climb cooks or eats: every segment tick, knockout,
+level and gold figure equals the alchemy port's (section 13.1); only the
+end state hash changed (the slices `cooking` and `meals`). No new pacing
+table was measured.
+
+### 14.2 Offline budgets
+
+Measured the same hour against `main` (57912c9), alternating; the table is
+in `docs/KERNEL.md` section 8. `main` failed four limits on this machine
+with no change (floor 1 7,043 ms, floor 6 13,963, world 4 14,270, world 6
+14,952). The port adds two tick hooks (`cooking` at order -50: the eating
+queue and the hand-off; `meals` at order 50: the claim clocks), as the old
+`Game.advance` ran meal steps before and after the conditions: 3 to 6% per
+run, about 0.4 microseconds per tick; with both hooks removed the no-fight
+run equals `main`. User decision: every budget raised 10%, in its own
+commit; the two-hook port kept. The kills, generator, level and gold of
+every run are unchanged; the state hash changed, and the digests are
+recorded again in their own commit.
+
+Test change outside the new tests: `tests/consumables.test.ts` "food waits
+for the cooking port" became "food goes to the eater of the cooking port";
+`tests/recipes.test.ts`'s Reading Hall drop case got a 30 s limit (about
+3 s alone, over 5 s under the full parallel run).
+
+### 14.3 Browser check
+
+Desktop width and 375 px, on the dev server. Dev save edited for the
+check from the forge page (`ksgb:development:save` only: stood at the
+Granary Kitchens, raw meat, wild onion, mushroom, herb, salt and fish at
+Fair and Superb, Cooking 12; the save before the edit is at
+`ksgb:development:save.before-cooking-check`). The Kitchen panel: the
+bench tabs, the cook lengths, the slot picker, the ledger ("Fine · 1.80 ·
+Superb 0.70 short", judgement +0.80 at Cooking 12), the preview "Fine
+Hearty Stew", a cook of 12 units (bar, done), the plate line. A fight
+left from the edited save interrupted the first run ("interrupted", the
+ported rule); after Abandon the cook made a Fine Hearty Stew and spent
+one meat. Provisions: Eat; the dish list read "Fine Hearty Stew: 10m 36s"
+(Well Fed 10 minutes times the Cooking 12 duration 1.06) and the
+Character panel held Well Fed at dose 1.6. No horizontal overflow at
+375 px (the Cook's Book table scrolls inside its box).
+
+Not verified in a browser: the queue after a fight or a knockout, the
+eviction of a fourth dish, a Signature, Cook's Notes across a prestige
+(each tested headless), the cutting board, the forge forms of the new
+registries.
+
+### 14.4 Found while porting (spine era, not cooking)
+
+The new `combat` ticks while the player is knocked out; the old
+`tickAction` returned early while recovering. With a hand-set knockout and
+a hunt still on, the respawn timer runs out on the floor and a fight opens
+on the tick recovery ends. A real knockout stops the hunt, so play is not
+affected; `tests/meals.test.ts` stops the hunt loop in its hand-made
+knockout case. Not changed here.

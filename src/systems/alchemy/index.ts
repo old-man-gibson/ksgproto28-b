@@ -7,6 +7,7 @@
 import {
   answer,
   defineCommand,
+  defineEvent,
   defineRequest,
   defineSystem,
   handle,
@@ -93,8 +94,10 @@ export function benchReadsOf(ctx: ReadCtx): BenchReads {
 
 /** Drink, apply, coat or throw a flask; its sequence decides which. The old `useFlask`. */
 export const useFlask = defineCommand<{ index: number }>('alchemy/use-flask');
+/** A flask was used: the doses it granted, whatever its form. `meals` records them as claims. */
+export const flaskUsed = defineEvent<{ grants: StatusApplication[] }>('alchemy/flask-used');
 /** Work the Alembic once: spend the layout and shelve the flask. The old `brew`. Answered for `benches`. */
-export const brewRequest = defineRequest<{ placement: Placement }, boolean>('alchemy/brew');
+export const brewRequest = defineRequest<{ placement: Placement; duration?: number }, boolean>('alchemy/brew');
 
 /** One blow's worth of oil. The old `CoatingBite`. */
 export interface CoatingBite {
@@ -407,6 +410,8 @@ const alchemy = defineSystem<AlchemyState, AlchemyView>({
       else if (spec.form === 'oil') anoint(ctx, spec, flask);
       else swallow(ctx, spec);
       ctx.emit(grantAttrXp, { attr: 'int', amount: 1 });
+      // The dish slots record the brew's doses (old `Game.useFlask`, `noteForeignDoses`).
+      ctx.emit(flaskUsed, { grants: spec.grants.map((g) => ({ ...g })) });
       return OK;
     }),
   ],

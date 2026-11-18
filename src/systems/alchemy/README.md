@@ -290,6 +290,15 @@ flaskReady }`. Fixture `tests/fixtures/alchemy/v1.json`.
   objective, the Alembic's craft objective): after the last of the six
   system people. Odri Venn and Sister Nim have no quest or lesson.
 
+## Step 3 (the cooking port)
+
+- `brewRequest` takes an optional `duration` (the bench owner's craft
+  payload since the stove); the Alembic ignores it.
+- `alchemy/use-flask` emits `alchemy/flask-used { grants }` after the use,
+  for every form. `meals` records the doses as claims (old `Game.useFlask`
+  called `noteForeignDoses`).
+- The `preparing` bench at the Alembics is ported with cooking.
+
 ## Tests
 
 `tests/alchemy.test.ts` (the old file, 55 cases, plus one thrown-flask
