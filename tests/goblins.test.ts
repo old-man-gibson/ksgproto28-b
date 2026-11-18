@@ -11,12 +11,11 @@
  * - `castMonsterWorking(state, bus, e, stats, source, index)` is
  *   `castMonsterWorking(ctx, e, source, index)` under `run`;
  * - `state.stats[watchStatKey(id)]` is `counterOf(kernel, watchStatKey(id))`;
- * - `TECHNIQUE_WATCH_COUNT` is not exported here: the literal 50 is asserted.
+ * - `checkTechniqueLearning` is the request `martial/check-learning`; a
+ *   counter is written with `patch` so the check runs only when asked.
  *
  * Left as `it.todo`:
- * - step 3 (the martial port): learning by watching (`checkTechniqueLearning`,
- *   `techniqueKnown`, the martial unlock, reach).
- * - step 3: `deityKnown`. The case that asserted it is split: its content
+ * - step 3 (the divine port): `deityKnown`. The case that asserted it is split: its content
  *   half runs, the unlock half is an `it.todo`.
  */
 import { describe, expect, it } from 'vitest';
@@ -24,15 +23,24 @@ import type { Kernel } from '../src/kernel';
 import type { AttributesState } from '../src/systems/attributes';
 import type { Enemy } from '../src/systems/combat';
 import { DEITIES, MIRACLES } from '../src/systems/divine';
-import { TECHNIQUES, watchStatKey } from '../src/systems/martial';
+import {
+  checkLearning,
+  learnRequest,
+  MARTIAL_UNLOCK,
+  TECHNIQUE_WATCH_COUNT,
+  TECHNIQUES,
+  techniqueForm,
+  watchLearnProgress,
+  watchStatKey,
+  type MartialState,
+} from '../src/systems/martial';
+import type { CountersState } from '../src/systems/counters';
 import { MONSTERS } from '../src/systems/monsters';
 import type { SkillsState } from '../src/systems/skills';
 import { castMonsterWorking } from '../src/systems/spellcraft';
 import { combatOf, counterOf, hardenFoes, patchFight, playerStats, setHp, stage } from './combatHelpers';
-import { makeGame, patch, run } from './helpers';
+import { ask, makeGame, patch, run, slice } from './helpers';
 
-/** The count every watchable technique asks (`TECHNIQUE_WATCH_COUNT` of the old `martial.data.ts`). */
-const TECHNIQUE_WATCH_COUNT = 50;
 
 const fresh = (seed = 1): Kernel => makeGame({ seed });
 
@@ -44,14 +52,24 @@ function sturdy(kernel: Kernel): void {
   setHp(kernel, playerStats(kernel).maxHp);
 }
 
-/** A fighter with the skill the goblin techniques are eligible for. */
-function fighter(): Kernel {
+/** A fighter with the skill the goblin techniques are eligible for, the martial unlock open or shut. */
+function fighter(open = true): Kernel {
   const g = fresh();
   patch(g, (slices) => {
     (slices.skills as SkillsState).skills.fighting = { level: 10, xp: 0 };
+    if (open) slices.counters.counts[MARTIAL_UNLOCK] = 1;
   });
   return g;
 }
+
+/** Write a counter as the old cases wrote `state.stats`; the check runs only when asked. */
+function setCount(kernel: Kernel, key: string, value: number): void {
+  patch(kernel, (slices) => {
+    slices.counters.counts[key] = value;
+  });
+}
+const check = (kernel: Kernel): void => ask(kernel, checkLearning, undefined);
+const known = (kernel: Kernel, id: string): boolean => !!slice<MartialState>(kernel, 'martial').techniques[id];
 
 describe('learning a technique by watching it', () => {
   it('every watchable technique asks the one shared count', () => {
@@ -61,11 +79,44 @@ describe('learning a technique by watching it', () => {
     expect(TECHNIQUE_WATCH_COUNT).toBe(50);
   });
 
-  it.todo('50 sightings teach it, rough; 49 do not (step 3: martial: checkTechniqueLearning on the watch counter)');
+  it('50 sightings teach it, rough; 49 do not', () => {
+    const g = fighter();
+    setCount(g, watchStatKey('pocket_sand'), TECHNIQUE_WATCH_COUNT - 1);
+    check(g);
+    expect(known(g, 'pocket_sand')).toBe(false);
+    setCount(g, watchStatKey('pocket_sand'), TECHNIQUE_WATCH_COUNT);
+    check(g);
+    expect(techniqueForm(slice<MartialState>(g, 'martial'), 'pocket_sand')).toBe('rough');
+  });
 
-  it.todo('a shut martial shutter learns nothing, and keeps the count for when it opens (step 3: martial: the martial unlock, checkTechniqueLearning)');
+  it('a shut martial shutter learns nothing, and keeps the count for when it opens', () => {
+    const g = fighter(false);
+    setCount(g, watchStatKey('pocket_sand'), TECHNIQUE_WATCH_COUNT);
+    check(g);
+    expect(known(g, 'pocket_sand')).toBe(false);
+    setCount(g, MARTIAL_UNLOCK, 1);
+    check(g);
+    expect(known(g, 'pocket_sand')).toBe(true);
+  });
 
-  it.todo('sightings before there is a way in count for nothing (reach) (step 3: martial: watchLearnProgress, reach)');
+  it('sightings before there is a way in count for nothing (reach)', () => {
+    const g = fighter();
+    // Hamstring starts coiled; with nothing that coils, it cannot be reached.
+    setCount(g, watchStatKey('hamstring'), TECHNIQUE_WATCH_COUNT);
+    check(g);
+    expect(known(g, 'hamstring')).toBe(false);
+
+    ask(g, learnRequest, { technique: 'gather', form: 'canonical' });
+    check(g);
+    const progress = () =>
+      watchLearnProgress(slice<MartialState>(g, 'martial'), slice<CountersState>(g, 'counters'), TECHNIQUES.hamstring);
+    expect(progress()).toBe(0);
+    expect(known(g, 'hamstring')).toBe(false);
+
+    setCount(g, watchStatKey('hamstring'), 2 * TECHNIQUE_WATCH_COUNT);
+    check(g);
+    expect(techniqueForm(slice<MartialState>(g, 'martial'), 'hamstring')).toBe('rough');
+  });
 
   it("a hobgoblin's techniques count as sightings in a real fight", () => {
     const g = fighter();

@@ -1,0 +1,5 @@
+[
+  { "id": "style_changed", "text": "Combat style: {name}" },
+  { "id": "school_engaged", "text": "{icon} {was} switched to {now}." },
+  { "id": "school_released", "text": "{was} reverted to {now}." }
+]

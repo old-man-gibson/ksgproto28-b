@@ -100,6 +100,7 @@ registered by `weather` (`registerSiteSky` in `spawn.ts`).
 | `combat/abandon` | `abandonCombat` | true when there was a fight. Never refuses; the caller checks `inForcedFight` first. |
 | `combat/damage-enemy` `{ entity, strikes[], source, penetration?, kind? }` | The body of a strike on an enemy from outside the normal attack (`abilityStrike`, each strike of `castCraftedAttack`): `monsterSlice` per strike, HP, `lastHit`, the ledger, `enemyTookDamage`, the graft harvest. | `{ dealt, killed, slices }`, or null for an entity that is not a living enemy |
 | `combat/stamp-action` `{ entity, index, cooldown }` | `spendMonsterAction` and the clock stamp | false for an unknown entity |
+| `combat/enable-action` `{ id, enabled }` | The `enabled` half of `benchTechnique` and `setTechniqueSlotted` (step 3, martial) | void. Creates the trigger `{ conditions: [] }` when the id has none. |
 
 `combat/damage-enemy` does not sweep the dead. The tick sweeps at the point
 the old tick swept after the strikes of the run's ability.
@@ -148,7 +149,7 @@ healKind }`; `counters/bump`, `set`, `clear`; `skills/grant-xp`,
 | `statuses/damage` | Attributes a tick of the player's conditions, one row per condition. Closes an open fight as a knockout when the tick left the player at 0 HP. |
 | `statuses/detonated`, `statuses/fatal` | Close an open fight as a knockout: a detonation that left the player at 0 HP, a fatal condition whatever the HP. |
 | `resources/healed` | Records the heal by kind, and what a condition refused. |
-| `combat/set-style` | The style fought in and its exertion, from the styles system. |
+| `combat/set-style` | The style fought in and its exertion, from the `styles` system (step 3). |
 
 ### Hook stats
 
@@ -498,3 +499,13 @@ skip.
 - The survey in `docs/SPINE.md` section 1 counted two monster spell
   sentences on floors 0 to 6. The old data also gives `goblin_witch_doctor`
   (floor 6) three divine workings.
+
+## Step 3 (martial) additions
+
+- `combat/enable-action` (above): martial's bench.
+- `PickedActive.before(ctx)`: called when a shaped blow goes off, before its
+  numbers are read (old `applyTechniqueEquipment` 'pre': a blade drawn back
+  into the hand strikes). `after` was already there.
+- Source `combat/momentum` (states nothing) and `playerMomentum(state)`:
+  touched when `fight.momentum` changes, and when a fight that built
+  momentum closes. The styles source turns momentum into its ramp stat.

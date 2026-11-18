@@ -1,14 +1,20 @@
 # martial
 
-Techniques in a fight: the registry, the position rules and the execution of
-a technique from a rotation, for monsters and for the player.
+Techniques: the registries, the ledger of what the player knows, learning
+(self-taught, watched, taught), the mastery ladder, drilling, the technique
+slots and the bench, forks, rune surgery, weapon states, the teachers, and
+the execution of a technique from a rotation for monsters and the player.
 
-Port of: the execution half of old `systems/martial.ts`, the technique and
-position registries of `data/martial.data.ts`, the technique branches of
-`pickActive`, `pickMonsterAction` and the buff slot in `systems/combat.ts`,
-`pickCounter` and `fireCounter` (old `combat.ts` 2095 to 2222).
+Port of: old `systems/martial.ts` (all but the readied spell), the
+registries of `data/martial.data.ts`, `NpcDef.teaches` of
+`data/npcs.data.ts`, the technique branches of `pickActive`,
+`pickMonsterAction` and the buff slot in `systems/combat.ts`, `pickCounter`
+and `fireCounter` (old `combat.ts` 2095 to 2222). Spine port 5 ported the
+execution; step 3 the rest. The stances are the `styles` system, designed
+here.
 
-Section "Design" was written and committed before the code.
+Sections "Design" (port 5) and "Step 3 design" were written and committed
+before their code. The panel is `MartialPanel.svelte`.
 
 ## Design
 
@@ -60,11 +66,14 @@ Waits for step 3 (the martial port):
 - Counters go through a registry in combat (`registerInterception`), not
   through a branch in the tick. Step 3 adds nothing to combat for them.
 
-### Slice (version 1)
+### Slice (version 1, port 5)
 
 | Field | Holds |
 |---|---|
 | `techniques` | The ledger: technique id to `{ executions, form, path? }`. Old `state.techniques`. Empty in a new game. |
+
+Version 2 (step 3) adds `drilling`, `learnFrom`, `sheathed`, `grounded`,
+`impaled`, `readiedSpell`: section "Step 3 design".
 
 ### How a technique runs
 
@@ -220,13 +229,84 @@ at the player's spot.
 - Weakest Weapon Master: Facet abilities; `drillsAll` and `repMult` are read
   already.
 
+### Changed while building (step 3)
+
+- Slice version 2 as designed. Fixture `tests/fixtures/martial/v2.json`.
+- Files: the design named `ledger.ts`, `reach.ts`, `slots.ts`, `forks.ts`,
+  `teachers.ts`, `graph.ts`, `weapons.ts`, `runes.ts`. The pure half went to
+  `ladder.ts`; everything that reads or writes a slice stayed in `index.ts`,
+  which declares the system the reads need (no import cycle).
+- Learning runs on `counters/changed` of a key in `LEARN_KEYS` (every
+  `learn.self.stat`, every watch key, `flag:unlock_martial`). The old build
+  ran the check on every combat tick. A skill or attribute level that makes
+  a technique eligible with the counter already past its line is noticed at
+  the next change of that counter (the next swing), not on the next tick.
+- Requests for other systems and the tests: `martial/learn`,
+  `martial/check-learning`, `martial/fit-slots`, `martial/record` (answers a
+  newly reached rung), `martial/equipment { technique, phase }`.
+- Combat gained: the request `combat/enable-action { id, enabled }` (the
+  bench writes the trigger switch through it; a request, because learning
+  two techniques in one pass must see the first one benched), the `before`
+  hook of a picked active (a blade taken back into the hand before the
+  numbers are read, old `applyTechniqueEquipment` 'pre'), and the change
+  counter `combat/momentum` with `playerMomentum` (for the styles source).
+- Items gained `items/take-weapon` and `items/give-back` (old `reclaim`).
+  Skills gained `skills/enter { id }` (the school lesson; old `teachSchool`
+  wrote the skill at level 1 and checked no condition).
+- The teachers are a martial registry `teachers` (id = the person's id,
+  `lessons`), not a field of the `npcs` record. Three people joined
+  `npcs`: `hall_tutor` (floor 2, teaches), `dojo_master` and
+  `militia_captain` (Threshold, talk only, as in the old build).
+- The ladder, the fork, the runes and the ways in are pure functions of the
+  record, the ledger entry and the rune mods (`ladder.ts`); the old ones
+  read `GameState`.
+- The panel: the stance (the styles roster and the exertion switch), the
+  teachers at the spot, the techniques (a row opens on click: drill, bench
+  or slot, the fork), the known positions, and the position graph as a list
+  of edges grouped by entry position. Every list has a fixed height; each
+  technique's status is one reserved line. Checked in a browser at 1280 and
+  375 pixels: over 6 s of a fight with the statuses changing, no heading,
+  row or line moved.
+
+## Left behind
+
+- Readied spells: the `spell_ready` seat, Ready Spell and Spell Parry
+  (`readyableSpell`, `spellIsHeld`, `releaseReadiedSpell`, the seat dropping
+  the working when the position changes). It needs spellcraft to cast a held
+  working through an opening and to keep a held working out of its own
+  rotation; the arcane port owns that side. Both techniques are refused with
+  the reason "it needs a readied spell (readied spells: not ported)" or "its
+  move readies or delivers a spell". The slice holds `readiedSpell` (always
+  null). Six `it.todo` in `tests/martial.test.ts`.
+- Loadouts (`saveLoadout`, `applyLoadout`): the UI step. `martial/fit-slots`
+  is the call an apply makes.
+- Drill manuals and study cards (`ConsumableSpec.teachesTechnique`): the
+  consumables port; `martial/learn` is their door, and the reach rule of
+  `lessonState` is the gate they read.
+- The planner's ring drawing, the weapon-family lens, drag reordering and
+  the per-entry configuration window: UI step. `positionGraph`,
+  `techniquesForFamilies`, `WEAPON_FAMILIES` and `techniqueStatus` are
+  ported and tested.
+- The picker of trigger subjects (UI step); `visibleTechniqueSubjects`
+  states which `technique.<id>` subjects it may offer.
+- `faces_of_threshold` and `a_taste_of_everything`: they need all six system
+  people; they wait for the last of the six ports.
+- Syncretic acquisition: not built in the old build either; the form is
+  ported (forks, no rough tax).
+- Weakest Weapon Master (Facet abilities): `drillsAll` and `repMult` are
+  read by `recordExecution` already.
+- The stance card lists a stance's modifiers by stat key ("attackSpeed:
+  +15%"); the stat labels of the old UI are the UI step.
+
 ## Files
 
 | File | Holds |
 |---|---|
-| `defs.ts` | The three registries, their schemas, the record types, `TECHNIQUES`, `POSITIONS`. |
-| `index.ts` | The ways in, the move, the gates, the three registrations with combat, the position source, the declaration. |
-| `content/` | `techniques.json` (29), `positions.json` (7), `fork_archetypes.json` (8). Written by `node scripts/convert-content.mjs positions fork_archetypes techniques`. |
+| `defs.ts` | The four registries, their schemas, the record types, the tuning constants, `WEAPON_FAMILIES`, the tables. |
+| `ladder.ts` | The ladder, the ways in with `addFrom`, the fork, the rune surgery, `moveOf`, `exitOf`, `displayName`: pure functions. |
+| `index.ts` | The slice, learning, reach, slots and the bench, drilling, teachers, weapon states, the three registrations with combat, the position source, the planner reads, the view, the declaration. |
+| `MartialPanel.svelte`, `panel.ts` | The panel. |
+| `content/` | `techniques.json` (29), `positions.json` (7), `fork_archetypes.json` (8), `teachers.json` (1: `hall_tutor`), `martial_text.json`. The first three written by `node scripts/convert-content.mjs positions fork_archetypes techniques`. |
 
 In the JSON a technique's `from` is a list of ways (`{ any: true }` or
 `{ at: [...] }`, each with an optional trigger) and `mastery` is a list
@@ -235,13 +315,26 @@ condition's value is a string.
 
 ## Skip reasons
 
-All through `combat/rotation`, once per fight, entry and reason.
+Commands:
+
+| Command | Skip reasons |
+|---|---|
+| `martial/learn-technique { npc, technique }` | no technique has the id; no person; the person does not teach it; already taught; the lesson is held (a requirement unmet, or nothing known leads into its position) |
+| `martial/learn-school { npc, school }` | no skill has the id; the same as above |
+| `martial/toggle-drill { technique }` | no technique has the id; all 3 drill slots in use; not in a slot |
+| `martial/set-slotted { technique, on }` | not known; already in a slot; all slots in use (also a log line) |
+| `martial/choose-fork { technique, fork }` | no technique has the id; the Honed choice is not open; the fork is not offered |
+| `martial/toggle-sheathe` | no weapon is wielded; only a dagger can be sheathed |
+| `martial/reset`, `martial/clear-fork` (debug) | not known; no fork |
+
+`tutorial/choose-stance` and `styles/set`: see their READMEs.
+
+In a fight, through `combat/rotation`, once per fight, entry and reason.
 
 - A monster's entry: no technique has the id.
 - The player's `technique:<id>`: no technique has the id; the technique is
-  not known; it needs a grounded, an impaled or a sheathed weapon (weapon
-  states: step 3); it needs a readied spell (step 3); its move changes a
-  weapon state or readies or delivers a spell (step 3).
+  not known; it needs a readied spell, or its move readies or delivers one
+  (readied spells: not ported).
 
 Not a skip, the ordinary rhythm of a fight: the clock, the position, a
 trigger that does not hold, the weapon family not in hand, the slot (a
@@ -249,6 +342,29 @@ strike is not picked for the buff slot), an interception the pool cannot pay
 for.
 
 ## Old rules ported as they are
+
+Step 3:
+
+- `learnFromTeacher` checks no spot: a lesson can be taken from anywhere by
+  command. The panel offers it only at the teacher's spot.
+- The school lesson writes the skill at level 1 and stamps
+  `taught:<skill>`; it does not consume banked latent XP and logs no
+  "manifested" line.
+- A lesson ignores eligibility (`unlock`) and the martial unlock.
+- The rune technique mod schema (in `items`) has no `penetrationAdd` or
+  `splashAdd`; the old type had both and no rune record used them. `moveOf`
+  reads them if present.
+- The old John asks the floor 0 card for the stance `neutral`, which is no
+  style id. It folds to `balanced`, already held, and only the step is
+  stamped (`tests/john.ts` does the same).
+- A benched technique can be switched on again by `combat/set-trigger` with
+  `enabled: true`, past the slot cap: the old trigger editor wrote
+  `skillTriggers` the same way.
+- `hall_tutor` teaches the Magic Combat school with the requirement
+  Fighting 10, Magic 10, Intelligence 20 (the conditions the skill used to
+  manifest on by itself).
+
+Spine port 5:
 
 - `goblin_raid_leader` (floor 4) has the rotation Pocket Sand, Dirty Stab,
   Gather. Dirty Stab starts from `extended`; nothing in that rotation exits

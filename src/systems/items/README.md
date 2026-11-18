@@ -76,6 +76,8 @@ the rusty sword (uid 1, one rune slot) in the pack, not equipped.
 | `items/grant-rune` `{ id, qty?, silent? }` | Adds to the rune pile. Logs unless `silent`. |
 | `items/stash` `{ item }` | Puts a keep-marked item in the stash. `false` for any other. |
 | `items/set-bearer` `{ grants, size }` | States the body that wears the gear. |
+| `items/take-weapon` | Takes the wielded weapon out of the hand, for a martial weapon state (grounded, impaled, sheathed). The instance, or null with an empty hand. Step 3. |
+| `items/give-back` `{ item }` | Hands a weapon back: to the weapon hand when it is empty, else to the pack, with no requirement check (old `reclaim` of `systems/martial.ts`). `'hand'` or `'pack'`. Step 3. |
 | `items/drop-worn` `{ slot }` | Takes a worn item off into the pack, for a caller that needs the outcome in its own handler (spine port 4: a jolt in a fight makes the bearer drop the weapon). The name of the item's definition, or null when the slot was empty. |
 
 ## Modifier source

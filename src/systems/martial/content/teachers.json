@@ -1,0 +1,17 @@
+[
+  {
+    "id": "hall_tutor",
+    "lessons": [
+      { "technique": "gather" },
+      { "technique": "lunge" },
+      {
+        "school": "school_magic_combat",
+        "requires": [
+          { "type": "skill", "id": "fighting", "level": 10 },
+          { "type": "skill", "id": "magic", "level": 10 },
+          { "type": "attr", "attr": "int", "level": 20 }
+        ]
+      }
+    ]
+  }
+]

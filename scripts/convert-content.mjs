@@ -213,6 +213,12 @@ const JOBS = [
     pick: (m) => m.TECHNIQUE_LIST.map(techniqueRecord),
   },
   {
+    name: 'styles',
+    out: 'styles/content/styles.json',
+    module: 'src/core/data/styles.data.ts',
+    pick: (m) => Object.values(m.STYLES),
+  },
+  {
     name: 'arcane_words',
     out: 'arcane/content/arcane_words.json',
     module: 'src/core/data/spellcraft.data.ts',

@@ -188,6 +188,32 @@
     ]
   },
   {
+    "id": "militia_captain",
+    "name": "Captain Hurst",
+    "icon": "💂",
+    "spotId": "ironyard_gate",
+    "quests": [],
+    "desc": "Captain at the Muster Gate. Sells nothing and gives no quests. The gate leads to the Cages, the Sand and the Long Gallery, 1 s each.",
+    "dialogue": [
+      "Talking to me counts toward The Faces of Threshold. I sell nothing.",
+      "The Cages stage one fight at a time: rats, slimes and goblins, levels 1 to 3. The Sand trains footwork and sparring. Then the tower.",
+      "A lost fight returns you to the last haven you stood in: the Doorstep Inn at the Foot, or a tower landing."
+    ]
+  },
+  {
+    "id": "dojo_master",
+    "name": "Master Ekwe",
+    "icon": "🥋",
+    "spotId": "the_sand",
+    "quests": [],
+    "desc": "Master of the Sand. Footwork on the Sand trains Dexterity; Spar trains Strength and pays combat skill XP. Sells nothing and gives no quests.",
+    "dialogue": [
+      "Footwork on the Sand trains Dexterity.",
+      "Spar trains Strength and pays combat skill XP.",
+      "Neither activity rolls a fight. For fights, use the Cages, 2 s back through the Muster Gate."
+    ]
+  },
+  {
     "id": "ward_outfitter",
     "name": "Pell Marrow",
     "icon": "🛡️",
@@ -386,6 +412,19 @@
       "Rations, loaves, roots, fish, stew, sandwiches and steak. All cooked, all ready to eat.",
       "Bryva Coll sells the raw ingredients in the Granary Kitchens, 1 s from here. Her stove cooks what my cart sells.",
       "A stranger pays half again the price. Speaking to me once removes that."
+    ]
+  },
+  {
+    "id": "hall_tutor",
+    "name": "Old Brannoc",
+    "icon": "🥋",
+    "spotId": "f2_gym",
+    "quests": [],
+    "desc": "Stands in the Cleared Office on floor 2. Teaches Gather (Neutral → Coiled), then Lunge (Coiled → Extended) once you know a way into Coiled. Both free.",
+    "dialogue": [
+      "Two techniques. Gather moves you from Neutral to Coiled. Lunge moves you from Coiled to Extended. A plain swing returns you to Neutral.",
+      "Coiled is the wind-up position: heavy techniques start from it. Extended is the reach position.",
+      "The rest of it I do not teach here. Not yet."
     ]
   },
   {

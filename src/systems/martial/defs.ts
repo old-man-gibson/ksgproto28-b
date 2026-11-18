@@ -11,6 +11,7 @@ import { applicationSchema, toApplication, type ContentApplication, type StatusA
 import positionsData from './content/positions.json';
 import forksData from './content/fork_archetypes.json';
 import techniquesData from './content/techniques.json';
+import teachersData from './content/teachers.json';
 
 // ---- tuning ----
 
@@ -19,6 +20,45 @@ export const NEUTRAL_POSITION = 'neutral';
 export const SPELL_READY_POSITION = 'spell_ready';
 /** Ticks before a monster repeats a technique. Combat applies it to a shape with no cooldown of its own. */
 export const WATCH_KEY_PREFIX = 'seen:technique:';
+/** Drill slots: techniques whose practice counts at once. */
+export const MAX_DRILLED = 3;
+/** Technique slots beyond the drill slots. The rotation holds MAX_DRILLED + BASE_TECHNIQUE_SLOTS + extras. */
+export const BASE_TECHNIQUE_SLOTS = 3;
+export const MASTERY_LADDER = [10, 100, 1000, 10000] as const;
+export const MASTERY_NAMES = ['Practiced', 'Drilled', 'Honed', 'Perfected'] as const;
+/** Damage multiplier per rung, 1 to 4. */
+export const MASTERY_POWER = [1.05, 1.12, 1.2, 1.3] as const;
+/** Cooldown multiplier per rung, 1 to 4. */
+export const MASTERY_COOLDOWN = [1, 0.92, 0.85, 0.75] as const;
+/** Highest rung: 10^15 reps. */
+export const MAX_MASTERY_TIER = 15;
+/** Each rung past Perfected multiplies power by this. */
+export const BEYOND_POWER = 2;
+/** Each rung past Perfected multiplies the cooldown by this, floor 10 ticks. */
+export const BEYOND_COOLDOWN = 0.9;
+/** Stamina surcharge of a rough form below Perfected. */
+export const ROUGH_STAMINA_MULT = 1.25;
+/** A rough form's reps count double on the ladder. */
+export const ROUGH_REP_MULT = 2;
+/** Sightings that teach a watchable technique. */
+export const TECHNIQUE_WATCH_COUNT = 50;
+/** The rung at which a forked technique offers its choice (Honed). */
+export const FORK_TIER = 3;
+
+/** The weapon families the planner filters by. A grouping label only. The old `WEAPON_FAMILIES`. */
+export const WEAPON_FAMILIES: readonly { id: string; name: string; icon: string }[] = [
+  { id: 'unarmed', name: 'Unarmed', icon: '🥊' },
+  { id: 'sword', name: 'Sword', icon: '⚔️' },
+  { id: 'katana', name: 'Katana', icon: '🗡️' },
+  { id: 'dagger', name: 'Dagger', icon: '🔪' },
+  { id: 'blunt', name: 'Blunt', icon: '🔨' },
+  { id: 'spear', name: 'Spear', icon: '🔱' },
+  { id: 'bow', name: 'Bow', icon: '🏹' },
+  { id: 'greatsword', name: 'Greatsword', icon: '🪓' },
+  { id: 'staff', name: 'Staff', icon: '🪄' },
+  { id: 'shield', name: 'Shield', icon: '🛡️' },
+  { id: 'buckler', name: 'Buckler', icon: '🔰' },
+];
 
 // ---- schemas ----
 
@@ -148,7 +188,53 @@ export const techniques = registry(
   'Techniques',
 );
 
+/** Lessons, keyed by the id of the person who gives them. The old `NpcDef.teaches`. */
+export const teachers = registry(
+  s.object({
+    id: s.id({ help: 'The id of the person who teaches (npcs registry).' }),
+    lessons: s.array(
+      s.object({
+        technique: s.optional(s.ref('techniques')),
+        school: s.optional(s.ref('skills', { help: 'A school: the lesson manifests its skill at level 1.' })),
+        requires: s.optional(s.array(conditionSchema)),
+      }),
+    ),
+  }),
+  teachersData,
+  'Teachers',
+);
+
 // ---- record types ----
+
+/** A Honed fork. The old `ForkArchetypeDef`. */
+export interface ForkArchetypeDef {
+  id: string;
+  name: string;
+  icon: string;
+  desc?: string;
+  kind: 'strike' | 'buff';
+  damageMult?: number;
+  hits?: number;
+  cooldownMult?: number;
+  splashAdd?: number;
+  staminaMult?: number;
+  durationMult?: number;
+  dodgeMult?: number;
+  exitTo?: string;
+}
+
+/** One lesson: a technique (canonical form) or a school. The old `Lesson`. */
+export interface Lesson {
+  technique?: string;
+  school?: string;
+  requires?: ConditionRecord[];
+}
+
+export interface TeacherDef {
+  id: string;
+  lessons: Lesson[];
+}
+
 
 export interface PositionDef {
   id: string;
@@ -157,6 +243,8 @@ export interface PositionDef {
   desc?: string;
   color: string;
   effects?: { incomingMult?: number; dodgeMult?: number };
+  /** Hides the position even when a known technique reaches it. */
+  unlock?: ConditionRecord[];
 }
 
 /** What executing a technique does. The old `TechniqueMove`. */
@@ -251,3 +339,8 @@ function techniqueOf(raw: RawTechnique): TechniqueDef {
 
 export const TECHNIQUE_LIST: readonly TechniqueDef[] = (techniquesData as unknown as RawTechnique[]).map(techniqueOf);
 export const TECHNIQUES: Record<string, TechniqueDef> = Object.fromEntries(TECHNIQUE_LIST.map((t) => [t.id, t]));
+
+export const FORK_ARCHETYPE_LIST: readonly ForkArchetypeDef[] = forksData as ForkArchetypeDef[];
+export const FORK_ARCHETYPES: Record<string, ForkArchetypeDef> = Object.fromEntries(FORK_ARCHETYPE_LIST.map((f) => [f.id, f]));
+export const TEACHER_LIST: readonly TeacherDef[] = teachersData as TeacherDef[];
+export const TEACHERS: Record<string, TeacherDef> = Object.fromEntries(TEACHER_LIST.map((t) => [t.id, t]));

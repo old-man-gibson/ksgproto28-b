@@ -1,0 +1,9 @@
+[
+  { "id": "technique_learned", "text": "🥋 Technique learned (rough): {icon} {name}." },
+  { "id": "technique_taught", "text": "🥋 {teacher} teaches you {icon} {name} (canonical form)." },
+  { "id": "technique_refined", "text": "🥋 {teacher} corrects your {icon} {name}: canonical form, practice kept." },
+  { "id": "learned_benched", "text": "🔒 {icon} {name} is on the bench: all {cap} technique slots are in use." },
+  { "id": "slots_full", "text": "🔒 All {cap} technique slots are in use. Bench a technique first." },
+  { "id": "school_taught", "text": "🥋 {teacher} teaches you the {icon} {name} school. Its stance is now in the Combat tab." },
+  { "id": "mastery_reached", "text": "🎓 {name} mastery tier reached: {tier}." }
+]

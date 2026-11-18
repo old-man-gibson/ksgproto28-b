@@ -48,7 +48,7 @@ Source `prestige/legacy`: `boon:<id>` rank, `foresight`, `scale:talent:<skill>`
 
 ## Left behind
 
-- Readers of grimoire pages and technique slots (step 3), the city key's gate
+- Readers of grimoire pages (step 3, arcane), the city key's gate
   (band 3, step 4), Cook's Notes (cooking, step 3), Foresight in the skill
   view, Wayfinding go links (UI step; `wayfinding` is in the view).
 - Harvest sources with no counter yet: bestiary entries and achievement tiers
@@ -59,3 +59,6 @@ Source `prestige/legacy`: `boon:<id>` rank, `foresight`, `scale:talent:<skill>`
 
 - Boons are sold whose readers are not here (see above): buying one spends
   points and has no effect until its reader is ported.
+
+`legacyTechniqueSlots` is read by martial's `techniqueSlots` since step 3
+(the `technique_slot` boon: +1 slot per rank).

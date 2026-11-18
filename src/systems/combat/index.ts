@@ -63,6 +63,7 @@ import {
   markCombatEvent,
   now,
   POSITION_SOURCE,
+  MOMENTUM_SOURCE,
   restTarget,
   runCombatTick,
   setPlayerPosition,
@@ -178,6 +179,12 @@ export const stampCooldown = defineRequest<{ id: string; ticks: number }, void>(
 /** Stamp a trigger event on the fight. The old `markCombatEvent`. */
 export const markEvent = defineRequest<{ event: string }, void>('combat/mark-event');
 /** Read and spend what the last block or parry stopped. */
+/**
+ * Switch a rotation entry on or off, keeping the rest of its trigger. Martial's
+ * bench writes through it: a benched technique is one switched off (old
+ * `benchTechnique`, `setTechniqueSlotted`).
+ */
+export const enableAction = defineRequest<{ id: string; enabled: boolean }, void>('combat/enable-action');
 export const takePrevented = defineRequest<{ by: 'onHit' | 'onParry' }, number>('combat/take-prevented');
 /** The cost of attacking under the player's conditions, for a working that takes the swing's place. True when fatal. */
 export const retaliateAttack = defineRequest<void, boolean>('combat/attack-retaliation');
@@ -315,6 +322,7 @@ const combat = defineSystem<CombatState, CombatView>({
     // States nothing: it is the change counter of the player's position, for
     // the source of another system that reads `fight.position` (`dependsOn`).
     { id: POSITION_SOURCE, collect: () => [] },
+    { id: MOMENTUM_SOURCE, collect: () => [] },
     {
       id: BUFFS_SOURCE,
       collect: ({ state, entity }) => {
@@ -387,6 +395,10 @@ const combat = defineSystem<CombatState, CombatView>({
   ],
 
   requests: [
+    answer(enableAction, (ctx, { id, enabled }) => {
+      const trigger = (ctx.state.triggers[id] ??= { conditions: [] });
+      trigger.enabled = enabled;
+    }),
     answer(startForced, (ctx, { site }) => {
       const issue = siteIssue(site);
       if (issue) {

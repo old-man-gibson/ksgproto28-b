@@ -148,6 +148,8 @@ export interface PickedActive {
    * evaded nor fumbled. The handler lands it through `combat/damage-enemy`.
    */
   cast?(ctx: ActionCtx): void;
+  /** Called when a shaped blow goes off, before its numbers are read (a blade drawn back into the hand). */
+  before?(ctx: ActionCtx): void;
   /** Called after a shaped blow landed (equipment follow-through, mastery). */
   after?(ctx: ActionCtx): void;
 }

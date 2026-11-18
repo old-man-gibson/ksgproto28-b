@@ -24,6 +24,7 @@ import combat, { abandon } from '../combat';
 import counters, { bumpCounter, counterValue, type CountersState } from '../counters';
 import items, { equipNow, grantItem, ITEMS } from '../items';
 import { fillText, logLine, textSchema, type TextRecord } from '../log';
+import styles, { pickStyleNow, STYLES, type StyleDef } from '../styles';
 import world, { arrived, placeNow, SPOTS, type WorldState } from '../world';
 import rackData from './content/tutorial_rack.json';
 import stepsData from './content/tutorial_steps.json';
@@ -83,11 +84,18 @@ export const TUTORIAL_SHIELD = 'wooden_shield';
 export const STARTING_WEAPON = 'rusty_sword';
 
 /**
- * Choices whose control belongs to a system not ported yet: the stance
- * (martial) and the spell (arcane), step 3. The step reader passes over them;
- * the skip stamps their flags as the old skip did.
+ * Choices whose control belongs to a system not ported yet: the spell
+ * (arcane, step 3). The step reader passes over it; the skip stamps its flag
+ * as the old skip did. The stance arrived with the martial port.
  */
-export const WAITING_CHOICES: readonly string[] = ['stance', 'spell'];
+export const WAITING_CHOICES: readonly string[] = ['spell'];
+
+/**
+ * The stances the card offers, in order: no modifiers, attack, defence. The
+ * other six stay on the martial panel; picking one there sets the stance but
+ * not the stamp. The old `TUTORIAL_STANCES`.
+ */
+export const TUTORIAL_STANCES = ['balanced', 'aggressive', 'defensive'] as const;
 
 // ---- reads ----
 
@@ -149,6 +157,22 @@ export const chooseWeapon = defineCommand<{ weapon: string; shield?: boolean }>(
  */
 export const skipTutorial = defineCommand<void>('tutorial/skip');
 
+/**
+ * Set the stance through the real control (`styles/set-now`), then stamp the
+ * step. Refused once stamped. The old `chooseTutorialStance` and
+ * `confirmTutorialStance`.
+ */
+export const chooseStance = defineCommand<{ style: string }>('tutorial/choose-stance');
+
+/** A stance's modifiers as "Label: fact" text for the card, one per line. */
+function modLines(def: StyleDef): string[] {
+  return def.mods.map((m) => {
+    const sign = m.value >= 0 ? '+' : '-';
+    const size = Math.abs(m.value) * 100;
+    return m.op === 'mult' ? `${m.stat}: ${sign}${+size.toFixed(1)}%` : `${m.stat}: ${sign}${+size.toFixed(1)} points`;
+  });
+}
+
 type C = Ctx<TutorialState>;
 
 function factsOf(ctx: { read: C['read'] }): Facts {
@@ -173,6 +197,8 @@ export interface TutorialView {
   rack: { id: string; name: string; icon: string; hands: 'one' | 'two' | 'none' }[];
   /** The skip is offered on the first step only, as in the old build. */
   canSkip: boolean;
+  /** The stance buttons, while the stance step is shown. */
+  stances: { id: string; name: string; icon: string; lines: string[]; current: boolean }[];
 }
 
 export interface TutorialState {}
@@ -208,6 +234,17 @@ const system = defineSystem<TutorialState, TutorialView>({
         msg: granted.length ? fillText(TEXT.tutorial_armed, { list: granted.join(', ') }) : TEXT.tutorial_unarmed,
         kind: 'quest',
       });
+      return OK;
+    }),
+
+    handle(chooseStance, (ctx, { style }) => {
+      if (chosen(ctx, TUTORIAL_FLAGS.stance)) return skipped('the stance step is done');
+      // The old card set the style and stamped the step whatever the set did.
+      const why = ctx.request(pickStyleNow, { style });
+      if (why) ctx.skip(chooseStance.type, why);
+      ctx.emit(bumpCounter, { key: TUTORIAL_FLAGS.stance });
+      const def = STYLES[ctx.read(styles).style];
+      ctx.emit(logLine, { msg: fillText(TEXT.tutorial_stance, { icon: def?.icon ?? '', name: def?.name ?? '' }), kind: 'quest' });
       return OK;
     }),
 
@@ -268,6 +305,16 @@ const system = defineSystem<TutorialState, TutorialView>({
           }))
         : [],
       canSkip: active && step !== null && step.id === shown[0].id,
+      stances:
+        step?.choice === 'stance'
+          ? TUTORIAL_STANCES.map((id) => ({
+              id,
+              name: STYLES[id].name,
+              icon: STYLES[id].icon,
+              lines: modLines(STYLES[id]),
+              current: ctx.read(styles).style === id,
+            }))
+          : [],
     };
   },
 });

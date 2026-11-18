@@ -1,7 +1,7 @@
 <script lang="ts">
   import Button from '../../ui/components/Button.svelte';
   import { send, viewOf } from '../../ui/game.svelte';
-  import tutorial, { chooseWeapon, skipTutorial } from './index';
+  import tutorial, { chooseStance, chooseWeapon, skipTutorial } from './index';
 
   // The floor 0 card, above every panel while the tutorial runs: the step,
   // the weapon rack while it is open, and the skip on the first step. The
@@ -31,6 +31,18 @@
           </Button>
         {/each}
         <label class="shield"><input type="checkbox" bind:checked={shield} /> Shield with a one-handed pick</label>
+      {/if}
+      {#if view.stances.length > 0}
+        <div class="stances">
+          {#each view.stances as st (st.id)}
+            <div class="stance">
+              <Button onclick={() => send(chooseStance({ style: st.id }))}>{st.icon} {st.name}</Button>
+              <ul class="lines dim">
+                {#each st.lines as line (line)}<li>{line}</li>{:else}<li>No modifiers</li>{/each}
+              </ul>
+            </div>
+          {/each}
+        </div>
       {/if}
       {#if view.canSkip}
         <Button onclick={() => send(skipTutorial())}>Skip tutorial</Button>
@@ -75,6 +87,24 @@
     flex-wrap: wrap;
     align-items: center;
     gap: var(--space-2);
+  }
+
+  .stances {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    gap: var(--space-2);
+    width: 100%;
+  }
+
+  .stance {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .lines {
+    margin: 0;
+    padding-left: var(--space-3);
   }
 
   .shield {

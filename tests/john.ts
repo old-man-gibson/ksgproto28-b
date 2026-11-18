@@ -13,12 +13,12 @@
  * is written into a slice. Reads go through a live system context taken
  * once from the probe (`run`), so a tick costs no snapshot.
  *
+ * Floor 2's tutor teaches John Gather and Lunge (`martial/learn-technique`,
+ * the old `learnFromTeacher`), since the martial port.
+ *
  * Differences from the old driver, each from a port not done yet:
- * - Floor 2's tutor: the old John learned Gather and Lunge there
- *   (`learnFromTeacher`). Teaching arrives with martial in step 3, so John
- *   here holds no technique.
- * - A rack pick plays the floor 0 tutorial without the stance and spell
- *   steps (martial and arcane, step 3).
+ * - A rack pick plays the floor 0 tutorial without the spell step (arcane,
+ *   step 3). The stance step is played as the old John did.
  * - Runs 2 and 3 (floors 7 to 20) are step 4. `through` stops at 6; the
  *   climb ends with the first prestige.
  *
@@ -34,7 +34,8 @@ import levels from '../src/systems/levels';
 import prestige, { buyBoon, leaveReview, prestigeNow } from '../src/systems/prestige';
 import resources from '../src/systems/resources';
 import { statOf } from '../src/systems/stats';
-import { chooseWeapon, skipTutorial } from '../src/systems/tutorial';
+import { learnFromTeacher, lessonsOf } from '../src/systems/martial';
+import { chooseStance, chooseWeapon, skipTutorial } from '../src/systems/tutorial';
 import world, { climb, selectActivity, SPOTS, travelTo, type WorldState } from '../src/systems/world';
 import { makeGame, run } from './helpers';
 
@@ -254,6 +255,9 @@ export function runJohn(options: ClimbOptions): ClimbReport {
     send(skipTutorial());
   } else {
     send(chooseWeapon({ weapon: opts.weapon, shield: false }));
+    // The old John asked for 'neutral', which is no style id: it folds to
+    // `balanced`, already held, and only the step is stamped.
+    send(chooseStance({ style: 'neutral' }));
     walk('f0_cellblock');
     persist('f0_cellblock', 'hunt', () => stat('fights:f0_cellblock') >= (SPOTS.f0_cellblock.fightLimit ?? 1));
     walk('f0_field');
@@ -290,6 +294,10 @@ export function runJohn(options: ClimbOptions): ClimbReport {
   // ---- Floor 2: the Long Hall. The tutor's lessons wait for step 3. ----
   if (!climbTo('ascent_f2')) return finish();
   walk('f2_gym');
+  // The tutor's door is the first off the hall; the lessons are free.
+  for (const lesson of lessonsOf('hall_tutor')) {
+    if (lesson.technique) send(learnFromTeacher({ npc: 'hall_tutor', technique: lesson.technique }));
+  }
   for (const stretch of HALL) {
     if (!persist(stretch, 'hunt', () => stat(`fights:${stretch}`) >= SPOTS[stretch].fightLimit!)) return finish();
   }

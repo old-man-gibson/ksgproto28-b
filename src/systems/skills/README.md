@@ -40,6 +40,10 @@ banked for locked skills, and per skill the times each input was seen.
 | `skills/grant-discovery-xp` `{ domain, weight?, scale? }` | The flat `discovery` value to every skill that learns from the domain. |
 | `skills/raise-cap` `{ id, by? }` | Raises the ceiling of a held, capped skill. |
 
+Request (answer): `skills/enter { id }` enters a skill at level 1, xp 0, with no
+condition checked, and emits `skills/unlock` (the school lesson of martial,
+old `teachSchool`). False for an unknown or held skill. Step 3.
+
 Emitted: `skills/unlock { id }`, `skills/levelup { id, level }` once per
 level, a log line on a manifest and on a cap raise, and a bump of the counter
 `skill:levels` per level.

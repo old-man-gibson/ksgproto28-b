@@ -4,7 +4,9 @@
  * this folder.
  */
 import {
+  answer,
   defineEvent,
+  defineRequest,
   defineSystem,
   on,
   PLAYER,
@@ -391,6 +393,12 @@ export const grantDiscoveryXp = defineEvent<{ domain: NoveltyDomain; weight?: nu
 export const checkDiscovery = defineEvent<{ tags: string[] }>('skills/check-discovery');
 /** Request: raise a capped, held skill's ceiling. */
 export const raiseSkillCap = defineEvent<{ id: string; by?: number }>('skills/raise-cap');
+/**
+ * Request: enter a skill at level 1, xp 0, with no condition checked (a school
+ * lesson, old `teachSchool`). Answers false when the skill is unknown or held.
+ */
+export const enterSkill = defineRequest<{ id: string }, boolean>('skills/enter');
+
 /** A skill manifested. */
 export const skillUnlocked = defineEvent<{ id: string }>('skills/unlock');
 /** A skill's level rose to `level`. One event per level. */
@@ -529,6 +537,16 @@ const system: SystemDef<SkillsState, SkillsView> = defineSystem<SkillsState, Ski
       id: EFFECTS_SOURCE,
       collect: ({ state, entity }) => (entity === PLAYER ? effectMods(state) : []),
     },
+  ],
+
+  requests: [
+    answer(enterSkill, (ctx, { id }) => {
+      if (!SKILLS[id] || ctx.state.skills[id]) return false;
+      ctx.state.skills[id] = { level: 1, xp: 0 };
+      ctx.touch(EFFECTS_SOURCE);
+      ctx.emit(skillUnlocked, { id });
+      return true;
+    }),
   ],
 
   events: [

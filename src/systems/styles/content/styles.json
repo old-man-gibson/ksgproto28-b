@@ -1,0 +1,907 @@
+[
+  {
+    "id": "balanced",
+    "name": "Neutral",
+    "icon": "⚖️",
+    "art": "stance_balanced",
+    "mods": [],
+    "exertion": {
+      "on": "attack",
+      "cost": 0.02,
+      "note": "Small damage bonus on every attack, for a small stamina cost",
+      "hit": {
+        "damage": 0.1
+      }
+    },
+    "desc": "Neutral stance. No stat modifiers. Exertion: 2% stamina per attack for +10% damage on that hit."
+  },
+  {
+    "id": "aggressive",
+    "name": "Frenzy",
+    "icon": "🐺",
+    "art": "stance_aggressive",
+    "mods": [
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": 0.1
+      },
+      {
+        "stat": "attackSpeed",
+        "op": "mult",
+        "value": 0.15
+      },
+      {
+        "stat": "dodge",
+        "op": "add",
+        "value": -0.05
+      },
+      {
+        "stat": "armor",
+        "op": "mult",
+        "value": -0.15
+      }
+    ],
+    "exertion": {
+      "on": "attack",
+      "cost": 0.06,
+      "note": "Trades dodge and armor for damage and attack speed while stamina lasts",
+      "mods": [
+        {
+          "stat": "damage",
+          "op": "mult",
+          "value": 0.2
+        },
+        {
+          "stat": "attackSpeed",
+          "op": "mult",
+          "value": 0.25
+        },
+        {
+          "stat": "dodge",
+          "op": "add",
+          "value": -0.08
+        },
+        {
+          "stat": "armor",
+          "op": "mult",
+          "value": -0.3
+        }
+      ]
+    },
+    "desc": "Frenzy stance. +10% damage, +15% attack speed, −5% dodge, −15% armor. Exertion: 6% stamina per attack for a further +20% damage, +25% attack speed, −8% dodge and −30% armor."
+  },
+  {
+    "id": "crush",
+    "name": "Crush",
+    "icon": "🔨",
+    "art": "stance_crush",
+    "mods": [
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": 0.4
+      },
+      {
+        "stat": "penetration",
+        "op": "add",
+        "value": 0.1
+      },
+      {
+        "stat": "attackSpeed",
+        "op": "mult",
+        "value": -0.25
+      }
+    ],
+    "exertion": {
+      "on": "attack",
+      "cost": 0.1,
+      "note": "Large damage and penetration bonus on every attack, for a large stamina cost",
+      "hit": {
+        "damage": 0.5,
+        "penetration": 0.15
+      }
+    },
+    "desc": "Crush stance. +40% damage, +10% penetration, −25% attack speed. Exertion: 10% stamina per attack for +50% damage and +15% penetration on that hit."
+  },
+  {
+    "id": "cleave",
+    "name": "Cleave",
+    "icon": "🪓",
+    "art": "stance_cleave",
+    "mods": [
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": 0.2
+      },
+      {
+        "stat": "splash",
+        "op": "add",
+        "value": 0.1
+      },
+      {
+        "stat": "dodge",
+        "op": "add",
+        "value": -0.05
+      }
+    ],
+    "exertion": {
+      "on": "attack",
+      "cost": 0.05,
+      "note": "Small damage bonus, and part of each blow also hits a flanking enemy",
+      "hit": {
+        "damage": 0.1,
+        "splash": 0.25
+      }
+    },
+    "desc": "Cleave stance. +20% damage, +10% splash, −5% dodge. Exertion: 5% stamina per attack for +10% damage and +25% splash on that hit."
+  },
+  {
+    "id": "quick",
+    "name": "Quick",
+    "icon": "💨",
+    "art": "stance_quick",
+    "mods": [
+      {
+        "stat": "attackSpeed",
+        "op": "mult",
+        "value": 0.3
+      },
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": -0.1
+      }
+    ],
+    "exertion": {
+      "on": "attack",
+      "cost": 0.025,
+      "note": "Each attack that spends stamina adds attack speed, up to a cap, until the fight ends",
+      "ramp": {
+        "stat": "attackSpeed",
+        "per": 0.03,
+        "cap": 0.45
+      }
+    },
+    "desc": "Quick stance. +30% attack speed, −10% damage. Exertion: 2.5% stamina per attack. Each exerting attack builds momentum: +3% attack speed per exchange, up to +45%, for the rest of the fight. Techniques with momentum (Gather) add to it. Momentum resets when the fight ends."
+  },
+  {
+    "id": "evasive",
+    "name": "Evasive",
+    "icon": "🌀",
+    "art": "stance_evasive",
+    "mods": [
+      {
+        "stat": "dodge",
+        "op": "add",
+        "value": 0.12
+      },
+      {
+        "stat": "attackSpeed",
+        "op": "mult",
+        "value": 0.1
+      },
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": -0.1
+      }
+    ],
+    "exertion": {
+      "on": "defend",
+      "cost": 0.05,
+      "note": "Spends stamina on each incoming attack to raise your dodge against it",
+      "hit": {
+        "dodge": 0.2
+      }
+    },
+    "desc": "Evasive stance. +12% dodge, +10% attack speed, −10% damage. Exertion: 5% stamina per incoming attack for +20% dodge against it."
+  },
+  {
+    "id": "finesse",
+    "name": "Finesse",
+    "icon": "🎯",
+    "art": "stance_finesse",
+    "mods": [
+      {
+        "stat": "crit",
+        "op": "add",
+        "value": 0.12
+      },
+      {
+        "stat": "critDamage",
+        "op": "mult",
+        "value": 0.4
+      },
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": -0.1
+      }
+    ],
+    "exertion": {
+      "on": "attack",
+      "cost": 0.08,
+      "note": "Raises crit chance and lowers attack speed while stamina lasts",
+      "mods": [
+        {
+          "stat": "crit",
+          "op": "add",
+          "value": 0.12
+        },
+        {
+          "stat": "attackSpeed",
+          "op": "mult",
+          "value": -0.12
+        }
+      ]
+    },
+    "desc": "Finesse stance. +12% crit, +40% crit damage, −10% damage. Exertion: 8% stamina per attack for a further +12% crit and −12% attack speed."
+  },
+  {
+    "id": "defensive",
+    "name": "Brace",
+    "icon": "🐢",
+    "art": "stance_defensive",
+    "mods": [
+      {
+        "stat": "armor",
+        "op": "mult",
+        "value": 0.5
+      },
+      {
+        "stat": "maxHp",
+        "op": "mult",
+        "value": 0.15
+      },
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": -0.2
+      }
+    ],
+    "exertion": {
+      "on": "defend",
+      "cost": 0.05,
+      "note": "Spends stamina on each incoming attack to raise your armor against it",
+      "hit": {
+        "armor": 0.6
+      }
+    },
+    "desc": "Brace stance. +50% armor, +15% max HP, −20% damage. Exertion: 5% stamina per incoming attack for +60% armor against it."
+  },
+  {
+    "id": "multi",
+    "name": "Flurry",
+    "icon": "🌪️",
+    "art": "stance_multi",
+    "mods": [
+      {
+        "stat": "attackSpeed",
+        "op": "mult",
+        "value": 0.45
+      },
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": -0.3
+      }
+    ],
+    "exertion": {
+      "on": "attack",
+      "cost": 0.14,
+      "note": "Each attack lands one extra simultaneous hit, for a high stamina cost",
+      "hit": {
+        "extraHits": 1
+      }
+    },
+    "desc": "Flurry stance. +45% attack speed, −30% damage. Exertion: 14% stamina per attack for one extra hit."
+  },
+  {
+    "id": "jigen_ryu",
+    "name": "Jigen-ryu",
+    "icon": "⚡",
+    "art": "stance_jigen_ryu",
+    "mods": [
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": 0.5,
+        "perLevel": 0.004
+      },
+      {
+        "stat": "penetration",
+        "op": "add",
+        "value": 0.2,
+        "perLevel": 0.002
+      },
+      {
+        "stat": "critDamage",
+        "op": "mult",
+        "value": 0.5
+      },
+      {
+        "stat": "attackSpeed",
+        "op": "mult",
+        "value": -0.3
+      },
+      {
+        "stat": "dodge",
+        "op": "add",
+        "value": -0.5
+      }
+    ],
+    "exertion": {
+      "on": "attack",
+      "cost": 1,
+      "drain": true,
+      "note": "Each attack empties the whole stamina bar for a very large damage and penetration bonus",
+      "hit": {
+        "damage": 1.5,
+        "penetration": 0.3
+      }
+    },
+    "unlock": [
+      {
+        "type": "skill",
+        "id": "school_jigen_ryu",
+        "level": 1
+      },
+      {
+        "type": "equippedTag",
+        "tag": "katana"
+      }
+    ],
+    "replaces": "crush",
+    "skill": "school_jigen_ryu",
+    "desc": "Katana school replacing Crush. +50% damage, +20% penetration, +50% crit damage, −30% attack speed, −50% dodge; damage and penetration scale with the school's level. Exertion: drains all stamina on attack for +150% damage and +30% penetration, then leaves you exhausted."
+  },
+  {
+    "id": "niten_ichi_ryu",
+    "name": "Niten-Ichi-ryu",
+    "icon": "🗡️",
+    "art": "stance_niten_ichi_ryu",
+    "mods": [
+      {
+        "stat": "parry",
+        "op": "add",
+        "value": 0.15,
+        "perLevel": 0.002
+      },
+      {
+        "stat": "riposte",
+        "op": "add",
+        "value": 0.1,
+        "perLevel": 0.004
+      },
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": -0.15,
+        "perLevel": 0.002
+      },
+      {
+        "stat": "crit",
+        "op": "add",
+        "value": 0.05
+      }
+    ],
+    "exertion": {
+      "on": "attack",
+      "cost": 0.12,
+      "note": "Each attack lands one extra simultaneous hit and adds a small damage bonus",
+      "hit": {
+        "extraHits": 1,
+        "damage": 0.1
+      }
+    },
+    "unlock": [
+      {
+        "type": "skill",
+        "id": "school_niten_ichi",
+        "level": 1
+      },
+      {
+        "type": "equippedTag",
+        "tag": "katana"
+      }
+    ],
+    "replaces": "multi",
+    "skill": "school_niten_ichi",
+    "desc": "Katana school replacing Flurry. +15% parry, +10% riposte, +5% crit, −15% damage; parry, riposte and damage improve with the school's level. Exertion: 12% stamina per attack for one extra hit and +10% damage."
+  },
+  {
+    "id": "eishin_ryu",
+    "name": "Eishin-ryu",
+    "icon": "🌙",
+    "art": "stance_eishin_ryu",
+    "mods": [
+      {
+        "stat": "crit",
+        "op": "add",
+        "value": 0.18,
+        "perLevel": 0.001
+      },
+      {
+        "stat": "critDamage",
+        "op": "mult",
+        "value": 0.6,
+        "perLevel": 0.005
+      },
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": -0.05
+      }
+    ],
+    "exertion": {
+      "on": "attack",
+      "cost": 0.07,
+      "note": "Raises crit chance and lowers attack speed while stamina lasts",
+      "mods": [
+        {
+          "stat": "crit",
+          "op": "add",
+          "value": 0.15
+        },
+        {
+          "stat": "attackSpeed",
+          "op": "mult",
+          "value": -0.1
+        }
+      ]
+    },
+    "unlock": [
+      {
+        "type": "skill",
+        "id": "school_eishin",
+        "level": 1
+      },
+      {
+        "type": "equippedTag",
+        "tag": "katana"
+      }
+    ],
+    "replaces": "finesse",
+    "skill": "school_eishin",
+    "desc": "Katana school replacing Finesse. +18% crit, +60% crit damage, −5% damage; crit and crit damage scale with the school's level. Exertion: 7% stamina per attack for +15% crit and −10% attack speed."
+  },
+  {
+    "id": "ittou_ryu_style",
+    "name": "Ittou-ryu",
+    "icon": "👁️",
+    "art": "stance_ittou_ryu_style",
+    "mods": [
+      {
+        "stat": "attackSpeed",
+        "op": "mult",
+        "value": 0.35
+      },
+      {
+        "stat": "crit",
+        "op": "add",
+        "value": 0.1,
+        "perLevel": 0.001
+      },
+      {
+        "stat": "critDamage",
+        "op": "mult",
+        "value": 0.3,
+        "perLevel": 0.004
+      },
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": -0.05
+      }
+    ],
+    "exertion": {
+      "on": "attack",
+      "cost": 0.03,
+      "note": "Each attack that spends stamina adds attack speed, up to a cap, until the fight ends",
+      "ramp": {
+        "stat": "attackSpeed",
+        "per": 0.035,
+        "cap": 0.5
+      }
+    },
+    "unlock": [
+      {
+        "type": "skill",
+        "id": "school_ittou_ryu",
+        "level": 1
+      },
+      {
+        "type": "equippedTag",
+        "tag": "katana"
+      }
+    ],
+    "replaces": "quick",
+    "skill": "school_ittou_ryu",
+    "desc": "Katana school replacing Quick. +35% attack speed, +10% crit, +30% crit damage, −5% damage; crit and crit damage scale with the school's level. Exertion: 3% stamina per attack. Each exerting attack builds momentum: +3.5% attack speed per exchange, up to +50%, for the rest of the fight. Techniques with momentum (Gather) add to it. Momentum resets when the fight ends."
+  },
+  {
+    "id": "destreza",
+    "name": "Destreza",
+    "icon": "🤺",
+    "art": "stance_destreza",
+    "mods": [
+      {
+        "stat": "parry",
+        "op": "add",
+        "value": 0.14,
+        "perLevel": 0.002
+      },
+      {
+        "stat": "riposte",
+        "op": "add",
+        "value": 0.25,
+        "perLevel": 0.008
+      },
+      {
+        "stat": "dodge",
+        "op": "add",
+        "value": 0.04
+      },
+      {
+        "stat": "crit",
+        "op": "add",
+        "value": 0.04
+      },
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": -0.1
+      }
+    ],
+    "exertion": {
+      "on": "defend",
+      "cost": 0.055,
+      "note": "Spends stamina on each incoming attack to raise your parry against it",
+      "hit": {
+        "parry": 0.18
+      }
+    },
+    "unlock": [
+      {
+        "type": "skill",
+        "id": "school_destreza",
+        "level": 1
+      },
+      {
+        "type": "equippedTag",
+        "tag": "rapier"
+      }
+    ],
+    "replaces": "evasive",
+    "skill": "school_destreza",
+    "desc": "Rapier school replacing Evasive. +14% parry, +25% riposte, +4% dodge, +4% crit, −10% damage; parry and riposte scale with the school's level. Exertion: 5.5% stamina per incoming attack for +18% parry against it."
+  },
+  {
+    "id": "bolognese",
+    "name": "Bolognese",
+    "icon": "🔰",
+    "art": "stance_bolognese",
+    "mods": [
+      {
+        "stat": "parry",
+        "op": "add",
+        "value": 0.1,
+        "perLevel": 0.0015
+      },
+      {
+        "stat": "riposte",
+        "op": "add",
+        "value": 0.15,
+        "perLevel": 0.005
+      },
+      {
+        "stat": "armor",
+        "op": "mult",
+        "value": 0.3,
+        "perLevel": 0.003
+      },
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": -0.12
+      }
+    ],
+    "exertion": {
+      "on": "defend",
+      "cost": 0.05,
+      "note": "Spends stamina on each incoming attack to raise your parry and armor against it",
+      "hit": {
+        "parry": 0.14,
+        "armor": 0.25
+      }
+    },
+    "unlock": [
+      {
+        "type": "skill",
+        "id": "school_bolognese",
+        "level": 1
+      },
+      {
+        "type": "equippedTag",
+        "tag": "sword"
+      },
+      {
+        "type": "equippedTag",
+        "tag": "buckler"
+      }
+    ],
+    "replaces": "defensive",
+    "skill": "school_bolognese",
+    "desc": "Sword-and-buckler school replacing Brace. +10% parry, +15% riposte, +30% armor, −12% damage; parry, riposte and armor scale with the school's level. Exertion: 5% stamina per incoming attack for +14% parry and +25% armor against it."
+  },
+  {
+    "id": "boxing",
+    "name": "Boxing",
+    "icon": "🥊",
+    "art": "stance_boxing",
+    "mods": [
+      {
+        "stat": "dodge",
+        "op": "add",
+        "value": 0.15,
+        "perLevel": 0.001
+      },
+      {
+        "stat": "attackSpeed",
+        "op": "mult",
+        "value": 0.15
+      },
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": 0.05,
+        "perLevel": 0.003
+      }
+    ],
+    "exertion": {
+      "on": "defend",
+      "cost": 0.045,
+      "note": "Spends stamina on each incoming attack to raise your dodge against it",
+      "hit": {
+        "dodge": 0.22
+      }
+    },
+    "unlock": [
+      {
+        "type": "skill",
+        "id": "school_boxing",
+        "level": 1
+      },
+      {
+        "type": "equippedTag",
+        "tag": "unarmed"
+      }
+    ],
+    "replaces": "evasive",
+    "skill": "school_boxing",
+    "desc": "Unarmed school replacing Evasive. +15% dodge, +15% attack speed, +5% damage; dodge and damage scale with the school's level. Exertion: 4.5% stamina per incoming attack for +22% dodge against it."
+  },
+  {
+    "id": "taekwondo",
+    "name": "Taekwondo",
+    "icon": "🦵",
+    "art": "stance_taekwondo",
+    "mods": [
+      {
+        "stat": "attackSpeed",
+        "op": "mult",
+        "value": 0.5,
+        "perLevel": 0.003
+      },
+      {
+        "stat": "dodge",
+        "op": "add",
+        "value": 0.05
+      },
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": -0.15
+      }
+    ],
+    "exertion": {
+      "on": "attack",
+      "cost": 0.13,
+      "note": "Each attack lands one extra simultaneous hit, for a high stamina cost",
+      "hit": {
+        "extraHits": 1
+      }
+    },
+    "unlock": [
+      {
+        "type": "skill",
+        "id": "school_taekwondo",
+        "level": 1
+      },
+      {
+        "type": "equippedTag",
+        "tag": "unarmed"
+      }
+    ],
+    "replaces": "multi",
+    "skill": "school_taekwondo",
+    "desc": "Unarmed school replacing Flurry. +50% attack speed, +5% dodge, −15% damage; attack speed scales with the school's level. Exertion: 13% stamina per attack for one extra hit."
+  },
+  {
+    "id": "muay_thai",
+    "name": "Muay Thai",
+    "icon": "🐘",
+    "art": "stance_muay_thai",
+    "mods": [
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": 0.45,
+        "perLevel": 0.004
+      },
+      {
+        "stat": "critDamage",
+        "op": "mult",
+        "value": 0.4
+      },
+      {
+        "stat": "armor",
+        "op": "mult",
+        "value": 0.15
+      },
+      {
+        "stat": "attackSpeed",
+        "op": "mult",
+        "value": -0.15
+      }
+    ],
+    "exertion": {
+      "on": "attack",
+      "cost": 0.09,
+      "note": "Large damage and penetration bonus on every attack",
+      "hit": {
+        "damage": 0.55,
+        "penetration": 0.1
+      }
+    },
+    "unlock": [
+      {
+        "type": "skill",
+        "id": "school_muay_thai",
+        "level": 1
+      },
+      {
+        "type": "equippedTag",
+        "tag": "unarmed"
+      }
+    ],
+    "replaces": "crush",
+    "skill": "school_muay_thai",
+    "desc": "Unarmed school replacing Crush. +45% damage, +40% crit damage, +15% armor, −15% attack speed; damage scales with the school's level. Exertion: 9% stamina per attack for +55% damage and +10% penetration on that hit."
+  },
+  {
+    "id": "wrestling",
+    "name": "Wrestling",
+    "icon": "🤼",
+    "art": "stance_wrestling",
+    "mods": [
+      {
+        "stat": "armor",
+        "op": "mult",
+        "value": 0.6,
+        "perLevel": 0.004
+      },
+      {
+        "stat": "maxHp",
+        "op": "mult",
+        "value": 0.25,
+        "perLevel": 0.002
+      },
+      {
+        "stat": "damage",
+        "op": "mult",
+        "value": -0.1
+      }
+    ],
+    "exertion": {
+      "on": "defend",
+      "cost": 0.045,
+      "note": "Spends stamina on each incoming attack to raise your armor against it",
+      "hit": {
+        "armor": 0.75
+      }
+    },
+    "unlock": [
+      {
+        "type": "skill",
+        "id": "school_wrestling",
+        "level": 1
+      },
+      {
+        "type": "equippedTag",
+        "tag": "unarmed"
+      }
+    ],
+    "replaces": "defensive",
+    "skill": "school_wrestling",
+    "desc": "Unarmed school replacing Brace. +60% armor, +25% max HP, −10% damage; armor and max HP scale with the school's level. Exertion: 4.5% stamina per incoming attack for +75% armor against it."
+  },
+  {
+    "id": "magic_combat",
+    "name": "Magic Combat",
+    "icon": "🔮",
+    "art": "stance_magic_combat",
+    "mods": [
+      {
+        "stat": "crit",
+        "op": "add",
+        "value": 0.08,
+        "perLevel": 0.001
+      },
+      {
+        "stat": "spellPower",
+        "op": "mult",
+        "value": 0.1,
+        "perLevel": 0.002
+      }
+    ],
+    "exertion": {
+      "on": "attack",
+      "pool": "mana",
+      "cost": 0.08,
+      "note": "Paid in mana, not stamina: large damage and penetration bonus on every attack",
+      "hit": {
+        "damage": 0.5,
+        "penetration": 0.12
+      }
+    },
+    "unlock": [
+      {
+        "type": "skill",
+        "id": "school_magic_combat",
+        "level": 1
+      }
+    ],
+    "replaces": "finesse",
+    "skill": "school_magic_combat",
+    "desc": "Spellblade school replacing Finesse. +8% crit, +10% spell power; both scale with the school's level. Exertion: 8% mana per attack instead of stamina, for +50% damage and +12% penetration on that hit."
+  },
+  {
+    "id": "capoeira",
+    "name": "Capoeira",
+    "icon": "🤸",
+    "art": "stance_capoeira",
+    "mods": [
+      {
+        "stat": "dodge",
+        "op": "mult",
+        "value": 0.08,
+        "perLevel": 0.01
+      }
+    ],
+    "exertion": {
+      "on": "defend",
+      "cost": 0.08,
+      "note": "Spends stamina on each incoming attack to raise your dodge against it",
+      "hit": {
+        "dodge": 0.15
+      }
+    },
+    "unlock": [
+      {
+        "type": "equippedTag",
+        "tag": "unarmed"
+      },
+      {
+        "type": "skill",
+        "id": "school_capoeira",
+        "level": 1
+      }
+    ],
+    "replaces": "quick",
+    "skill": "school_capoeira",
+    "desc": "Unarmed school replacing Quick. +8% dodge, scaling with the school's level. Exertion: 8% stamina per incoming attack for +15% dodge against it."
+  }
+]

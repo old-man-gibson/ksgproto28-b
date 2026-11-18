@@ -153,6 +153,9 @@ left behind.
 | 7 | `systems/prestige.ts`, `systems/legacy.ts`, `data/prestige.data.ts` | `prestige` | `tests/prestige.test.ts`: 26 ported, 3 `it.todo` (prepared pages, step 3; 2 old migrations) | The stronghold and its automatic prestige, festival legacy, cookbook carry |
 | 7 | `createInitialState` as the start of a run | Kernel: `ctx.endRun`, `newRun` (decision 30) | `tests/newRun.test.ts` (new, 4) | Nothing |
 | 7 | `tests/john.ts`, `tests/john.test.ts`, `scripts/pacing.ts`, the 2 John cases of `tests/band2.test.ts` | `tests/john.ts` on `runHeadless` and commands; `scripts/pacing.ts` | `tests/john.test.ts`: 9 cases, 1 `it.todo` (a bound missed, measured value in the case); the vitest project `john` | Runs 2 and 3 (floors 7 to 20, step 4); the duel harness of "the archive's club"; the rack climbs' spell |
+| 3: martial | The rest of `systems/martial.ts` (ledger, learning and the martial unlock, reach, ladder, drilling, slots and the bench, forks, teachers, weapon states, rune surgery, `positionKnown`, `positionGraph`, `techniqueStatus`); `NpcDef.teaches`; `hall_tutor`, `dojo_master`, `militia_captain` of `data/npcs.data.ts`; `legacyTechniqueSlots` as read by `techniqueSlots` | `martial` (slice version 2, `ladder.ts`, the panel), `npcs` (3 records), `combat` (`combat/enable-action`, the `before` hook, `combat/momentum`), `items` (`items/take-weapon`, `items/give-back`), `skills` (`skills/enter`) | `tests/martial.test.ts`: 85 cases, 54 of the 68 `it.todo` of port 5 ported (2 more cases: the counter check, the stance of the skip); `tests/goblins.test.ts`: the 3 watch-learning cases | 12 `it.todo` left: readied spells (6), a loadout (UI step), the study card (consumables), 4 old save migrations. Readied spells, loadouts, drill manuals, the planner drawing: `src/systems/martial/README.md` "Left behind" |
+| 3: martial | `systems/styles.ts`, `data/styles.data.ts`, the style half of `collectModifiers` of `systems/derived.ts`, `setStyle` and `checkStyleSwap` of `game.ts` | `styles` (new) | `tests/styles.test.ts`: the old 11 cases plus 2 new; `tests/skills.test.ts`: the school-bonus case uses the real stance | Nothing of the old file |
+| 3: martial | `chooseTutorialStance`, `confirmTutorialStance`, `TUTORIAL_STANCES` | `tutorial` (`tutorial/choose-stance`; the card shows the three stances) | `tests/tutorial.test.ts`: the stance pick, the walk through floor 0 with the stance, the skip keeping a stance, the three stances offered | The spell step (arcane) |
 
 Port 1 notes:
 
@@ -1067,3 +1070,71 @@ links, Foresight in the skill view, the weather chip.
 
 Open finding: the gold earned by John is 25% under the old build over the
 same seeds (section 9.1); not traced.
+
+## 10. Step 3: martial
+
+Done 2026-11-17 on branch `step3-martial`. Design and the full account:
+`src/systems/martial/README.md` ("Step 3 design", "Changed while building
+(step 3)", "Left behind", "Old rules ported as they are") and
+`src/systems/styles/README.md`.
+
+### 10.1 John with the tutor
+
+Floor 2's tutor teaches John Gather and Lunge, as in the old build. Old: the
+old build with the lessons on, `npm run pacing -- --through 6 --seeds
+42,7,1234 --weapons skip` at `7c1267b` (section 9.1). Before: this
+repository at `d0aab95`, no tutor (section 9.1). New: this branch, `npm run
+pacing`. Game time per segment, m:ss.
+
+| Floor | Old 42 | Old 7 | Old 1234 | Old mean | Before mean | New 42 | New 7 | New 1234 | New mean | New vs old |
+|---|---|---|---|---|---|---|---|---|---|---|
+| f1 vermin | 1:29 | 1:11 | 1:34 | 1:25 | 1:21 | 1:31 | 1:28 | 1:03 | 1:21 | -5% |
+| f1 | 2:24 | 2:29 | 2:18 | 2:24 | 2:29 | 1:31 | 2:29 | 3:28 | 2:29 | +4% |
+| f2 | 2:09 | 3:03 | 2:53 | 2:42 | 2:23 | 2:55 | 2:41 | 2:18 | 2:38 | -2% |
+| f3 gate | 4:47 | 3:19 | 4:03 | 4:03 | 3:50 | 3:43 | 3:42 | 4:48 | 4:04 | +1% |
+| f3 stairs | 1:22 | 1:12 | 1:16 | 1:17 | 1:17 | 1:17 | 1:17 | 1:10 | 1:15 | -3% |
+| f3 | 0:50 | 0:20 | 0:20 | 0:30 | 1:18 | 0:52 | 0:49 | 0:49 | 0:50 | +67% |
+| f4 | 8:44 | 5:07 | 7:28 | 7:06 | 6:19 | 7:45 | 7:00 | 6:42 | 7:09 | +1% |
+| f5 gate | 0:03 | 0:03 | 0:03 | 0:03 | 0:04 | 0:04 | 0:04 | 0:04 | 0:04 | +33% |
+| f5 | 1:00 | 1:32 | 0:38 | 1:03 | 0:55 | 1:06 | 1:07 | 0:41 | 0:58 | -8% |
+| f6 gate | 3:38 | 4:17 | 3:18 | 3:44 | 3:53 | 3:45 | 4:05 | 4:09 | 4:00 | +7% |
+| f6 | 0:15 | 0:19 | 0:21 | 0:18 | 0:34 | 0:34 | 0:22 | 0:19 | 0:25 | +39% |
+| Total to the warchief | 26:41 | 22:52 | 24:13 | 24:35 | 24:24 | 25:02 | 25:04 | 25:32 | 25:13 | +3% |
+
+The two boss segments moved toward the old build: floor 3 from a mean of
+1:18 to 0:50 (old 0:30), the warchief from 0:34 to 0:25 (old 0:18). Boss
+tries/lost, new: floor 3 2/1, 2/1, 2/1 (before 2/1, 4/3, 3/2; old 2/1, 1/0,
+1/0); warchief 2/2, 1/1, 1/1 (before 1/1, 2/2, 3/2; old 1/0 each).
+Knockouts over the climb: new 26, 24, 22 (before 24, 23, 24; old 26, 20,
+21). Level at the warchief: 9, 9, 9 (old 9, 8, 8). Gold earned: new 12,200,
+13,216, 11,924, mean 12,447 (before 9,185; old 12,324): the open finding of
+section 9.1 (gold 25% under the old build) closes with the techniques. Every
+climb ends in the first prestige (harvest 11 points each).
+
+Against the tolerance proposed in section 9.1 (total within 15%, each
+segment over two minutes of old mean within 35%): total +3%; the long
+segments -5% to +7%. Boss segments are reported, not held.
+
+### 10.2 Offline budgets
+
+Each run of 8 hours alone through `scripts/budget-runs.ts`, two rounds, same
+machine. Pass 2 is `main` at `d0aab95` (`docs/KERNEL.md` section 8).
+
+| Run of 8 hours | Pass 2 | Step 3 martial | Budget |
+|---|---|---|---|
+| No fight, no condition | 1,316 to 1,359 ms | 1,442 to 1,444 ms | 2,000 ms |
+| A poison held | 4,692 to 4,912 ms | 5,203 to 5,359 ms | 7,500 ms |
+| Floor 1 table sent to combat | 4,506 to 4,548 ms | 4,977 to 5,080 ms | 7,000 ms |
+| Floor 6 Tunnels sent to combat | 8,853 to 8,917 ms | 9,886 to 10,232 ms | 13,500 ms |
+| World: hunt, floor 4 Woods Edge | 8,597 to 8,662 ms | 9,526 to 9,748 ms | 13,000 ms |
+| World: hunt, floor 6 Tunnels | 8,578 to 8,817 ms | 9,648 to 9,939 ms | 13,000 ms |
+
+Every budget holds. The runs are 7 to 12% slower. What this port adds to
+every tick: the styles tick (the effective style read each tick, as the old
+`checkStyleSwap`), the styles source (collected again when `statuses/held`,
+`items/worn`, `skills/effects`, `resources/locks` or `combat/momentum`
+change), and martial's subscriber to `counters/changed` (a set lookup per
+counter change). Not profiled. The kills, the generator, the level and the
+gold of every run are the same as on `main`; only the state hash changed
+(the new slices and fields), and the digests are recorded again in their
+own commit.

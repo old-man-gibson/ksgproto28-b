@@ -26,11 +26,12 @@ import {
   namedFact,
   scaleFact,
   statBlockOf,
+  statBreakdown,
   statOf,
   styleFact,
   type AttributeId,
-  type StatMod,
 } from '../src/systems/stats';
+import { pickStyle } from '../src/systems/styles';
 import { emit, equip, giveItem, makeGame, patch, reads, setMods, slice, unequip } from './helpers';
 
 /**
@@ -410,28 +411,22 @@ describe('school mastery only pays while you practise the art', () => {
     armKatana(kernel); // the school claims the Crush slot, and its bonus needs a katana
     return kernel;
   }
-  /** Lines of a source that apply right now. */
-  const lines = (kernel: Kernel, prefix: string) =>
-    (kernel.modifiers() as StatMod[]).filter((m) => (m.source ?? '').startsWith(prefix));
-  const applied = (kernel: Kernel, prefix: string) => {
-    // The damage a line adds is visible as a difference in the block.
-    const withLine = statOf(kernel, 'damage');
-    return { count: lines(kernel, prefix).length, damage: withLine };
-  };
 
   it('the school bonus lapses in any other stance', () => {
     const kernel = jigenMaster();
+    /** The value of the school's damage line as the block applies it, 0 when gated off. */
+    const line = () =>
+      statBreakdown(kernel.modifiers(), 'damage').lines.find((l) => l.source.startsWith('Jigen-ryu Lv'))?.value ?? 0;
     // The school claims the Crush slot: with a katana in hand the style
     // fought in is `jigen_ryu` (old data/styles.data.ts).
-    setMods(kernel, [styleFact('jigen_ryu')]);
-    const practising = applied(kernel, 'Jigen-ryu Lv').damage;
-    setMods(kernel, [styleFact('quick')]);
-    const elsewhere = applied(kernel, 'Jigen-ryu Lv').damage;
+    expect(kernel.dispatch(pickStyle({ style: 'crush' })).ok).toBe(true);
     // The school's line is 40 x 0.5% = +20% damage, and only in its own style.
-    expect(practising / elsewhere).toBeCloseTo(1.2, 6);
-    // With no style stated at all, a style-gated line lapses too.
-    setMods(kernel, []);
-    expect(statOf(kernel, 'damage')).toBeCloseTo(elsewhere, 6);
+    expect(line()).toBeCloseTo(0.2, 6);
+    expect(kernel.dispatch(pickStyle({ style: 'quick' })).ok).toBe(true);
+    expect(line()).toBe(0);
+    // The default stance is not the school either.
+    expect(kernel.dispatch(pickStyle({ style: 'balanced' })).ok).toBe(true);
+    expect(line()).toBe(0);
   });
 
   it('Swordsmanship still pays with any sword, in any stance', () => {

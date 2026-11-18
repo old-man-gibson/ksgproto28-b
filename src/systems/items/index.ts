@@ -444,6 +444,10 @@ export const dropWorn = defineRequest<{ slot: SlotId }, string | null>('items/dr
  * handler (the weapon rack of floor 0). The same rules and log line as the
  * command `items/equip`. Answers whether it was equipped.
  */
+/** Take the wielded weapon out of the hand (a technique grounds, impales or sheathes it). Answers the instance, or null with an empty hand. */
+export const takeWeapon = defineRequest<void, ItemInstance | null>('items/take-weapon');
+/** Hand back a weapon a technique took: to the weapon hand when it is empty, else to the pack. The old `reclaim`. Answers where it went. */
+export const giveBack = defineRequest<{ item: ItemInstance }, 'hand' | 'pack'>('items/give-back');
 export const equipNow = defineRequest<{ uid: number; slot?: SlotId }, boolean>('items/equip-now');
 
 // ---- view ----
@@ -726,6 +730,23 @@ const system: SystemDef<ItemsState, ItemsView> = defineSystem<ItemsState, ItemsV
       ctx.touch(WORN_SOURCE);
     }),
     answer(equipNow, (ctx, { uid, slot }) => equipFromPack(ctx, uid, slot).ok),
+    answer(takeWeapon, (ctx) => {
+      const item = ctx.state.equipment.weapon;
+      if (!item) return null;
+      delete ctx.state.equipment.weapon;
+      ctx.touch(WORN_SOURCE);
+      return cloneJson(item) as ItemInstance;
+    }),
+    answer(giveBack, (ctx, { item }) => {
+      // No requirement check: the old `reclaim` put the blade back as it was.
+      if (!ctx.state.equipment.weapon) {
+        ctx.state.equipment.weapon = cloneJson(item) as ItemInstance;
+        ctx.touch(WORN_SOURCE);
+        return 'hand';
+      }
+      ctx.state.inventory.push(cloneJson(item) as ItemInstance);
+      return 'pack';
+    }),
   ],
 
   // A prestige keeps the stronghold stash: keep-marked items come back to it

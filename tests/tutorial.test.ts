@@ -17,17 +17,17 @@
  * - `prestigeNow(state)` is the command `prestige/now` on a run with the
  *   warchief counter set.
  *
- * The step list here passes over the stance and spell steps (`shownSteps`)
- * until martial and arcane are ported. The walk through the floor runs the
- * seven shown steps; its stance and spell lines are left out.
+ * The step list here passes over the spell step (`shownSteps`) until arcane
+ * is ported. The walk through the floor runs the eight shown steps; its
+ * spell lines are left out. `chooseTutorialStance` is the command
+ * `tutorial/choose-stance` (the martial port).
  *
  * `it.todo`:
- * - stance: "step 3 (martial: the stance step)".
  * - spell: "step 3 (arcane: the spell step)": the Intelligence floor of the
  *   spell pick, the three offered words.
  * - the two save migrations: there is no importer of the old save.
  * - every case of the old `tutorialfocus.test.ts`: it tests the UI helper
- *   `tutorialFocus` ("UI step"); its stance case also waits for martial.
+ *   `tutorialFocus` ("UI step"), but for its stance case, ported here.
  */
 import { describe, expect, it } from 'vitest';
 import type { Kernel } from '../src/kernel';
@@ -39,7 +39,9 @@ import { prestigeNow } from '../src/systems/prestige';
 import type { LogState } from '../src/systems/log';
 import { statOf } from '../src/systems/stats';
 import type { ResourcesState } from '../src/systems/resources';
+import { STYLES, styleUnlocked, type StylesState } from '../src/systems/styles';
 import {
+  chooseStance,
   chooseWeapon,
   shownSteps,
   skipTutorial,
@@ -47,6 +49,7 @@ import {
   TUTORIAL_EXIT,
   TUTORIAL_FLAGS,
   TUTORIAL_RACK,
+  TUTORIAL_STANCES,
   TUTORIAL_STEP_LIST,
   tutorialActive,
   tutorialStep,
@@ -62,7 +65,7 @@ import {
   towerAt,
   visibleEdges,
 } from '../src/systems/world';
-import { makeGame, reads, slice } from './helpers';
+import { makeGame, reads, run, slice } from './helpers';
 import { counterOf, hop, setCounters, worldOf } from './worldHelpers';
 
 const counts = (g: Kernel): CountersState => slice<CountersState>(g, 'counters');
@@ -124,8 +127,8 @@ describe('floor 0 — where a life opens', () => {
 
 describe('the tutorial — nine panels read off the world', () => {
   it('walks in order: rack, stance, cellblock, fight, field, spell, cast, gate, foot', () => {
-    // The stance and spell steps are passed over here (step 3); the other
-    // seven are walked in the old order.
+    // The spell step is passed over here (arcane, step 3); the other eight
+    // are walked in the old order.
     const g = makeGame({ seed: 7 });
     const view = () => g.view().systems.tutorial as TutorialView;
 
@@ -136,6 +139,10 @@ describe('the tutorial — nine panels read off the world', () => {
     expect(itemsOf(g).equipment.weapon?.defId).toBe('old_spear');
     expect(itemsOf(g).equipment.offhand).toBeUndefined();
     expect(g.dispatch(chooseWeapon({ weapon: 'sword' })).ok).toBe(false); // the rack is empty now
+    expect(stepId(g)).toBe('stance');
+
+    expect(g.dispatch(chooseStance({ style: 'aggressive' })).ok).toBe(true);
+    expect(slice<StylesState>(g, 'styles').style).toBe('aggressive');
     expect(stepId(g)).toBe('cellblock');
 
     expect(hop(g, 'f0_cellblock')).toBe(true);
@@ -171,7 +178,16 @@ describe('the tutorial — nine panels read off the world', () => {
     expect(slice<LogState>(g, 'log').log.some((l) => l.msg.includes('Tutorial complete'))).toBe(true);
   });
 
-  it.todo('the stance pick sets the style (step 3 (martial: the stance step))');
+  it('the stance pick sets the style', () => {
+    const g = makeGame({ seed: 4 });
+    expect(g.dispatch(chooseStance({ style: 'defensive' })).ok).toBe(true);
+    expect(slice<StylesState>(g, 'styles').style).toBe('defensive');
+    expect(counterOf(g, TUTORIAL_FLAGS.stance)).toBe(1);
+    expect(slice<LogState>(g, 'log').log.some((l) => l.msg.includes('Stance set: 🐢 Brace'))).toBe(true);
+    // Stamped once: the card does not take a second pick.
+    expect(g.dispatch(chooseStance({ style: 'crush' })).ok).toBe(false);
+    expect(slice<StylesState>(g, 'styles').style).toBe('defensive');
+  });
   it.todo('the spell pick prepares a one-word spell and raises Intelligence to 2 (step 3 (arcane: the spell step))');
 
   it('the sword pick equips the sword already in the pack, and a shield beside it', () => {
@@ -199,14 +215,14 @@ describe('the tutorial — nine panels read off the world', () => {
   it.todo('offers exactly the three words the user named, each a legal one-word sentence (step 3 (arcane: the spell step))');
 
   it('skip: defaults for every choice, the Foot, and the tutorial gone for good', () => {
-    // The old case first chose the stance and checked it was kept: step 3
-    // (martial: the stance step). The rest is ported.
     const g = makeGame({ seed: 8 });
+    g.dispatch(chooseStance({ style: 'crush' }));
     expect(g.dispatch(skipTutorial()).ok).toBe(true);
     const w = worldOf(g);
     expect(w.spot).toBe(TUTORIAL_EXIT);
     expect(w.discovered).toContain(TUTORIAL_EXIT);
     expect(itemsOf(g).inventory.map((i) => i.defId)).toEqual(['rusty_sword']);
+    expect(slice<StylesState>(g, 'styles').style).toBe('crush'); // a choice already made is kept
     // The skip stamps the stance and spell flags as the old skip did.
     expect(counterOf(g, TUTORIAL_FLAGS.stance)).toBe(1);
     expect(counterOf(g, TUTORIAL_FLAGS.spell)).toBe(1);
@@ -233,11 +249,12 @@ describe('the tutorial — nine panels read off the world', () => {
     setCounters(g, { [TUTORIAL_FLAGS.spell]: 1 });
     expect(stepId(g)).toBe('arm');
     g.dispatch(chooseWeapon({ weapon: 'dagger' }));
+    g.dispatch(chooseStance({ style: 'balanced' }));
     expect(stepId(g)).toBe('cellblock');
     expect(TUTORIAL_STEP_LIST.map((s) => s.id)).toEqual([
       'arm', 'stance', 'cellblock', 'fight', 'field', 'spell', 'cast', 'gate', 'leave',
     ]);
-    expect(shownSteps().map((s) => s.id)).toEqual(['arm', 'cellblock', 'fight', 'field', 'cast', 'gate', 'leave']);
+    expect(shownSteps().map((s) => s.id)).toEqual(['arm', 'stance', 'cellblock', 'fight', 'field', 'cast', 'gate', 'leave']);
   });
 });
 
@@ -260,6 +277,15 @@ describe('the floor 0 screen — what each step shows and points at', () => {
   it.todo('has a screen for every step and none for a step that does not exist (UI step)');
   it.todo('points at each step’s control and adds tabs as the steps name them (UI step)');
   it.todo('points back at the place when the player walked past a fight step (UI step)');
-  it.todo('offers step 2’s three stances, every one open on a new save (UI step; step 3 (martial: the stance step))');
+  it('offers step 2’s three stances, every one open on a new save', () => {
+    const g = makeGame({ seed: 13 });
+    expect([...TUTORIAL_STANCES]).toEqual(['balanced', 'aggressive', 'defensive']);
+    for (const id of TUTORIAL_STANCES) {
+      expect(STYLES[id], id).toBeTruthy();
+      expect(run(g, (ctx) => styleUnlocked(ctx, STYLES[id])), id).toBe(true);
+    }
+    g.dispatch(chooseWeapon({ weapon: 'sword' }));
+    expect((g.view().systems.tutorial as TutorialView).stances.map((st) => st.id)).toEqual([...TUTORIAL_STANCES]);
+  });
   it.todo('opens the tab a target is drawn on (UI step)');
 });

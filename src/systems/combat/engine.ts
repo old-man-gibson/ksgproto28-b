@@ -183,6 +183,13 @@ export const RESPAWN_DELAY = 15;
 export const POSITION_SOURCE = 'combat/position';
 /** States the buffs of the fight on the player. */
 export const BUFFS_SOURCE = 'combat/buffs';
+/** States nothing: the change counter of `fight.momentum`, for the styles source that turns it into speed (`dependsOn`). */
+export const MOMENTUM_SOURCE = 'combat/momentum';
+
+/** The momentum a fight has built; 0 outside a fight. */
+export function playerMomentum(state: DeepReadonly<CombatState>): number {
+  return state.fight?.momentum ?? 0;
+}
 /** Ticks before a monster may repeat a technique that declares no cooldown. */
 export const TECHNIQUE_MONSTER_COOLDOWN = 60;
 /** Intensity of the hunger a fasting body hands out per point of wisdom. */
@@ -1060,6 +1067,7 @@ function closeCombat(ctx: C): void {
     // of times in a catch-up.
     if (fight.position !== NEUTRAL_POSITION) ctx.touch(POSITION_SOURCE, PLAYER);
     if (fight.buffs.length) ctx.touch(BUFFS_SOURCE, PLAYER);
+    if (fight.momentum) ctx.touch(MOMENTUM_SOURCE, PLAYER);
     ctx.emit(setSituation, { inCombat: false });
     ctx.emit(setPace, { inCombat: false });
     ctx.emit(fightClosed, { site: ctx.state.site?.id ?? '', standing });
@@ -1648,6 +1656,9 @@ function swing(
   empty: boolean,
 ): boolean {
   const shape = active?.shape ?? null;
+  // A technique that takes a blade back into the hand does it before the
+  // numbers are read, so the blow is made with it (old `applyTechniqueEquipment` 'pre').
+  if (shape) active?.before?.(ctx as ActionCtx);
   // Hunter bonuses are gated on what is fought: the offensive half of the
   // block is resolved against this target's tags.
   const vs = statBlockOf(ctx, PLAYER, vsVariant(monsterTagSet(monster.defId)));
@@ -1689,7 +1700,13 @@ function swing(
   const ex: Exertion = attackExertion ? ctx.request(exertNow, { spec: attackExertion }) : NO_EXERTION;
   if (attackExertion?.ramp) {
     const built = (ex.spent > 0 ? attackExertion.ramp.per * ex.ratio : 0) + (shape?.momentum ?? 0);
-    if (built > 0) c.momentum = Math.min(attackExertion.ramp.cap, c.momentum + built);
+    if (built > 0) {
+      const next = Math.min(attackExertion.ramp.cap, c.momentum + built);
+      if (next !== c.momentum) {
+        c.momentum = next;
+        ctx.touch(MOMENTUM_SOURCE, PLAYER);
+      }
+    }
   }
   const penetration = Math.min(0.95, vs.penetration + ex.penetration + (shape?.penetration ?? 0));
   if (ex.damage > 0) steps.push({ label: 'Exertion', mult: 1 + ex.damage });

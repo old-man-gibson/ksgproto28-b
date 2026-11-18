@@ -408,7 +408,9 @@ describe('wield.test.ts: parrying in a fight', () => {
     expect(barAtParry).not.toBeNull();
     // Riposte damage is a fraction of a real swing.
     expect(PARRY_RIPOSTE).toBeLessThan(1);
-  });
+    // 2,000 ticks with a scan of the feed each: 2.3 s alone, 5.1 s inside the
+    // parallel unit run after the martial port (the styles tick). Not a budget.
+  }, 15_000);
 });
 
 describe('wield.test.ts: the parry line', () => {

@@ -20,62 +20,143 @@
  * - skill and attribute levels are written into their slices with `patch`;
  * - a hunt that outlives a defeat uses `keepHunting` (the knockout is port 6).
  *
- * Left as `it.todo`, each under its old `describe`:
- * - step 3 (the martial port): learning and eligibility, the ledger writes,
- *   the mastery ladder, drilling, slots and the bench, forks, teachers and
- *   lessons, reach, weapon states (grounded, impaled, sheathed), readied
- *   spells, rune surgery, the planner and the position graph, the picker of
- *   trigger subjects, `techniqueStatus`, `WEAPON_FAMILIES`.
- * - old save migrations: the save here starts at version 1.
+ * Step 3 (the martial port) ported the rest: the ledger, learning, the
+ * ladder, drilling, slots, forks, teachers, reach, weapon states, rune
+ * surgery, the graph. More call shape changes:
+ * - a ledger read is `mOf(kernel)`; a function of the old ladder takes the
+ *   ledger entry (`masteryTier(held)`, `moveOf(def, held, runes)`);
+ * - `learnTechnique`, `checkTechniqueLearning`, `fitTechniqueSlots`,
+ *   `recordExecution` and `applyTechniqueEquipment` are the requests
+ *   `martial/learn`, `martial/check-learning`, `martial/fit-slots`,
+ *   `martial/record` and `martial/equipment`; `toggleDrill`, `chooseFork`,
+ *   `toggleSheathe`, `clearFork`, `resetTechnique`, `learnFromTeacher` and
+ *   `setSkillEnabled` of a technique are commands;
+ * - `recoverGroundedWeapon` runs when the fight closes (`combat/abandon`);
+ * - a test teacher is written into `TEACHERS` and `NPCS`.
  *
- * Split cases: an old case that also asserted `techniqueExecutions > 0`
- * (practice counted by `recordExecution`, step 3) is ported without that
- * line, and the line is an `it.todo` next to it.
+ * Left as `it.todo`: readied spells (not ported, README "Left behind"), the
+ * loadout case (UI step), the study card (consumables), old save migrations
+ * (the save here starts at version 1).
  */
 import { describe, expect, it } from 'vitest';
 import type { Kernel } from '../src/kernel';
 import type { AttributesState } from '../src/systems/attributes';
 import {
+  abandon,
+  activeRotation,
   evaluateTrigger,
   hook,
   hunt,
+  setRotation,
   setTrigger,
   TRIGGER_EVENTS,
   type SkillTrigger,
 } from '../src/systems/combat';
-import {
+import { counterValue, setCounter, type CountersState } from '../src/systems/counters';
+import { ITEM_LIST, type ItemsState } from '../src/systems/items';
+import martial, {
+  BASE_TECHNIQUE_SLOTS,
+  checkLearning,
+  chooseFork,
+  chosenFork,
+  clearFork,
   declaredEntries,
   declaredPositions,
+  displayName,
+  effectiveReps,
+  eligibleToLearn,
+  entriesOf,
+  entryPositions,
+  exitOf,
+  fitSlots,
+  FORK_TIER,
   forkArchetypes,
+  forkAvailable,
+  forkOptions,
+  isDrilled,
+  knownPositions,
+  knownTechniques,
+  learnFromTeacher,
+  learnRequest,
+  lessonState,
+  MARTIAL_UNLOCK,
+  MASTERY_LADDER,
+  masteryTier,
+  masteryTierName,
+  MAX_DRILLED,
+  moveOf,
   NEUTRAL_POSITION,
   openEntry,
   POSITIONS,
+  positionAllows,
+  positionGraph,
+  positionKnown,
+  reachablePositions,
+  recordRequest,
+  repsToNextTier,
+  resetTechnique,
+  ROUGH_STAMINA_MULT,
+  runeModsOf,
+  selfLearnProgress,
+  setSlotted,
+  slottedTechniques,
   SPELL_READY_POSITION,
+  TEACHERS,
   techniqueArmed,
+  techniqueBenched,
+  techniqueEquipment,
+  techniqueExecutions,
+  techniqueForm,
+  techniqueHomeSkill,
   TECHNIQUE_LIST,
+  techniqueReachable,
   TECHNIQUES,
+  techniqueSlots,
+  techniqueSlotted,
+  techniquesForFamilies,
+  techniquesUnderSkill,
+  techniqueStatus,
+  toggleDrill,
+  toggleSheathe,
+  unreachedEntries,
+  visibleTechniqueSubjects,
+  WEAPON_FAMILIES,
+  weaponStateGate,
+  type Lesson,
+  type MartialState,
   type TechniqueDef,
   type TechniqueEntry,
   type TechniqueState,
 } from '../src/systems/martial';
+import { NPCS } from '../src/systems/npcs';
 import { exertNow, hookStat, setExerting, type ResourcesState } from '../src/systems/resources';
-import { SKILLS, type SkillsState } from '../src/systems/skills';
+import { conditionReader, SKILLS, type SkillsState } from '../src/systems/skills';
 import {
   combat,
   combatOf,
   feedOf,
   keepHunting,
   learn,
+  logOf,
   patchFight,
   setHp,
   setPool,
   SITES,
   stage,
 } from './combatHelpers';
-import { ask, equip, giveItem, makeGame, patch, reads, run, setMods, slice } from './helpers';
+import { ask, emit, equip, giveItem, makeGame, patch, reads, run, setMods, slice } from './helpers';
+import { MAX_MASTERY_TIER } from '../src/systems/martial';
 
-/** The highest rung of the old ladder (`MAX_MASTERY_TIER` of the old `martial.data.ts`). The ladder is step 3. */
-const MAX_MASTERY_TIER = 15;
+const mOf = (kernel: Kernel): MartialState => slice<MartialState>(kernel, 'martial');
+const counterOf = (kernel: Kernel, key: string): number => counterValue(slice<CountersState>(kernel, 'counters'), key);
+/** Write a counter, as the old tests wrote `state.stats[key]`. The learning check does not run. */
+function setCount(kernel: Kernel, key: string, value: number): void {
+  patch(kernel, (slices) => {
+    slices.counters.counts[key] = value;
+  });
+}
+const check = (kernel: Kernel): void => ask(kernel, checkLearning, undefined);
+const record = (kernel: Kernel, id: string) => ask(kernel, recordRequest, { technique: id });
 
 const fresh = (seed = 1): Kernel => makeGame({ seed });
 
@@ -170,7 +251,15 @@ describe('technique-readiness trigger subjects', () => {
     expect(holds(g, wontStart)).toBe(false);
   });
 
-  it.todo('offers only techniques the player has actually learned (step 3: martial: the picker of trigger subjects, visibleTriggerSubjects)');
+  it('offers only techniques the player has actually learned', () => {
+    // The picker of trigger subjects is the UI step; martial states which
+    // `technique.<id>` subjects it may offer.
+    const g = fresh(61);
+    const has = (id: string) => visibleTechniqueSubjects(mOf(g)).includes(id);
+    expect(has('technique.ground_draw')).toBe(false);
+    learn(g, 'ground_draw');
+    expect(has('technique.ground_draw')).toBe(true);
+  });
 
   it('a stored condition on a hidden subject still evaluates — hiding is a picker concern', () => {
     const g = fresh(62);
@@ -188,9 +277,27 @@ describe('technique-readiness trigger subjects', () => {
 // ---------- Position discovery & effects (#1) ----------
 
 describe('position visibility and effects', () => {
-  it.todo('a position reveals itself once a known technique reaches it (step 3: martial: positionKnown, knownPositions)');
+  it('a position reveals itself once a known technique reaches it', () => {
+    const g = fresh(63);
+    const known = (id: string) => run(g, (ctx) => positionKnown(ctx, id));
+    // Neutral is always there: every plain swing returns to it.
+    expect(known(NEUTRAL_POSITION)).toBe(true);
+    expect(known('coiled')).toBe(false);
+    expect(run(g, (ctx) => knownPositions(ctx).map((p) => p.id))).toEqual([NEUTRAL_POSITION]);
 
-  it.todo('an entry position counts as reaching it, not just an exit (step 3: martial: positionKnown)');
+    learn(g, 'gather'); // neutral → coiled
+    expect(known('coiled')).toBe(true);
+    expect(known('off_balance')).toBe(false);
+
+    learn(g, 'heavy_blow'); // coiled → off_balance
+    expect(known('off_balance')).toBe(true);
+  });
+
+  it('an entry position counts as reaching it, not just an exit', () => {
+    const g = fresh(64);
+    learn(g, 'thrust'); // extended → neutral: known by its entry
+    expect(run(g, (ctx) => positionKnown(ctx, 'extended'))).toBe(true);
+  });
 
   it('the spell-ready seat costs you defensively for as long as you hold it', () => {
     const g = fresh(65);
@@ -278,13 +385,60 @@ describe('technique content', () => {
 // ---------- The ledger ----------
 
 describe('the learned ledger', () => {
-  it.todo('eligibility is not knowledge: qualified but unlearned stays unknown (step 3: martial: eligibleToLearn)');
+  it('eligibility is not knowledge: qualified but unlearned stays unknown', () => {
+    const g = fresh(2);
+    setLevels(g, { skills: { fighting: 20 }, attrs: { str: 20 } });
+    expect(knownTechniques(mOf(g))).toEqual([]);
+    expect(run(g, (ctx) => eligibleToLearn(ctx, TECHNIQUES.gather))).toBe(true);
+    expect(run(g, (ctx) => eligibleToLearn(ctx, TECHNIQUES.riposte))).toBe(false); // dex 1
+  });
 
-  it.todo('self-learning crystallizes rough when the counter crosses, if eligible (step 3: martial: checkTechniqueLearning, the martial unlock)');
+  it('self-learning crystallizes rough when the counter crosses, if eligible', () => {
+    const g = fresh(3);
+    setCount(g, MARTIAL_UNLOCK, 1);
+    setCount(g, 'combat:attacks', 150);
+    check(g);
+    expect(techniqueForm(mOf(g), 'gather')).toBeUndefined(); // fighting too low
 
-  it.todo('re-learning never downgrades: rough → canonical keeps reps, never back (step 3: martial: learnTechnique)');
+    setLevels(g, { skills: { fighting: 5 } });
+    check(g);
+    expect(techniqueForm(mOf(g), 'gather')).toBe('rough');
+    expect(logOf(g).some((l) => l.includes('Gather'))).toBe(true);
 
-  it.todo('a technique homes to its school once known, else its eligibility skill (step 3: martial: techniqueHomeSkill, techniquesUnderSkill)');
+    // Idempotent: a second pass neither duplicates nor announces again.
+    const lines = logOf(g).length;
+    check(g);
+    expect(logOf(g).length).toBe(lines);
+  });
+
+  it('a counter that moves runs the check: no request needed in play', () => {
+    const g = fresh(3);
+    setLevels(g, { skills: { fighting: 5 } });
+    emit(g, setCounter, { key: MARTIAL_UNLOCK, value: 1 });
+    emit(g, setCounter, { key: 'combat:attacks', value: 100 });
+    expect(techniqueForm(mOf(g), 'gather')).toBe('rough');
+  });
+
+  it('re-learning never downgrades: rough → canonical keeps reps, never back', () => {
+    const g = fresh(4);
+    learn(g, 'gather', 'rough', 40);
+    ask(g, learnRequest, { technique: 'gather', form: 'canonical' });
+    expect(techniqueForm(mOf(g), 'gather')).toBe('canonical');
+    expect(techniqueExecutions(mOf(g), 'gather')).toBe(40);
+    ask(g, learnRequest, { technique: 'gather', form: 'rough' });
+    expect(techniqueForm(mOf(g), 'gather')).toBe('canonical');
+  });
+
+  it('a technique homes to its school once known, else its eligibility skill', () => {
+    const g = fresh(50);
+    learn(g, 'finishing_cut');
+    setLevels(g, { skills: { swordsmanship: 25 } });
+    // The school has not manifested: swordsmanship claims it.
+    expect(run(g, (ctx) => techniqueHomeSkill(ctx, TECHNIQUES.finishing_cut))).toBe('swordsmanship');
+    setLevels(g, { skills: { school_ittou_ryu: 1 } });
+    expect(run(g, (ctx) => techniqueHomeSkill(ctx, TECHNIQUES.finishing_cut))).toBe('school_ittou_ryu');
+    expect(run(g, (ctx) => techniquesUnderSkill(ctx, 'school_ittou_ryu').map((t) => t.id))).toEqual(['finishing_cut']);
+  });
 
   it('family techniques demand the weapon in hand', () => {
     const g = fresh(5);
@@ -299,39 +453,156 @@ describe('the learned ledger', () => {
 // ---------- The powers-of-ten ladder ----------
 
 describe('the mastery ladder', () => {
-  it.todo('rungs land at 10 / 100 / 1,000 / 10,000 (step 3: martial: masteryTier)');
+  it('rungs land at 10 / 100 / 1,000 / 10,000', () => {
+    for (const [reps, tier] of [[0, 0], [9, 0], [10, 1], [99, 1], [100, 2], [1000, 3], [10000, 4]] as const) {
+      expect(masteryTier({ executions: reps, form: 'canonical' }), `${reps} reps`).toBe(tier);
+    }
+  });
 
-  it.todo('rough reps count double on the ladder (step 3: martial: effectiveReps, repsToNextTier)');
+  it('rough reps count double on the ladder', () => {
+    const held: TechniqueState = { executions: 5, form: 'rough' };
+    expect(effectiveReps(held)).toBe(10);
+    expect(masteryTier(held)).toBe(1);
+    expect(repsToNextTier(held)).toBe(45); // 90 effective / 2
+  });
 
-  it.todo('generic bonuses hone the move; data notes rename rungs (step 3: martial: masteryTierName, the mastery terms of the move)');
+  it('generic bonuses hone the move; data notes rename rungs', () => {
+    const def = TECHNIQUES.gather;
+    expect(masteryTierName(def, 2)).toBe('Second Nature'); // note override
+    expect(masteryTierName(TECHNIQUES.heavy_blow, 2)).toBe('Drilled'); // generic
+    const honed = moveOf(def, { executions: 100, form: 'canonical' });
+    expect(honed.damageMult).toBeCloseTo(def.move.damageMult! * 1.12);
+    expect(honed.cooldown).toBeLessThan(def.move.cooldown);
+  });
 
-  it.todo('the rough surcharge exists below the summit and dissolves at Perfected (step 3: martial: the rough form in the move)');
+  it('the rough surcharge exists below the summit and dissolves at Perfected', () => {
+    const def = TECHNIQUES.heavy_blow;
+    // 200 effective: tier 2.
+    expect(moveOf(def, { executions: 100, form: 'rough' }).staminaCost).toBeCloseTo(def.move.staminaCost! * ROUGH_STAMINA_MULT);
+    // 10,000 effective: tier 4. Ten thousand swings of your own way is its own mastery.
+    expect(moveOf(def, { executions: 5000, form: 'rough' }).staminaCost).toBeCloseTo(def.move.staminaCost!);
+  });
 
-  it.todo('practice opens new entries: a Perfected Heavy Blow needs no wind-up (step 3: martial: mastery addFrom in the ways in)');
+  it('practice opens new entries: a Perfected Heavy Blow needs no wind-up', () => {
+    const def = TECHNIQUES.heavy_blow;
+    expect(entryPositions(def, { executions: 0, form: 'canonical' })).toEqual(['coiled']);
+    const perfected: TechniqueState = { executions: 10000, form: 'canonical' };
+    expect(entryPositions(def, perfected)).toContain('neutral');
+    expect(positionAllows(def, perfected, 'neutral')).toBe(true);
+  });
 });
 
 // ---------- Drilling ----------
 
 describe('repetition and drilling', () => {
-  it.todo('practice only counts for drilled techniques, up to the slot cap (step 3: martial: recordExecution, toggleDrill)');
+  it('practice only counts for drilled techniques, up to the slot cap', () => {
+    const g = brawler(11);
+    learn(g, 'sidestep');
+    learn(g, 'riposte');
+    record(g, 'gather'); // a free slot claims it
+    expect(isDrilled(mOf(g), 'gather')).toBe(true);
+    expect(techniqueExecutions(mOf(g), 'gather')).toBe(1);
 
-  it.todo('crossing a rung is reported exactly once, with its name (step 3: martial: recordExecution)');
+    expect(g.dispatch(toggleDrill({ technique: 'heavy_blow' })).ok).toBe(true);
+    expect(g.dispatch(toggleDrill({ technique: 'riposte' })).ok).toBe(true);
+    expect(mOf(g).drilling).toHaveLength(MAX_DRILLED);
+    expect(g.dispatch(toggleDrill({ technique: 'sidestep' })).ok).toBe(false);
+    record(g, 'sidestep');
+    expect(techniqueExecutions(mOf(g), 'sidestep')).toBe(0);
+
+    g.dispatch(toggleDrill({ technique: 'riposte' }));
+    record(g, 'sidestep');
+    expect(techniqueExecutions(mOf(g), 'sidestep')).toBe(1);
+  });
+
+  it('crossing a rung is reported exactly once, with its name', () => {
+    const g = brawler(12);
+    learn(g, 'gather', 'canonical', 9);
+    patch(g, (slices) => slices.martial.drilling.push('gather'));
+    expect(record(g, 'gather')).toEqual({ tier: 1, name: 'Practiced' });
+    expect(record(g, 'gather')).toBeNull();
+    expect(texts(g).filter((t) => t.includes('mastery tier reached: Practiced'))).toHaveLength(1);
+  });
 });
 
 // ---------- Technique slots ----------
 
 describe('technique slots', () => {
-  it.todo('holds the drill slots plus three, plus one per Technique slot rank (step 3: martial: techniqueSlots)');
+  const CAP = MAX_DRILLED + BASE_TECHNIQUE_SLOTS;
+  /** The first `n` techniques in registry order (the rotation order on a new save). */
+  const first = (n: number) => TECHNIQUE_LIST.slice(0, n).map((t) => t.id);
+  const teach = (g: Kernel, id: string) => ask(g, learnRequest, { technique: id, form: 'canonical' });
+  const slotted = (g: Kernel) => run(g, (ctx) => slottedTechniques(ctx.read(martial), ctx.read(combat)));
+  const benched = (g: Kernel, id: string) => techniqueBenched(combatOf(g), id);
+  const setSlot = (g: Kernel, id: string, on: boolean) => g.dispatch(setSlotted({ technique: id, on }));
 
-  it.todo('a technique learned with every slot in use goes to the bench, and the log says so (step 3: martial: slots and the bench)');
+  it('holds the drill slots plus three, plus one per Technique slot rank', () => {
+    const g = fresh(40);
+    expect(run(g, (ctx) => techniqueSlots(ctx))).toBe(CAP);
+    expect(CAP).toBe(6);
+    patch(g, (slices) => {
+      slices.prestige.purchases.technique_slot = 2;
+    });
+    expect(run(g, (ctx) => techniqueSlots(ctx))).toBe(CAP + 2);
+  });
 
-  it.todo('slotting is refused while full; benching frees the slot and stops the drill (step 3: martial: slots and the bench)');
+  it('a technique learned with every slot in use goes to the bench, and the log says so', () => {
+    const g = fresh(41);
+    const ids = first(CAP + 1);
+    for (const id of ids) teach(g, id);
+    expect(slotted(g)).toEqual(ids.slice(0, CAP));
+    expect(benched(g, ids[CAP])).toBe(true);
+    expect(logOf(g).some((m) => m.includes(TECHNIQUES[ids[CAP]].name) && m.includes('bench'))).toBe(true);
+    // Learning a held technique again never moves it.
+    teach(g, ids[0]);
+    expect(run(g, (ctx) => techniqueSlotted(ctx.read(martial), ctx.read(combat), ids[0]))).toBe(true);
+  });
 
-  it.todo('only a slotted technique drills, by hand or by the auto-claim (step 3: martial: slots and drilling)');
+  it('slotting is refused while full; benching frees the slot and stops the drill', () => {
+    const g = fresh(42);
+    const ids = first(CAP + 1);
+    for (const id of ids) teach(g, id);
+    const extra = ids[CAP];
+    expect(setSlot(g, extra, true).ok).toBe(false);
+    expect(benched(g, extra)).toBe(true);
 
-  it.todo('fitting keeps the first techniques in rotation order and benches the rest (step 3: martial: fitTechniqueSlots)');
+    expect(g.dispatch(toggleDrill({ technique: ids[0] })).ok).toBe(true);
+    setSlot(g, ids[0], false);
+    expect(isDrilled(mOf(g), ids[0])).toBe(false);
 
-  it.todo('a loadout holding more techniques than slots is trimmed to its first ones (step 3: martial: slots; loadouts)');
+    expect(setSlot(g, extra, true).ok).toBe(true);
+    expect(benched(g, extra)).toBe(false);
+    expect(slotted(g)).toHaveLength(CAP);
+  });
+
+  it('only a slotted technique drills, by hand or by the auto-claim', () => {
+    const g = fresh(43);
+    const [a, b] = first(2);
+    learn(g, a);
+    learn(g, b);
+    setSlot(g, a, false);
+    expect(g.dispatch(toggleDrill({ technique: a })).ok).toBe(false);
+    record(g, a);
+    expect(techniqueExecutions(mOf(g), a)).toBe(0);
+    record(g, b);
+    expect(isDrilled(mOf(g), b)).toBe(true);
+  });
+
+  it('fitting keeps the first techniques in rotation order and benches the rest', () => {
+    const g = fresh(44);
+    const ids = first(CAP + 2);
+    for (const id of ids) learn(g, id); // the ledger directly: no cap applied
+    const order = [...ids].reverse();
+    expect(g.dispatch(setRotation({ order: order.map((id) => `technique:${id}`) })).ok).toBe(true);
+    patch(g, (slices) => {
+      slices.martial.drilling = [order[0], order[CAP]];
+    });
+    expect(ask(g, fitSlots, undefined)).toBe(2);
+    expect(slotted(g)).toEqual(order.slice(0, CAP));
+    expect(mOf(g).drilling).toEqual([order[0]]);
+  });
+
+  it.todo('a loadout holding more techniques than slots is trimmed to its first ones (UI step: loadouts; `martial/fit-slots` is the call an apply makes, tested above)');
 });
 
 // ---------- Forks ----------
@@ -374,13 +645,69 @@ describe('fork archetypes', () => {
     }
   });
 
-  it.todo('the choice opens at Honed, applies to the move, and is permanent (step 3: martial: chooseFork, forkAvailable)');
+  it('the choice opens at Honed, applies to the move, and is permanent', () => {
+    const g = brawler(30);
+    const def = TECHNIQUES.heavy_blow;
+    const held = () => mOf(g).techniques.heavy_blow;
+    learn(g, 'heavy_blow', 'canonical', 999);
+    expect(forkAvailable(def, held())).toBe(false); // one rep short
 
-  it.todo('overwhelm rewrites the exit; the fight would land there (step 3: martial: the fork in the exit)');
+    learn(g, 'heavy_blow', 'canonical', 1000);
+    expect(forkAvailable(def, held())).toBe(true);
+    expect(g.dispatch(chooseFork({ technique: 'heavy_blow', fork: 'sweep' })).ok).toBe(false); // not offered
+    expect(g.dispatch(chooseFork({ technique: 'heavy_blow', fork: 'split' })).ok).toBe(true);
 
-  it.todo('a syncretic form is offered the whole matching vocabulary (step 3: martial: forkOptions)');
+    const move = moveOf(def, held());
+    expect(move.hits).toBe(2);
+    // Base 2.0 × Honed 1.2 × Split 0.65.
+    expect(move.damageMult).toBeCloseTo(2.0 * 1.2 * 0.65);
+    expect(displayName(def, held())).toBe('Split Heavy Blow');
 
-  it.todo('debug hooks: clearFork reopens the choice, resetTechnique unknows it (step 3: martial: clearFork, resetTechnique)');
+    // Permanent: the choice is closed and cannot be made again.
+    expect(forkAvailable(def, held())).toBe(false);
+    expect(g.dispatch(chooseFork({ technique: 'heavy_blow', fork: 'overwhelm' })).ok).toBe(false);
+    expect(chosenFork(held())?.id).toBe('split');
+  });
+
+  it('overwhelm rewrites the exit; the fight would land there', () => {
+    const g = brawler(31);
+    learn(g, 'crosscut', 'canonical', MASTERY_LADDER[FORK_TIER - 1]);
+    expect(exitOf(TECHNIQUES.crosscut, mOf(g).techniques.crosscut)).toBe('extended');
+    g.dispatch(chooseFork({ technique: 'crosscut', fork: 'overwhelm' }));
+    expect(exitOf(TECHNIQUES.crosscut, mOf(g).techniques.crosscut)).toBe('off_balance');
+  });
+
+  it('a syncretic form is offered the whole matching vocabulary', () => {
+    const options = forkOptions(TECHNIQUES.thrust, { executions: 1000, form: 'syncretic' }).map((a) => a.id);
+    expect(options).toContain('sweep'); // beyond thrust's curated pair
+    expect(options).toContain('flowing'); // thrust exits neutral: a real change
+    expect(options).not.toContain('lasting'); // buff archetypes never fit a strike
+
+    // A pure-exit archetype is never offered where it would change nothing:
+    // crosscut already exits extended.
+    const cross = forkOptions(TECHNIQUES.crosscut, { executions: 1000, form: 'syncretic' }).map((a) => a.id);
+    expect(cross).not.toContain('flowing');
+    // Overwhelming on a technique already exiting its drawback stays offered.
+    const heavy = forkOptions(TECHNIQUES.heavy_blow, { executions: 0, form: 'canonical' }).map((a) => a.id);
+    expect(heavy).toContain('overwhelm');
+    // No rough tax: syncretic is canonical-grade.
+    expect(moveOf(TECHNIQUES.heavy_blow, { executions: 100, form: 'syncretic' }).staminaCost).toBeCloseTo(
+      TECHNIQUES.heavy_blow.move.staminaCost!,
+    );
+  });
+
+  it('debug hooks: clearFork reopens the choice, resetTechnique unknows it', () => {
+    const g = brawler(33);
+    learn(g, 'heavy_blow', 'canonical', 1000);
+    g.dispatch(chooseFork({ technique: 'heavy_blow', fork: 'overwhelm' }));
+    expect(g.dispatch(clearFork({ technique: 'heavy_blow' })).ok).toBe(true);
+    expect(chosenFork(mOf(g).techniques.heavy_blow)).toBeUndefined();
+    expect(forkAvailable(TECHNIQUES.heavy_blow, mOf(g).techniques.heavy_blow)).toBe(true);
+    patch(g, (slices) => slices.martial.drilling.push('heavy_blow'));
+    expect(g.dispatch(resetTechnique({ technique: 'heavy_blow' })).ok).toBe(true);
+    expect(techniqueForm(mOf(g), 'heavy_blow')).toBeUndefined();
+    expect(mOf(g).drilling).not.toContain('heavy_blow');
+  });
 });
 
 // ---------- Reactive windows ----------
@@ -404,29 +731,175 @@ describe('reactive trigger windows', () => {
 // ---------- Card legibility ----------
 
 describe('technique status', () => {
-  it.todo('reports the first blocker in rotation order (step 3: martial: techniqueStatus)');
+  const statusOf = (g: Kernel, id: string) => run(g, (ctx) => techniqueStatus(ctx, TECHNIQUES[id]));
 
-  it.todo('mastery-opened entries change the position answer (step 3: martial: techniqueStatus, mastery addFrom)');
+  it('reports the first blocker in rotation order', () => {
+    const g = brawler(20);
+    learn(g, 'thrust');
+    learn(g, 'crosscut');
+
+    expect(statusOf(g, 'thrust')).toEqual({ kind: 'unarmed', family: 'sword' });
+    expect(statusOf(g, 'gather')).toEqual({ kind: 'ready' });
+
+    equip(g, 1);
+    inCombat(g);
+
+    expect(statusOf(g, 'gather')).toEqual({ kind: 'primed' });
+    expect(statusOf(g, 'heavy_blow')).toEqual({ kind: 'position', from: ['coiled'] });
+
+    expect(statusOf(g, 'crosscut')).toEqual({ kind: 'trigger', event: 'onCrit' });
+    stampEvent(g, 'onCrit', 50);
+    expect(statusOf(g, 'crosscut')).toEqual({ kind: 'primed' });
+
+    setCooldown(g, 'technique:crosscut', 12);
+    expect(statusOf(g, 'crosscut')).toEqual({ kind: 'cooldown', ticks: 12 });
+
+    g.dispatch(setTrigger({ id: 'technique:gather', trigger: { enabled: false, conditions: [] } }));
+    expect(statusOf(g, 'gather')).toEqual({ kind: 'off' });
+    g.dispatch(setTrigger({ id: 'technique:gather', trigger: { conditions: [{ subject: 'enemy.count', op: '>=', value: 3 }] } }));
+    expect(statusOf(g, 'gather')).toEqual({ kind: 'gated' });
+  });
+
+  it('mastery-opened entries change the position answer', () => {
+    const g = brawler(21);
+    inCombat(g);
+    expect(statusOf(g, 'heavy_blow').kind).toBe('position');
+    learn(g, 'heavy_blow', 'canonical', 10000);
+    expect(statusOf(g, 'heavy_blow').kind).toBe('primed');
+  });
 });
 
 // ---------- The alpha shutter and the first teacher ----------
 
 describe('martial shut: teachers are the only way in', () => {
-  it.todo('a fresh save is shut, and nothing crystallizes however much it fights (step 3: martial: the martial unlock, checkTechniqueLearning)');
+  /** A teacher who exists only for this case: the tables are live. */
+  function withTeacher<T>(lessons: Lesson[], body: (npcId: string) => T): T {
+    const id = 'test_sensei';
+    NPCS[id] = { id, name: 'Test Sensei', icon: '🥋', spotId: 'ascent_foot', desc: '', dialogue: ['…'], quests: [] } as unknown as (typeof NPCS)[string];
+    TEACHERS[id] = { id, lessons };
+    try {
+      return body(id);
+    } finally {
+      delete NPCS[id];
+      delete TEACHERS[id];
+    }
+  }
+  const teachFrom = (g: Kernel, npc: string, technique: string) => g.dispatch(learnFromTeacher({ npc, technique })).ok;
+  const stateOf = (g: Kernel, lesson: Lesson) => run(g, (ctx) => lessonState(ctx, lesson));
+  const reach = (g: Kernel) => reachablePositions(mOf(g));
 
-  it.todo('a lesson teaches the canonical form, shutter shut and eligibility unmet (step 3: martial: teachers and lessons)');
+  it('a fresh save is shut, and nothing crystallizes however much it fights', () => {
+    const g = fresh(31);
+    expect(counterOf(g, MARTIAL_UNLOCK)).toBe(0);
+    setLevels(g, { skills: { fighting: 20 } });
+    setCount(g, 'combat:attacks', 5000);
+    check(g);
+    expect(knownTechniques(mOf(g))).toEqual([]);
 
-  it.todo('a lesson refines a rough form and keeps its practice (step 3: martial: teachers and lessons)');
+    // The counters were kept: opening the unlock cashes them on the next check.
+    setCount(g, MARTIAL_UNLOCK, 1);
+    check(g);
+    expect(techniqueForm(mOf(g), 'gather')).toBe('rough');
+  });
 
-  it.todo('refuses what the teacher does not teach, and holds a lesson until its requirement (step 3: martial: teachers and lessons)');
+  it('a lesson teaches the canonical form, shutter shut and eligibility unmet', () => {
+    const g = fresh(32);
+    expect(run(g, (ctx) => eligibleToLearn(ctx, TECHNIQUES.lunge))).toBe(false); // fighting 0
+    withTeacher([{ technique: 'gather' }, { technique: 'lunge' }], (npc) => {
+      expect(teachFrom(g, npc, 'gather')).toBe(true);
+      expect(teachFrom(g, npc, 'lunge')).toBe(true);
+      expect(techniqueForm(mOf(g), 'gather')).toBe('canonical');
+      expect(techniqueForm(mOf(g), 'lunge')).toBe('canonical');
+      expect(logOf(g).some((l) => l.includes('Test Sensei') && l.includes('Lunge'))).toBe(true);
+      // Taught once: a second lesson is refused and adds no line.
+      const lines = logOf(g).length;
+      expect(teachFrom(g, npc, 'gather')).toBe(false);
+      expect(logOf(g).length).toBe(lines);
+    });
+    // Known techniques join the rotation on their own.
+    expect(run(g, (ctx) => activeRotation(ctx as never, []))).toEqual(
+      expect.arrayContaining(['technique:gather', 'technique:lunge']),
+    );
+  });
 
-  it.todo('reach: neutral always, then every exit a known technique can get to (step 3: martial: reachablePositions, techniqueReachable)');
+  it('a lesson refines a rough form and keeps its practice', () => {
+    const g = fresh(33);
+    learn(g, 'gather', 'rough', 40);
+    withTeacher([{ technique: 'gather' }], (npc) => {
+      const lesson = TEACHERS[npc].lessons[0];
+      expect(stateOf(g, lesson)).toBe('open');
+      expect(teachFrom(g, npc, 'gather')).toBe(true);
+      expect(stateOf(g, lesson)).toBe('taught');
+    });
+    expect(techniqueForm(mOf(g), 'gather')).toBe('canonical');
+    expect(techniqueExecutions(mOf(g), 'gather')).toBe(40);
+  });
 
-  it.todo('a teacher holds a lesson nothing you know leads into (step 3: martial: lessonState, reach)');
+  it('refuses what the teacher does not teach, and holds a lesson until its requirement', () => {
+    const g = fresh(34);
+    learn(g, 'gather'); // a way into Coiled, so only the requirement holds Lunge
+    withTeacher([{ technique: 'lunge', requires: [{ type: 'stat', key: 'fights:won', value: 3 }] }], (npc) => {
+      expect(teachFrom(g, npc, 'gather')).toBe(false); // not on the list
+      expect(teachFrom(g, 'no_such_npc', 'lunge')).toBe(false);
+      expect(stateOf(g, TEACHERS[npc].lessons[0])).toBe('held');
+      expect(teachFrom(g, npc, 'lunge')).toBe(false);
+      setCount(g, 'fights:won', 3);
+      expect(teachFrom(g, npc, 'lunge')).toBe(true);
+    });
+  });
 
-  it.todo('an unreachable technique does not count toward self-learning until a way in exists (step 3: martial: selfLearnProgress, reach)');
+  it('reach: neutral always, then every exit a known technique can get to', () => {
+    const g = fresh(36);
+    expect([...reach(g)]).toEqual(['neutral']);
+    learn(g, 'lunge'); // coiled → extended, but nothing coils yet
+    expect([...reach(g)]).toEqual(['neutral']);
+    expect(techniqueReachable(mOf(g), TECHNIQUES.lunge, reach(g))).toBe(false);
+    expect(unreachedEntries(mOf(g), TECHNIQUES.lunge, reach(g))).toEqual(['coiled']);
+    learn(g, 'gather');
+    expect(reach(g)).toEqual(new Set(['neutral', 'coiled', 'extended']));
+    // An 'any' entry is always reachable, and its exit joins the set.
+    learn(g, 'sidestep');
+    expect(reach(g).has('guarded')).toBe(true);
+    expect(techniqueReachable(mOf(g), TECHNIQUES.flowing_shield, reach(g))).toBe(true);
+  });
 
-  it.todo('a study card for an unreachable technique is held back, not spent (step 3: martial: study cards, reach)');
+  it('a teacher holds a lesson nothing you know leads into', () => {
+    const g = fresh(37);
+    withTeacher([{ technique: 'gather' }, { technique: 'lunge' }], (npc) => {
+      const [gather, lunge] = TEACHERS[npc].lessons;
+      expect(stateOf(g, lunge)).toBe('held');
+      expect(teachFrom(g, npc, 'lunge')).toBe(false);
+      expect(techniqueForm(mOf(g), 'lunge')).toBeUndefined();
+      expect(stateOf(g, gather)).toBe('open');
+      teachFrom(g, npc, 'gather');
+      expect(stateOf(g, lunge)).toBe('open');
+      expect(teachFrom(g, npc, 'lunge')).toBe(true);
+    });
+  });
+
+  it('an unreachable technique does not count toward self-learning until a way in exists', () => {
+    const g = fresh(38);
+    setCount(g, MARTIAL_UNLOCK, 1);
+    setLevels(g, { skills: { fighting: 20 } });
+    setCount(g, 'combat:attacks', 5000); // far past Lunge's 400
+    check(g);
+    // Gather starts from neutral: reachable from the first swing, all of it counts.
+    expect(techniqueForm(mOf(g), 'gather')).toBe('rough');
+    // Lunge only became reachable when Gather crystallized: nothing counted yet.
+    expect(techniqueForm(mOf(g), 'lunge')).toBeUndefined();
+    const progress = () => selfLearnProgress(mOf(g), slice<CountersState>(g, 'counters'), TECHNIQUES.lunge);
+    expect(progress()).toBe(0);
+
+    setCount(g, 'combat:attacks', 5399);
+    check(g);
+    expect(progress()).toBe(399);
+    expect(techniqueForm(mOf(g), 'lunge')).toBeUndefined();
+    setCount(g, 'combat:attacks', 5400);
+    check(g);
+    expect(techniqueForm(mOf(g), 'lunge')).toBe('rough');
+  });
+
+  it.todo('a study card for an unreachable technique is held back, not spent (consumables port: drill manuals use `martial/learn`)');
 
   it('Gather and Lunge chain: neutral → coiled → extended, with no third move', () => {
     expect(declaredPositions(TECHNIQUES.gather)).toEqual(['neutral']);
@@ -477,11 +950,25 @@ describe('techniques in combat', () => {
     expect(sawGather).toBe(true);
     expect(coiled).toBe(true);
     expect(sawHeavy).toBe(true);
+    // Both count as practice.
+    expect(techniqueExecutions(mOf(g), 'gather')).toBeGreaterThan(0);
+    expect(techniqueExecutions(mOf(g), 'heavy_blow')).toBeGreaterThan(0);
   });
 
-  it.todo('chains emerge from positions: Gather coils, Heavy Blow spends it: both count as practice (step 3: martial: recordExecution)');
 
-  it.todo('the fight itself teaches: enough swings crystallize Gather (rough) (step 3: martial: checkTechniqueLearning, the martial unlock)');
+  it('the fight itself teaches: enough swings crystallize Gather (rough)', () => {
+    const g = fresh(23);
+    setCount(g, MARTIAL_UNLOCK, 1);
+    setLevels(g, { skills: { fighting: 5 }, attrs: { con: 30 } });
+    setCount(g, 'combat:attacks', 99); // one swing away
+    equip(g, 1);
+    startHunt(g, 'woods_edge');
+    for (let i = 0; i < 2000 && !techniqueForm(mOf(g), 'gather'); i++) {
+      g.tick();
+      keepHunting(g, 'woods_edge');
+    }
+    expect(techniqueForm(mOf(g), 'gather')).toBe('rough');
+  });
 });
 
 // ---------- Answering with their own force ----------
@@ -556,11 +1043,21 @@ describe('deflection: the force turned aside', () => {
     // The blow carried the returned share.
     const entry = feedOf(g).find((f) => f.text.includes('Flowing Shield'))!;
     expect(entry.damage?.steps.some((s) => s.label === 'Damage parried')).toBe(true);
+    expect(techniqueExecutions(mOf(g), 'flowing_shield')).toBeGreaterThan(0);
   });
 
-  it.todo('the technique spends that force, and cannot cash it twice: the use counts as practice (step 3: martial: recordExecution)');
 
-  it.todo('practice and the fork sharpen the signature, not just the swing (step 3: martial: the mastery and fork terms of the move)');
+  it('practice and the fork sharpen the signature, not just the swing', () => {
+    const def = TECHNIQUES.flowing_shield;
+    const base = def.move.preventedMult!;
+    expect(moveOf(def, { executions: 0, form: 'canonical' }).preventedMult).toBeCloseTo(base);
+    // Drilled (tier 2) lifts the returned share along with the strike.
+    const drilled = moveOf(def, { executions: MASTERY_LADDER[1], form: 'canonical' });
+    expect(drilled.preventedMult!).toBeCloseTo(base * 1.12);
+    // A fork that trades damage moves the returned share by the same factor.
+    const forked = moveOf(def, { executions: MASTERY_LADDER[2], form: 'canonical', path: 'economy' });
+    expect(forked.preventedMult!).toBeCloseTo(base * 1.2 * 0.9);
+  });
 
   it('is gated on a buckler specifically — a plank shield will not do', () => {
     const g = fresh(63);
@@ -613,9 +1110,9 @@ describe('counters', () => {
     expect(mana(g)).toBeLessThan(before);
     // Spent on use: the block it answered cannot be cashed again.
     expect(combatOf(g).fight?.prevented?.onHit).toBeUndefined();
+    expect(techniqueExecutions(mOf(g), 'electric_cross')).toBeGreaterThan(0);
   });
 
-  it.todo('answers the blow that landed, and is paid for in mana: the answer counts as practice (step 3: martial: recordExecution)');
 
   it('names itself in the incoming breakdown instead of shrinking the number', () => {
     // A counter takes its share before armour, so the blow arrives smaller
@@ -714,13 +1211,85 @@ describe('position effects', () => {
 // ---------- Weapon states ----------
 
 describe('weapon states', () => {
-  it.todo('only daggers conceal, and sheathing makes you genuinely unarmed (step 3: martial: toggleSheathe, sheathed weapons)');
+  const gateOf = (g: Kernel, id: string) => run(g, (ctx) => weaponStateGate(ctx, TECHNIQUES[id]));
+  const gear = (g: Kernel, id: string, phase: 'pre' | 'post') => ask(g, techniqueEquipment, { technique: id, phase });
+  const tagged = (g: Kernel, tag: string) => run(g, (ctx) => conditionReader(ctx).hasTag(tag));
+  const weapon = (g: Kernel) => slice<ItemsState>(g, 'items').equipment.weapon;
 
-  it.todo('hidden draw gates on the sheathed blade and reclaims it pre-strike (step 3: martial: sheathed weapons, applyTechniqueEquipment)');
+  it('only daggers conceal, and sheathing makes you genuinely unarmed', () => {
+    const g = fresh(41);
+    equip(g, 1); // rusty sword
+    expect(g.dispatch(toggleSheathe()).ok).toBe(false); // swords do not hide
 
-  it.todo('drop grounds the blade post-strike; ground draw takes it back up (step 3: martial: grounded weapons, applyTechniqueEquipment)');
+    equip(g, giveItem(g, 'iron_dagger').uid);
+    expect(g.dispatch(toggleSheathe()).ok).toBe(true);
+    expect(mOf(g).sheathed?.defId).toBe('iron_dagger');
+    expect(weapon(g)).toBeUndefined();
+    expect(tagged(g, 'unarmed')).toBe(true);
+    expect(tagged(g, 'dagger')).toBe(false);
+    // Drawn back by hand: wielded again.
+    expect(g.dispatch(toggleSheathe()).ok).toBe(true);
+    expect(mOf(g).sheathed).toBeNull();
+    expect(weapon(g)?.defId).toBe('iron_dagger');
+  });
 
-  it.todo('nobody leaves their blade in the dirt when the fight ends (step 3: martial: recoverGroundedWeapon)');
+  it('hidden draw gates on the sheathed blade and reclaims it pre-strike', () => {
+    const g = fresh(42);
+    learn(g, 'hidden_draw');
+    inCombat(g);
+    expect(gateOf(g, 'hidden_draw')).toBe('sheathed');
+
+    equip(g, giveItem(g, 'iron_dagger').uid);
+    g.dispatch(toggleSheathe());
+    expect(gateOf(g, 'hidden_draw')).toBeNull();
+
+    gear(g, 'hidden_draw', 'pre');
+    expect(mOf(g).sheathed).toBeNull();
+    expect(weapon(g)?.defId).toBe('iron_dagger'); // the strike is armed
+  });
+
+  it('drop grounds the blade post-strike; ground draw takes it back up', () => {
+    const g = fresh(43);
+    learn(g, 'weapon_drop');
+    learn(g, 'ground_draw');
+    equip(g, 1);
+    inCombat(g);
+
+    expect(gateOf(g, 'weapon_drop')).toBeNull();
+    expect(gateOf(g, 'ground_draw')).toBe('grounded');
+
+    gear(g, 'weapon_drop', 'post');
+    expect(weapon(g)).toBeUndefined();
+    expect(mOf(g).grounded?.defId).toBe('rusty_sword');
+    expect(tagged(g, 'unarmed')).toBe(true);
+    expect(gateOf(g, 'weapon_drop')).toBe('wielded');
+    expect(gateOf(g, 'ground_draw')).toBeNull();
+
+    gear(g, 'ground_draw', 'pre');
+    expect(mOf(g).grounded).toBeNull();
+    expect(weapon(g)?.defId).toBe('rusty_sword');
+  });
+
+  it('nobody leaves their blade in the dirt when the fight ends', () => {
+    const g = fresh(44);
+    learn(g, 'weapon_drop');
+    equip(g, 1);
+    inCombat(g);
+    gear(g, 'weapon_drop', 'post');
+    expect(weapon(g)).toBeUndefined();
+    ask(g, abandon, undefined);
+    expect(mOf(g).grounded).toBeNull();
+    expect(weapon(g)?.defId).toBe('rusty_sword');
+
+    // Hand already full (armed again mid-fight): the grounded one goes to the pack.
+    inCombat(g);
+    patch(g, (slices) => {
+      slices.martial.grounded = { uid: 9060, defId: 'iron_dagger' };
+    });
+    const packBefore = slice<ItemsState>(g, 'items').inventory.length;
+    ask(g, abandon, undefined);
+    expect(slice<ItemsState>(g, 'items').inventory.length).toBe(packBefore + 1);
+  });
 });
 
 // ---------- Ways in: per-entry reads ----------
@@ -788,29 +1357,126 @@ describe('entry ways', () => {
     expect(open(g, twoWays, 'neutral')).toBeUndefined();
   });
 
-  it.todo('practice adds a PLAIN way — repetition opens the motion, not a new read (step 3: martial: mastery addFrom in the ways in)');
+  it('practice adds a PLAIN way — repetition opens the motion, not a new read', () => {
+    const g = fresh(92);
+    const def: TechniqueDef = { ...twoWays, mastery: [{ tier: 2, addFrom: ['guarded'] }] };
+    const drilled: TechniqueState = { executions: 100, form: 'canonical' }; // tier 2
+    const opened = entriesOf(def, drilled).find((e) => e.at !== 'any' && e.at.includes('guarded'));
+    expect(opened).toBeDefined();
+    expect(opened!.trigger).toBeUndefined();
+    // It opens on footing alone, with no event stamped.
+    inCombat(g, 'guarded');
+    expect(run(g, (ctx) => openEntry(ctx, def, drilled, 'guarded'))).toBeDefined();
+  });
 });
 
 // ---------- Impaled: the blade left in them ----------
 
 describe('impaled weapons', () => {
-  it.todo('impaling leaves the blade in them; wrenching takes it back pre-strike (step 3: martial: impaled weapons, applyTechniqueEquipment)');
+  const gateOf = (g: Kernel, id: string) => run(g, (ctx) => weaponStateGate(ctx, TECHNIQUES[id]));
+  const gear = (g: Kernel, id: string, phase: 'pre' | 'post') => ask(g, techniqueEquipment, { technique: id, phase });
+  const tagged = (g: Kernel, tag: string) => run(g, (ctx) => conditionReader(ctx).hasTag(tag));
+  const weapon = (g: Kernel) => slice<ItemsState>(g, 'items').equipment.weapon;
 
-  it.todo('grounded and impaled are separate slots — the recoveries never swap (step 3: martial: grounded and impaled weapons)');
+  it('impaling leaves the blade in them; wrenching takes it back pre-strike', () => {
+    const g = fresh(80);
+    learn(g, 'impaling_swing');
+    learn(g, 'flesh_draw');
+    equip(g, 1);
+    inCombat(g);
 
-  it.todo('the fight ending returns a buried blade as well as a dropped one (step 3: martial: recoverGroundedWeapon)');
+    expect(gateOf(g, 'flesh_draw')).toBe('impaled');
+    gear(g, 'impaling_swing', 'post');
+    expect(weapon(g)).toBeUndefined();
+    expect(mOf(g).impaled?.defId).toBe('rusty_sword');
+    // Unarmed with the sword in somebody else.
+    expect(tagged(g, 'unarmed')).toBe(true);
+    expect(gateOf(g, 'flesh_draw')).toBeNull();
+
+    gear(g, 'flesh_draw', 'pre');
+    expect(mOf(g).impaled).toBeNull();
+    expect(weapon(g)?.defId).toBe('rusty_sword');
+  });
+
+  it('grounded and impaled are separate slots — the recoveries never swap', () => {
+    const g = fresh(81);
+    learn(g, 'ground_draw');
+    learn(g, 'flesh_draw');
+    inCombat(g);
+
+    // A blade in the dirt is not a blade in a ribcage: Flesh Draw stays shut.
+    patch(g, (slices) => {
+      slices.martial.grounded = { uid: 9090, defId: 'rusty_sword' };
+    });
+    expect(gateOf(g, 'ground_draw')).toBeNull();
+    expect(gateOf(g, 'flesh_draw')).toBe('impaled');
+
+    patch(g, (slices) => {
+      slices.martial.grounded = null;
+      slices.martial.impaled = { uid: 9091, defId: 'rusty_sword' };
+    });
+    expect(gateOf(g, 'ground_draw')).toBe('grounded');
+    expect(gateOf(g, 'flesh_draw')).toBeNull();
+  });
+
+  it('the fight ending returns a buried blade as well as a dropped one', () => {
+    const g = fresh(82);
+    inCombat(g);
+    patch(g, (slices) => {
+      slices.martial.impaled = { uid: 9092, defId: 'rusty_sword' };
+    });
+    ask(g, abandon, undefined);
+    expect(mOf(g).impaled).toBeNull();
+    expect(weapon(g)?.defId).toBe('rusty_sword');
+  });
 });
 
 // ---------- Rune graph surgery ----------
 
 describe('rune technique surgery', () => {
-  it.todo('tempo surgery: the Gale rune makes Sidestep a Flash Step (step 3: martial: rune surgery on a move)');
+  /** A katana with the three demonstration runes, written into the hand directly as the old case did. */
+  function runedFighter(seed: number): Kernel {
+    const g = fresh(seed);
+    learn(g, 'sidestep');
+    learn(g, 'thrust');
+    learn(g, 'riposte');
+    patch(g, (slices) => {
+      slices.items.equipment.weapon = { uid: 9070, defId: 'katana', slots: 3, runes: ['gale_rune', 'earthbind_rune', 'umbral_rune'] };
+    });
+    return g;
+  }
+  const runesOf = (g: Kernel, id: string) => run(g, (ctx) => runeModsOf(ctx, id));
+  const heldOfT = (g: Kernel, id: string) => mOf(g).techniques[id];
 
-  it.todo('exit surgery: the Earthbind rune roots the thrust into coiled (step 3: martial: rune surgery on the exit)');
+  it('tempo surgery: the Gale rune makes Sidestep a Flash Step', () => {
+    const g = runedFighter(45);
+    expect(displayName(TECHNIQUES.sidestep, heldOfT(g, 'sidestep'), runesOf(g, 'sidestep'))).toBe('Flash Step');
+    expect(moveOf(TECHNIQUES.sidestep, heldOfT(g, 'sidestep'), runesOf(g, 'sidestep')).cooldown).toBe(Math.round(120 * 0.55));
+  });
 
-  it.todo('choice surgery: the Umbral rune widens the Honed offering (step 3: martial: rune surgery on the forks)');
+  it('exit surgery: the Earthbind rune roots the thrust into coiled', () => {
+    const g = runedFighter(46);
+    expect(exitOf(TECHNIQUES.thrust, heldOfT(g, 'thrust'), runesOf(g, 'thrust'))).toBe('coiled');
+    expect(displayName(TECHNIQUES.thrust, heldOfT(g, 'thrust'), runesOf(g, 'thrust'))).toBe('Rooted Thrust');
+  });
 
-  it.todo('surgery is equipment: unsocket the weapon and the node reverts (step 3: martial: rune surgery)');
+  it('choice surgery: the Umbral rune widens the Honed offering', () => {
+    const g = runedFighter(47);
+    expect(moveOf(TECHNIQUES.riposte, heldOfT(g, 'riposte'), runesOf(g, 'riposte')).damageMult).toBeCloseTo(1.4 * 1.1);
+    const options = forkOptions(TECHNIQUES.riposte, heldOfT(g, 'riposte'), runesOf(g, 'riposte')).map((a) => a.id);
+    expect(options).toContain('sweep'); // granted: not in riposte's pair
+    expect(options).toContain('economy');
+  });
+
+  it('surgery is equipment: unsocket the weapon and the node reverts', () => {
+    const g = runedFighter(48);
+    patch(g, (slices) => {
+      delete slices.items.equipment.weapon;
+    });
+    expect(displayName(TECHNIQUES.sidestep, heldOfT(g, 'sidestep'), runesOf(g, 'sidestep'))).toBe('Sidestep');
+    expect(exitOf(TECHNIQUES.thrust, heldOfT(g, 'thrust'), runesOf(g, 'thrust'))).toBe('neutral');
+    expect(forkOptions(TECHNIQUES.riposte, heldOfT(g, 'riposte'), runesOf(g, 'riposte')).map((a) => a.id)).not.toContain('sweep');
+  });
 });
 
 // ---------- The spellblade seat ----------
@@ -850,21 +1516,69 @@ describe('mana-fuelled exertion', () => {
 // ---------- The position graph (planner) ----------
 
 describe('the position graph', () => {
-  it.todo('draws one edge per entry position, and no source at all for a reflex (step 3: martial: positionGraph)');
+  /** Every edge one technique gives, as "from>to". */
+  const edgesOf = (g: Kernel, id: string) =>
+    positionGraph(mOf(g), [TECHNIQUES[id]]).map((e) => `${e.from ?? 'any'}>${e.to}`);
 
-  it.todo('grows with practice: a Perfected entry becomes a new edge (step 3: martial: positionGraph, mastery addFrom)');
+  it('draws one edge per entry position, and no source at all for a reflex', () => {
+    const g = fresh(60);
+    expect(edgesOf(g, 'crosscut').sort()).toEqual(['extended>extended', 'neutral>extended']);
+    expect(edgesOf(g, 'sidestep')).toEqual(['any>guarded']);
+  });
 
-  it.todo('follows a fork that rewrites the exit — Flowing Thrust feeds itself (step 3: martial: positionGraph, forks)');
+  it('grows with practice: a Perfected entry becomes a new edge', () => {
+    const g = fresh(61);
+    expect(edgesOf(g, 'heavy_blow')).toEqual(['coiled>off_balance']);
+    learn(g, 'heavy_blow', 'canonical', MASTERY_LADDER[3]);
+    expect(edgesOf(g, 'heavy_blow').sort()).toEqual(['coiled>off_balance', 'neutral>off_balance']);
+  });
 
-  it.todo('every edge names positions the graph can actually seat (step 3: martial: positionGraph)');
+  it('follows a fork that rewrites the exit — Flowing Thrust feeds itself', () => {
+    const g = fresh(62);
+    learn(g, 'thrust', 'canonical', MASTERY_LADDER[FORK_TIER - 1]);
+    expect(edgesOf(g, 'thrust')).toEqual(['extended>neutral']);
+    expect(g.dispatch(chooseFork({ technique: 'thrust', fork: 'flowing' })).ok).toBe(true);
+    expect(edgesOf(g, 'thrust')).toEqual(['extended>extended']);
+  });
+
+  it('every edge names positions the graph can actually seat', () => {
+    const g = fresh(63);
+    for (const edge of positionGraph(mOf(g), [...TECHNIQUE_LIST])) {
+      expect(POSITIONS[edge.to], `${edge.technique} exits into ${edge.to}`).toBeDefined();
+      if (edge.from !== null) expect(POSITIONS[edge.from], `${edge.technique} enters from ${edge.from}`).toBeDefined();
+    }
+  });
 });
 
 describe('weapon-group filtering', () => {
-  it.todo('universal moves are always available; family moves only when picked (step 3: martial: techniquesForFamilies, the planner)');
+  it('universal moves are always available; family moves only when picked', () => {
+    const ids = (families: string[]) => techniquesForFamilies(families).map((t) => t.id);
+    expect(ids([])).toContain('gather');
+    expect(ids([])).not.toContain('thrust');
+    expect(ids(['sword'])).toContain('thrust');
+    expect(ids(['sword'])).toContain('gather');
+    expect(ids(['sword'])).not.toContain('slip_jab');
+    expect(ids(['sword', 'unarmed'])).toEqual(expect.arrayContaining(['thrust', 'slip_jab', 'gather']));
+  });
 
-  it.todo('every declared family is one some technique or item actually uses (step 3: martial: WEAPON_FAMILIES, the planner)');
+  it('every declared family is one some technique or item actually uses', () => {
+    const claimed = new Set(WEAPON_FAMILIES.map((f) => f.id));
+    const used = new Set<string>();
+    for (const t of TECHNIQUE_LIST) if (t.family) used.add(t.family);
+    for (const item of ITEM_LIST) for (const tag of item.tags ?? []) used.add(tag);
+    for (const id of claimed) expect(used.has(id), `${id} names nothing`).toBe(true);
+    for (const t of TECHNIQUE_LIST) if (t.family) expect(claimed.has(t.family), `${t.id}: ${t.family}`).toBe(true);
+  });
 
-  it.todo('benching is the trigger switch, and never touches the ledger (step 3: martial: techniqueBenched, the bench)');
+  it('benching is the trigger switch, and never touches the ledger', () => {
+    const g = brawler(64);
+    expect(techniqueBenched(combatOf(g), 'gather')).toBe(false);
+    g.dispatch(setSlotted({ technique: 'gather', on: false }));
+    expect(techniqueBenched(combatOf(g), 'gather')).toBe(true);
+    expect(mOf(g).techniques.gather).toBeDefined(); // still known, held back
+    g.dispatch(setSlotted({ technique: 'gather', on: true }));
+    expect(techniqueBenched(combatOf(g), 'gather')).toBe(false);
+  });
 });
 
 // ---------- Migrations ----------

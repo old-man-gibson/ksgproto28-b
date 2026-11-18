@@ -16,7 +16,7 @@ Version 1, empty. Met is the counter `met:<npc>`, as in the old build.
 
 | Registry | Records |
 |---|---|
-| `npcs` | 8 of 20: `warden_of_the_foot`, `ward_outfitter`, `row_apothecary`, `granary_provisioner`, `master_smith`, `head_chef`, `row_alchemist`, `hall_quartermaster` |
+| `npcs` | 11 of 20: `warden_of_the_foot`, `ward_outfitter`, `row_apothecary`, `granary_provisioner`, `master_smith`, `head_chef`, `row_alchemist`, `hall_quartermaster`; since the martial port `hall_tutor` (floor 2), `militia_captain` and `dojo_master` (Threshold) |
 | `npcs_text` | the greeting line |
 
 A record: `spotId`, `quests` (refs), `shop` (`name`, `lines`), `desc`,
@@ -36,9 +36,10 @@ A greeting bumps `met:<npc>`, sends `skills/check-discovery` and
 
 ## Left behind
 
-- The wizard, the priest, the captain, the shaper, the dojo master and the
-  hall tutor (step 3, with their systems; `docs/SPINE.md` defaults 1 and 4).
-  Teaching (`teaches`, `learnFromTeacher`) arrives with martial.
+- The wizard, the priest and the shaper (step 3, with their systems;
+  `docs/SPINE.md` defaults 1 and 4). The tutor, the captain and the dojo
+  master came with martial; their lessons are martial's registry
+  `teachers`, not a field here (`src/systems/martial/README.md`).
 - The 6 people of floors 11 to 20 (step 4). `lore` lines: no person in scope
   has any.
 - The warden's quest list holds `the_first_ascent` only; the two Threshold
