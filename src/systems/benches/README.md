@@ -126,3 +126,12 @@ remaining, batch. The alchemy view repeats it for its panel.
   speed (old `forgeTicks`); `benchJobTicks(disc, placement, craftSpeed,
   duration, assembledTicks)` paces it like any skill-scaled bench.
 - `smithing` registers `forging`.
+
+## Step 3 (the mutagens port)
+
+- Record `mutagens` (Culture Bench): `refines: true`, one `subject` slot
+  (gene, mutagen), `ticks` 240, `xp` 10, the old `desc`. Schema field
+  `refines`.
+- `mutagens` registers the owner: `preview` is old `previewRefine`, `craft`
+  is the request `mutagens/refine` (old `refineOnce`). A run refines the
+  same grade until two copies of it are no longer held.

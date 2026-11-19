@@ -1,0 +1,1730 @@
+[
+  {
+    "id": "bare",
+    "name": "Bare Sequence",
+    "icon": "🧬",
+    "genus": "bare",
+    "tier": 0,
+    "flatBase": 0,
+    "ceiling": 1,
+    "writesAttributes": true,
+    "gradeless": true,
+    "base": {
+      "attacks": [
+        {
+          "stat": "str",
+          "op": "add",
+          "value": 0
+        },
+        {
+          "stat": "dex",
+          "op": "add",
+          "value": 0
+        }
+      ],
+      "defenses": [
+        {
+          "stat": "con",
+          "op": "add",
+          "value": 0
+        }
+      ],
+      "active": [
+        {
+          "stat": "int",
+          "op": "add",
+          "value": 0
+        },
+        {
+          "stat": "wis",
+          "op": "add",
+          "value": 0
+        }
+      ],
+      "special": [
+        {
+          "stat": "cha",
+          "op": "add",
+          "value": 0
+        }
+      ]
+    }
+  },
+  {
+    "id": "slime_gene",
+    "name": "Slime Gene",
+    "icon": "🟢",
+    "genus": "slimoid",
+    "tier": 0,
+    "from": "slime_base_basic",
+    "flatBase": 60,
+    "ceiling": 1.5,
+    "ability": {
+      "name": "Slime Bounce",
+      "icon": "🫧",
+      "spec": {
+        "type": "gene",
+        "flat": 60,
+        "power": 1,
+        "fromStat": "armor",
+        "scalesWithSpeed": true,
+        "cooldown": 70,
+        "damageType": "bludgeoning",
+        "stun": 2
+      }
+    },
+    "base": {
+      "defenses": [
+        {
+          "stat": "resSlashing",
+          "op": "add",
+          "value": 0.06
+        }
+      ],
+      "special": [
+        {
+          "stat": "critTaken",
+          "op": "mult",
+          "value": -0.2
+        }
+      ],
+      "attacks": [
+        {
+          "stat": "missRefund",
+          "op": "add",
+          "value": 0.06
+        }
+      ]
+    },
+    "desc": "Special: critical hits deal 20% less bonus damage to you. Active: Slime Bounce, bludgeoning damage of a flat 60 plus your armour, scaled by your speed; the target loses two ticks of action bar. 7 s cooldown. Attacks: 6% of remaining cooldown refunded when a technique misses. Defences: +6% slashing resistance."
+  },
+  {
+    "id": "slimer_gene",
+    "name": "Slimer Gene",
+    "icon": "🟩",
+    "genus": "slimoid",
+    "tier": 1,
+    "from": "slime_base_advanced",
+    "flatBase": 125,
+    "ceiling": 1.9,
+    "ability": {
+      "name": "Slime Bounce",
+      "icon": "🫧",
+      "spec": {
+        "type": "gene",
+        "flat": 125,
+        "power": 1,
+        "fromStat": "armor",
+        "scalesWithSpeed": true,
+        "cooldown": 70,
+        "damageType": "bludgeoning",
+        "stun": 2
+      }
+    },
+    "base": {
+      "defenses": [
+        {
+          "stat": "resSlashing",
+          "op": "add",
+          "value": 0.1
+        }
+      ],
+      "special": [
+        {
+          "stat": "critTaken",
+          "op": "mult",
+          "value": -0.28
+        }
+      ],
+      "attacks": [
+        {
+          "stat": "missRefund",
+          "op": "add",
+          "value": 0.09
+        }
+      ]
+    },
+    "desc": "Next tier of the slime line after Slime Gene. Crit bonus damage -28%, Slime Bounce flat 125, 9% cooldown refund on a miss, +10% slashing resistance."
+  },
+  {
+    "id": "slimest_gene",
+    "name": "Slimest Gene",
+    "icon": "💚",
+    "genus": "slimoid",
+    "tier": 2,
+    "from": "slime_base_elite",
+    "flatBase": 255,
+    "ceiling": 2.3,
+    "ability": {
+      "name": "Slime Bounce",
+      "icon": "🫧",
+      "spec": {
+        "type": "gene",
+        "flat": 255,
+        "power": 1,
+        "fromStat": "armor",
+        "scalesWithSpeed": true,
+        "cooldown": 70,
+        "damageType": "bludgeoning",
+        "stun": 2
+      }
+    },
+    "base": {
+      "defenses": [
+        {
+          "stat": "resSlashing",
+          "op": "add",
+          "value": 0.14
+        },
+        {
+          "stat": "resPiercing",
+          "op": "add",
+          "value": 0.06
+        }
+      ],
+      "special": [
+        {
+          "stat": "critTaken",
+          "op": "mult",
+          "value": -0.36
+        }
+      ],
+      "attacks": [
+        {
+          "stat": "missRefund",
+          "op": "add",
+          "value": 0.12
+        }
+      ]
+    },
+    "desc": "Top of the plain slime line. Crit bonus damage -36%, Slime Bounce flat 255, 12% cooldown refund on a miss, +14% slashing and +6% piercing resistance."
+  },
+  {
+    "id": "slime_guardian_gene",
+    "name": "Slime Guardian Gene",
+    "icon": "🛡️",
+    "genus": "slimoid",
+    "tier": 3,
+    "from": "boss_slime_guardian",
+    "flatBase": 430,
+    "ceiling": 2.7,
+    "ability": {
+      "name": "Slime Shield",
+      "icon": "🛡️",
+      "spec": {
+        "type": "buff",
+        "mods": [
+          {
+            "stat": "armor",
+            "op": "mult",
+            "value": 0.5
+          },
+          {
+            "stat": "ward",
+            "op": "add",
+            "value": 12
+          }
+        ],
+        "duration": 90,
+        "cooldown": 240
+      }
+    },
+    "base": {
+      "defenses": [
+        {
+          "stat": "resSlashing",
+          "op": "add",
+          "value": 0.16
+        },
+        {
+          "stat": "resPiercing",
+          "op": "add",
+          "value": 0.1
+        },
+        {
+          "stat": "resBludgeoning",
+          "op": "add",
+          "value": 0.05
+        },
+        {
+          "stat": "armor",
+          "op": "mult",
+          "value": 0.15
+        }
+      ],
+      "special": [
+        {
+          "stat": "damageTaken",
+          "op": "mult",
+          "value": -0.1
+        },
+        {
+          "stat": "critTaken",
+          "op": "mult",
+          "value": -0.15
+        },
+        {
+          "stat": "resRanged",
+          "op": "add",
+          "value": 0.14
+        }
+      ],
+      "attacks": [
+        {
+          "stat": "stumbleTaken",
+          "op": "mult",
+          "value": -0.45
+        },
+        {
+          "stat": "missRefund",
+          "op": "add",
+          "value": 0.14
+        }
+      ]
+    },
+    "desc": "Special: 10% less damage from everything, 15% less crit bonus damage, +14% ranged resistance. Active: Slime Shield, a buff that raises armour by 50% and adds a flat 12 ward applied after resistances, 9 s on a 24 s cooldown; it fires off the buff slot, not the action bar. Attacks: 14% cooldown refund on a miss and 45% less off-balance penalty. Defences: +16% slashing, +10% piercing, +5% bludgeoning resistance and +15% armour."
+  },
+  {
+    "id": "slime_golem_gene",
+    "name": "Slime Golem Gene",
+    "icon": "🗿",
+    "genus": "slimoid",
+    "tier": 3,
+    "from": "slime_golem",
+    "flatBase": 430,
+    "ceiling": 2.7,
+    "ability": {
+      "name": "Slime Crash",
+      "icon": "🗿",
+      "spec": {
+        "type": "gene",
+        "flat": 430,
+        "power": 1,
+        "fromStat": "armor",
+        "scalesWithSpeed": true,
+        "cooldown": 130,
+        "damageType": "bludgeoning",
+        "splash": 0.5,
+        "selfDelay": 10
+      }
+    },
+    "base": {
+      "defenses": [
+        {
+          "stat": "resSlashing",
+          "op": "add",
+          "value": 0.18
+        },
+        {
+          "stat": "resPiercing",
+          "op": "add",
+          "value": 0.14
+        },
+        {
+          "stat": "resBludgeoning",
+          "op": "add",
+          "value": 0.1
+        }
+      ],
+      "attacks": [
+        {
+          "stat": "damage",
+          "op": "mult",
+          "value": 0.12
+        },
+        {
+          "stat": "graze",
+          "op": "add",
+          "value": 0.2
+        }
+      ],
+      "special": [
+        {
+          "stat": "damageTaken",
+          "op": "mult",
+          "value": -0.22
+        },
+        {
+          "stat": "critTaken",
+          "op": "mult",
+          "value": -0.3
+        }
+      ]
+    },
+    "desc": "Special: 22% less damage from everything, 30% less crit bonus damage. Active: Slime Crash, bludgeoning damage of a flat 430 plus your armour, scaled by speed, with 50% splash onto the flanks; you lose ten ticks of action bar after it. 13 s cooldown. Attacks: +12% technique damage, and 20% of a missed swing lands as a graze. Defences: +18% slashing, +14% piercing, +10% bludgeoning resistance."
+  },
+  {
+    "id": "slime_king_gene",
+    "name": "Slime King Gene",
+    "icon": "👑",
+    "genus": "slimoid",
+    "tier": 4,
+    "from": "slime_king",
+    "flatBase": 700,
+    "ceiling": 3.1,
+    "base": {
+      "defenses": [
+        {
+          "stat": "resSlashing",
+          "op": "add",
+          "value": 0.2
+        },
+        {
+          "stat": "resPiercing",
+          "op": "add",
+          "value": 0.16
+        },
+        {
+          "stat": "resBludgeoning",
+          "op": "add",
+          "value": 0.12
+        },
+        {
+          "stat": "resElemental",
+          "op": "add",
+          "value": 0.06
+        }
+      ],
+      "attacks": [
+        {
+          "stat": "damage",
+          "op": "mult",
+          "value": 0.18
+        }
+      ]
+    },
+    "desc": "Special: a slime bodyguard with no armour of its own intercepts attacks and returns ten seconds after it dies. Active: Suislime detonates the bodyguard for damage to every enemy scaled by its remaining HP, usable at any time and off the attack gauge. Attacks: +18% technique damage, half again while the bodyguard lives. Defences: +20% slashing, +16% piercing, +12% bludgeoning and +6% elemental resistance."
+  },
+  {
+    "id": "fire_slime_gene",
+    "name": "Fire Slime Gene",
+    "icon": "🔴",
+    "genus": "slimoid",
+    "tier": 0,
+    "from": "slime_fire",
+    "flatBase": 60,
+    "ceiling": 1.5,
+    "ability": {
+      "name": "Flaming Bounce",
+      "icon": "🔥",
+      "spec": {
+        "type": "gene",
+        "flat": 60,
+        "amplifiedBy": "resHeat",
+        "scalesWithSpeed": true,
+        "cooldown": 70,
+        "damageType": "heat",
+        "stun": 2
+      }
+    },
+    "base": {
+      "defenses": [
+        {
+          "stat": "resSlashing",
+          "op": "add",
+          "value": 0.06
+        },
+        {
+          "stat": "resHeat",
+          "op": "add",
+          "value": 0.1
+        }
+      ],
+      "special": [
+        {
+          "stat": "critTaken",
+          "op": "mult",
+          "value": -0.2
+        }
+      ],
+      "attacks": [
+        {
+          "stat": "damage",
+          "op": "mult",
+          "value": 0.5,
+          "fromStat": "resHeat"
+        }
+      ]
+    },
+    "desc": "Special: 20% less crit bonus damage. Active: Flaming Bounce, heat damage of a flat 60, scaled by speed and multiplied by your heat resistance, with a two tick stun. 7 s cooldown. Attacks: technique damage +50% of your heat resistance value, so heat resistance is the damage stat for this line. Defences: +10% heat and +6% slashing resistance."
+  },
+  {
+    "id": "flame_slime_gene",
+    "name": "Flame Slime Gene",
+    "icon": "🟥",
+    "genus": "slimoid",
+    "tier": 1,
+    "from": "slime_fire_advanced",
+    "flatBase": 125,
+    "ceiling": 1.9,
+    "ability": {
+      "name": "Flaming Bounce",
+      "icon": "🔥",
+      "spec": {
+        "type": "gene",
+        "flat": 125,
+        "amplifiedBy": "resHeat",
+        "scalesWithSpeed": true,
+        "cooldown": 70,
+        "damageType": "heat",
+        "stun": 2
+      }
+    },
+    "base": {
+      "defenses": [
+        {
+          "stat": "resSlashing",
+          "op": "add",
+          "value": 0.1
+        },
+        {
+          "stat": "resHeat",
+          "op": "add",
+          "value": 0.16
+        }
+      ],
+      "special": [
+        {
+          "stat": "critTaken",
+          "op": "mult",
+          "value": -0.28
+        }
+      ],
+      "attacks": [
+        {
+          "stat": "damage",
+          "op": "mult",
+          "value": 0.7,
+          "fromStat": "resHeat"
+        }
+      ]
+    },
+    "desc": "Next tier of the fire line after Fire Slime Gene. Crit bonus damage -28%, Flaming Bounce flat 125, technique damage +70% of heat resistance, +16% heat and +10% slashing resistance."
+  },
+  {
+    "id": "blaze_slime_gene",
+    "name": "Blaze Slime Gene",
+    "icon": "🔥",
+    "genus": "slimoid",
+    "tier": 2,
+    "from": "slime_fire_elite",
+    "flatBase": 255,
+    "ceiling": 2.3,
+    "ability": {
+      "name": "Flaming Bounce",
+      "icon": "🔥",
+      "spec": {
+        "type": "gene",
+        "flat": 255,
+        "amplifiedBy": "resHeat",
+        "scalesWithSpeed": true,
+        "cooldown": 70,
+        "damageType": "heat",
+        "stun": 2
+      }
+    },
+    "base": {
+      "defenses": [
+        {
+          "stat": "resSlashing",
+          "op": "add",
+          "value": 0.12
+        },
+        {
+          "stat": "resPiercing",
+          "op": "add",
+          "value": 0.06
+        },
+        {
+          "stat": "resHeat",
+          "op": "add",
+          "value": 0.22
+        }
+      ],
+      "special": [
+        {
+          "stat": "critTaken",
+          "op": "mult",
+          "value": -0.36
+        }
+      ],
+      "attacks": [
+        {
+          "stat": "damage",
+          "op": "mult",
+          "value": 0.95,
+          "fromStat": "resHeat"
+        }
+      ]
+    },
+    "desc": "Top of the fire line. Crit bonus damage -36%, Flaming Bounce flat 255, technique damage +95% of heat resistance, +22% heat, +12% slashing and +6% piercing resistance."
+  },
+  {
+    "id": "troll",
+    "name": "Troll Gene",
+    "icon": "🧌",
+    "genus": "gigantoid",
+    "tier": 1,
+    "from": "troll",
+    "size": "large",
+    "flatBase": 100,
+    "ceiling": 1.6,
+    "ability": {
+      "name": "Troll Bite",
+      "icon": "🦷",
+      "spec": {
+        "type": "gene",
+        "power": 1.4,
+        "fromStat": "damage",
+        "flat": 30,
+        "cooldown": 80,
+        "damageType": "piercing",
+        "inflicts": [
+          {
+            "id": "bleeding",
+            "intensity": 1
+          },
+          {
+            "id": "punctured",
+            "intensity": 1
+          }
+        ]
+      }
+    },
+    "confers": [
+      {
+        "id": "knitting",
+        "removal": [
+          {
+            "on": "damageTaken",
+            "damageTypes": [
+              "heat",
+              "acid"
+            ],
+            "effect": "remove",
+            "becomes": "doused"
+          }
+        ]
+      }
+    ],
+    "base": {
+      "special": [
+        {
+          "stat": "hpRegen",
+          "op": "mult",
+          "value": 0.004,
+          "fromStat": "maxHp"
+        }
+      ],
+      "attacks": [
+        {
+          "stat": "damage",
+          "op": "mult",
+          "value": 0.5,
+          "fromStat": "resBludgeoning"
+        },
+        {
+          "stat": "damage",
+          "op": "mult",
+          "value": 0.15,
+          "requiresTag": "bone"
+        }
+      ],
+      "defenses": [
+        {
+          "stat": "resSlashing",
+          "op": "add",
+          "value": 0.16
+        },
+        {
+          "stat": "resPiercing",
+          "op": "add",
+          "value": 0.12
+        },
+        {
+          "stat": "resHeat",
+          "op": "add",
+          "value": -0.25
+        }
+      ]
+    },
+    "desc": "Special: HP regeneration equal to 0.4% of max HP; heat or acid damage stops it (Doused) for four seconds. Active: Troll Bite, piercing damage at 1.4 times your damage plus a flat 30, inflicting Bleeding and Punctured. 8 s cooldown. Attacks: damage +50% of your bludgeoning resistance value, and +15% with a bone weapon. Defences: +16% slashing, +12% piercing, -25% heat resistance. Size: large."
+  },
+  {
+    "id": "rock_giant",
+    "name": "Rock Giant Gene",
+    "icon": "🪨",
+    "genus": "gigantoid",
+    "tier": 1,
+    "from": "rock_giant",
+    "size": "large",
+    "flatBase": 100,
+    "ceiling": 1.6,
+    "ability": {
+      "name": "Rock Throw",
+      "icon": "🪨",
+      "spec": {
+        "type": "gene",
+        "power": 1.6,
+        "fromStat": "damage",
+        "flat": 100,
+        "cooldown": 90,
+        "damageType": "bludgeoning"
+      }
+    },
+    "base": {
+      "attacks": [
+        {
+          "stat": "damage",
+          "op": "mult",
+          "value": 0.12,
+          "requiresTag": "stone"
+        },
+        {
+          "stat": "damage",
+          "op": "mult",
+          "value": 0.12,
+          "requiresTag": "wood"
+        },
+        {
+          "stat": "vsSmaller",
+          "op": "add",
+          "value": 0.05
+        }
+      ],
+      "defenses": [
+        {
+          "stat": "resBludgeoning",
+          "op": "add",
+          "value": 0.12
+        },
+        {
+          "stat": "resEarth",
+          "op": "add",
+          "value": 0.12
+        }
+      ],
+      "special": [
+        {
+          "stat": "maxHp",
+          "op": "mult",
+          "value": 0.15
+        },
+        {
+          "stat": "fromSmaller",
+          "op": "add",
+          "value": 0.06
+        }
+      ]
+    },
+    "desc": "Special: +15% max HP, and 6% less damage per size step the attacker is below you. Active: Rock Throw, bludgeoning damage at 1.6 times your damage plus a flat 100. 9 s cooldown. Attacks: +12% with stone or wood weapons, +5% damage per size step the target is below you. Defences: +12% bludgeoning and +12% earth resistance. Size: large."
+  },
+  {
+    "id": "hill_giant",
+    "name": "Hill Giant Gene",
+    "icon": "⛰️",
+    "genus": "gigantoid",
+    "tier": 2,
+    "from": "hill_giant",
+    "size": "huge",
+    "flatBase": 200,
+    "ceiling": 2,
+    "ability": {
+      "name": "Boulder Throw",
+      "icon": "🪨",
+      "spec": {
+        "type": "gene",
+        "power": 1.8,
+        "fromStat": "damage",
+        "flat": 200,
+        "cooldown": 90,
+        "damageType": "bludgeoning"
+      }
+    },
+    "base": {
+      "attacks": [
+        {
+          "stat": "damage",
+          "op": "mult",
+          "value": 0.18,
+          "requiresTag": "stone"
+        },
+        {
+          "stat": "damage",
+          "op": "mult",
+          "value": 0.18,
+          "requiresTag": "wood"
+        },
+        {
+          "stat": "vsSmaller",
+          "op": "add",
+          "value": 0.07
+        }
+      ],
+      "defenses": [
+        {
+          "stat": "resBludgeoning",
+          "op": "add",
+          "value": 0.18
+        },
+        {
+          "stat": "resEarth",
+          "op": "add",
+          "value": 0.18
+        }
+      ],
+      "special": [
+        {
+          "stat": "maxHp",
+          "op": "mult",
+          "value": 0.24
+        },
+        {
+          "stat": "fromSmaller",
+          "op": "add",
+          "value": 0.08
+        }
+      ]
+    },
+    "desc": "Next tier after Rock Giant Gene. Special: +24% max HP, 8% less damage per size step the attacker is below you. Active: Boulder Throw, bludgeoning damage at 1.8 times your damage plus a flat 200. Attacks: +18% with stone or wood weapons, +7% per size step the target is below you. Defences: +18% bludgeoning and +18% earth resistance. Size: huge."
+  },
+  {
+    "id": "forest_giant",
+    "name": "Forest Giant Gene",
+    "icon": "🌲",
+    "genus": "gigantoid",
+    "tier": 2,
+    "from": "forest_giant",
+    "size": "huge",
+    "flatBase": 200,
+    "ceiling": 2,
+    "grants": [
+      "onehand:*"
+    ],
+    "ability": {
+      "name": "Tree Throw",
+      "icon": "🌲",
+      "spec": {
+        "type": "gene",
+        "power": 1.8,
+        "fromStat": "damage",
+        "flat": 200,
+        "cooldown": 90,
+        "damageType": "bludgeoning",
+        "inflicts": [
+          {
+            "id": "seeded",
+            "intensity": 1
+          }
+        ]
+      }
+    },
+    "base": {
+      "attacks": [
+        {
+          "stat": "damage",
+          "op": "mult",
+          "value": 0.22,
+          "requiresTag": "wood"
+        },
+        {
+          "stat": "damage",
+          "op": "mult",
+          "value": 0.22,
+          "requiresTag": "bone"
+        },
+        {
+          "stat": "attackSpeed",
+          "op": "mult",
+          "value": 0.08,
+          "requiresTag": "twoHanded"
+        }
+      ],
+      "defenses": [
+        {
+          "stat": "resBludgeoning",
+          "op": "add",
+          "value": 0.16
+        },
+        {
+          "stat": "resPoison",
+          "op": "add",
+          "value": 0.2
+        }
+      ],
+      "special": [
+        {
+          "stat": "maxHp",
+          "op": "mult",
+          "value": 0.24
+        }
+      ]
+    },
+    "desc": "Special: +24% max HP, and any two-handed weapon can be held in one hand; the two-handed speed penalty is offset by 8% attack speed rather than removed. Active: Tree Throw, bludgeoning damage at 1.8 times your damage plus a flat 200, inflicting Seeded. Attacks: +22% with wood or bone weapons. Defences: +16% bludgeoning and +20% poison resistance. Size: huge."
+  },
+  {
+    "id": "jotunn",
+    "name": "Jötunn Gene",
+    "icon": "🏔️",
+    "genus": "gigantoid",
+    "tier": 3,
+    "from": "jotunn",
+    "size": "gargantuan",
+    "flatBase": 400,
+    "ceiling": 2.5,
+    "grants": [
+      "onehand:blunt",
+      "onehand:tower shield"
+    ],
+    "ability": {
+      "name": "Mountain Crusher",
+      "icon": "🏔️",
+      "spec": {
+        "type": "gene",
+        "power": 2.2,
+        "fromStat": "damage",
+        "flat": 400,
+        "cooldown": 140,
+        "damageType": "bludgeoning",
+        "riders": [
+          {
+            "type": "earth",
+            "value": 60
+          },
+          {
+            "type": "cold",
+            "value": 60
+          }
+        ],
+        "splash": 1,
+        "splashAll": true,
+        "inflicts": [
+          {
+            "id": "chilled",
+            "intensity": 1
+          }
+        ]
+      }
+    },
+    "base": {
+      "attacks": [
+        {
+          "stat": "damage",
+          "op": "mult",
+          "value": 0.35,
+          "requiresTag": "blunt"
+        },
+        {
+          "stat": "vsSmaller",
+          "op": "add",
+          "value": 0.09
+        },
+        {
+          "stat": "attackSpeed",
+          "op": "mult",
+          "value": 0.15,
+          "requiresTag": "twoHanded"
+        }
+      ],
+      "defenses": [
+        {
+          "stat": "resBludgeoning",
+          "op": "add",
+          "value": 0.24
+        },
+        {
+          "stat": "resCold",
+          "op": "add",
+          "value": 0.24
+        },
+        {
+          "stat": "resWind",
+          "op": "add",
+          "value": 0.18
+        }
+      ],
+      "special": [
+        {
+          "stat": "maxHp",
+          "op": "mult",
+          "value": 0.4
+        },
+        {
+          "stat": "fromSmaller",
+          "op": "add",
+          "value": 0.1
+        }
+      ]
+    },
+    "desc": "Special: +40% max HP, 10% less damage per size step the attacker is below you, and blunt weapons and tower shields can be held in one hand, with two-handed speed penalties offset by 15% attack speed. Active: Mountain Crusher, bludgeoning damage to every enemy at 2.2 times your damage plus a flat 400, with earth and cold riders of 60 each, inflicting Chilled. 14 s cooldown. Attacks: +35% with blunt weapons, +9% per size step the target is below you. Defences: +24% bludgeoning, +24% cold, +18% wind resistance. Size: gargantuan."
+  },
+  {
+    "id": "fomorian",
+    "name": "Fomorian Gene",
+    "icon": "🔱",
+    "genus": "gigantoid",
+    "tier": 3,
+    "from": "fomorian",
+    "size": "gargantuan",
+    "flatBase": 400,
+    "ceiling": 2.5,
+    "grants": [
+      "onehand:spear",
+      "onehand:tower shield"
+    ],
+    "ability": {
+      "name": "Deep Thrust",
+      "icon": "🔱",
+      "spec": {
+        "type": "gene",
+        "power": 2.2,
+        "fromStat": "damage",
+        "flat": 400,
+        "cooldown": 120,
+        "damageType": "piercing",
+        "riders": [
+          {
+            "type": "dark",
+            "value": 90
+          }
+        ],
+        "inflicts": [
+          {
+            "id": "on_fire",
+            "intensity": 1
+          }
+        ]
+      }
+    },
+    "base": {
+      "attacks": [
+        {
+          "stat": "damage",
+          "op": "mult",
+          "value": 0.3,
+          "requiresTag": "spear"
+        },
+        {
+          "stat": "vsSmaller",
+          "op": "add",
+          "value": 0.09
+        },
+        {
+          "stat": "attackSpeed",
+          "op": "mult",
+          "value": 0.15,
+          "requiresTag": "twoHanded"
+        }
+      ],
+      "defenses": [
+        {
+          "stat": "resBludgeoning",
+          "op": "add",
+          "value": 0.2
+        },
+        {
+          "stat": "resWater",
+          "op": "add",
+          "value": 0.22
+        },
+        {
+          "stat": "resDark",
+          "op": "add",
+          "value": 0.22
+        }
+      ],
+      "special": [
+        {
+          "stat": "maxHp",
+          "op": "mult",
+          "value": 0.4
+        },
+        {
+          "stat": "fromSmaller",
+          "op": "add",
+          "value": 0.1
+        }
+      ]
+    },
+    "desc": "Special: +40% max HP, 10% less damage per size step the attacker is below you, and spears and tower shields can be held in one hand, with two-handed speed penalties offset by 15% attack speed. Active: Deep Thrust, single-target piercing damage at 2.2 times your damage plus a flat 400 with a 90 dark rider, inflicting On Fire. 12 s cooldown. Attacks: +30% with spears, +9% per size step the target is below you. Defences: +20% bludgeoning, +22% water, +22% dark resistance. Size: gargantuan."
+  },
+  {
+    "id": "storm_giant",
+    "name": "Storm Giant Gene",
+    "icon": "🌩️",
+    "genus": "gigantoid",
+    "tier": 4,
+    "from": "storm_giant",
+    "size": "colossal",
+    "flatBase": 800,
+    "ceiling": 3,
+    "grants": [
+      "onehand:greatsword",
+      "onehand:blunt",
+      "onehand:tower shield"
+    ],
+    "ability": {
+      "name": "Mountain Throw",
+      "icon": "🌋",
+      "spec": {
+        "type": "gene",
+        "power": 2.4,
+        "fromStat": "damage",
+        "flat": 800,
+        "cooldown": 110,
+        "damageType": "bludgeoning",
+        "sizeDouble": 2
+      }
+    },
+    "base": {
+      "attacks": [
+        {
+          "stat": "damage",
+          "op": "mult",
+          "value": 0.3,
+          "requiresTag": "wood"
+        },
+        {
+          "stat": "damage",
+          "op": "mult",
+          "value": 0.3,
+          "requiresTag": "stone"
+        },
+        {
+          "stat": "attackSpeed",
+          "op": "mult",
+          "value": 0.15,
+          "requiresTag": "twoHanded"
+        }
+      ],
+      "defenses": [
+        {
+          "stat": "resBludgeoning",
+          "op": "add",
+          "value": 0.26
+        },
+        {
+          "stat": "resWind",
+          "op": "add",
+          "value": 0.26
+        },
+        {
+          "stat": "resLightning",
+          "op": "add",
+          "value": 0.26
+        }
+      ],
+      "special": [
+        {
+          "stat": "maxHp",
+          "op": "mult",
+          "value": 0.55
+        }
+      ]
+    },
+    "desc": "Special: +55% max HP, and greatswords, blunt weapons and tower shields can be held in one hand, with two-handed speed penalties offset by 15% attack speed. Active: Mountain Throw, bludgeoning damage at 2.4 times your damage plus a flat 800, doubling for every two size steps the target is below you. 11 s cooldown. Attacks: +30% with wood or stone weapons. Defences: +26% bludgeoning, +26% wind, +26% lightning resistance. Size: colossal."
+  },
+  {
+    "id": "balor",
+    "name": "Balor Gene",
+    "icon": "👁️",
+    "genus": "gigantoid",
+    "tier": 4,
+    "from": "boss_balor",
+    "size": "gargantuan",
+    "flatBase": 1000,
+    "ceiling": 4.4,
+    "grants": [
+      "onehand:spear",
+      "onehand:tower shield"
+    ],
+    "ability": {
+      "name": "Eye of Balor",
+      "icon": "👁️",
+      "spec": {
+        "type": "gene",
+        "power": 2.6,
+        "fromStat": "damage",
+        "flat": 1000,
+        "cooldown": 200,
+        "damageType": "piercing",
+        "riders": [
+          {
+            "type": "dark",
+            "value": 200
+          }
+        ],
+        "splash": 0.25,
+        "splashAll": true,
+        "execute": 0.5
+      }
+    },
+    "base": {
+      "attacks": [
+        {
+          "stat": "damage",
+          "op": "mult",
+          "value": 0.4,
+          "requiresTag": "spear"
+        },
+        {
+          "stat": "vsSmaller",
+          "op": "add",
+          "value": 0.12
+        },
+        {
+          "stat": "attackSpeed",
+          "op": "mult",
+          "value": 0.15,
+          "requiresTag": "twoHanded"
+        }
+      ],
+      "defenses": [
+        {
+          "stat": "resBludgeoning",
+          "op": "add",
+          "value": 0.26
+        },
+        {
+          "stat": "resWater",
+          "op": "add",
+          "value": 0.28
+        },
+        {
+          "stat": "resDark",
+          "op": "add",
+          "value": 0.28
+        }
+      ],
+      "special": [
+        {
+          "stat": "maxHp",
+          "op": "mult",
+          "value": 0.55
+        },
+        {
+          "stat": "fromSmaller",
+          "op": "add",
+          "value": 0.12
+        }
+      ]
+    },
+    "desc": "Unique fomorian variant. Special: +55% max HP, 12% less damage per size step the attacker is below you, spears and tower shields in one hand. Active: Eye of Balor, piercing damage at 2.6 times your damage plus a flat 1000 with a 200 dark rider, 25% splash to every enemy, and any target whose remaining HP is at most half the blow dies outright. 20 s cooldown. Attacks: +40% with spears, +12% per size step the target is below you. Defences: +26% bludgeoning, +28% water, +28% dark resistance. Size: gargantuan."
+  },
+  {
+    "id": "surtr",
+    "name": "Surtr Gene",
+    "icon": "🗡️",
+    "genus": "gigantoid",
+    "tier": 5,
+    "from": "boss_surtr",
+    "size": "colossal",
+    "flatBase": 1600,
+    "ceiling": 5.6,
+    "grants": [
+      "onehand:greatsword"
+    ],
+    "ability": {
+      "name": "Ragnarök",
+      "icon": "🔥",
+      "spec": {
+        "type": "gene",
+        "power": 3,
+        "fromStat": "damage",
+        "flat": 1600,
+        "cooldown": 260,
+        "damageType": "heat",
+        "splash": 1,
+        "splashAll": true,
+        "execute": 0.6,
+        "inflicts": [
+          {
+            "id": "blazing",
+            "intensity": 1
+          }
+        ]
+      }
+    },
+    "base": {
+      "attacks": [
+        {
+          "stat": "attackSpeed",
+          "op": "mult",
+          "value": 0.3,
+          "requiresTag": "twoHanded"
+        },
+        {
+          "stat": "damage",
+          "op": "mult",
+          "value": 0.35,
+          "requiresTag": "greatsword"
+        }
+      ],
+      "defenses": [
+        {
+          "stat": "resHeat",
+          "op": "add",
+          "value": 0.5
+        },
+        {
+          "stat": "resSlashing",
+          "op": "add",
+          "value": 0.3
+        },
+        {
+          "stat": "resEarth",
+          "op": "add",
+          "value": 0.3
+        },
+        {
+          "stat": "resistCap",
+          "op": "add",
+          "value": 0.05
+        }
+      ],
+      "special": [
+        {
+          "stat": "maxHp",
+          "op": "mult",
+          "value": 0.7
+        },
+        {
+          "stat": "fromSmaller",
+          "op": "add",
+          "value": 0.12
+        }
+      ]
+    },
+    "desc": "Unique jotunn variant. Special: +70% max HP, 12% less damage per size step the attacker is below you, and a greatsword in one hand swings faster than in two (+30% attack speed against the two-handed penalty). Active: Ragnarök, heat damage to every enemy at 3 times your damage plus a flat 1600; any target whose remaining HP is at most 60% of the blow dies outright, and survivors take Blazing, a heat damage over time. 26 s cooldown. Attacks: +35% with greatswords. Defences: +50% heat, +30% slashing, +30% earth resistance, and the resistance cap raised by 5%. Size: colossal."
+  },
+  {
+    "id": "wyrmling",
+    "name": "Wyrmling Gene",
+    "icon": "🦎",
+    "genus": "draconoid",
+    "tier": 0,
+    "from": "wyrmling",
+    "flatBase": 90,
+    "ceiling": 1.7,
+    "ability": {
+      "name": "Ember Breath",
+      "icon": "🔥",
+      "spec": {
+        "type": "gene",
+        "power": 1.9,
+        "fromStat": "spellPower",
+        "cooldown": 100,
+        "damageType": "heat"
+      }
+    },
+    "base": {
+      "active": [
+        {
+          "stat": "maxMana",
+          "op": "add",
+          "value": 8
+        }
+      ]
+    }
+  },
+  {
+    "id": "drake",
+    "name": "Drake Gene",
+    "icon": "🐉",
+    "genus": "draconoid",
+    "tier": 1,
+    "from": "drake",
+    "flatBase": 160,
+    "ceiling": 2,
+    "ability": {
+      "name": "Flame Breath",
+      "icon": "🔥",
+      "spec": {
+        "type": "gene",
+        "power": 1.9,
+        "fromStat": "spellPower",
+        "cooldown": 100,
+        "damageType": "heat"
+      }
+    },
+    "base": {
+      "active": [
+        {
+          "stat": "maxMana",
+          "op": "add",
+          "value": 14
+        }
+      ]
+    }
+  },
+  {
+    "id": "wyvern",
+    "name": "Wyvern Gene",
+    "icon": "🐲",
+    "genus": "draconoid",
+    "tier": 2,
+    "from": "wyvern",
+    "flatBase": 280,
+    "ceiling": 2.4,
+    "ability": {
+      "name": "Flame Breath",
+      "icon": "🔥",
+      "spec": {
+        "type": "gene",
+        "power": 1.9,
+        "fromStat": "spellPower",
+        "cooldown": 100,
+        "damageType": "heat"
+      }
+    },
+    "base": {
+      "active": [
+        {
+          "stat": "maxMana",
+          "op": "add",
+          "value": 22
+        }
+      ]
+    }
+  },
+  {
+    "id": "dragon",
+    "name": "Dragon Gene",
+    "icon": "🔥",
+    "genus": "draconoid",
+    "tier": 3,
+    "from": "dragon",
+    "flatBase": 490,
+    "ceiling": 2.9,
+    "ability": {
+      "name": "Dragon Breath",
+      "icon": "🔥",
+      "spec": {
+        "type": "gene",
+        "power": 1.9,
+        "fromStat": "spellPower",
+        "cooldown": 100,
+        "damageType": "heat"
+      }
+    },
+    "base": {
+      "active": [
+        {
+          "stat": "maxMana",
+          "op": "add",
+          "value": 35
+        }
+      ]
+    }
+  },
+  {
+    "id": "dvibahu",
+    "name": "Dvibāhu Gene",
+    "icon": "🫱",
+    "genus": "asuroid",
+    "tier": 0,
+    "from": "dvibahu",
+    "flatBase": 80,
+    "ceiling": 1.6,
+    "grants": [
+      "arms:+1"
+    ],
+    "base": {
+      "attacks": [
+        {
+          "stat": "extraSwings",
+          "op": "add",
+          "value": 0.1
+        }
+      ]
+    }
+  },
+  {
+    "id": "asura",
+    "name": "Asura Gene",
+    "icon": "🙌",
+    "genus": "asuroid",
+    "tier": 1,
+    "from": "asura",
+    "flatBase": 340,
+    "ceiling": 2.6,
+    "grants": [
+      "arms:+2"
+    ],
+    "base": {
+      "attacks": [
+        {
+          "stat": "extraSwings",
+          "op": "add",
+          "value": 0.35
+        }
+      ]
+    }
+  },
+  {
+    "id": "asurendra_tarunavak",
+    "name": "Tarunavāk, of Sixteen Tongues",
+    "icon": "🗣️",
+    "genus": "asuroid",
+    "tier": 5,
+    "from": "asurendra_tarunavak",
+    "flatBase": 1400,
+    "ceiling": 4.8,
+    "grants": [
+      "arms:+2"
+    ],
+    "tongues": {
+      "words": [
+        "fire",
+        "ice",
+        "spark",
+        "water",
+        "gust",
+        "stone",
+        "seed",
+        "venom",
+        "acid",
+        "light",
+        "gloom",
+        "iron",
+        "arcane",
+        "pierce",
+        "cut",
+        "crush"
+      ],
+      "everyTicks": [
+        20,
+        10
+      ],
+      "power": [
+        0.6,
+        1.2
+      ]
+    },
+    "ability": {
+      "name": "Unsaying",
+      "icon": "🌀",
+      "spec": {
+        "type": "gene",
+        "flat": 60,
+        "power": 1,
+        "fromAttr": "cha",
+        "cooldown": 200,
+        "damageType": "arcane",
+        "splashAll": true,
+        "clearsField": true
+      }
+    },
+    "base": {
+      "attacks": [
+        {
+          "stat": "extraSwings",
+          "op": "add",
+          "value": 0.35
+        }
+      ]
+    },
+    "desc": "Special: two extra arms, and every 2 to 1 s it speaks one of sixteen single words (thirteen elements plus pierce, cut and crush) at no cost, at 0.6 to 1.2 power by grade; each repetition of the same word in a fight is cast as the next stacked form (e.g. fire, flame, blaze), up to three. Active: Unsaying, arcane damage scaled by CHA that removes every condition from everyone in the fight, you included, and multiplies the damage by the number removed (unchanged if none); splash from other sources hits every enemy. 20 s cooldown. Attacks: +0.35 extra hits per swing."
+  },
+  {
+    "id": "asurendra_vashkara",
+    "name": "Vashkāra of the Unheld Blades",
+    "icon": "🌀",
+    "genus": "asuroid",
+    "tier": 5,
+    "from": "asurendra_vashkara",
+    "flatBase": 1400,
+    "ceiling": 4.8,
+    "grants": [
+      "arms:+4",
+      "telekinetic:6"
+    ],
+    "ability": {
+      "name": "Every Blade at Once",
+      "icon": "🗡️",
+      "spec": {
+        "type": "gene",
+        "cooldown": 240,
+        "volley": {
+          "hits": [
+            4,
+            8
+          ],
+          "ticks": 10
+        }
+      }
+    },
+    "base": {
+      "attacks": [
+        {
+          "stat": "crit",
+          "op": "add",
+          "value": 0.04
+        }
+      ]
+    },
+    "desc": "Special: six telekinetic arms, none of them a hand. Equipped weapons float and strike on their own clock, one weapon per swing in turn, with no technique, stance position, stamina cost, riposte or parry; crits, grazes, enchants, runes and oil still apply, and Wisdom adds up to +50% to their damage (+25% at Wisdom 120). No hands are left to punch with. Active: Every Blade at Once, a volley of 4 to 8 floating strikes over 1 s. 24 s cooldown. Attacks: +4% crit."
+  },
+  {
+    "id": "asurendra_anupama",
+    "name": "Anupama, Fasting Amidst Sinners",
+    "icon": "🕳️",
+    "genus": "asuroid",
+    "tier": 5,
+    "from": "asurendra_anupama",
+    "flatBase": 1400,
+    "ceiling": 4.8,
+    "confers": [
+      {
+        "id": "fasting"
+      }
+    ],
+    "fasts": {
+      "regenRoot": [
+        4,
+        2.5
+      ],
+      "regenMult": 0.05,
+      "armorPerLogHunger": 6,
+      "wardPerLogHunger": 0.25,
+      "wardMax": 0.6
+    },
+    "ability": {
+      "name": "The Weight of Hunger",
+      "icon": "⚖️",
+      "spec": {
+        "type": "gene",
+        "cooldown": 240,
+        "damageType": "dark",
+        "perTargetStacks": {
+          "status": "hunger_anupama",
+          "power": 3,
+          "inflictRoot": [
+            4,
+            2.5
+          ],
+          "inflictCap": 0.6666666666666666
+        },
+        "splash": 1,
+        "splashAll": true,
+        "inflicts": [
+          {
+            "id": "weight_of_hunger"
+          }
+        ]
+      }
+    },
+    "base": {},
+    "desc": "Special: plain weapon swings cannot be taken; techniques and casts still can. Every attack or cast by anyone in the fight, you included, adds a stack of Hunger, an uncapped dark damage over time of which half ignores resistance. Attacks: no damage bonus; instead HP regeneration of 0.05 x your damage^(1/root), the root falling from 4 at grade F to 2.5 at S. Defences: armour +6 x ln(1 + total Hunger on the field) and a ward against afflictions of 25% x ln(1 + total Hunger), capped at 60%. Active: The Weight of Hunger, dark damage to every enemy scaled by the Hunger stacks it carries, and a slow scaled the same way. 24 s cooldown."
+  },
+  {
+    "id": "asurendra_niraksha",
+    "name": "Nirākṣa who Swallowed His Eyes",
+    "icon": "🕳️",
+    "genus": "asuroid",
+    "tier": 5,
+    "from": "asurendra_niraksha",
+    "flatBase": 1400,
+    "ceiling": 4.8,
+    "grants": [
+      "arms:+4"
+    ],
+    "confers": [
+      {
+        "id": "eyeless",
+        "intensity": 1
+      }
+    ],
+    "onCrit": [
+      {
+        "id": "blinded",
+        "intensity": 1,
+        "permanent": true
+      }
+    ],
+    "ability": {
+      "name": "The Long Word",
+      "icon": "👁️",
+      "spec": {
+        "type": "gene",
+        "flat": 120,
+        "power": 2.2,
+        "fromStat": "damage",
+        "cooldown": 260,
+        "damageType": "dark",
+        "incant": {
+          "ticks": [
+            60,
+            30
+          ],
+          "fillMult": 0.3333333333333333,
+          "critBonus": 1
+        }
+      }
+    },
+    "base": {
+      "attacks": [
+        {
+          "stat": "extraSwings",
+          "op": "add",
+          "value": 0.35
+        }
+      ]
+    },
+    "desc": "Special: four extra arms and no eyes, so darkness and blindness cost it nothing. Any critical hit inflicts Blinded for the rest of the fight. Active: The Long Word, dark damage at 2.2 times your damage plus a flat 120, after a 6 to 3 second incantation (by grade) during which the action bar fills at one third rate; the blow is a guaranteed crit, and crit chance above 100% rolls for a second crit multiplier. 26 s cooldown. Attacks: +0.35 extra hits per swing."
+  },
+  {
+    "id": "asurendra_kritavya",
+    "name": "Kritavya, Refuter of Creation",
+    "icon": "🚫",
+    "genus": "asuroid",
+    "tier": 5,
+    "from": "asurendra_kritavya",
+    "flatBase": 1400,
+    "ceiling": 4.8,
+    "grants": [
+      "arms:+2"
+    ],
+    "refutes": {
+      "negate": [
+        0.3,
+        0.9
+      ],
+      "lockout": [
+        0.15,
+        0.66
+      ],
+      "perCast": 0.03
+    },
+    "ability": {
+      "name": "Refutation",
+      "icon": "🚫",
+      "spec": {
+        "type": "gene",
+        "flat": 0,
+        "cooldown": 300,
+        "damageType": "arcane",
+        "grants": [
+          {
+            "id": "refutation",
+            "intensity": 1
+          }
+        ],
+        "grantDuration": [
+          100,
+          200
+        ]
+      }
+    },
+    "base": {
+      "attacks": [
+        {
+          "stat": "extraSwings",
+          "op": "add",
+          "value": 0.35
+        }
+      ]
+    },
+    "desc": "Special: every spell cast in the fight, yours included, is negated with 30% to 90% chance by grade; a negated spell has no effect, its cost is still paid, and the caster takes arcane damage equal to its mana cost. With 15% to 66% chance (plus 3% per earlier cast of the same spell) that spell cannot be cast again for the rest of the fight. Active: Refutation, a 10 to 20 second buff (by grade) that absorbs a flat 40 damage plus 1.5 times spell power from each hit; anything that strikes you in melee takes 6 piercing damage and is Punctured. 30 s cooldown. Attacks: +0.35 extra hits per swing."
+  }
+]

@@ -1587,3 +1587,150 @@ in the wider sample is inside its spread (about 4 for 100 climbs at 20 to
 Hunting XP differs from floor 0 on (the old bestiary pays a discovery
 bonus; the bestiary is not ported). Hunting raises loot and gold only, not
 the fight.
+## 17. Step 3: mutagens
+
+Done 2026-11-18 on branch `step3-mutagens`. Design and the full account:
+`src/systems/mutagens/README.md` (the inventory of old `main`, "Step 3
+design", "Changed while building (step 3)", "Old rules ported as they are",
+"Panel as built", "Left behind (as built)"). Additions in other folders:
+`combat` ("Step 3 (mutagens) additions": `registerBody`, the body's blow),
+`benches` ("Step 3 (the mutagens port)": the Culture Bench record and
+`refines`).
+
+The review branch `docs/mutagens-review` is not an ancestor of old `main`;
+the monster genome plans in `docs/plans/` were never built. Neither is
+ported. Through floor 6 the harvest can drop biomatter, the slime gene
+(`slime_base_basic`), the mutations of about ten tags and the Vulnerability
+Nuclease (`slime_zombie`); Slime Bounce is the one gene ability a player can
+wear; the Vivarium holds the culture bench; histones have no source.
+
+### 17.1 John
+
+John's climbs changed: the harvest rolls the generator on every kill, as
+the old build did (old `registerMutagenListeners`, a `kill` listener,
+alpha default open). No John climb wears a gene or places a mutation; the
+change is the generator stream alone. No other kill subscriber draws the
+generator, so the draw sits where the old build drew it. Old: section 9.1.
+Main: `main` at `d137ff9` (the smithing port); `ae69eb4` (section 16)
+leaves these climbs unchanged, as the skipping John never casts. New: this
+branch, rebased onto `ae69eb4`; the rebase changed no digest. Game time
+per segment, m:ss, from the outcome digests (`npm run pacing` prints the
+same tables).
+
+| Floor | Old mean | Main 42 | Main 7 | Main 1234 | Main mean | New 42 | New 7 | New 1234 | New mean | New vs old |
+|---|---|---|---|---|---|---|---|---|---|---|
+| f1 vermin | 1:25 | 1:31 | 1:28 | 1:03 | 1:21 | 1:05 | 1:28 | 1:05 | 1:13 | -14% |
+| f1 | 2:24 | 1:31 | 2:29 | 3:28 | 2:30 | 2:34 | 2:27 | 2:43 | 2:35 | +8% |
+| f2 | 2:42 | 2:55 | 2:41 | 2:18 | 2:38 | 2:54 | 2:51 | 2:48 | 2:51 | +6% |
+| f3 gate | 4:03 | 3:43 | 3:42 | 4:48 | 4:04 | 3:42 | 3:20 | 4:48 | 3:57 | -2% |
+| f3 stairs | 1:17 | 1:17 | 1:16 | 1:16 | 1:16 | 1:15 | 1:15 | 1:21 | 1:17 | 0% |
+| f3 | 0:30 | 0:52 | 0:47 | 1:48 | 1:09 | 1:20 | 0:49 | 0:51 | 1:00 | +100% |
+| f4 | 7:06 | 5:34 | 10:22 | 8:35 | 8:10 | 7:22 | 4:35 | 5:29 | 5:49 | -18% |
+| f5 gate | 0:03 | 0:04 | 0:04 | 0:04 | 0:04 | 0:04 | 0:04 | 0:04 | 0:04 | +33% |
+| f5 | 1:03 | 1:31 | 0:39 | 0:37 | 0:56 | 0:40 | 1:04 | 1:35 | 1:06 | +5% |
+| f6 gate | 3:44 | 3:21 | 3:21 | 3:09 | 3:17 | 4:15 | 4:26 | 4:00 | 4:14 | +13% |
+| f6 | 0:18 | 0:35 | 1:15 | 0:17 | 0:42 | 1:36 | 0:18 | 0:21 | 0:45 | +150% |
+| Total to the warchief | 24:35 | 22:54 | 28:04 | 27:22 | 26:07 | 26:46 | 22:37 | 25:04 | 24:49 | +1% |
+
+Against the tolerance of section 9.1 (total within 15%, each segment over
+two minutes of old mean within 35%): total +1% (main: +6%); the long
+segments -18% to +13%. Boss segments are reported, not held. Knockouts over
+the climb: 30, 20, 23 (main 21, 31, 25). Level at the warchief 9, 8, 9.
+Gold earned 12,228, 10,482, 13,476. Boss tries floor 3: 3, 2, 2; warchief
+6, 1, 1. Every climb ends in the first prestige (harvest 11 points each).
+The segments move both ways by up to a third: the same climb on another
+generator stream, no rule change.
+
+`tests/john.test.ts` "the toll collector is a fight" counts the rack
+climbs whose first attempt at the toll collector was lost, bound at most
+half (5), unchanged. Before the section 16 fix this branch lost 6 (`main` 5,
+old build 1); the port was held until the fix. After it:
+
+| Rack climbs | Old build | `main` `ae69eb4` | This branch |
+|---|---|---|---|
+| Seeds 42 and 7, 10 climbs | 1 | 2 | 5 |
+| Seeds 1 to 6 and 8 to 21, 100 climbs | 20 | 24 | 15 |
+
+Branch losses on seeds 42 and 7: sword and hammer on 42; sword, spear and
+unarmed on 7. The test passes at the bound. The wider sample, run with the
+same script on both checkouts, is below `main` and the old build, so the 5
+of 10 is the per-seed spread of a shifted generator stream (the harvest
+draws), not a pacing change.
+
+### 17.2 Offline budgets
+
+Each run of 8 hours through `scripts/budget-runs.ts`, `main` (d137ff9, a
+worktree) and this branch alternating, same hour, ms. Branch rounds 1 and 2
+are before the two caches below; rounds 3 and 4 after.
+
+| Run of 8 hours | `main` (3 rounds) | Branch, before the caches | Branch, final | Budget |
+|---|---|---|---|---|
+| No fight, no condition | 1,732 to 1,876 | 1,746 to 1,794 | 1,737 to 1,759 | 2,200 |
+| A poison held | 6,167 to 6,614 | 6,406 to 6,427 | 6,207 to 6,437 | 8,250 |
+| Floor 1 table sent to combat | 5,978 to 6,057 | 6,427 to 6,601 | 6,109 to 6,169 | 7,700 |
+| Floor 6 Tunnels sent to combat | 11,626 to 12,120 | 12,424 to 12,741 | 12,113 to 12,333 | 14,850 |
+| World: hunt, floor 4 Woods Edge | 11,980 to 12,401 | 13,047 to 13,321 | 12,562 to 13,187 | 14,300 |
+| World: hunt, floor 6 Tunnels | 11,968 to 12,259 | 12,484 to 12,828 | 12,259 to 12,642 | 14,300 |
+
+After the rebase onto `ae69eb4`: `main` (a worktree at `ae69eb4`) and this
+branch alternating, 3 rounds each, same hour, ms. The machine ran slower
+this hour than the hour above, both checkouts alike.
+
+| Run of 8 hours | `main` `ae69eb4` | Branch, rebased | Budget |
+|---|---|---|---|
+| No fight, no condition | 1,815 to 1,914 | 1,731 to 1,804 | 2,200 |
+| A poison held | 6,807 to 6,919 | 6,569 to 6,928 | 8,250 |
+| Floor 1 table sent to combat | 6,331 to 6,511 | 6,241 to 6,557 | 7,700 |
+| Floor 6 Tunnels sent to combat | 12,483 to 12,693 | 12,415 to 12,950 | 14,850 |
+| World: hunt, floor 4 Woods Edge | 12,758 to 13,156 | 12,092 to 13,497 | 14,300 |
+| World: hunt, floor 6 Tunnels | 12,400 to 12,816 | 12,731 to 13,153 | 14,300 |
+
+Every budget holds; the budget projects of `npm run verify` pass. No tick
+hook. What the port adds to a fight run: one harvest per kill (up to five
+generator draws and mercy requests, a read of the loot stat), and per swing
+the three body hooks of `combat` (re-type, sure swing, splash). The first
+measurement was 3 to 10% over `main`; two caches took it to 0 to 6%: the
+resolution is also kept by chromosome object (every edit stores a new
+object, so the hooks do not build the string key on each swing), and what
+a species can carry is kept by monster id (the old code filtered the
+mutation table on every kill). Both caches leave every digest unchanged.
+The digests change for the reason in 17.1 and are recorded again in their
+own commit.
+
+### 17.3 Browser check
+
+Desktop width and 375 px, on the dev server already running on port 5600
+from this checkout. Dev save edited from the forge page
+(`ksgb:development:save` only: stood at the Vivarium, 300 biomatter, three
+Fair slime genes, Fine Elastic, Fair Rime Edge, Fair Vigorous, Geneshaping
+10; the save before the edit is at
+`ksgb:development:save.before-mutagens-check`). Chromosome panel: wore the
+Slime Gene from the centromere picker (capacity 10.0, settling 60 s, Slime
+Bounce priced 98 = (60 + 9.7 armour) x 1.41 speed); placed Vigorous in
+socket g: the Attacks card read "Delivers: Max HP: +18%" and the Character
+panel's HP maximum went from 363 to 428 (x1.18), and back on Remove.
+Culture Bench: refined two Fair slime genes into a Fine one (52 biomatter),
+then Vigorous with Refine all and Stop. The bench card moved 2 px when the
+run line emptied and when the Stop button appeared; both fixed (Stop is
+always present, disabled without a run; the run line has a fixed height)
+and sampled again with no change. No horizontal overflow at 375 px with the
+picker open. No console errors.
+
+Not verified in a browser: Slime Bounce and the Attacks arm in a live
+fight (the pane was hidden, so the game did not tick; both are tested
+headless in `tests/mutagens.test.ts`, "the body in a fight"), a kill
+harvest by play, establishing an edge (no histones reachable), fusing (no
+control, as old), the forge forms of the new registries.
+
+After the rebase onto `ae69eb4`: the Chromosome panel opened again on port
+5600 at desktop width and 375 px (body card, diagram, arm cards, bench
+card), no horizontal overflow, no console errors. Not driven further: the
+rebase touched no file of the panel.
+
+### 17.4 Old rules ported as they are
+
+Listed in the README. In short: the system and the kit start open; no
+histone source; fusing has no player control; a stun takes `stun` off the
+target's bar value though the texts say ticks; Slime Bounce keeps its own
+type when the Attacks arm re-types the swing; the spill loop walks indices
+taken before a spill kill; bare's base is six zero-valued attribute lines.

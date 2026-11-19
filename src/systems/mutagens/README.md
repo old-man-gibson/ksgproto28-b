@@ -117,7 +117,7 @@ for the body's grants and size, which old `equipment.ts` read live through
 
 - `benches`: the `mutagens` record (Culture Bench) with its `desc`; schema
   field `refines`. `mutagens` registers the owner.
-- `combat`: `registerBody({ damageType, sureSwing, splitsAll })`, read by
+- `combat`: `registerBody({ damageType, sureSwing, splitSplash })`, read by
   `playerDamageType`, the to-hit roll and the spill (old `routedType`,
   `armGrants(state, 'attacks', ...)`); `PickedActive.blow`, the gene blow of
   the old swing (not a weapon hit: no upkeep, exertion, extra swings, hand
@@ -172,3 +172,68 @@ John's climbs and every outcome digest change from here on. No tick hook:
 the old `syncGeneStatuses` ran every tick only for conferred conditions,
 which are left behind. The source joins the stat-group fingerprint by being
 registered (kernel decision 32).
+
+## Changed while building (step 3)
+
+- The content registries are named `main_genes` and `chromosome_layouts`
+  (file names follow registry names); the design said `genes`, `layouts`.
+- Niraksa's on-crit `duration: 'permanent'` is `permanent: true`, the
+  application shape of this repository's `statuses`.
+- `priceGeneAbility(spec, stats, name, reads)`: the old took the state and
+  the target; here an attribute reader and a reader of the target's stacks.
+  `perTargetInflictIntensity(spec, gene, stacks)` takes the stack count.
+- The body hooks of `combat` are one registration, `registerBody`; the
+  splash hook returns the extra splash (`SPLIT_SPLASH`) or 0.
+- The settling clock is the slice field `settleUntil`, not the old shared
+  `useCooldowns.centromere`.
+- `mutagens/unlock` on an open system answers a reason; the old
+  `unlockMutagens` returned silently.
+- The stat source returns nothing for a monster. The old pipeline pushed
+  bare's six zero-valued attribute lines for every bearer; they change no
+  number. For the player bare's zero lines are still pushed, as old.
+- A buff gene ability, a volley and a wind-up answer a skip reason from the
+  rotation ("waits for a later port") instead of acting.
+- The Chromosome panel is smaller than the old one: no per-hop chips, no
+  rate resolution of `fromStat` lines against the sheet, no ability card
+  wording of old `format.ts` (`geneAbilityLines`). Each route opens on
+  click to its notes.
+
+## Old rules ported as they are
+
+- The kit and the system start open (the old "alpha" default); the unlock
+  quest was never built.
+- Histones have no source the player can reach (old: only the shelved
+  basement spools them), so no edge beyond the kit can be established.
+- Fusing has no player control on old `main` (the debug panel only). The
+  command `mutagens/fuse` is ported; the panel has no button for it.
+- A stun takes `stun` off the target's action bar value, which the gene
+  descriptions call ticks ("loses two ticks of action bar").
+- Slime Bounce keeps its own type when the Attacks arm re-types the plain
+  swing; only the Active arm re-types the ability.
+- The spill loop walks the flank indices taken before any spill kill; a
+  kill inside the loop can shift the line-up under it (old combat did the
+  same).
+- Bare's base is six attribute lines of value 0 (the old entry says why).
+- Refusals of place, remove, cut, restore and unslot are not logged; only
+  the over-capacity refusal of an edit, a refused swap, refine and fuse log
+  the `🔒` line, as old.
+- The old tests read grade `'S'` (upper case) for an approach of 1; ported.
+
+## Panel as built
+
+Header with capacity used and the limit; the body card (name, grade,
+description, ceiling, settling, size) and the ability card (damage priced
+against the current stat block, its working, cooldown); the diagram (live,
+cut and unestablished edges, the four arm doors, a click on a node opens
+it); the node picker (Wear, Revert to Bare Sequence, Place, Remove, and per
+edge Establish with its histone cost, Cut, Restore); four arm cards (body
+lines, Delivers, capabilities with "read by nothing here" where no system
+reads them, routes that open to their notes); stranded sockets; the
+Culture Bench block (where it stands, subject select, cost, Refine, Refine
+all, Stop, a fixed-height bar and reason line).
+
+## Left behind (as built)
+
+As listed under "Left behind" in the design, plus: the ability card text
+of old `format.ts`, the debug panel controls (grant genes, fuse every
+pairing, skip settling; `setSkipSettling` remains for tests).

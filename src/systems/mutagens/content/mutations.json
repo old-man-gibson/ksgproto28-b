@@ -1,0 +1,179 @@
+[
+  {
+    "id": "chill",
+    "name": "Chill Mutation",
+    "icon": "❄️",
+    "native": "defenses",
+    "from": "ice",
+    "effect": {
+      "mods": [
+        {
+          "stat": "resCold",
+          "op": "add",
+          "value": 0.05
+        }
+      ]
+    }
+  },
+  {
+    "id": "ember",
+    "name": "Ember Mutation",
+    "icon": "🔥",
+    "native": "defenses",
+    "from": "fire",
+    "effect": {
+      "mods": [
+        {
+          "stat": "resHeat",
+          "op": "add",
+          "value": 0.05
+        }
+      ]
+    }
+  },
+  {
+    "id": "crystal",
+    "name": "Crystal Mutation",
+    "icon": "💎",
+    "native": "defenses",
+    "from": "earth",
+    "effect": {
+      "mods": [
+        {
+          "stat": "resLight",
+          "op": "add",
+          "value": 0.12
+        },
+        {
+          "stat": "resBludgeoning",
+          "op": "add",
+          "value": -0.06
+        }
+      ]
+    }
+  },
+  {
+    "id": "tainting",
+    "name": "Tainting Mutation",
+    "icon": "🧪",
+    "native": "defenses",
+    "from": "toxic",
+    "effect": {
+      "mods": [
+        {
+          "stat": "resPoison",
+          "op": "add",
+          "value": 0.1
+        }
+      ]
+    }
+  },
+  {
+    "id": "resonance",
+    "name": "Resonant Mutation",
+    "icon": "📡",
+    "native": "special",
+    "from": "arcane",
+    "transform": {
+      "mult": 1.5
+    }
+  },
+  {
+    "id": "catalyst",
+    "name": "Catalytic Mutation",
+    "icon": "⚗️",
+    "native": "special",
+    "from": "incorporeal",
+    "amplify": 1.5
+  },
+  {
+    "id": "elastic",
+    "name": "Elastic Mutation",
+    "icon": "🫧",
+    "native": "attacks",
+    "from": "slime",
+    "effect": {
+      "grants": [
+        "ignores_dodge"
+      ],
+      "mods": [
+        {
+          "stat": "crit",
+          "op": "add",
+          "value": 0.03
+        }
+      ]
+    },
+    "transform": {
+      "mult": 1.15
+    }
+  },
+  {
+    "id": "bouncing",
+    "name": "Bouncing Mutation",
+    "icon": "🎾",
+    "native": "attacks",
+    "from": "vermin",
+    "effect": {
+      "grants": [
+        "splits_target"
+      ]
+    },
+    "transform": {
+      "grants": [
+        "splits_target"
+      ]
+    }
+  },
+  {
+    "id": "vigorous",
+    "name": "Vigorous Mutation",
+    "icon": "💗",
+    "native": "defenses",
+    "from": "beast",
+    "effect": {
+      "mods": [
+        {
+          "stat": "maxHp",
+          "op": "mult",
+          "value": 0.08
+        }
+      ]
+    }
+  },
+  {
+    "id": "studious",
+    "name": "Studious Mutation",
+    "icon": "📘",
+    "native": "special",
+    "from": "construct",
+    "effect": {
+      "mods": [
+        {
+          "stat": "skillXp",
+          "op": "mult",
+          "value": 0.05
+        }
+      ]
+    }
+  },
+  {
+    "id": "fleet",
+    "name": "Fleet Mutation",
+    "icon": "💨",
+    "native": "special",
+    "from": "wind",
+    "effect": {
+      "mods": [
+        {
+          "stat": "speed",
+          "op": "mult",
+          "value": 0.04
+        }
+      ]
+    },
+    "transform": {
+      "mult": 1.1
+    }
+  }
+]

@@ -1,0 +1,12 @@
+{
+  "unlocked": true,
+  "chromosome": {
+    "layout": "baseline",
+    "main": { "id": "slime_gene", "quality": "c" },
+    "placed": { "g": { "id": "elastic", "quality": "b" } },
+    "established": ["@|d", "@|g"],
+    "cut": []
+  },
+  "known": { "genes": ["slime_gene"], "mutagens": ["elastic"] },
+  "settleUntil": 0
+}

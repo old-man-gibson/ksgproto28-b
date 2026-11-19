@@ -1,0 +1,10 @@
+[
+  {
+    "id": "vuln",
+    "name": "Vulnerability Nuclease",
+    "icon": "🧬",
+    "kind": "vulnerability",
+    "from": "undead",
+    "desc": "Changes the element of a weak point on the gene: a negative resistance, or an element that stops a conferred effect (heat and acid stop the Troll Gene’s regeneration), becomes the element of the mutation fused into the nuclease. Weak points change in the order they are listed on the card, using the routes nearest the main gene first. Amounts do not change. Drops from undead."
+  }
+]

@@ -128,12 +128,14 @@ import statuses, {
 import {
   armInterception,
   blowRiders,
+  bodyHooks,
   monsterActionHandler,
   monsterActionKind,
   playerActionHandler,
   playerActionKinds,
   type ActionCtx,
   type BlowRiderKind,
+  type BodyBlow,
   type MonsterShape,
   type PickedActive,
 } from './actions';
@@ -430,6 +432,10 @@ function trackWeaponFamily(ctx: C): void {
 
 /** The damage type of the player's weapon attacks. Bare fists bludgeon. */
 export function playerDamageType(ctx: Pick<C, 'read'>): DamageType {
+  // The body re-types every ordinary swing, the weapon's and the fist's
+  // (old `routedType(state, 'attacks')`; the mutagens port).
+  const routed = bodyHooks().damageType?.(ctx);
+  if (routed) return routed;
   const def = weaponDef(ctx.read(items));
   if (!def) return 'bludgeoning';
   if (def.damageType) return def.damageType;
@@ -1619,7 +1625,8 @@ function playerPhase(ctx: C, c: Fight, monster: Enemy, stats: Readonly<DerivedSt
   const dark = ctx.derived(hook.darkness);
   // Empty stance: a weapon blow that cannot be dodged and lands at its raw size.
   const empty = !active && heldWith(mine(ctx), 'pureBlows') !== null;
-  const sure = empty || !!active?.sure;
+  // `ignores_dodge` in the body's Attacks arm says it of every swing (the mutagens port).
+  const sure = empty || !!active?.sure || !!bodyHooks().sureSwing?.(ctx);
   const evaded = !sure && !pulled && monster.hp > 0 && rollAgainst(ctx, statsOf(ctx, monster).dodge, blind);
   const fumbled = !evaded && rollAgainst(ctx, statusMissChance(mine(ctx)) + DARK_MISS_CHANCE * dark, blind);
 
@@ -1677,15 +1684,37 @@ function swing(
   // Hunter bonuses are gated on what is fought: the offensive half of the
   // block is resolved against this target's tags.
   const vs = statBlockOf(ctx, PLAYER, vsVariant(monsterTagSet(monster.defId)));
-  const dmgType = playerDamageType(ctx);
-  const label = shape?.label ?? 'You hit';
-  const hitLabel = shape?.hitLabel ?? 'Your attack';
-  const hitSource = weaponSource(ctx);
-  const usedTags = shape?.tags ?? tags;
+  // The body's own blow (a gene ability) takes the weapon's place: priced off
+  // the body, not a weapon hit (old gene branch of the swing; the mutagens port).
+  const body: BodyBlow | null = active?.blow ? active.blow(ctx as ActionCtx, vs, monster) : null;
+  const isWeaponHit = !body;
+  const dmgType = body ? body.type : playerDamageType(ctx);
+  const label = body ? body.label : (shape?.label ?? 'You hit');
+  const hitLabel = body ? body.hitLabel : (shape?.hitLabel ?? 'Your attack');
+  const hitSource = body ? body.hitLabel : weaponSource(ctx);
+  const usedTags = body ? body.tags : (shape?.tags ?? tags);
   const steps: DamageStep[] = [];
-  let dmg = vs.damage * (shape?.damageMult ?? 1);
-  steps.push({ label: 'Damage', value: vs.damage });
-  if (shape?.damageMult !== undefined && shape.damageMult !== 1) steps.push({ label: hitLabel, mult: shape.damageMult });
+  let dmg: number;
+  if (body) {
+    dmg = body.damage;
+    steps.push(...body.steps);
+    // Doubling per size gap, where `vsSmaller` is linear.
+    if (body.sizeDouble) {
+      const doublings = Math.floor(stepsSmaller(ctx, monster.defId) / body.sizeDouble);
+      if (doublings > 0) {
+        const scale = 2 ** doublings;
+        dmg *= scale;
+        steps.push({ label: 'Size difference', mult: scale });
+      }
+    }
+    // A stun is time off the target's own bar; a self delay, off the player's.
+    if (body.stun) monster.bar = Math.max(0, monster.bar - body.stun);
+    if (body.selfDelay) c.playerBar = Math.max(0, c.playerBar - body.selfDelay);
+  } else {
+    dmg = vs.damage * (shape?.damageMult ?? 1);
+    steps.push({ label: 'Damage', value: vs.damage });
+  }
+  if (!body && shape?.damageMult !== undefined && shape.damageMult !== 1) steps.push({ label: hitLabel, mult: shape.damageMult });
   if (shape?.prevented) {
     const stopped = c.prevented?.[shape.prevented.by];
     if (stopped) {
@@ -1698,21 +1727,23 @@ function swing(
   if (active) c.cooldowns[active.id] = active.cooldown;
 
   // Weapons the mind holds are on their own clock; their share went with them.
-  const handShare = handSwingShare(ctx.read(items).equipment, grantsOf(ctx.read(items)));
+  const handShare = isWeaponHit ? handSwingShare(ctx.read(items).equipment, grantsOf(ctx.read(items))) : 1;
   if (handShare < 1) {
     dmg *= handShare;
     steps.push({ label: 'Share of damage left in your hands', mult: handShare });
   }
-  // Every swing pays its upkeep; the style's bargain costs extra, and only
-  // when the player has opted in.
-  ctx.request(drawNow, {
-    id: 'stamina',
-    amount: attackUpkeep(stats, actionTicks(stats.actionBar, attackFillRate(stats)) / TPS),
-  });
+  // Every weapon swing pays its upkeep; the style's bargain costs extra, and
+  // only when the player has opted in. The body's blow burns no stamina.
+  if (isWeaponHit) {
+    ctx.request(drawNow, {
+      id: 'stamina',
+      amount: attackUpkeep(stats, actionTicks(stats.actionBar, attackFillRate(stats)) / TPS),
+    });
+  }
   if (shape?.staminaCost) {
     ctx.request(drawNow, { id: 'stamina', amount: stats.maxStamina * shape.staminaCost * stats.staminaEff });
   }
-  const ex: Exertion = attackExertion ? ctx.request(exertNow, { spec: attackExertion }) : NO_EXERTION;
+  const ex: Exertion = attackExertion && isWeaponHit ? ctx.request(exertNow, { spec: attackExertion }) : NO_EXERTION;
   if (attackExertion?.ramp) {
     const built = (ex.spent > 0 ? attackExertion.ramp.per * ex.ratio : 0) + (shape?.momentum ?? 0);
     if (built > 0) {
@@ -1725,7 +1756,7 @@ function swing(
   }
   const penetration = Math.min(0.95, vs.penetration + ex.penetration + (shape?.penetration ?? 0));
   if (ex.damage > 0) steps.push({ label: 'Exertion', mult: 1 + ex.damage });
-  const hits = (shape?.hits ?? 1) + rollExtraHits(ctx.rng, ex.extraHits + vs.extraSwings);
+  const hits = (shape?.hits ?? 1) + rollExtraHits(ctx.rng, ex.extraHits + (isWeaponHit ? vs.extraSwings : 0));
   const blow = dmg * (1 + ex.damage);
   const slices = new Map<string, TypedSlice>();
   let total = 0;
@@ -1768,6 +1799,16 @@ function swing(
     hit = landed.dealt;
     // Weapon enchants and socketed runes add their own typed damage per hit.
     const typed: { type: DamageType; value: number; source: string }[] = [];
+    if (!isWeaponHit) {
+      // The body's own riders, each answering its own resistance.
+      for (const b of body!.riders ?? []) {
+        const extra = monsterSlice(statsOf(ctx, monster), b.type, hitSource, b.value, penetration);
+        addSlice(slices, extra);
+        hit += extra.dealt;
+      }
+      total += hit;
+      continue;
+    }
     if (wdef?.bonusDamage) typed.push({ ...wdef.bonusDamage, source: wdef.name });
     for (const ref of weapon?.runes ?? []) {
       const effect = runeEffectAt(ref, 'weapon');
@@ -1830,7 +1871,7 @@ function swing(
   noteOutgoing(ctx.state, now(ctx), dealt);
   applyHarvest(ctx, monster, enemyTookDamage(ctx, monster, new Map([[dmgType, dealt]])));
   const note = resNote(statsOf(ctx, monster)[RES_STAT_BY_TYPE[dmgType]]);
-  bump(ctx, 'combat:attacks');
+  if (isWeaponHit) bump(ctx, 'combat:attacks');
   if (isCrit) {
     markCombatEvent(ctx, 'onCrit');
     bump(ctx, 'combat:crits');
@@ -1856,6 +1897,15 @@ function swing(
     for (const app of shape.inflicts)
       ctx.request(applyStatus, { entity: monster.entity, app, source: hitLabel, penetration: vs.penetration });
   }
+  if (body && monster.hp > 0) {
+    for (const app of body.inflicts?.(monster) ?? [])
+      ctx.request(applyStatus, { entity: monster.entity, app, source: hitLabel, penetration: vs.penetration });
+    // An execute measures against the blow that just landed, not the level.
+    if (body.execute && monster.hp <= dealt * body.execute) {
+      feed(ctx, `☠️ ${hitLabel} kills the ${monster.name}: its HP was at or below ${Math.round(body.execute * 100)}% of the damage this hit dealt.`);
+      monster.hp = 0;
+    }
+  }
   for (const rider of ridden) {
     const left = rider.afterBlow?.(ctx as ActionCtx, monster);
     if (!left) continue;
@@ -1866,18 +1916,25 @@ function swing(
     if (left.line) feed(ctx, left.line);
   }
   // A plain swing recovers to neutral, and that recovery is not displaced.
-  setPlayerPosition(
-    ctx,
-    c,
-    shape?.to ? (statusDisplacedExit(roller(ctx), mine(ctx)) ?? shape.to) : NEUTRAL_POSITION,
-  );
+  // The body's blow moves no feet.
+  if (isWeaponHit) {
+    setPlayerPosition(
+      ctx,
+      c,
+      shape?.to ? (statusDisplacedExit(roller(ctx), mine(ctx)) ?? shape.to) : NEUTRAL_POSITION,
+    );
+  }
   if (shape) active?.after?.(ctx as ActionCtx);
 
-  // Spill: part of the blow carries past its target into a random flanker.
-  const splash = vs.splash + ex.splash + (shape?.splash ?? 0);
+  // Spill: part of the blow carries past its target into a random flanker,
+  // or into every flank for a blow thrown at the room (`splashAll`) or a body
+  // whose Attacks arm carries `splits_target`.
+  const split = bodyHooks().splitSplash?.(ctx) ?? 0;
+  const splash = vs.splash + ex.splash + (shape?.splash ?? 0) + (body?.splash ?? 0) + split;
   const flanks = c.enemies.map((e, i) => (e && i > 0 ? i : -1)).filter((i) => i >= 0);
   if (splash > 0 && flanks.length > 0) {
-    const idx = flanks[randInt(ctx, 0, flanks.length - 1)];
+    const spilled = body?.splashAll || split > 0 ? flanks : [flanks[randInt(ctx, 0, flanks.length - 1)]];
+    for (const idx of spilled) {
     const other = c.enemies[idx];
     if (other) {
       const slice = monsterSlice(statsOf(ctx, other), dmgType, hitSource, raw * splash, penetration);
@@ -1897,15 +1954,26 @@ function swing(
         total: spill,
       });
       ctx.emit(hitLanded, { attacker: PLAYER, target: other.entity, total: spill, crit: false, kind: 'spill', type: dmgType });
+      // The body's blow does to everything it reached what it did to the target.
+      if (body && other.hp > 0) {
+        for (const app of body.inflicts?.(other) ?? [])
+          ctx.request(applyStatus, { entity: other.entity, app, source: hitLabel, penetration: vs.penetration });
+        if (body.execute && other.hp <= spill * body.execute) {
+          feed(ctx, `☠️ ${hitLabel} kills the ${other.name}: its HP was at or below ${Math.round(body.execute * 100)}% of the spill damage.`);
+          other.hp = 0;
+        }
+      }
       if (other.hp <= 0) onKill(ctx, idx);
+    }
     }
   }
 
   // A weapon blow is contact: the target's own conditions answer it.
-  if (applyMonsterRetaliation(ctx, 0, 'onContact')) return true;
+  if (isWeaponHit && applyMonsterRetaliation(ctx, 0, 'onContact')) return true;
   // Some conditions cost the player every time they swing.
   if (applyRetaliation(ctx, 'onAttack')) return true;
 
+  if (body?.attrXp) ctx.emit(grantAttrXp, body.attrXp);
   ctx.emit(grantAttrXp, { attr: 'str', amount: 2 });
   ctx.emit(grantAttrXp, { attr: 'dex', amount: 1 });
   ctx.emit(grantSkillXp, { tags: usedTags, amount: 4 + rewardLevel(monster) * 0.5 });

@@ -1,0 +1,109 @@
+[
+  {
+    "id": "fire",
+    "tag": "fire",
+    "type": "heat",
+    "res": "resHeat",
+    "condition": "on_fire",
+    "edge": { "id": "searing_edge", "name": "Searing Edge", "icon": "☄️" },
+    "brand": { "id": "kindling_brand", "name": "Kindling Brand", "icon": "🕯️" }
+  },
+  {
+    "id": "ice",
+    "tag": "ice",
+    "type": "cold",
+    "res": "resCold",
+    "condition": "chilled",
+    "edge": { "id": "rime_edge", "name": "Rime Edge", "icon": "🧊" },
+    "brand": { "id": "frostbite_brand", "name": "Frostbite Brand", "icon": "🥶" }
+  },
+  {
+    "id": "lightning",
+    "tag": "lightning",
+    "type": "lightning",
+    "res": "resLightning",
+    "condition": "jolted",
+    "edge": { "id": "storm_edge", "name": "Storm Edge", "icon": "🌩️" },
+    "brand": { "id": "arcing_brand", "name": "Arcing Brand", "icon": "🔌" },
+    "ward": { "id": "grounding", "name": "Grounding Mutation", "icon": "🧲" }
+  },
+  {
+    "id": "earth",
+    "tag": "earth",
+    "type": "earth",
+    "res": "resEarth",
+    "condition": "shardbound",
+    "edge": { "id": "grit_edge", "name": "Grit Edge", "icon": "⛰️" },
+    "brand": { "id": "tremor_brand", "name": "Tremor Brand", "icon": "🌋" },
+    "ward": { "id": "bedrock", "name": "Bedrock Mutation", "icon": "🪨" }
+  },
+  {
+    "id": "wind",
+    "tag": "wind",
+    "type": "wind",
+    "res": "resWind",
+    "condition": "buffeted",
+    "edge": { "id": "gale_edge", "name": "Gale Edge", "icon": "🌬️" },
+    "brand": { "id": "buffet_brand", "name": "Buffet Brand", "icon": "🍃" },
+    "ward": { "id": "streamlined", "name": "Streamlined Mutation", "icon": "🪶" }
+  },
+  {
+    "id": "water",
+    "tag": "water",
+    "type": "water",
+    "res": "resWater",
+    "condition": "wet",
+    "edge": { "id": "tide_edge", "name": "Tide Edge", "icon": "🌊" },
+    "brand": { "id": "drench_brand", "name": "Drench Brand", "icon": "💦" },
+    "ward": { "id": "sealskin", "name": "Sealskin Mutation", "icon": "🦭" }
+  },
+  {
+    "id": "nature",
+    "tag": "nature",
+    "type": "acid",
+    "res": "resAcid",
+    "condition": "seeded",
+    "edge": { "id": "thorn_edge", "name": "Thorn Edge", "icon": "🌵" },
+    "brand": { "id": "seeding_brand", "name": "Seeding Brand", "icon": "🌱" },
+    "ward": { "id": "barkskin", "name": "Barkskin Mutation", "icon": "🪵" }
+  },
+  {
+    "id": "arcane",
+    "tag": "arcane",
+    "type": "arcane",
+    "res": "resArcane",
+    "condition": "unravelling",
+    "edge": { "id": "runic_edge", "name": "Runic Edge", "icon": "🔮" },
+    "brand": { "id": "unravelling_brand", "name": "Unravelling Brand", "icon": "🌀" },
+    "ward": { "id": "warded", "name": "Warded Mutation", "icon": "📿" }
+  },
+  {
+    "id": "light",
+    "tag": "light",
+    "type": "light",
+    "res": "resLight",
+    "condition": "dazzled",
+    "edge": { "id": "radiant_edge", "name": "Radiant Edge", "icon": "🌟" },
+    "brand": { "id": "dazzle_brand", "name": "Dazzle Brand", "icon": "🔆" },
+    "ward": { "id": "gleam", "name": "Gleam Mutation", "icon": "🪞" }
+  },
+  {
+    "id": "dark",
+    "tag": "dark",
+    "type": "dark",
+    "res": "resDark",
+    "condition": "tainted",
+    "edge": { "id": "umbral_edge", "name": "Umbral Edge", "icon": "🌘" },
+    "brand": { "id": "taint_brand", "name": "Tainting Brand", "icon": "🌑" },
+    "ward": { "id": "nightsight", "name": "Nightsight Mutation", "icon": "🦇" }
+  },
+  {
+    "id": "toxic",
+    "tag": "toxic",
+    "type": "poison",
+    "res": "resPoison",
+    "condition": "poison",
+    "edge": { "id": "venom_edge", "name": "Venom Edge", "icon": "🐍" },
+    "brand": { "id": "miasma_brand", "name": "Miasma Brand", "icon": "☠️" }
+  }
+]

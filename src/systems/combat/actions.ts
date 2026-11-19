@@ -24,7 +24,7 @@
  */
 import type { Ctx, DeepReadonly } from '../../kernel';
 import type { MonsterAction } from '../monsters';
-import type { DamageType } from '../stats';
+import type { DamageType, DerivedStats } from '../stats';
 import type { StatusApplication } from '../statuses';
 import type { Enemy, Fight } from './types';
 
@@ -143,6 +143,11 @@ export interface PickedActive {
   approach?: DamageType;
   /** A swing-shaping active: the tick throws the blow. */
   shape?: SwingShape;
+  /**
+   * The body's own blow (a gene ability): priced against the player's block
+   * for the target, thrown in the swing's place. Step 3, the mutagens port.
+   */
+  blow?(ctx: ActionCtx, vs: Readonly<DerivedStats>, target: DeepReadonly<Enemy>): BodyBlow;
   /**
    * A working that takes the swing's place, called once the blow is neither
    * evaded nor fumbled. The handler lands it through `combat/damage-enemy`.
@@ -298,4 +303,74 @@ export function blowRiders(): IterableIterator<BlowRiderKind> {
 /** Tests only: drop a registered hook. */
 export function unregisterHook(kind: 'interception' | 'rider', key: string): void {
   (kind === 'interception' ? INTERCEPTIONS : BLOW_RIDERS).delete(key);
+}
+
+// ---- the body (step 3, the mutagens port) ----
+
+/**
+ * What the body the player wears says about every blow. The old combat read
+ * `routedType(state, 'attacks')` in `playerDamageType` and
+ * `armGrants(state, 'attacks', ...)` in the swing; here the system that owns
+ * the body registers the answers. None registered: a plain body.
+ */
+export interface BodyHooks {
+  /** The type every ordinary swing lands as, replacing the weapon's. Undefined: the weapon's. */
+  damageType?(ctx: Pick<ActionCtx, 'read'>): DamageType | undefined;
+  /** Every swing rolls nothing to hit (`ignores_dodge` in the Attacks arm). */
+  sureSwing?(ctx: Pick<ActionCtx, 'read'>): boolean;
+  /** Every blow spills into every flank at this much more splash; 0: no (`splits_target`). */
+  splitSplash?(ctx: Pick<ActionCtx, 'read'>): number;
+}
+
+let BODY: BodyHooks = {};
+
+/** Register the body's hooks. One system owns the body. */
+export function registerBody(hooks: BodyHooks): void {
+  if (Object.keys(BODY).length) throw new Error('combat: the body is registered twice');
+  BODY = hooks;
+}
+
+export function bodyHooks(): BodyHooks {
+  return BODY;
+}
+
+/** One line of a priced blow's working (the damage report's step). */
+export interface BlowStep {
+  label: string;
+  value?: number;
+  mult?: number;
+}
+
+/**
+ * A blow the body throws instead of the weapon (the old gene branch of the
+ * swing). Not a weapon hit: no upkeep, exertion, extra swings, hand share,
+ * weapon riders, coating, position change, contact retaliation or
+ * `combat:attacks`.
+ */
+export interface BodyBlow {
+  /** "<label> the <monster> for N". */
+  label: string;
+  hitLabel: string;
+  damage: number;
+  steps: BlowStep[];
+  type: DamageType;
+  /** Ticks off the target's bar. */
+  stun?: number;
+  /** Ticks off the player's own bar. */
+  selfDelay?: number;
+  /** Typed slices per hit beside the blow. */
+  riders?: { type: DamageType; value: number }[];
+  /** Doubles per this many size steps the target is smaller. */
+  sizeDouble?: number;
+  /** Kills a target left at or under this share of the blow that hit it. */
+  execute?: number;
+  splash?: number;
+  /** The spill reaches every flank. */
+  splashAll?: boolean;
+  /** What the blow leaves on a target it reached. */
+  inflicts?(target: DeepReadonly<Enemy>): StatusApplication[] | undefined;
+  /** Tags the blow's skill XP goes to. */
+  tags: string[];
+  /** Attribute XP of the blow, on top of the swing's STR 2 and DEX 1. */
+  attrXp?: { attr: 'str' | 'dex' | 'con' | 'int' | 'wis' | 'cha'; amount: number };
 }

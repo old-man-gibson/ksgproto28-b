@@ -1,0 +1,647 @@
+[
+  {
+    "id": "searing_edge",
+    "name": "Searing Edge",
+    "icon": "☄️",
+    "native": "attacks",
+    "from": "fire",
+    "effect": {
+      "type": "heat",
+      "mods": [
+        {
+          "stat": "damage",
+          "op": "mult",
+          "value": 0.05
+        }
+      ]
+    },
+    "transform": {
+      "retype": "heat"
+    }
+  },
+  {
+    "id": "kindling_brand",
+    "name": "Kindling Brand",
+    "icon": "🕯️",
+    "native": "active",
+    "from": "fire",
+    "effect": {
+      "grants": [
+        "inflicts_on_fire"
+      ]
+    },
+    "transform": {
+      "grants": [
+        "inflicts_on_fire"
+      ]
+    }
+  },
+  {
+    "id": "rime_edge",
+    "name": "Rime Edge",
+    "icon": "🧊",
+    "native": "attacks",
+    "from": "ice",
+    "effect": {
+      "type": "cold",
+      "mods": [
+        {
+          "stat": "damage",
+          "op": "mult",
+          "value": 0.05
+        }
+      ]
+    },
+    "transform": {
+      "retype": "cold"
+    }
+  },
+  {
+    "id": "frostbite_brand",
+    "name": "Frostbite Brand",
+    "icon": "🥶",
+    "native": "active",
+    "from": "ice",
+    "effect": {
+      "grants": [
+        "inflicts_chilled"
+      ]
+    },
+    "transform": {
+      "grants": [
+        "inflicts_chilled"
+      ]
+    }
+  },
+  {
+    "id": "storm_edge",
+    "name": "Storm Edge",
+    "icon": "🌩️",
+    "native": "attacks",
+    "from": "lightning",
+    "effect": {
+      "type": "lightning",
+      "mods": [
+        {
+          "stat": "damage",
+          "op": "mult",
+          "value": 0.05
+        }
+      ]
+    },
+    "transform": {
+      "retype": "lightning"
+    }
+  },
+  {
+    "id": "arcing_brand",
+    "name": "Arcing Brand",
+    "icon": "🔌",
+    "native": "active",
+    "from": "lightning",
+    "effect": {
+      "grants": [
+        "inflicts_jolted"
+      ]
+    },
+    "transform": {
+      "grants": [
+        "inflicts_jolted"
+      ]
+    }
+  },
+  {
+    "id": "grounding",
+    "name": "Grounding Mutation",
+    "icon": "🧲",
+    "native": "defenses",
+    "from": "lightning",
+    "effect": {
+      "mods": [
+        {
+          "stat": "resLightning",
+          "op": "add",
+          "value": 0.06
+        }
+      ]
+    }
+  },
+  {
+    "id": "grit_edge",
+    "name": "Grit Edge",
+    "icon": "⛰️",
+    "native": "attacks",
+    "from": "earth",
+    "effect": {
+      "type": "earth",
+      "mods": [
+        {
+          "stat": "damage",
+          "op": "mult",
+          "value": 0.05
+        }
+      ]
+    },
+    "transform": {
+      "retype": "earth"
+    }
+  },
+  {
+    "id": "tremor_brand",
+    "name": "Tremor Brand",
+    "icon": "🌋",
+    "native": "active",
+    "from": "earth",
+    "effect": {
+      "grants": [
+        "inflicts_shardbound"
+      ]
+    },
+    "transform": {
+      "grants": [
+        "inflicts_shardbound"
+      ]
+    }
+  },
+  {
+    "id": "bedrock",
+    "name": "Bedrock Mutation",
+    "icon": "🪨",
+    "native": "defenses",
+    "from": "earth",
+    "effect": {
+      "mods": [
+        {
+          "stat": "resEarth",
+          "op": "add",
+          "value": 0.06
+        }
+      ]
+    }
+  },
+  {
+    "id": "gale_edge",
+    "name": "Gale Edge",
+    "icon": "🌬️",
+    "native": "attacks",
+    "from": "wind",
+    "effect": {
+      "type": "wind",
+      "mods": [
+        {
+          "stat": "damage",
+          "op": "mult",
+          "value": 0.05
+        }
+      ]
+    },
+    "transform": {
+      "retype": "wind"
+    }
+  },
+  {
+    "id": "buffet_brand",
+    "name": "Buffet Brand",
+    "icon": "🍃",
+    "native": "active",
+    "from": "wind",
+    "effect": {
+      "grants": [
+        "inflicts_buffeted"
+      ]
+    },
+    "transform": {
+      "grants": [
+        "inflicts_buffeted"
+      ]
+    }
+  },
+  {
+    "id": "streamlined",
+    "name": "Streamlined Mutation",
+    "icon": "🪶",
+    "native": "defenses",
+    "from": "wind",
+    "effect": {
+      "mods": [
+        {
+          "stat": "resWind",
+          "op": "add",
+          "value": 0.06
+        }
+      ]
+    }
+  },
+  {
+    "id": "tide_edge",
+    "name": "Tide Edge",
+    "icon": "🌊",
+    "native": "attacks",
+    "from": "water",
+    "effect": {
+      "type": "water",
+      "mods": [
+        {
+          "stat": "damage",
+          "op": "mult",
+          "value": 0.05
+        }
+      ]
+    },
+    "transform": {
+      "retype": "water"
+    }
+  },
+  {
+    "id": "drench_brand",
+    "name": "Drench Brand",
+    "icon": "💦",
+    "native": "active",
+    "from": "water",
+    "effect": {
+      "grants": [
+        "inflicts_wet"
+      ]
+    },
+    "transform": {
+      "grants": [
+        "inflicts_wet"
+      ]
+    }
+  },
+  {
+    "id": "sealskin",
+    "name": "Sealskin Mutation",
+    "icon": "🦭",
+    "native": "defenses",
+    "from": "water",
+    "effect": {
+      "mods": [
+        {
+          "stat": "resWater",
+          "op": "add",
+          "value": 0.06
+        }
+      ]
+    }
+  },
+  {
+    "id": "thorn_edge",
+    "name": "Thorn Edge",
+    "icon": "🌵",
+    "native": "attacks",
+    "from": "nature",
+    "effect": {
+      "type": "acid",
+      "mods": [
+        {
+          "stat": "damage",
+          "op": "mult",
+          "value": 0.05
+        }
+      ]
+    },
+    "transform": {
+      "retype": "acid"
+    }
+  },
+  {
+    "id": "seeding_brand",
+    "name": "Seeding Brand",
+    "icon": "🌱",
+    "native": "active",
+    "from": "nature",
+    "effect": {
+      "grants": [
+        "inflicts_seeded"
+      ]
+    },
+    "transform": {
+      "grants": [
+        "inflicts_seeded"
+      ]
+    }
+  },
+  {
+    "id": "barkskin",
+    "name": "Barkskin Mutation",
+    "icon": "🪵",
+    "native": "defenses",
+    "from": "nature",
+    "effect": {
+      "mods": [
+        {
+          "stat": "resAcid",
+          "op": "add",
+          "value": 0.06
+        }
+      ]
+    }
+  },
+  {
+    "id": "runic_edge",
+    "name": "Runic Edge",
+    "icon": "🔮",
+    "native": "attacks",
+    "from": "arcane",
+    "effect": {
+      "type": "arcane",
+      "mods": [
+        {
+          "stat": "damage",
+          "op": "mult",
+          "value": 0.05
+        }
+      ]
+    },
+    "transform": {
+      "retype": "arcane"
+    }
+  },
+  {
+    "id": "unravelling_brand",
+    "name": "Unravelling Brand",
+    "icon": "🌀",
+    "native": "active",
+    "from": "arcane",
+    "effect": {
+      "grants": [
+        "inflicts_unravelling"
+      ]
+    },
+    "transform": {
+      "grants": [
+        "inflicts_unravelling"
+      ]
+    }
+  },
+  {
+    "id": "warded",
+    "name": "Warded Mutation",
+    "icon": "📿",
+    "native": "defenses",
+    "from": "arcane",
+    "effect": {
+      "mods": [
+        {
+          "stat": "resArcane",
+          "op": "add",
+          "value": 0.06
+        }
+      ]
+    }
+  },
+  {
+    "id": "radiant_edge",
+    "name": "Radiant Edge",
+    "icon": "🌟",
+    "native": "attacks",
+    "from": "light",
+    "effect": {
+      "type": "light",
+      "mods": [
+        {
+          "stat": "damage",
+          "op": "mult",
+          "value": 0.05
+        }
+      ]
+    },
+    "transform": {
+      "retype": "light"
+    }
+  },
+  {
+    "id": "dazzle_brand",
+    "name": "Dazzle Brand",
+    "icon": "🔆",
+    "native": "active",
+    "from": "light",
+    "effect": {
+      "grants": [
+        "inflicts_dazzled"
+      ]
+    },
+    "transform": {
+      "grants": [
+        "inflicts_dazzled"
+      ]
+    }
+  },
+  {
+    "id": "gleam",
+    "name": "Gleam Mutation",
+    "icon": "🪞",
+    "native": "defenses",
+    "from": "light",
+    "effect": {
+      "mods": [
+        {
+          "stat": "resLight",
+          "op": "add",
+          "value": 0.06
+        }
+      ]
+    }
+  },
+  {
+    "id": "umbral_edge",
+    "name": "Umbral Edge",
+    "icon": "🌘",
+    "native": "attacks",
+    "from": "dark",
+    "effect": {
+      "type": "dark",
+      "mods": [
+        {
+          "stat": "damage",
+          "op": "mult",
+          "value": 0.05
+        }
+      ]
+    },
+    "transform": {
+      "retype": "dark"
+    }
+  },
+  {
+    "id": "taint_brand",
+    "name": "Tainting Brand",
+    "icon": "🌑",
+    "native": "active",
+    "from": "dark",
+    "effect": {
+      "grants": [
+        "inflicts_tainted"
+      ]
+    },
+    "transform": {
+      "grants": [
+        "inflicts_tainted"
+      ]
+    }
+  },
+  {
+    "id": "nightsight",
+    "name": "Nightsight Mutation",
+    "icon": "🦇",
+    "native": "defenses",
+    "from": "dark",
+    "effect": {
+      "mods": [
+        {
+          "stat": "resDark",
+          "op": "add",
+          "value": 0.06
+        }
+      ]
+    }
+  },
+  {
+    "id": "venom_edge",
+    "name": "Venom Edge",
+    "icon": "🐍",
+    "native": "attacks",
+    "from": "toxic",
+    "effect": {
+      "type": "poison",
+      "mods": [
+        {
+          "stat": "damage",
+          "op": "mult",
+          "value": 0.05
+        }
+      ]
+    },
+    "transform": {
+      "retype": "poison"
+    }
+  },
+  {
+    "id": "miasma_brand",
+    "name": "Miasma Brand",
+    "icon": "☠️",
+    "native": "active",
+    "from": "toxic",
+    "effect": {
+      "grants": [
+        "inflicts_poison"
+      ]
+    },
+    "transform": {
+      "grants": [
+        "inflicts_poison"
+      ]
+    }
+  },
+  {
+    "id": "vuln_cold",
+    "name": "Cold Vulnerability",
+    "icon": "🧬",
+    "native": "defenses",
+    "rekey": {
+      "kind": "vulnerability",
+      "to": "cold"
+    }
+  },
+  {
+    "id": "vuln_heat",
+    "name": "Heat Vulnerability",
+    "icon": "🧬",
+    "native": "defenses",
+    "rekey": {
+      "kind": "vulnerability",
+      "to": "heat"
+    }
+  },
+  {
+    "id": "vuln_light",
+    "name": "Light Vulnerability",
+    "icon": "🧬",
+    "native": "defenses",
+    "rekey": {
+      "kind": "vulnerability",
+      "to": "light"
+    }
+  },
+  {
+    "id": "vuln_poison",
+    "name": "Poison Vulnerability",
+    "icon": "🧬",
+    "native": "defenses",
+    "rekey": {
+      "kind": "vulnerability",
+      "to": "poison"
+    }
+  },
+  {
+    "id": "vuln_lightning",
+    "name": "Lightning Vulnerability",
+    "icon": "🧬",
+    "native": "defenses",
+    "rekey": {
+      "kind": "vulnerability",
+      "to": "lightning"
+    }
+  },
+  {
+    "id": "vuln_earth",
+    "name": "Earth Vulnerability",
+    "icon": "🧬",
+    "native": "defenses",
+    "rekey": {
+      "kind": "vulnerability",
+      "to": "earth"
+    }
+  },
+  {
+    "id": "vuln_wind",
+    "name": "Wind Vulnerability",
+    "icon": "🧬",
+    "native": "defenses",
+    "rekey": {
+      "kind": "vulnerability",
+      "to": "wind"
+    }
+  },
+  {
+    "id": "vuln_water",
+    "name": "Water Vulnerability",
+    "icon": "🧬",
+    "native": "defenses",
+    "rekey": {
+      "kind": "vulnerability",
+      "to": "water"
+    }
+  },
+  {
+    "id": "vuln_acid",
+    "name": "Acid Vulnerability",
+    "icon": "🧬",
+    "native": "defenses",
+    "rekey": {
+      "kind": "vulnerability",
+      "to": "acid"
+    }
+  },
+  {
+    "id": "vuln_arcane",
+    "name": "Arcane Vulnerability",
+    "icon": "🧬",
+    "native": "defenses",
+    "rekey": {
+      "kind": "vulnerability",
+      "to": "arcane"
+    }
+  },
+  {
+    "id": "vuln_dark",
+    "name": "Dark Vulnerability",
+    "icon": "🧬",
+    "native": "defenses",
+    "rekey": {
+      "kind": "vulnerability",
+      "to": "dark"
+    }
+  }
+]

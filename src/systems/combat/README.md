@@ -533,3 +533,22 @@ skip.
   these. Null for an entity that is not a living enemy.
 - Request `combat/sweep`: the old `sweepDead`, for a flask thrown from a
   command between ticks.
+
+## Step 3 (mutagens) additions
+
+- `registerBody({ damageType, sureSwing, splitSplash })` in `actions.ts`: the
+  body the player wears (the `mutagens` system registers it). Read by
+  `playerDamageType` (old `routedType(state, 'attacks')`: a type in the
+  Attacks arm replaces the weapon's and the fist's), the to-hit roll of the
+  player phase (`ignores_dodge` in the Attacks arm: no swing is evaded) and
+  the spill (`splits_target`: +0.35 splash, into every flank). Old
+  `combat.ts` lines 1339, 4320-4340, 4765-4790.
+- `PickedActive.blow(ctx, vs, target)`: the body's own blow (a gene ability,
+  the old gene branch of the swing, lines 4412-4481 and 4651-4813). Not a
+  weapon hit: no stamina upkeep, exertion, extra swings, hand share, weapon
+  bonus damage, runes, unarmed rider, coating, position change, contact
+  retaliation or `combat:attacks`. It carries its priced damage and steps,
+  type, stun (off the target's bar), self delay (off the player's bar),
+  riders per hit, size doubling, execute, splash and `splashAll`, the
+  conditions it leaves on each target it reached (the spill included), its
+  XP tags and CON 3. The kind `gene` registers at rank 10.

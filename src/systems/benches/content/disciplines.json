@@ -940,5 +940,31 @@
     ],
     "outcomes": [],
     "desc": "Anvil. Takes up to five parts, each a part kind in a material: a head, a guard (Smithing 5), a haft, a binding (Smithing 3) and a second head (Smithing 15). The proportions of the parts name the piece: a 2×3 blade on a handle is a dagger, a 2×6 blade a sword. The cost is the parts' cells in each material, rounded up to whole units. Work time grows with the cells and shrinks with Smithing, and the grade is rolled from Smithing when the piece is finished."
+  },
+  {
+    "id": "mutagens",
+    "name": "Geneshaping",
+    "benchName": "Culture Bench",
+    "icon": "🧫",
+    "verb": "Refine",
+    "skill": "geneshaping",
+    "tag": "geneshaping",
+    "refines": true,
+    "ticks": 240,
+    "xp": 10,
+    "slots": [
+      {
+        "id": "subject",
+        "name": "Subject",
+        "role": "base",
+        "accepts": [
+          "gene",
+          "mutagen"
+        ],
+        "station": "centre"
+      }
+    ],
+    "outcomes": [],
+    "desc": "Culture Bench. Takes two copies of one gene or mutagen at the same grade plus biomatter, and returns one copy at the next grade up. Biomatter cost rises with the target grade. Nothing refines past Divine."
   }
 ]

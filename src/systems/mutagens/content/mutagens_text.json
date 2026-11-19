@@ -1,0 +1,142 @@
+[
+  {
+    "id": "locked",
+    "text": "🔒 {reason}"
+  },
+  {
+    "id": "reason_histones_short",
+    "text": "Needs {cost} histones; {held} held"
+  },
+  {
+    "id": "reason_over_capacity",
+    "text": "Needs {use} capacity; limit is {limit}"
+  },
+  {
+    "id": "unlocked",
+    "text": "🧬 Geneshaping unlocked."
+  },
+  {
+    "id": "catalogued",
+    "text": "🧬 Catalogued: {name}."
+  },
+  {
+    "id": "gene_recovered",
+    "text": "🧬 {icon} {name} ({grade}) recovered."
+  },
+  {
+    "id": "mutagen_recovered",
+    "text": "🧫 {icon} {name} ({grade})"
+  },
+  {
+    "id": "nuclease_recovered",
+    "text": "🧬 {icon} {name} recovered."
+  },
+  {
+    "id": "reason_not_unlocked",
+    "text": "Geneshaping not unlocked"
+  },
+  {
+    "id": "reason_refine_ceiling",
+    "text": "Nothing refines past Divine"
+  },
+  {
+    "id": "reason_refine_copies",
+    "text": "Needs {copies} copies of the same grade"
+  },
+  {
+    "id": "reason_refine_needs_biomatter",
+    "text": "Needs {cost} biomatter"
+  },
+  {
+    "id": "refined",
+    "text": "🧬 {icon} {name} refined to {grade}."
+  },
+  {
+    "id": "reason_not_a_nuclease",
+    "text": "That is not a nuclease"
+  },
+  {
+    "id": "reason_no_element",
+    "text": "That mutation carries no element to write with"
+  },
+  {
+    "id": "reason_no_nuclease_held",
+    "text": "You hold no such nuclease"
+  },
+  {
+    "id": "reason_none_held",
+    "text": "You hold none of those"
+  },
+  {
+    "id": "reason_fuse_needs_biomatter",
+    "text": "Needs {cost} biomatter"
+  },
+  {
+    "id": "fused",
+    "text": "🧬 {icon} {name} fused."
+  },
+  {
+    "id": "reason_bench_empty",
+    "text": "Nothing on the bench to work on"
+  },
+  {
+    "id": "reason_not_a_main_gene",
+    "text": "That is not a main gene"
+  },
+  {
+    "id": "reason_settling",
+    "text": "Main gene was changed recently: {seconds}s before it can be changed again"
+  },
+  {
+    "id": "reason_wear_needs_biomatter",
+    "text": "Needs {cost} biomatter"
+  },
+  {
+    "id": "gene_worn",
+    "text": "🧬 {icon} {name} worn ({cost} biomatter). The main gene cannot be changed for {seconds}s."
+  },
+  {
+    "id": "reason_already_own_sequence",
+    "text": "Already wearing your own sequence"
+  },
+  {
+    "id": "reason_no_such_socket",
+    "text": "No such socket"
+  },
+  {
+    "id": "reason_not_a_mutagen",
+    "text": "That is not a mutagen"
+  },
+  {
+    "id": "reason_socket_empty",
+    "text": "That socket is empty"
+  },
+  {
+    "id": "reason_no_edge",
+    "text": "No edge between those"
+  },
+  {
+    "id": "reason_already_established",
+    "text": "Already established"
+  },
+  {
+    "id": "edge_coiled",
+    "text": "🧵 Edge established: {a}–{b} ({cost} histones)."
+  },
+  {
+    "id": "reason_edge_not_established",
+    "text": "Edge not established"
+  },
+  {
+    "id": "reason_already_cut",
+    "text": "Already cut"
+  },
+  {
+    "id": "reason_edge_not_cut",
+    "text": "Edge not cut"
+  },
+  {
+    "id": "reason_already_unlocked",
+    "text": "Geneshaping is already unlocked"
+  }
+]

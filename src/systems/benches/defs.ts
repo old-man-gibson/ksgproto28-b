@@ -78,6 +78,9 @@ export const disciplines = registry(
     assembles: s.optional(
       s.boolean({ help: 'An assembling bench (the anvil): each slot takes a part kind and a material; the owner computes the clock.' }),
     ),
+    refines: s.optional(
+      s.boolean({ help: 'A refining bench (the culture bench): its one slot holds the subject, and what comes out replaces it.' }),
+    ),
     work: s.optional(
       s.object({
         skillScaled: s.optional(s.boolean({ help: 'False: craft speed does not change the clock.' })),

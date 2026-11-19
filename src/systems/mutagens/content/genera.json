@@ -1,0 +1,54 @@
+[
+  {
+    "id": "slimoid",
+    "name": "Slimoid",
+    "gradesPerStep": 2,
+    "tiers": [
+      "slime_gene",
+      "fire_slime_gene",
+      "slimer_gene",
+      "flame_slime_gene",
+      "slimest_gene",
+      "blaze_slime_gene",
+      "slime_guardian_gene",
+      "slime_golem_gene",
+      "slime_king_gene"
+    ]
+  },
+  {
+    "id": "gigantoid",
+    "name": "Gigantoid",
+    "gradesPerStep": 4,
+    "tiers": [
+      "troll",
+      "rock_giant",
+      "hill_giant",
+      "forest_giant",
+      "jotunn",
+      "fomorian",
+      "storm_giant",
+      "balor",
+      "surtr"
+    ]
+  },
+  {
+    "id": "draconoid",
+    "name": "Draconoid",
+    "gradesPerStep": 2,
+    "tiers": [
+      "wyrmling",
+      "drake",
+      "wyvern",
+      "dragon"
+    ]
+  },
+  {
+    "id": "asuroid",
+    "name": "Asuroid",
+    "gradesPerStep": 5,
+    "tiers": [
+      "dvibahu",
+      "asura"
+    ]
+  }
+]
