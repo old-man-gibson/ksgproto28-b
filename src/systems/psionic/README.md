@@ -148,3 +148,77 @@ used the goblin firetongue in place of the slime and the antimagic case
 that gave the slime an arcane kit go back to the slime's own shapes. New:
 `tests/psionic.test.ts` for the slice, the fixture, the commands' reasons
 and the view.
+
+## Changed while building (step 3)
+
+- The book stores a shape as the list form, axes with points only, in axis
+  order. The old `shapePsionic` stored `{ ...shape }`, zero entries
+  included. The key, and so identity and the spec, are the same.
+- `psiAxes` (the old read of the open axes) is `psiOpenAxes` here: the
+  registry of the axis records is `psiAxes`.
+- The teacher tier gate answers the tier in its skip reason; the log line
+  is the old one.
+- `psionic/shape` with a payload that is not a record of points answers a
+  reason before the check.
+- The panel checks the shape against what the view states (cap, open
+  axes); the command checks again.
+- `tests/psionic.test.ts` is new. `tests/spellcraft.test.ts` ports the old
+  cases; two of them are cut where they read an old save (see its header).
+
+## Old rules ported as they are
+
+- The shutter is a panel shutter only. `flag:unlock_psionics` is shut on a
+  new save and nothing in content lifts it, so a player never sees the
+  wheel through floor 6 (old: the tab is hidden). The commands work
+  without it.
+- No teacher exists: `psionic/learn-axis` and `psionic/raise-tier` have no
+  caller but tests (old: the debug panel). A new mind shapes force and
+  reach only, tier 0.
+- Ilex (`psionic_shaper`) stands at Censer Walk and teaches nothing.
+- Shaping does not check that the player stands at a table (old
+  `shapePsionic` did not); the panel shows the wheel only there.
+- The tier gate reads the recognition at tier 12 with no bias; a book
+  entry resolves at tier 12, with the gear bias in a fight. The bench
+  preview names the shape at the taught tier with the bias. So the gate
+  can refuse a shape that the wearer's gear would read as nameless, and a
+  shape the bias names on the bench can be inscribed under another name.
+- The daze chance reads raw grip, not purchase (old `PSIONIC.md` section
+  8: left on purpose).
+- Shaping pays 16 skill XP and no discovery bonus, and bumps no
+  `spells:inscribed` counter (the arcane inscription does both).
+- `PSIONIC.foldCoherence` is declared and read by nothing.
+- The psionic slime stands on no spot.
+- The Arcane panel's book row shows "0 mana" for a psionic spell (the row
+  reads `manaCost`); the focus cost is on the bench preview and in a
+  fight's skip line.
+
+## Left behind
+
+- The forge's psionic bench (`forge/panels/PsionicBench.svelte`): the
+  forge draws a form from the schemas.
+- `base_psionics_lab` (the player base).
+- "· Psionic" on the table's label in the location panel.
+- The themes test of the axis colours (no themes test here).
+- `docs/plans/psionic-overload.md` and every item of the old
+  `PSIONIC.md` section 8: never built on old `main`.
+
+## Skip reasons
+
+| Command | Skip reasons |
+|---|---|
+| `psionic/shape` | the shape is not a record of axis points; Points must be whole and non-negative; No such axis: <axis>; <Axis> needs a teacher; <Axis> cap is <cap> points (Psionics milestones raise it); Shape is empty; That shape is already in your grimoire; Shape matches <name>, which needs a teacher (tier <n>). Each but the first also logged. |
+| `psionic/memorize` | the shape is not a record of axis points; the reasons of the check; the mind holds 8 shapes already; this shape is held in mind already |
+| `psionic/forget` | no shape is held at index <i> |
+| `psionic/learn-axis` | no psionic axis has the id "<axis>"; <Axis> is open already |
+| `psionic/raise-tier` | the tier is <t> already, not below <n> |
+
+## Files
+
+| File | Holds |
+|---|---|
+| `defs.ts` | Types, the four registries, `PSIONIC`, the axis, quantity and recognition tables, `PSI_STARTING_AXES`, `MAX_PSI_MEMORIZED`. |
+| `shape.ts` | The pure derived space: `deriveShape`, `recogniseShape`, `shapeName`, `describeDerived`, `shapeSpec`, `psiBiasFrom`, `shapeKey`, the list conversions. |
+| `index.ts` | The slice, the reads, `checkShape`, the school's registration, the commands, the view. |
+| `migrations.ts` | Empty (version 1). |
+| `PsionicPanel.svelte`, `panel.ts` | The bench. |
+| `content/` | `psi_axes`, `psi_quantities`, `psi_recognitions`, `psionic_text`. |

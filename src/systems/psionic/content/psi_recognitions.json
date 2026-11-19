@@ -1,0 +1,88 @@
+[
+  {
+    "id": "unerring_needle",
+    "name": "Unerring Needle",
+    "icon": "📍",
+    "region": [
+      { "key": "acuity", "min": 2 },
+      { "key": "pressure", "min": 4 },
+      { "key": "coherence", "min": 0.4 },
+      { "key": "momentum", "max": 0 },
+      { "key": "inward", "max": 0.5 }
+    ],
+    "tier": 4,
+    "desc": "Acuity 2 or more, Pressure 4 or more, Coherence 0.4 or more, Momentum 0, Inward at most 0.5. A piercing strike that cannot miss. Recognition bonus x1.12."
+  },
+  {
+    "id": "kinetic_bulwark",
+    "name": "Kinetic Bulwark",
+    "icon": "🛡️",
+    "region": [
+      { "key": "inertia", "min": 3 },
+      { "key": "coherence", "min": 0.4 },
+      { "key": "inward", "max": 0.4 }
+    ],
+    "tier": 4,
+    "desc": "Inertia 3 or more, Coherence 0.4 or more, Inward at most 0.4. Kinetic Bulwark: blocks all ranged attacks except light. Recognition bonus x1.12."
+  },
+  {
+    "id": "still_mind",
+    "name": "Still Mind",
+    "icon": "🧘",
+    "region": [
+      { "key": "inward", "min": 0.9 },
+      { "key": "vitality", "min": 3 },
+      { "key": "momentum", "max": 0 },
+      { "key": "inertia", "max": 0 },
+      { "key": "acuity", "max": 0 },
+      { "key": "awareness", "max": 0 },
+      { "key": "coherence", "max": 0.5 }
+    ],
+    "desc": "Inward 0.9 or more, Vitality 3 or more, with Momentum, Inertia, Acuity and Awareness at 0 and Coherence at most 0.5. Pure healing: all of the spell’s points go to healing you. Recognition bonus x1.12."
+  },
+  {
+    "id": "kinetic_rush",
+    "name": "Kinetic Rush",
+    "icon": "💨",
+    "region": [
+      { "key": "momentum", "min": 36 },
+      { "key": "inward", "min": 0.8 }
+    ],
+    "tier": 4,
+    "desc": "Momentum 36 or more, Inward 0.8 or more. Momentum is applied to you instead of the target: Kinetic Haste (+3% speed per point of √Momentum x Inward), lasting 20 seconds x (1 + Coherence). Recognition bonus x1.12."
+  },
+  {
+    "id": "immovable",
+    "name": "Immovable",
+    "icon": "🌱",
+    "region": [
+      { "key": "inertia", "min": 5 },
+      { "key": "inward", "min": 0.8 }
+    ],
+    "tier": 4,
+    "desc": "Inertia 5 or more, Inward 0.8 or more. Rooted: blunt resistance, and dazes land at half strength. Recognition bonus x1.12."
+  },
+  {
+    "id": "second_sight",
+    "name": "Second Sight",
+    "icon": "🔮",
+    "region": [
+      { "key": "acuity", "min": 3 },
+      { "key": "inward", "min": 0.8 }
+    ],
+    "tier": 8,
+    "desc": "Acuity 3 or more, Inward 0.8 or more. Foresight: attacks against you have a 3% chance to miss per point of Acuity x Inward. Recognition bonus x1.12."
+  },
+  {
+    "id": "psionic_obliteration",
+    "name": "Obliteration",
+    "icon": "💥",
+    "region": [
+      { "key": "pressure", "min": 10 },
+      { "key": "momentum", "min": 48 },
+      { "key": "inward", "max": 0.25 }
+    ],
+    "tier": 8,
+    "desc": "Pressure 10 or more, Momentum 48 or more, Inward at most 0.25. Maximum outward strike: high Pressure and Momentum with almost nothing applied to you. Recognition bonus x1.12."
+  }
+]

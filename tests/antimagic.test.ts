@@ -20,9 +20,6 @@
  * - `casting` is in the `spellcraft` slice and names the caster by entity id,
  *   not by slot index.
  * - `TRIGGER_EVENTS` is a list of ids. A subject is read with `triggerSubject`.
- * - The Psionic Slime's own rotation is two psionic shapes. The psionic
- *   school is step 3, so the case that needs the slime to cast gives it an
- *   arcane sentence through its kit.
  *
  * Left as `it.todo`: nothing. `isUtilityWorking` and `readyableSpell` came
  * with the arcane port (step 3); `readyableSpell(state, stats)` takes a
@@ -484,9 +481,7 @@ describe('manaburn on a monster eats its mind', () => {
   it('a mind in debt cannot shape a working — it swings instead', () => {
     // The slime's whole rotation is workings, so whole it casts within the
     // first few fills; in debt, every fill falls through to its plain attack.
-    // Its own rotation is psionic (step 3): the kit gives it an arcane sentence.
-    const kit: MonsterKit = { rotation: [{ cast: { school: 'arcane', words: ['gloom', 'cut'] } }] };
-    const g = arena('psionic_slime', 5, kit);
+    const g = arena('psionic_slime');
     fight(g, 600, () => {
       patchFight(g, (state) => {
         state.fight!.enemies[0]!.mana = -5;
@@ -498,7 +493,7 @@ describe('manaburn on a monster eats its mind', () => {
     // The line that opens a staged fight names the slime too: it is not a swing.
     expect(lines(g).some((t) => /Psionic Slime/.test(t) && !/You /.test(t) && !/ attacks!$/.test(t))).toBe(true);
 
-    const whole = arena('psionic_slime', 5, kit);
+    const whole = arena('psionic_slime');
     fight(whole, 600);
     expect(lines(whole).some((t) => / casts /.test(t))).toBe(true);
   });

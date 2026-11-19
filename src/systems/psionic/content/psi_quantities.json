@@ -1,0 +1,66 @@
+[
+  {
+    "id": "pressure",
+    "name": "Pressure",
+    "icon": "💢",
+    "formula": "force + grip",
+    "decimals": 0,
+    "desc": "force + grip. Outward: force and grip deal the strike’s damage. Inward: Braced, +1 armor per point of Pressure x Inward. Also the denominator of Inward, so more pressure means a smaller inward share."
+  },
+  {
+    "id": "momentum",
+    "name": "Momentum",
+    "icon": "🔨",
+    "formula": "mass × speed",
+    "decimals": 0,
+    "desc": "mass x speed. Outward: bludgeoning strike power and a 9% concussion chance per point. Inward: Kinetic Haste, faster actions. Its square root also lowers Acuity."
+  },
+  {
+    "id": "inertia",
+    "name": "Inertia",
+    "icon": "🪨",
+    "formula": "mass − speed",
+    "decimals": 0,
+    "desc": "mass minus speed, floored at 0. Outward at 3 or more: Kinetic Bulwark, which blocks all ranged attacks except light. Inward at 2 or more: Rooted, blunt resistance, and Dazed and Concussed land at half intensity."
+  },
+  {
+    "id": "acuity",
+    "name": "Acuity",
+    "icon": "📍",
+    "formula": "clairvoyance ÷ (reach + √momentum)",
+    "decimals": 2,
+    "desc": "clairvoyance / (reach + square root of momentum). At 2 or more the strike is piercing and cannot miss; it ignores 9% of armor per point, x (1 + Coherence). Outward: Read, lowers the target’s dodge and parry. Inward: Foresight, attacks against you have a 3% chance to miss per point of Acuity x Inward. Momentum lowers it, so a spell has high Acuity or high Momentum, not both."
+  },
+  {
+    "id": "awareness",
+    "name": "Awareness",
+    "icon": "👁️",
+    "formula": "clairvoyance × reach",
+    "decimals": 0,
+    "desc": "clairvoyance x reach. Outward: adds 0.5 x √Awareness to spread (see Reach), so the spell splashes and then hits every enemy, afflictions included. Inward: Wide Sight, physical resistances."
+  },
+  {
+    "id": "coherence",
+    "name": "Coherence",
+    "icon": "🌀",
+    "formula": "space ÷ (force + mass)",
+    "decimals": 2,
+    "desc": "space / (force + mass). Withholds up to 40% of the strike’s damage and multiplies armor penetration by (1 + Coherence). Outward at 1 or more: Compressed, the target loses speed. Inward: sets how long every inward effect lasts, 20 seconds x (1 + Coherence)."
+  },
+  {
+    "id": "purchase",
+    "name": "Purchase",
+    "icon": "🫳",
+    "formula": "grip ÷ (1 + speed)",
+    "decimals": 2,
+    "desc": "grip / (1 + speed). Sets how long afflictions stay on the target: 10 seconds + 4 seconds per point, about 50 seconds at grip 10 with no speed. At 0 every effect still applies, for 10 seconds."
+  },
+  {
+    "id": "inward",
+    "name": "Inward",
+    "icon": "💚",
+    "formula": "vitality ÷ (vitality + pressure)",
+    "decimals": 2,
+    "desc": "vitality / (vitality + pressure). The share of every quantity applied to you rather than the target; the rest goes outward. Momentum outward is a strike, inward is action speed. Nothing is discarded."
+  }
+]

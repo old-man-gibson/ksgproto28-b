@@ -1,0 +1,11 @@
+[
+  { "id": "locked", "text": "🔒 {reason}" },
+  { "id": "not_whole_points", "text": "Points must be whole and non-negative" },
+  { "id": "no_such_axis", "text": "No such axis: {axis}" },
+  { "id": "axis_locked", "text": "{axis} needs a teacher" },
+  { "id": "axis_cap", "text": "{axis} cap is {cap} points (Psionics milestones raise it)" },
+  { "id": "empty_shape", "text": "Shape is empty" },
+  { "id": "already_shaped", "text": "🔒 That shape is already in your grimoire." },
+  { "id": "recognition_locked", "text": "🔒 Shape matches {recognition}, which needs a teacher." },
+  { "id": "shaped", "text": "{icon} Shaped: {name}" }
+]

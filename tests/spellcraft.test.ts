@@ -38,22 +38,25 @@
  *   `divine/learn` (`receive`: true when it ran); the worn title is written
  *   into the `titles` slice.
  *
- * A monster changed: the old cases "a monster spends its turn on a working,
- * and it lands" and "a working is not a blow: a bulwark does not stop one"
- * used the psionic slime. The psionic school is not registered, so they use
- * the goblin firetongue: ranged, and a rotation of workings only.
+ * - Psionic (step 3): `checkShape(state, shape)`, `psiAxisCap(state)` and
+ *   `psiMemorized(state)` take the reads of a kernel; `learnPsiAxis`,
+ *   `raisePsiTier`, `shapePsionic`, `memorizePsiShape` and `forgetPsiShape`
+ *   are the `psionic/*` commands (helpers of the same names below: the
+ *   spell written, or true when the command ran). The equipped item is
+ *   given with `giveItem` and `equip`. `utilityCooldown` takes the book and
+ *   the clock tick. `STATUSES.dazed.duration` is absent where the old one
+ *   was null. Two old cases are cut where they read an old save: "the mind
+ *   holds only so many shapes, and old saves hold none" (a save from before
+ *   `memorized`) and "v23 saves keep the grip they always had" (the v23
+ *   migration); the slice starts at version 1.
  *
  * Left as `it.todo`, under the old `describe` name:
- * - step 3, psionic: the whole `describe('psionic shaping')` and the psionic
- *   content cases.
  * - Old save migrations: the save here starts at version 1.
  *
  * A case that mixed a ported part with a part not ported is split: the
  * ported part keeps the old name, the rest is an `it.todo` with the old name
- * and what it waits for. Split cases: "a capped
- * condition says it is one dose from turning" (the tooltip line), "all three
- * schools reach the player through one path" and "every rotation entry
- * resolves" (the psionic entries).
+ * and what it waits for. Split case: "a capped condition says it is one dose
+ * from turning" (the tooltip line).
  */
 import { describe, expect, it } from 'vitest';
 import { PLAYER, type Kernel } from '../src/kernel';
@@ -98,6 +101,7 @@ import {
   castCraftedAttack,
   castUtility,
   isUtilityWorking,
+  utilityCooldown,
   forgetSpell,
   preparedCap,
   preparedSpells,
@@ -145,7 +149,29 @@ import {
   setPool,
   stage,
 } from './combatHelpers';
-import { ask, emit, makeGame, patch, reads, run, setMods, slice } from './helpers';
+import { ask, emit, equip, giveItem, makeGame, patch, reads, run, setMods, slice } from './helpers';
+import {
+  MAX_PSI_MEMORIZED,
+  PSIONIC,
+  PSI_RECOGNITIONS,
+  PSI_RECOGNITION_LIST,
+  checkShape,
+  deriveShape,
+  forgetShape,
+  learnAxis,
+  memorize,
+  psiAxisCap,
+  psiMemorized,
+  psiOpenAxes,
+  psiTier,
+  raiseTier,
+  recogniseShape,
+  shape as shapeCommand,
+  shapeName,
+  shapeSpec,
+  type PsionicRecognitionDef,
+  type PsionicShape,
+} from '../src/systems/psionic';
 
 const fresh = (seed = 1): Kernel => makeGame({ seed });
 
@@ -190,6 +216,16 @@ const tickOf = (g: Kernel, who: string, input: StatusTickInput) => ask(g, tickSt
 
 const texts = (g: Kernel): string[] => feedOf(g).map((entry) => entry.text);
 const mana = (g: Kernel): number => slice<ResourcesState>(g, 'resources').values.mana;
+const focus = (g: Kernel): number => slice<ResourcesState>(g, 'resources').values.focus;
+
+/** The old `learnPsiAxis` and `raisePsiTier`: the teacher commands. */
+const learnPsiAxis = (g: Kernel, axis: string) => g.dispatch(learnAxis({ axis }));
+const raisePsiTier = (g: Kernel, tier: number) => g.dispatch(raiseTier({ tier }));
+/** The old `shapePsionic`: the spell it wrote, or null when the command skipped. */
+const shapePsionic = (g: Kernel, shape: PsionicShape) => (g.dispatch(shapeCommand({ shape })).ok ? lastSpell(g) : null);
+/** The old `memorizePsiShape` and `forgetPsiShape`: true when the command ran. */
+const memorizePsiShape = (g: Kernel, shape: PsionicShape, name?: string) => g.dispatch(memorize({ shape, name })).ok;
+const forgetPsiShape = (g: Kernel, index: number) => g.dispatch(forgetShape({ index })).ok;
 /** The enemy in a slot of the open fight, as it is now. */
 const foeAt = (g: Kernel, slot = 0): Enemy => combatOf(g).fight!.enemies[slot]!;
 const setFoeHp = (g: Kernel, slot: number, hp: number) =>
@@ -1085,36 +1121,498 @@ describe('miracle mechanics', () => {
 // ---------- Psionic ----------
 
 describe('psionic shaping', () => {
-  it.todo('axes have caps, closed axes await teachers, and an empty shape is nothing (step 3: psionic)');
-  it.todo('output outruns input: the point curve is superlinear (step 3: psionic)');
-  it.todo('the same two axes build a wall or swing a hammer, depending only on the product (step 3: psionic)');
-  it.todo('acuity is a RATIO: spreading a working is what makes it missable (step 3: psionic)');
-  it.todo('inward is an AIM: the same quantity is a hammer out and speed in (step 3: psionic)');
-  it.todo('every quantity has both faces, and the share splits them (step 3: psionic)');
-  it.todo('coherence buys how long an inward working is worn (step 3: psionic)');
-  it.todo('inward is a SHARE: a divided will does both, and worse (step 3: psionic)');
-  it.todo('purchase: a grab made at speed does not hold, and zero grip is slippery (step 3: psionic)');
-  it.todo('a daze is spent, not held, so purchase never puts a clock on it (step 3: psionic)');
-  it.todo('matter argues with a working, and can rob it of its name (step 3: psionic)');
-  it.todo('a bias reaches the shape through ordinary equipment, and only psionics feels it (step 3: psionic)');
-  it.todo('zero survives the rewrite, because every product carries it (step 3: psionic)');
-  it.todo('a recognition is a NAME for a region, not the content of one (step 3: psionic)');
-  it.todo('an inward face is granted by the PATTERN, and a name changes nothing (step 3: psionic)');
-  it.todo('an unrecognised shape is named and described by what it came out as (step 3: psionic)');
-  it.todo('an untaught region refuses to be inscribed; a teacher unlocks it (step 3: psionic)');
-  it.todo('shapes can be held in mind and recalled, without being inscribed (step 3: psionic)');
-  it.todo('the mind holds only so many shapes, and old saves hold none (step 3: psionic)');
-  it.todo('a working is paid for in focus, never the arcane pool (step 3: psionic)');
-  it.todo('a working wider than the mind holding it never fires (step 3: psionic)');
-  it.todo('a working that lands on you can be cast with nobody to fight (step 3: psionic)');
-  it.todo('a working with nothing to give the caster refuses to be cast idly (step 3: psionic)');
-  it.todo('a shape is held once; the same shape again is refused (step 3: psionic)');
-  it.todo('overlapping regions resolve by nesting, never by declaration order (step 3: psionic)');
-  it.todo('no legal shape costs points and does nothing (step 3: psionic)');
-  it.todo('sight and structure reach the enemy without a blow to ride on (step 3: psionic)');
-  it.todo('psionics borrows no other school’s signature condition (step 3: psionic)');
-  it.todo('every legal shape resolves to a total spec — old grimoires cannot break (step 3: psionic)');
-  it.todo('v23 saves keep the grip they always had; the wall stops what is thrown (step 3: psionic)');
+  it('axes have caps, closed axes await teachers, and an empty shape is nothing', () => {
+    const g = fresh();
+    expect(psiAxisCap(reads(g))).toBe(3);
+    expect(checkShape(reads(g), { force: 4 }).ok).toBe(false);
+    expect(checkShape(reads(g), { force: 3 }).ok).toBe(true);
+    // A fresh mind holds only force and reach.
+    expect(checkShape(reads(g), { grip: 1 }).reason).toMatch(/teacher/);
+    learnPsiAxis(g, 'grip');
+    expect(checkShape(reads(g), { grip: 1 }).ok).toBe(true);
+    expect(checkShape(reads(g), {}).ok).toBe(false);
+  });
+
+  it('output outruns input: the point curve is superlinear', () => {
+    const one = shapeSpec({ force: 1 }).strikes[0].power;
+    const three = shapeSpec({ force: 3 }).strikes[0].power;
+    expect(three).toBeGreaterThan(one * 3);
+    expect(shapeSpec({ force: 1, reach: 4 }).target).toBe('others');
+    expect(shapeSpec({ force: 1, speed: 3 }).cooldown).toBeLessThan(shapeSpec({ force: 1 }).cooldown);
+    expect(shapeSpec({ vitality: 2, force: 1 }).heal).toBeGreaterThan(0);
+  });
+
+  it('the same two axes build a wall or swing a hammer, depending only on the product', () => {
+    const still = { reach: 4, mass: 4, space: 2 };
+    const moving = { reach: 4, mass: 4, space: 2, speed: 4 };
+
+    expect(deriveShape(still).inertia).toBe(4);
+    expect(deriveShape(still).momentum).toBe(0);
+    expect(deriveShape(moving).inertia).toBe(0);
+    expect(deriveShape(moving).momentum).toBe(16);
+
+    const wall = shapeSpec(still, 12);
+    expect(wall.grants?.map((x) => x.id)).toContain('kinetic_bulwark');
+    expect(wall.strikes).toHaveLength(0);
+
+    const hammer = shapeSpec(moving, 12);
+    expect(hammer.grants ?? []).toEqual([]);
+    expect(hammer.strikes[0].power).toBeGreaterThan(0);
+    expect(hammer.strikes[0].inflicts?.map((i) => i.id)).toContain('concussed');
+    expect(hammer.cooldown).toBeLessThan(wall.cooldown);
+  });
+
+  it('acuity is a RATIO: spreading a working is what makes it missable', () => {
+    const point = { force: 4, clairvoyance: 2, space: 2 };
+    expect(deriveShape(point).acuity).toBe(2);
+    const pinned = shapeSpec(point, 12);
+    expect(pinned.sure).toBe(true);
+    expect(pinned.strikes[0].type).toBe('piercing');
+
+    const spread = shapeSpec({ ...point, reach: 4 }, 12);
+    expect(spread.sure).toBeUndefined();
+    expect(spread.strikes[0].type).toBe('bludgeoning');
+    expect(spread.target).toBe('others');
+
+    const swung = shapeSpec({ ...point, mass: 2, speed: 2 }, 12);
+    expect(swung.sure).toBeUndefined();
+    expect(swung.strikes[0].type).toBe('bludgeoning');
+  });
+
+  it('inward is an AIM: the same quantity is a hammer out and speed in', () => {
+    const outward: PsionicShape = { mass: 10, speed: 10 };
+    const inward: PsionicShape = { ...outward, vitality: 10 };
+    const thrown = shapeSpec(outward, 12);
+    const worn = shapeSpec(inward, 12);
+
+    expect(deriveShape(outward).momentum).toBe(100);
+    expect(deriveShape(inward).momentum).toBe(100);
+
+    expect(thrown.strikes[0].power).toBeGreaterThan(0);
+    expect(thrown.grants ?? []).toEqual([]);
+
+    expect(worn.strikes).toHaveLength(0);
+    const haste = worn.grants?.find((x) => x.id === 'psionic_haste');
+    expect(haste?.intensity).toBe(10); // √momentum × inward
+    expect(worn.name).toBe('Kinetic Rush');
+    expect(worn.grants!.length).toBeGreaterThan(0);
+  });
+
+  it('every quantity has both faces, and the share splits them', () => {
+    const halved: PsionicShape = { mass: 10, speed: 10, vitality: 10, force: 10 };
+    const split = shapeSpec(halved, 12);
+    expect(deriveShape(halved).inward).toBe(0.5);
+    expect(split.strikes[0].power).toBeGreaterThan(0);
+    expect(split.grants?.find((x) => x.id === 'psionic_haste')?.intensity).toBe(5);
+    expect(split.grants?.find((x) => x.id === 'psionic_bracing')?.intensity).toBe(5);
+
+    const faces: [PsionicShape, string][] = [
+      [{ mass: 8, speed: 8, vitality: 8 }, 'psionic_haste'],
+      [{ force: 6, vitality: 10 }, 'psionic_bracing'],
+      [{ mass: 8, vitality: 8 }, 'psionic_root'],
+      [{ clairvoyance: 6, vitality: 6 }, 'psionic_foresight'],
+      [{ clairvoyance: 6, reach: 6, vitality: 6 }, 'psionic_wide_sight'],
+    ];
+    for (const [shape, id] of faces) {
+      const grants = shapeSpec(shape, 12).grants ?? [];
+      expect(grants.map((x) => x.id), JSON.stringify(shape)).toContain(id);
+      const outward = shapeSpec({ ...shape, vitality: 0 }, 12).grants ?? [];
+      expect(outward.map((x) => x.id), JSON.stringify(shape)).not.toContain(id);
+    }
+  });
+
+  it('coherence buys how long an inward working is worn', () => {
+    const loose: PsionicShape = { mass: 8, speed: 8, vitality: 8 };
+    const structured: PsionicShape = { ...loose, space: 8 };
+    const lasts = (shape: PsionicShape) =>
+      Number(shapeSpec(shape, 12).grants!.find((x) => x.id === 'psionic_haste')!.duration);
+    expect(deriveShape(structured).coherence).toBeGreaterThan(deriveShape(loose).coherence);
+    expect(lasts(structured)).toBeGreaterThan(lasts(loose));
+  });
+
+  it('inward is a SHARE: a divided will does both, and worse', () => {
+    const whole = shapeSpec({ vitality: 4 }, 12);
+    const divided = shapeSpec({ vitality: 4, force: 4 }, 12);
+    expect(deriveShape({ vitality: 4 }).inward).toBe(1);
+    expect(deriveShape({ vitality: 4, force: 4 }).inward).toBe(0.5);
+    expect(divided.heal!).toBeLessThan(whole.heal!);
+    expect(divided.strikes[0].power).toBeLessThan(shapeSpec({ force: 4 }, 12).strikes[0].power);
+    expect(whole.strikes).toHaveLength(0);
+  });
+
+  it('purchase: a grab made at speed does not hold, and zero grip is slippery', () => {
+    expect(deriveShape({ grip: 6 }).purchase).toBe(6);
+    expect(deriveShape({ grip: 6, speed: 1 }).purchase).toBe(3);
+    expect(deriveShape({ grip: 6, speed: 5 }).purchase).toBe(1);
+    expect(deriveShape({ speed: 10 }).purchase).toBe(0);
+
+    const slippery = shapeSpec({ clairvoyance: 6, space: 6, grip: 8, speed: 8 }, 12);
+    const firm = shapeSpec({ clairvoyance: 6, space: 6, grip: 8 }, 12);
+    const readOf = (x: typeof firm) => x.afflicts!.find((a) => a.id === 'psionic_read')!;
+    expect(readOf(slippery).id).toBe('psionic_read');
+    expect(Number(readOf(firm).duration)).toBeGreaterThan(Number(readOf(slippery).duration));
+
+    const structured = shapeSpec({ clairvoyance: 6, space: 10, grip: 2 }, 12);
+    const gripped = shapeSpec({ clairvoyance: 6, space: 2, grip: 10 }, 12);
+    const readDur = (x: typeof structured) => Number(x.afflicts!.find((a) => a.id === 'psionic_read')!.duration);
+    expect(readDur(gripped)).toBeGreaterThan(readDur(structured));
+  });
+
+  it('a daze is spent, not held, so purchase never puts a clock on it', () => {
+    const vise = shapeSpec({ grip: 8, force: 4 }, 12);
+    const daze = vise.strikes[0].inflicts!.find((i) => i.id === 'dazed')!;
+    expect(daze.duration).toBeUndefined();
+    // The old `duration: null` is an absent duration here.
+    expect(STATUSES.dazed.duration).toBeUndefined();
+    const hammer = shapeSpec({ mass: 6, speed: 6, force: 4, grip: 4 }, 12);
+    const concussed = hammer.strikes[0].inflicts!.find((i) => i.id === 'concussed')!;
+    expect(Number(concussed.duration)).toBeGreaterThan(0);
+  });
+
+  it('matter argues with a working, and can rob it of its name', () => {
+    const needle: PsionicShape = { force: 4, clairvoyance: 2, space: 2 };
+    expect(shapeSpec(needle, 12).name).toBe('Unerring Needle');
+
+    const dulled = shapeSpec(needle, 12, { acuity: 0.6 });
+    expect(dulled.name).not.toBe('Unerring Needle');
+    expect(dulled.sure).toBeUndefined();
+    expect(dulled.strikes[0].type).toBe('bludgeoning');
+    expect(shapeSpec(needle, 12).strikes[0].type).toBe('piercing');
+
+    const carried = shapeSpec(needle, 12, { acuity: 1.15, coherence: 1.1 });
+    expect(carried.strikes[0].penetration!).toBeGreaterThan(shapeSpec(needle, 12).strikes[0].penetration!);
+
+    const worn: PsionicShape = { mass: 8, speed: 8, vitality: 8 };
+    expect(deriveShape(worn, { momentum: 0.5 }).inward).toBe(deriveShape(worn).inward);
+  });
+
+  it('a bias reaches the shape through ordinary equipment, and only psionics feels it', () => {
+    const g = fresh();
+    setSkill(g, 'psionics', 100);
+    for (const axis of ['clairvoyance', 'space'] as const) learnPsiAxis(g, axis);
+    raisePsiTier(g, 12);
+    const spell = shapePsionic(g, { force: 4, clairvoyance: 2, space: 2 })!;
+
+    expect(resolveSpellFor(reads(g), spell).name).toBe(resolveSpell(spell).name);
+
+    const bracers = giveItem(g, 'antipattern_bracers');
+    expect(equip(g, bracers.uid).ok).toBe(true);
+    expect(playerStats(g).psiAcuity).toBeLessThan(1);
+    const dulled = resolveSpellFor(reads(g), spell);
+    expect(dulled.name).not.toBe('Unerring Needle');
+    expect(resolveSpell(spell).name).toBe('Unerring Needle');
+  });
+
+  it('zero survives the rewrite, because every product carries it', () => {
+    for (const shape of [{ mass: 10 }, { speed: 10 }]) expect(deriveShape(shape).momentum).toBe(0);
+    for (const shape of [{ clairvoyance: 10 }, { reach: 10 }]) expect(deriveShape(shape).awareness).toBe(0);
+    expect(deriveShape({ force: 10 }).coherence).toBe(0);
+    expect(deriveShape({ force: 10 }).inward).toBe(0);
+  });
+
+  it('a recognition is a NAME for a region, not the content of one', () => {
+    const needle = { force: 4, clairvoyance: 2, space: 2 };
+    const named = shapeSpec(needle, 12);
+    const nameless = shapeSpec(needle, 0);
+    expect(named.name).toBe('Unerring Needle');
+    expect(nameless.name).toBe('Mind Needle');
+
+    expect(nameless.sure).toBe(true);
+    expect(nameless.strikes[0].type).toBe(named.strikes[0].type);
+    expect(nameless.strikes[0].penetration).toBe(named.strikes[0].penetration);
+    expect(named.strikes[0].power).toBeCloseTo(nameless.strikes[0].power * PSIONIC.recognitionBonus, 6);
+
+    expect(shapeSpec({ reach: 4, mass: 4, space: 2 }, 4).name).toBe('Kinetic Bulwark');
+    expect(shapeSpec({ vitality: 3 }, 0).name).toBe('Still Mind');
+    expect(shapeSpec({ force: 8, grip: 8, mass: 8, speed: 8, space: 4 }, 8).name).toBe('Obliteration');
+  });
+
+  it('an inward face is granted by the PATTERN, and a name changes nothing', () => {
+    const haste = (shape: PsionicShape) =>
+      shapeSpec(shape, 12).grants?.find((x) => x.id === 'psionic_haste')?.intensity ?? 0;
+    const rungs: PsionicShape[] = [
+      { mass: 1, speed: 1, vitality: 1 },
+      { mass: 4, speed: 4, vitality: 4 },
+      { mass: 6, speed: 6, vitality: 6 },
+      { mass: 8, speed: 8, vitality: 8 },
+    ];
+    for (let i = 0; i < rungs.length; i++) {
+      expect(haste(rungs[i]), JSON.stringify(rungs[i])).toBeGreaterThan(i === 0 ? 0 : haste(rungs[i - 1]));
+    }
+    expect(recogniseShape(rungs[1], 12)).toBeUndefined();
+    expect(recogniseShape(rungs[2], 12)?.id).toBe('kinetic_rush');
+    expect(haste(rungs[1])).toBeCloseTo(4, 5);
+    expect(haste(rungs[2])).toBeCloseTo(6, 5);
+    expect(haste({ mass: 10, speed: 10, vitality: 4, force: 4 })).toBeCloseTo(5, 5);
+    expect(haste({ mass: 10, speed: 10 })).toBe(0);
+  });
+
+  it('an unrecognised shape is named and described by what it came out as', () => {
+    const spec = shapeSpec({ force: 2, space: 6 }, 12);
+    expect(spec.name).toBe('Mind Fold');
+    expect(spec.desc).toContain('Coherence 3.00');
+    expect(spec.desc).toContain('Pressure 2');
+    expect(spec.desc).not.toContain('Momentum');
+  });
+
+  it('an untaught region refuses to be inscribed; a teacher unlocks it', () => {
+    const g = fresh();
+    setSkill(g, 'psionics', 40); // cap 8
+    for (const axis of ['grip', 'clairvoyance', 'space'] as const) learnPsiAxis(g, axis);
+    const needle = { force: 4, clairvoyance: 2, space: 2 };
+    expect(shapePsionic(g, needle)).toBeNull();
+    raisePsiTier(g, 4);
+    expect(shapePsionic(g, needle)).not.toBeNull();
+    expect(resolveSpell(book(g)[0]).name).toBe('Unerring Needle');
+  });
+
+  it('shapes can be held in mind and recalled, without being inscribed', () => {
+    const g = fresh();
+    const jab: PsionicShape = { force: 3, reach: 1 };
+    expect(memorizePsiShape(g, jab)).toBe(true);
+    expect(psiMemorized(reads(g))).toHaveLength(1);
+    expect(psiMemorized(reads(g))[0].name).toBe(shapeName(jab));
+    expect(book(g)).toHaveLength(0);
+
+    expect(memorizePsiShape(g, { force: 3, reach: 1, grip: 0 })).toBe(false);
+    expect(psiMemorized(reads(g))).toHaveLength(1);
+
+    expect(memorizePsiShape(g, { grip: 2 })).toBe(false);
+    expect(memorizePsiShape(g, {})).toBe(false);
+
+    expect(psiMemorized(reads(g))[0].shape).toEqual(jab);
+    jab.force = 1;
+    expect(psiMemorized(reads(g))[0].shape.force).toBe(3);
+
+    expect(forgetPsiShape(g, 0)).toBe(true);
+    expect(psiMemorized(reads(g))).toHaveLength(0);
+    expect(forgetPsiShape(g, 0)).toBe(false);
+  });
+
+  // The old second half (a save from before `memorized` existed) has no
+  // counterpart: the slice starts at version 1 with the field.
+  it('the mind holds only so many shapes, and old saves hold none', () => {
+    const g = fresh();
+    setSkill(g, 'psionics', 80); // cap 10
+    for (let i = 1; i <= MAX_PSI_MEMORIZED; i++) {
+      expect(memorizePsiShape(g, { force: i }), `shape ${i}`).toBe(true);
+    }
+    expect(memorizePsiShape(g, { force: 10, reach: 1 })).toBe(false);
+    expect(psiMemorized(reads(g))).toHaveLength(MAX_PSI_MEMORIZED);
+    expect(psiMemorized(reads(fresh()))).toEqual([]);
+  });
+
+  it('a working is paid for in focus, never the arcane pool', () => {
+    const small = shapeSpec({ force: 2 }, 12);
+    const large = shapeSpec({ force: 10, reach: 10 }, 12);
+    expect(small.manaCost).toBe(0);
+    expect(large.manaCost).toBe(0);
+    expect(small.focusCost).toBeCloseTo(1 + 2 * 0.25, 5);
+    expect(large.focusCost).toBeCloseTo(1 + 20 * 0.25, 5);
+    expect(large.focusCost!).toBeLessThan(small.focusCost! * 20);
+
+    const g = fresh();
+    patch(g, (slices) => {
+      (slices.attributes as AttributesState).attrs.cha.level = 40;
+    });
+    stage(g, [{ monsterId: 'forest_rat', level: 1 }], SITES.woods_edge);
+    setPool(g, 'focus', 20);
+    const focusBefore = focus(g);
+    const manaBefore = mana(g);
+    run(g, (ctx) => castCraftedAttack(ctx as never, 'psi:test', large));
+    expect(focus(g)).toBeCloseTo(focusBefore - large.focusCost!, 5);
+    expect(mana(g)).toBe(manaBefore);
+  });
+
+  it('a working wider than the mind holding it never fires', () => {
+    // 1 + 30 × 0.25 = 8.5 focus: past what an untalented mind (6) can hold.
+    const wide: PsionicShape = { force: 10, reach: 10, grip: 10 };
+    const go = (cha: number) => {
+      const g = fresh(7);
+      setSkill(g, 'psionics', 100);
+      learnPsiAxis(g, 'grip');
+      patch(g, (slices) => {
+        (slices.attributes as AttributesState).attrs.cha.level = cha;
+      });
+      const spell = shapePsionic(g, wide)!;
+      expect(prepare(g, spell.uid)).toBe(true);
+      expect(g.dispatch(hunt({ site: SITES.woods_edge })).ok).toBe(true);
+      const name = resolveSpell(spell).name;
+      const fired = () => texts(g).some((t) => t.includes(name));
+      for (let i = 0; i < 3000 && !fired(); i++) {
+        g.tick();
+        keepHunting(g, 'woods_edge');
+      }
+      return { fired: fired(), max: playerStats(g).maxFocus };
+    };
+
+    const narrow = go(1);
+    expect(narrow.max).toBeLessThan(shapeSpec(wide, 12).focusCost!);
+    expect(narrow.fired, 'fired a working it could never afford').toBe(false);
+
+    const wideMind = go(30);
+    expect(wideMind.max).toBeGreaterThan(shapeSpec(wide, 12).focusCost!);
+    expect(wideMind.fired, 'never fired even with focus to spare').toBe(true);
+  }, 30_000);
+
+  it('a working that lands on you can be cast with nobody to fight', () => {
+    const g = fresh();
+    setSkill(g, 'psionics', 100);
+    patch(g, (slices) => {
+      (slices.attributes as AttributesState).attrs.cha.level = 40;
+    });
+    for (const axis of ['mass', 'speed', 'vitality'] as const) learnPsiAxis(g, axis);
+    raisePsiTier(g, 12);
+
+    const rush = shapePsionic(g, { mass: 8, speed: 8, vitality: 8 })!;
+    const spec = resolveSpell(rush);
+    expect(spec.strikes).toHaveLength(0);
+    expect(isUtilityWorking(spec)).toBe(true);
+
+    setPool(g, 'focus', playerStats(g).maxFocus);
+    const focusBefore = focus(g);
+    expect(g.dispatch(castUtility({ uid: rush.uid })).ok).toBe(true);
+    expect(find(g, 'psionic_haste')).toBeDefined();
+    expect(focus(g)).toBeCloseTo(focusBefore - spec.focusCost!, 5);
+    const now = totalTicksOf(slice<ClockState>(g, 'clock'));
+    expect(utilityCooldown(slice<SpellcraftState>(g, 'spellcraft'), now, rush.uid)).toBe(spec.cooldown);
+    expect(g.dispatch(castUtility({ uid: rush.uid })).ok).toBe(false);
+
+    const hasted = playerStats(g);
+    expect(hasted.speed).toBeGreaterThan(playerStats(fresh()).speed);
+    expect(hasted.travelSpeed).toBeGreaterThan(1);
+  });
+
+  it('a working with nothing to give the caster refuses to be cast idly', () => {
+    const g = fresh();
+    const spike = shapePsionic(g, { force: 3 })!;
+    expect(isUtilityWorking(resolveSpell(spike))).toBe(false);
+    const result = g.dispatch(castUtility({ uid: spike.uid }));
+    expect(result.ok ? '' : result.reason).toBe('Mind Spike needs a target');
+    expect(focus(g)).toBe(playerStats(g).maxFocus);
+  });
+
+  it('a shape is held once; the same shape again is refused', () => {
+    const g = fresh();
+    expect(shapePsionic(g, { force: 1, reach: 1 })).not.toBeNull();
+    expect(shapePsionic(g, { force: 1, reach: 1 })).toBeNull();
+    expect(book(g)).toHaveLength(1);
+  });
+
+  it('overlapping regions resolve by nesting, never by declaration order', () => {
+    const lesser: PsionicRecognitionDef = {
+      id: 'test_lesser', name: 'Lesser Test', icon: '🧪', desc: '',
+      region: { pressure: { min: 4 }, momentum: { max: 0 } },
+    };
+    const greater: PsionicRecognitionDef = {
+      id: 'test_greater', name: 'Greater Test', icon: '🧪', desc: '',
+      region: { pressure: { min: 8 }, momentum: { max: 0 } },
+    };
+    PSI_RECOGNITIONS.test_lesser = lesser;
+    PSI_RECOGNITIONS.test_greater = greater;
+    PSI_RECOGNITION_LIST.push(lesser, greater);
+    try {
+      expect(recogniseShape({ force: 8 }, 12)?.id).toBe('test_greater');
+      expect(recogniseShape({ force: 5 }, 12)?.id).toBe('test_lesser');
+      lesser.priority = 10;
+      expect(recogniseShape({ force: 8 }, 12)?.id).toBe('test_lesser');
+    } finally {
+      delete PSI_RECOGNITIONS.test_lesser;
+      delete PSI_RECOGNITIONS.test_greater;
+      PSI_RECOGNITION_LIST.splice(PSI_RECOGNITION_LIST.indexOf(lesser), 1);
+      PSI_RECOGNITION_LIST.splice(PSI_RECOGNITION_LIST.indexOf(greater), 1);
+    }
+  });
+
+  it('no legal shape costs points and does nothing', () => {
+    const axes = ['force', 'reach', 'grip', 'speed', 'clairvoyance', 'space', 'mass', 'vitality'] as const;
+    const CONTENT = ['force', 'grip', 'clairvoyance', 'space', 'mass', 'vitality'] as const;
+    const does = (spec: ReturnType<typeof shapeSpec>) =>
+      spec.strikes.length > 0 || (spec.heal ?? 0) > 0 || (spec.grants?.length ?? 0) > 0 || (spec.afflicts?.length ?? 0) > 0;
+
+    for (const a of CONTENT) {
+      for (const b of axes) {
+        for (const c of axes) {
+          for (const points of [3, 10]) {
+            const shape = { [a]: points, [b]: points, [c]: points };
+            expect(does(shapeSpec(shape, 12)), `${JSON.stringify(shape)} does nothing`).toBe(true);
+          }
+        }
+      }
+    }
+    expect(does(shapeSpec({ reach: 10, speed: 10 }, 12))).toBe(false);
+    const found: [string, PsionicShape][] = [
+      ['seen wall', { clairvoyance: 10, mass: 10 }],
+      ['wide fold', { reach: 10, space: 10 }],
+      ['quick fold', { speed: 10, space: 10 }],
+      ['seen fold', { speed: 10, clairvoyance: 10, space: 10 }],
+      ['the 40-point nothing', { reach: 10, speed: 10, clairvoyance: 10, space: 10 }],
+    ];
+    for (const [label, shape] of found) {
+      expect(does(shapeSpec(shape, 12)), `${label} does nothing`).toBe(true);
+    }
+  });
+
+  it('sight and structure reach the enemy without a blow to ride on', () => {
+    const forceless = shapeSpec({ clairvoyance: 10, space: 10 }, 12);
+    expect(forceless.strikes).toHaveLength(0);
+    const laid = forceless.afflicts?.map((a) => a.id) ?? [];
+    expect(laid).toContain('psionic_read');
+    expect(laid).toContain('psionic_compression');
+
+    const worn = shapeSpec({ clairvoyance: 10, space: 10, vitality: 10 }, 12);
+    expect(worn.afflicts ?? []).toEqual([]);
+    expect(worn.grants?.map((x) => x.id)).toContain('psionic_foresight');
+  });
+
+  it('psionics borrows no other school’s signature condition', () => {
+    const OWNED_ELSEWHERE = ['unfolded', 'folded_space', 'honor_bound', 'veiled', 'night_shroud'];
+    const axes = ['force', 'reach', 'grip', 'speed', 'clairvoyance', 'space', 'mass', 'vitality'] as const;
+    for (const a of axes) {
+      for (const b of axes) {
+        for (const points of [3, 10]) {
+          const spec = shapeSpec({ [a]: points, [b]: points }, 12);
+          const laid = [...(spec.grants ?? []), ...(spec.afflicts ?? []), ...spec.strikes.flatMap((x) => x.inflicts ?? [])].map(
+            (x) => x.id,
+          );
+          for (const id of laid) expect(OWNED_ELSEWHERE, `${a}/${b} reaches for '${id}'`).not.toContain(id);
+        }
+      }
+    }
+  });
+
+  it('every legal shape resolves to a total spec — old grimoires cannot break', () => {
+    const axes = ['force', 'reach', 'grip', 'speed', 'clairvoyance', 'space', 'mass', 'vitality'] as const;
+    for (const a of axes) {
+      for (const b of axes) {
+        for (const points of [1, 4, 10]) {
+          const shape = { [a]: points, [b]: points };
+          const spec = shapeSpec(shape, 12);
+          expect(spec.name.length, JSON.stringify(shape)).toBeGreaterThan(0);
+          expect(Number.isFinite(spec.manaCost) && Number.isFinite(spec.cooldown)).toBe(true);
+          for (const s of spec.strikes) {
+            expect(Number.isFinite(s.power), JSON.stringify(shape)).toBe(true);
+            expect(s.power).toBeGreaterThanOrEqual(0);
+            expect(s.penetration ?? 0).toBeLessThanOrEqual(0.95);
+          }
+          expect(Number.isFinite(spec.heal ?? 0)).toBe(true);
+          expect(spec.splash ?? 0).toBeLessThanOrEqual(0.75);
+        }
+      }
+    }
+  });
+
+  // The v23 migration half has no counterpart (the save starts at version 1);
+  // a new mind holds force and reach, as the old migration's target did for
+  // a new game.
+  it('v23 saves keep the grip they always had; the wall stops what is thrown', () => {
+    expect(psiOpenAxes(reads(fresh()))).toEqual(['force', 'reach']);
+    expect(psiTier(reads(fresh()))).toBe(0);
+    const g = fresh();
+    apply(g, PLAYER, { id: 'kinetic_bulwark', intensity: 1 });
+    expect(statusBlocksRangedType(held(g), 'piercing')).toBe(true);
+    expect(statusBlocksRangedType(held(g), 'light')).toBe(false);
+  });
 });
 
 // ---------- Monsters using the player's systems ----------
@@ -1136,7 +1634,6 @@ describe('monsters that work', () => {
     expect(bright.damage).toBe(dull.damage); // the arm is untouched by the mind
   });
 
-  // The arcane and divine rows of the old case. The psionic row is the todo below.
   it('all three schools reach the player through one path', () => {
     /*
      * The point of `MonsterDef.rotation`: a sentence, a miracle and a shape
@@ -1145,6 +1642,7 @@ describe('monsters that work', () => {
      * fourth school costs a monster nothing.
      */
     const schools: [string, string][] = [
+      ['psionic_slime', 'psionic'],
       ['death_knight', 'arcane'],
       ['paladin_x', 'divine'],
     ];
@@ -1160,23 +1658,28 @@ describe('monsters that work', () => {
       }
     }
   });
-  it.todo('all three schools reach the player through one path (step 3: psionic: the psionic_slime row)');
 
-  // Every technique entry and every arcane and divine cast. The psionic casts are the todo below.
   it('every rotation entry resolves — a typo would be a monster that does nothing', () => {
     for (const m of Object.values(MONSTERS)) {
       for (const entry of m.rotation ?? []) {
         if ('technique' in entry) {
           expect(TECHNIQUES[entry.technique], `${m.id} -> ${entry.technique}`).toBeDefined();
-        } else if (entry.cast.school !== 'psionic') {
+        } else {
           expect(specForSource(entry.cast).name, `${m.id} cast`).not.toBe('Faded Inscription');
         }
       }
     }
   });
-  it.todo('every rotation entry resolves — a typo would be a monster that does nothing (step 3: psionic: the psionic casts)');
 
-  it.todo('a psionic slime shapes a working, and the space decides what it is (step 3: psionic)');
+  it('a psionic slime shapes a working, and the space decides what it is', () => {
+    // Its first shape is a needle by arithmetic, not by authoring.
+    const first = MONSTERS.psionic_slime.rotation![0];
+    expect('cast' in first).toBe(true);
+    const spec = specForSource((first as { cast: Parameters<typeof specForSource>[0] }).cast);
+    expect(spec.school).toBe('psionic');
+    expect(spec.strikes[0].type).toBe('piercing');
+    expect(spec.sure).toBe(true);
+  });
 
   /** Run the staged fight. The old helper called `tickCombat` directly. */
   const fight = (g: Kernel, ticks: number, until?: () => boolean) => {
@@ -1189,9 +1692,9 @@ describe('monsters that work', () => {
 
   const hp = (g: Kernel): number => slice<ResourcesState>(g, 'resources').values.hp;
 
-  // The goblin firetongue stands in for the psionic slime: its rotation is nothing but workings.
   it('a monster spends its turn on a working, and it lands', () => {
-    const { g } = facing('goblin_firetongue');
+    // The slime, whose rotation is nothing but workings.
+    const { g } = facing('psionic_slime');
     const hpBefore = hp(g);
     fight(g, 600, () => hp(g) < hpBefore);
     expect(
@@ -1201,13 +1704,11 @@ describe('monsters that work', () => {
     expect(hp(g)).toBeLessThan(hpBefore);
   });
 
-  // The goblin firetongue stands in for the psionic slime: it is `ranged` too.
   it('a working is not a blow: a bulwark does not stop one', () => {
-    // kinetic_bulwark stops anything THROWN, and the firetongue is `ranged` — so a
+    // kinetic_bulwark stops anything THROWN, and the slime is `ranged` — so a
     // rote shot would be blocked outright. The cast branch sits AHEAD of that
-    // check because a working is not thrown, and this is what proves the order.
-    expect(MONSTERS.goblin_firetongue.range).toBe('ranged');
-    const { g } = facing('goblin_firetongue');
+    // check because a shape is not thrown, and this is what proves the order.
+    const { g } = facing('psionic_slime');
     apply(g, PLAYER, { id: 'kinetic_bulwark', intensity: 1 });
     expect(statusBlocksRangedType(held(g), 'heat')).toBe(true);
     fight(g, 600, () => texts(g).some((t) => / casts /.test(t)));
@@ -1605,8 +2106,38 @@ describe('spellcraft content', () => {
     }
   });
 
-  it.todo('no two psionic recognitions claim the same region (step 3: psionic)');
-  it.todo('every recognition names a region that some shape actually reaches (step 3: psionic)');
+  it('no two psionic recognitions claim the same region', () => {
+    const fingerprint = (r: PsionicRecognitionDef) =>
+      JSON.stringify([Object.entries(r.region).sort(([a], [b]) => a.localeCompare(b)), r.priority ?? 0, r.tier ?? 0]);
+    const seen = new Map<string, string>();
+    for (const r of PSI_RECOGNITION_LIST) {
+      const fp = fingerprint(r);
+      expect(
+        seen.get(fp),
+        `recognitions '${seen.get(fp)}' and '${r.id}' claim the same region — one can never be found; change a bound or set priority`,
+      ).toBeUndefined();
+      seen.set(fp, r.id);
+    }
+  });
+
+  it('every recognition names a region that some shape actually reaches', () => {
+    const axes = ['force', 'reach', 'grip', 'speed', 'clairvoyance', 'space', 'mass', 'vitality'] as const;
+    const found = new Set<string>();
+    for (let i = 0; i < axes.length; i++) {
+      for (let j = 0; j < axes.length; j++) {
+        for (let k = 0; k < axes.length; k++) {
+          for (const points of [[8, 4, 2], [8, 8, 8], [4, 2, 2], [10, 10, 10]]) {
+            const shape = { [axes[i]]: points[0], [axes[j]]: points[1], [axes[k]]: points[2] };
+            const r = recogniseShape(shape, 12);
+            if (r) found.add(r.id);
+          }
+        }
+      }
+    }
+    for (const r of PSI_RECOGNITION_LIST) {
+      expect(found.has(r.id), `no shape reaches '${r.id}' — its region is unreachable content`).toBe(true);
+    }
+  });
 
   it('spell keys preserve order for arcane and identity for the rest', () => {
     expect(spellKey({ school: 'arcane', words: ['fire', 'pierce'] })).not.toBe(

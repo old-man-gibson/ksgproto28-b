@@ -1,0 +1,58 @@
+[
+  {
+    "id": "force",
+    "name": "Force",
+    "icon": "👊",
+    "color": "#e05555",
+    "desc": "Feeds Pressure (force + grip). Deals bludgeoning damage: 0.7 x points^1.25."
+  },
+  {
+    "id": "reach",
+    "name": "Reach",
+    "icon": "🌊",
+    "color": "#5cbb6a",
+    "desc": "Feeds Awareness (clairvoyance x reach) and lowers Acuity. Spread = reach + 0.5 x √Awareness. Each point of spread splashes 20% of the strike onto flankers (up to 75%); at 4 spread the spell hits every enemy. Does nothing unless other axes give the spell a strike or an effect to deliver."
+  },
+  {
+    "id": "grip",
+    "name": "Grip",
+    "icon": "🫳",
+    "color": "#c98a3c",
+    "desc": "Feeds Pressure (force + grip) and Purchase (grip / (1 + speed)). Each point gives an 18% chance to inflict Dazed and adds damage: 0.25 x points^1.25. Purchase sets how long afflictions stay on the target."
+  },
+  {
+    "id": "speed",
+    "name": "Speed",
+    "icon": "💨",
+    "color": "#f2d024",
+    "desc": "Cooldown x0.93 per point. Momentum = mass x speed; speed also lowers Inertia (mass minus speed) and Purchase (grip / (1 + speed)). Does nothing unless other axes give the spell a strike or an effect to deliver."
+  },
+  {
+    "id": "clairvoyance",
+    "name": "Clairvoyance",
+    "icon": "👁️",
+    "color": "#8f7ad8",
+    "desc": "Feeds Acuity (makes the strike piercing, unmissable and armor-penetrating) and Awareness (widens the spell to more enemies). The inward share of Acuity is Foresight: attacks against you have a chance to miss."
+  },
+  {
+    "id": "space",
+    "name": "Space",
+    "icon": "🌀",
+    "color": "#5591e0",
+    "desc": "Feeds Coherence (space / (force + mass)), which withholds part of the strike’s damage, multiplies Acuity’s armor penetration by (1 + Coherence), and sets how long every inward effect lasts."
+  },
+  {
+    "id": "mass",
+    "name": "Mass",
+    "icon": "🪨",
+    "color": "#9aa4b0",
+    "desc": "With speed it becomes Momentum (a bludgeoning strike of 0.85 x (√Momentum)^1.25, and concussion); without speed it becomes Inertia (Kinetic Bulwark outward, blunt resistance inward)."
+  },
+  {
+    "id": "vitality",
+    "name": "Vitality",
+    "icon": "💚",
+    "color": "#4caf7d",
+    "desc": "Sets Inward (vitality / (vitality + pressure)): the share of every quantity applied to you instead of the target. Also heals you: 0.35 x points^1.25 x (0.5 + Inward) spell power."
+  }
+]

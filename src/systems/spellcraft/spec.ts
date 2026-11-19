@@ -6,7 +6,7 @@
  * A school is registered by the system that owns it, at module load. This
  * file imports no school, so a new school edits no file in this folder.
  */
-import type { DeepReadonly, SystemDef } from '../../kernel';
+import type { DeepReadonly, DerivedReads, SystemDef } from '../../kernel';
 import type { StatusApplication } from '../statuses';
 import type { DamageType } from '../stats';
 import type { SpellSchool, SpellSource, SpellSpec } from './types';
@@ -29,8 +29,12 @@ export interface SchoolKind<S extends SpellSource = SpellSource> {
   reading?(reads: SchoolReads, source: S): SpellSpec | null;
 }
 
-/** What a school's contextual reading may look at: other systems' slices. */
-export interface SchoolReads {
+/**
+ * What a school's contextual reading may look at: other systems' slices, and
+ * a resolver's output (the psionic reading reads the stat block for the gear
+ * bias). Every caller passes a context, which has both.
+ */
+export interface SchoolReads extends Pick<DerivedReads, 'resolved'> {
   read<T>(system: SystemDef<T, any>): DeepReadonly<T>;
 }
 

@@ -89,7 +89,8 @@ function sourceText(spell: DeepReadonly<CraftedSpell>): string {
   const source = spell.source;
   if (source.school === 'arcane') return source.words.join(' ');
   if (source.school === 'divine') return source.litany;
-  return JSON.stringify(source);
+  // A psionic shape: "force 3 · reach 1", as the old `sourceLine`.
+  return source.shape.filter((p) => p.value > 0).map((p) => `${p.axis} ${p.value}`).join(' · ') || 'an empty shape';
 }
 
 const spellcraft = defineSystem<SpellcraftState, SpellcraftView>({
