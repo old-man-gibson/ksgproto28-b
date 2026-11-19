@@ -15,7 +15,10 @@
  * slices `benches`, `alchemy` and `consumables`: every state hash, nothing
  * else; no run and no John brews or uses an item), and on branch
  * `step3-cooking` after the cooking port (the new slices `cooking` and
- * `meals`: every state hash, nothing else; no run and no John cooks or eats).
+ * `meals`: every state hash, nothing else; no run and no John cooks or eats),
+ * and on branch `step3-smithing` after the smithing port (the new slices
+ * `smithing` and `crafting`: every state hash, nothing else; no run and no
+ * John forges or smelts).
  * A change that only makes the simulation faster leaves every one
  * of them equal. A change to a rule, a formula or content changes them;
  * record them again then, and say why in the commit.
@@ -31,7 +34,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 1,
     'gold': 0,
-    'state': 'c5517e3a'
+    'state': '98e2a329'
   },
   'poison': {
     'tick': 288000,
@@ -40,7 +43,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 1,
     'gold': 0,
-    'state': '40b8e76f'
+    'state': '1a593476'
   },
   'floor1': {
     'tick': 288000,
@@ -49,7 +52,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 9,
     'gold': 33028,
-    'state': 'da87d732'
+    'state': '9581222d'
   },
   'floor6': {
     'tick': 288000,
@@ -58,7 +61,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 26,
     'gold': 1581408,
-    'state': '8b9b1ffb'
+    'state': 'e5c1f756'
   },
   'world4': {
     'tick': 288000,
@@ -67,7 +70,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 4,
     'level': 17,
     'gold': 356591,
-    'state': '0445382a'
+    'state': '61d2fdaf'
   },
   'world6': {
     'tick': 288000,
@@ -76,7 +79,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 26,
     'gold': 1581409,
-    'state': '71800223'
+    'state': 'c05b8a56'
   }
 };
 
@@ -162,7 +165,7 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'defeats': 0,
       'level': 1,
       'gold': 0,
-      'state': '71542102'
+      'state': 'feb42b1d'
     }
   },
   '42': {
@@ -246,7 +249,7 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'defeats': 0,
       'level': 1,
       'gold': 0,
-      'state': '7bedfdf7'
+      'state': '1d5c82b2'
     }
   },
   '1234': {
@@ -330,7 +333,7 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'defeats': 0,
       'level': 1,
       'gold': 0,
-      'state': 'b68d1892'
+      'state': '5cdccac1'
     }
   }
 };
