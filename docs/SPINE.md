@@ -1734,3 +1734,84 @@ histone source; fusing has no player control; a stun takes `stun` off the
 target's bar value though the texts say ticks; Slime Bounce keeps its own
 type when the Attacks arm re-types the swing; the spill loop walks indices
 taken before a spill kill; bare's base is six zero-valued attribute lines.
+
+## 18. Step 3: psionic
+
+Done 2026-11-19 on branch `step3-psionic`, from `main` at `5cef40a`.
+Design and the full account: `src/systems/psionic/README.md` (the
+inventory of old `main`, "Step 3 design", "Changed while building (step
+3)", "Old rules ported as they are", "Left behind"). Additions in other
+folders: `spellcraft/spec.ts` (`SchoolReads` gains `resolved`, so the
+psionic reading can read the stat block for the gear bias) and
+`spellcraft/index.ts` (the book's source text of a shape).
+
+The old `docs/plans/psionic-overload.md` (status draft) was never built on
+old `main`, nor any item of the old `PSIONIC.md` section 8; none is
+ported. Through floor 6 the psionic school reaches no player: the
+`flag:unlock_psionics` shutter is shut on a new save and nothing lifts it,
+no teacher opens an axis or a tier, and the psionic slime stands on no
+spot.
+
+### 18.1 John
+
+Unchanged. No climb shapes. Every outcome digest changed in the state hash
+only (the slice `psionic`); tick, generator, kills, level, gold and every
+John segment are equal, and the digests are recorded again in their own
+commit. `npm run pacing` prints the same tables on this branch and on
+`main` (`5cef40a`), wall clock aside.
+
+The toll collector bound of `tests/john.test.ts`: rack climbs, seeds 42
+and 7, first attempts lost 5 of 10 on `main` and 5 of 10 on this branch
+(same script, same hour). The 100-climb sample was not run: the count did
+not move.
+
+### 18.2 Offline budgets
+
+Each run of 8 hours through `scripts/budget-runs.ts`, `main` (5cef40a, a
+worktree) and this branch alternating, two rounds, same hour, ms:
+
+| Run of 8 hours | `main` | Step 3 psionic | Budget |
+|---|---|---|---|
+| No fight, no condition | 1,527 to 1,610 | 1,521 to 1,532 | 2,200 |
+| A poison held | 5,139 to 5,229 | 5,131 to 5,203 | 8,250 |
+| Floor 1 table sent to combat | 4,910 to 5,150 | 5,030 to 5,066 | 7,700 |
+| Floor 6 Tunnels sent to combat | 9,065 to 9,320 | 9,434 to 9,449 | 14,850 |
+| World: hunt, floor 4 Woods Edge | 9,089 to 9,232 | 9,307 to 9,316 | 14,300 |
+| World: hunt, floor 6 Tunnels | 9,075 to 9,282 | 9,021 to 9,094 | 14,300 |
+
+Every budget holds; `npm run verify` passes. The branch is within -3% to
++4% of `main`. The port adds no tick hook, no modifier source and no event
+subscriber; a fight run never resolves a psionic spell. Not profiled.
+
+### 18.3 Browser check
+
+Desktop (800 and 1024 px) and 375 px, on the dev server (port 5600). Dev
+save edited from the forge page (`ksgb:development:save` only: the shutter
+flag, all eight axes open, tier 4, Psionics 40, Charisma 40; the save
+before the edit is at `ksgb:development:save.before-psionic-check`).
+Skipping the tutorial put the player at the Foot: the bench showed the
+line naming the two tables. Walked to the Reading Hall. On the wheel: mass
+8, speed 8, vitality 8 by clicking the outer rings; the preview read
+Kinetic Rush (100% inward, haste x8.0 for 20 s, focus 7). Shape wrote it
+into the grimoire (Shape then disabled, "in it already"); Memorise held it
+as "Mind Rush". From the Arcane panel's book: Cast now; the Character
+panel held Kinetic Haste at dose 8.0 from Kinetic Rush, and the spell read
+"on cooldown". At 375 px: no horizontal overflow, the held shape refilled
+the wheel, the Shape row did not move when the detail box, Clear and an
+axis were clicked. No console errors. Found and fixed: a clicked wedge drew
+the browser's focus box.
+
+Not verified in a browser: a psionic spell cast in a live fight (tested
+headless, "a working wider than the mind holding it never fires"), the
+shut-shutter line (tested through the view), the forge forms of the new
+registries.
+
+### 18.4 Old rules ported as they are
+
+Listed in the README. In short: the shutter is a panel shutter and nothing
+lifts it; no teacher exists, so a new mind shapes force and reach only, at
+tier 0; shaping does not check the spot; the tier gate reads tier 12 with
+no bias while the bench preview reads the taught tier with the bias; the
+daze chance reads raw grip; shaping pays no discovery bonus and bumps no
+inscription counter; `foldCoherence` is read by nothing; the Arcane
+panel's book row shows "0 mana" for a psionic spell.

@@ -306,8 +306,11 @@
     cursor: default;
   }
 
-  .seg:focus-visible {
+  .seg:focus {
     outline: none;
+  }
+
+  .seg:focus-visible {
     stroke: var(--color-accent);
     stroke-width: 0.8;
   }
