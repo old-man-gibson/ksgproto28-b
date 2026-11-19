@@ -21,7 +21,10 @@
  * John forges or smelts), and on branch `step3-mutagens` after the mutagens
  * port (the new slice `mutagens`: every state hash; the kill harvest draws
  * the generator on every kill, as the old build did: the generator, kills,
- * level and gold of the four fight runs and every John segment).
+ * level and gold of the four fight runs and every John segment), and on
+ * branch `step3-psionic` after the psionic port (the new slice `psionic`:
+ * every state hash, nothing else; no run and no John shapes, and the
+ * psionic slime stands on no spot).
  * A change that only makes the simulation faster leaves every one
  * of them equal. A change to a rule, a formula or content changes them;
  * record them again then, and say why in the commit.
@@ -37,7 +40,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 1,
     'gold': 0,
-    'state': 'f7e66954'
+    'state': 'd22c58e1'
   },
   'poison': {
     'tick': 288000,
@@ -46,7 +49,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 1,
     'gold': 0,
-    'state': '50400713'
+    'state': '6f11e7b4'
   },
   'floor1': {
     'tick': 288000,
@@ -55,7 +58,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 9,
     'gold': 33071,
-    'state': '4e221add'
+    'state': '998255dc'
   },
   'floor6': {
     'tick': 288000,
@@ -64,7 +67,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 26,
     'gold': 1593017,
-    'state': '37508fe6'
+    'state': '3b0b34e1'
   },
   'world4': {
     'tick': 288000,
@@ -73,7 +76,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 5,
     'level': 17,
     'gold': 352118,
-    'state': '0e30cac9'
+    'state': '7f391218'
   },
   'world6': {
     'tick': 288000,
@@ -82,7 +85,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 26,
     'gold': 1593019,
-    'state': '13233dcb'
+    'state': '7831fa22'
   },
 };
 
@@ -168,7 +171,7 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'defeats': 0,
       'level': 1,
       'gold': 0,
-      'state': 'c6981786'
+      'state': '5d7342a5'
     }
   },
   '42': {
@@ -252,7 +255,7 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'defeats': 0,
       'level': 1,
       'gold': 0,
-      'state': '1686ebfd'
+      'state': '7c3e8b96'
     }
   },
   '1234': {
@@ -336,7 +339,7 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'defeats': 0,
       'level': 1,
       'gold': 0,
-      'state': 'e298a575'
+      'state': '27635d52'
     }
   },
 };
