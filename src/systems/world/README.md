@@ -77,7 +77,9 @@ Sent to other systems: `resources/set-pace`, `statuses/situation { down }`,
 `log/line`.
 
 Heard: `ladder/floor-cleared` (the hunt site is sent again), `combat/kill`
-(the toll collector: the toll stamp and `flag:toll_brute_force`).
+(the toll collector: the toll stamp and `flag:toll_brute_force`). The
+spell flag `flag:toll_encounter_spell` and the collector's reactions to heat,
+cold and lightning are set in `spellcraft` (`cast.ts`).
 
 ## Rules
 
@@ -125,9 +127,6 @@ Heard: `ladder/floor-cleared` (the hunt site is sent again), `combat/kill`
   scope has one. Step 4.
 - Band hubs (`climbToHub`), the festival forfeit, the seam verb of floor 20.
 - `noteTravelSkies` (Weathersense), bonus time.
-- The toll collector's spell flag (`noteTollSpell`) and its reactions to
-  heat, cold and lightning: with the spells of the player (step 3). Until
-  then every kill of it sets `flag:toll_brute_force`.
 - The surveyed plan of the map and the Stations row.
 
 ## Differences from the old build

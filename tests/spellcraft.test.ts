@@ -133,6 +133,7 @@ import {
 import {
   SITES,
   combatOf,
+  counterOf,
   enemyStats,
   feedOf,
   inscribe,
@@ -1799,5 +1800,45 @@ describe('word skills', () => {
     expect(lightning.milestones![0].bonus[0].stat).toBe('speed');
     expect(SKILLS[wordSkillId('stone')].milestones![0].bonus[0].stat).toBe('armor');
     expect(SKILLS[wordSkillId('gust')].milestones![0].bonus[0].stat).toBe('dodge');
+  });
+});
+
+describe('the toll collector reacts to spells (old floodedFloor.ts)', () => {
+  const tollFight = (seed = 3) => {
+    const g = fresh(seed);
+    const [golem] = stage(g, [{ monsterId: 'toll_collector_golem', level: 4 }], SITES.woods_edge);
+    return { g, golem };
+  };
+  const cast = (g: Kernel, words: string[]) => {
+    const spec = composeArcane(words)!;
+    run(g, (ctx) => castCraftedAttack(ctx as never, 'test', spec));
+  };
+
+  it('heat, cold and lightning each put their phase on it for 8 seconds', () => {
+    for (const [word, id] of [
+      ['fire', 'toll_steam'],
+      ['ice', 'toll_ice'],
+      ['spark', 'toll_overdrive'],
+    ]) {
+      const { g, golem } = tollFight();
+      cast(g, [word]);
+      const phase = find(g, id, golem.entity);
+      expect(phase, word).toBeDefined();
+      expect(phase!.ticksLeft, word).toBe(80);
+      expect(texts(g).some((t) => t.includes('to the collector for 8s')), word).toBe(true);
+    }
+  });
+
+  it('a spell in its fight marks the fight as not won by brute force; one elsewhere does not', () => {
+    const { g } = tollFight();
+    expect(counterOf(g, 'flag:toll_encounter_spell')).toBe(0);
+    cast(g, ['fire']);
+    expect(counterOf(g, 'flag:toll_encounter_spell')).toBe(1);
+
+    const other = fresh(3);
+    stage(other, [{ monsterId: 'forest_rat', level: 2 }], SITES.woods_edge);
+    cast(other, ['fire']);
+    expect(counterOf(other, 'flag:toll_encounter_spell')).toBe(0);
+    expect(held(other, combatOf(other).fight!.enemies[0]!.entity).some((s) => s.id === 'toll_steam')).toBe(false);
   });
 });

@@ -131,8 +131,9 @@ conditions' bite, the HP, the ledger and the harvest.
 | `spellcraft/strike-landed` | A strike of the player's working dealt damage | `target`, `type`, `first` |
 
 They replace the direct calls of the old code into systems that are not
-ported: `noteTollSpell`, `reactTollGolem`, `facetSignal('miracleCast')`,
-`grantCastWordXp`, `onCritLanded`.
+ported: `facetSignal('miracleCast')`, `grantCastWordXp`, `onCritLanded`.
+`noteTollSpell` and `reactTollGolem` are called in place (section "Toll
+collector fix").
 
 ### Changed while building
 
@@ -272,6 +273,30 @@ not prepared, the slot.
   of the tick as the old sweep that followed it.
 - The player's own burn from "undo me" and a monster's burn go through
   `statuses/apply` with `resist: true`; a monster always resists, as before.
-- `noteTollSpell`, `reactTollGolem`, `facetSignal`, `grantCastWordXp` and
-  `onCritLanded` are not called: their systems hear `spellcraft/cast`,
-  `spellcraft/strike-landed` and `combat/hit` when they are ported.
+- `facetSignal`, `grantCastWordXp` and `onCritLanded` are not called:
+  their systems hear `spellcraft/cast`, `spellcraft/strike-landed` and
+  `combat/hit` when they are ported. `noteTollSpell` and `reactTollGolem`
+  were left out here too until the toll collector fix.
+
+## Toll collector fix
+
+The old `noteTollSpell` and `reactTollGolem` (`floodedFloor.ts`) are ported
+into `cast.ts`, at the old call points of `castCraftedSelf` and
+`castCraftedAttack`:
+
+- A cast of the player's while the toll collector is in the fight sets
+  `flag:toll_encounter_spell` (a counterspell's payload included). The world
+  system's kill handler reads it for `flag:toll_brute_force`.
+- A strike that deals damage to the toll collector puts `toll_steam` (heat),
+  `toll_ice` (cold) or `toll_overdrive` (lightning) on it, intensity 1, 80
+  ticks, through `statuses/apply`, before the strike's own riders. The first
+  hit of a strike writes the feed line.
+
+They are calls, not listeners on `spellcraft/cast` and
+`spellcraft/strike-landed`: an event is delivered after the combat tick, so
+the condition would land after the collector's own turn in that tick and
+after the strike's riders, and the fight may be closed by then. The old
+build applied it inside the strike.
+
+Not ported: the old skill-active spell path (`combat.ts` 4483 to 4486)
+also called both; skill actives are not ported.

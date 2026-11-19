@@ -1483,3 +1483,107 @@ the grade is rolled from Smithing with no cap; a ring or an amulet has no
 stats; the STR requirement counts the haft and the strap; `benches/start`
 does not check the spot has an anvil; an unaffordable craft can be selected
 and stops on its first tick; the craft bar resets to 0, not carrying over.
+
+## 16. Toll collector gap
+
+Done 2026-11-19 on branch `toll-collector-gap`, from `main` at `d137ff9`.
+The rack climbs (seeds 42 and 7; sword, spear, dagger, hammer, unarmed;
+spell `fire`) lost the first toll collector attempt 5 times in 10 on
+`main`, at the bound of `tests/john.test.ts`. The old build loses 1 (seed 7
+hammer).
+
+### 16.1 Where it entered
+
+First attempts lost of the 10 rack climbs, at each port commit on `main`:
+
+| Commit | Port | Lost |
+|---|---|---|
+| `7b59ba1` | spine 7 | 4 |
+| `d0aab95` | catch-up pass 2 | 4 |
+| `078d680` | martial | 4 |
+| `fabb1c5` | arcane | 5 |
+| `7d4062f` | divine | 5 |
+| `57912c9` | alchemy | 5 |
+| `5e6f31f` | cooking | 5 |
+| `d137ff9` | smithing | 5 |
+| old build | | 1 |
+
+Before the arcane port the rack climbs took no spell, so those rows are not
+the same climb as the old one. From the arcane port on they are.
+
+### 16.2 The first divergence
+
+Seed 42, dagger, first fight with the collector, tick by tick. Both builds:
+level 1, the iron dagger, the collector at level 4, a 30-tick address, the
+player's first action at the same bar fill (the `fire` working, 4 damage).
+After that action the old build holds `toll_steam` (and `on_fire`) on the
+collector for 80 ticks; the rebuild holds nothing from the working but
+`on_fire` when it is not resisted. `toll_steam` is a 50% miss on the
+collector's attacks. Over the 10 old fights it is on the collector for at
+least 80 ticks in every one; in the rebuild it never appears.
+
+- Old: `D:\ksgproto28\src\core\systems\combat.ts:3405` (`reactTollGolem` in
+  the strike loop of `castCraftedAttack`), `:3237` and `:2282`
+  (`noteTollSpell`), the rule in
+  `D:\ksgproto28\src\core\systems\floodedFloor.ts:57-69`.
+- Rebuild: `src/systems/spellcraft/cast.ts`, the strike loop of
+  `castCraftedAttack` (`ctx.emit(strikeLanded, ...)`): the event was the
+  placeholder, nothing listened. `docs/SPINE.md` port 4 notes and
+  `src/systems/world/README.md` listed both functions as not ported, to
+  come "with the spells of the player (step 3)". A gap, not a rule decision.
+
+The same gap set `flag:toll_brute_force` on every collector kill, spell or
+not: nothing set `flag:toll_encounter_spell`.
+
+### 16.3 The fix
+
+`noteTollSpell` and `reactTollGolem` ported into `cast.ts` at the old call
+points, as calls rather than listeners: an event is delivered after the
+combat tick, which would put the condition after the collector's own turn
+and after the strike's riders. Details in `src/systems/spellcraft/README.md`
+"Toll collector fix". Tests: `tests/spellcraft.test.ts`, "the toll
+collector reacts to spells".
+
+### 16.4 John
+
+Rack climbs, seconds of play. First: the first collector attempt and its
+length; tries: collector attempts; band 1: floor 3 cleared at; KO: all
+knockouts of the climb.
+
+| Seed | Weapon | Old first | Old tries | Old band 1 | Old KO | Main first | Main tries | Main band 1 | Main KO | Fix first | Fix tries | Fix band 1 | Fix KO |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 42 | sword | won 34 | 1 | 1140 | 13 | won 29 | 1 | 1250 | 13 | won 29 | 1 | 962 | 8 |
+| 42 | spear | won 28 | 1 | 725 | 2 | won 17 | 1 | 821 | 5 | won 19 | 1 | 891 | 6 |
+| 42 | dagger | won 18 | 1 | 859 | 4 | lost 35 | 2 | 982 | 7 | lost 35 | 2 | 736 | 5 |
+| 42 | hammer | won 18 | 1 | 876 | 5 | won 20 | 1 | 763 | 3 | won 20 | 1 | 797 | 4 |
+| 42 | unarmed | won 38 | 1 | 647 | 1 | lost 32 | 2 | 847 | 6 | won 37 | 1 | 693 | 2 |
+| 7 | sword | won 39 | 1 | 1063 | 11 | lost 33 | 3 | 1029 | 9 | won 31 | 1 | 990 | 9 |
+| 7 | spear | won 27 | 1 | 730 | 3 | won 14 | 1 | 711 | 2 | won 15 | 1 | 702 | 3 |
+| 7 | dagger | won 15 | 1 | 907 | 10 | lost 28 | 2 | 1037 | 8 | lost 30 | 2 | 909 | 9 |
+| 7 | hammer | lost 33 | 2 | 852 | 4 | lost 30 | 2 | 784 | 3 | won 33 | 1 | 976 | 8 |
+| 7 | unarmed | won 36 | 1 | 642 | 1 | won 23 | 1 | 812 | 2 | won 28 | 1 | 828 | 4 |
+| | total | 1 lost | 11 | 8441 | 54 | 5 lost | 16 | 9036 | 58 | 2 lost | 12 | 8484 | 58 |
+
+A wider sample, seeds 1 to 6 and 8 to 21, the same five weapons (100
+climbs): first attempts lost, old 20, `main` 34, fix 24.
+
+`npm run pacing` (the skipping John, no spell) prints the same tables as on
+`main`. The outcome digests are unchanged: the skipping John never casts.
+
+### 16.5 Left unexplained
+
+Per seed the builds cannot match: the random stream differs from the first
+spawn of a climb (seed 42, dagger: the first slime has 22 HP in the old
+build, 21 in the rebuild), so every later roll differs. The two losses left
+are both dagger climbs. In each the storerooms rolled no slime among the six
+fights (the old seed 42 dagger climb met one: 170 ticks, about +1 STR, +1
+DEX, +1 CON before the collector, maxHp 100 against 80), and the `on_fire`
+rider of `fire` was resisted every cast. The storerooms table and the mercy
+pick match the old code; the slime rate over the 10 climbs was 9 of 20 rolls
+in the old build and 4 of 20 here, against an authored 25%. The 4-point gap
+in the wider sample is inside its spread (about 4 for 100 climbs at 20 to
+25%).
+
+Hunting XP differs from floor 0 on (the old bestiary pays a discovery
+bonus; the bestiary is not ported). Hunting raises loot and gold only, not
+the fight.

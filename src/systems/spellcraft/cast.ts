@@ -28,12 +28,14 @@ import combat, {
   retaliateAttack,
   stampAction,
   stampCooldown,
+  TOLL_GOLEM,
   triggerHolds,
   type ActionCtx,
   type Enemy,
   type Fight,
   type TypedSlice,
 } from '../combat';
+import { setCounter } from '../counters';
 import { feedLine, type DamageReport, type DamageStep } from '../log';
 import { rollProcChance } from '../mercy';
 import { kitOf, MONSTERS, monsterTagSet, penetrationOf } from '../monsters';
@@ -81,6 +83,36 @@ const pctOf = (x: number): string => `${Math.round(x * 100)}%`;
 
 const feed = (ctx: ActionCtx, text: string, damage?: DamageReport): void =>
   ctx.emit(feedLine, damage ? { text, damage } : { text });
+
+// ---- the toll collector (old `floodedFloor.ts`: `noteTollSpell`, `reactTollGolem`) ----
+
+const TOLL_SPELL_FLAG = 'flag:toll_encounter_spell';
+const TOLL_REACTION_TICKS = 80;
+const TOLL_REACTIONS: Partial<Record<DamageType, string>> = { heat: 'toll_steam', cold: 'toll_ice', lightning: 'toll_overdrive' };
+const TOLL_REACTION_TEXT: Record<string, string> = {
+  toll_steam: '♨️ Heat applies Steam-blinded to the collector for 8s.',
+  toll_ice: '🧊 Cold applies Ice-locked Joints to the collector for 8s: it cannot dodge and its armor is cut by 75%.',
+  toll_overdrive:
+    '⚡ Lightning applies Stamping Overdrive to the collector for 8s: it attacks faster and takes 12 lightning damage each time it acts.',
+};
+
+/** Any working of the player's in the toll office counts against the spell-free title. The old `noteTollSpell`. */
+function noteTollSpell(ctx: ActionCtx): void {
+  if (openFight(ctx)?.enemies.some((e) => e?.defId === TOLL_GOLEM)) ctx.emit(setCounter, { key: TOLL_SPELL_FLAG, value: 1 });
+}
+
+/**
+ * A strike that dealt damage to the toll collector: heat, cold and lightning
+ * each put a phase condition on it, at once, before the strike's own riders.
+ * The old `reactTollGolem` and the feed line of its call in `castCraftedAttack`.
+ */
+function reactTollGolem(ctx: ActionCtx, target: Foe, type: DamageType, first: boolean): void {
+  if (target.defId !== TOLL_GOLEM) return;
+  const id = TOLL_REACTIONS[type];
+  if (!id) return;
+  ctx.request(applyStatus, { entity: target.entity, app: { id, intensity: 1, duration: TOLL_REACTION_TICKS }, source: 'Flooded office' });
+  if (first) feed(ctx, TOLL_REACTION_TEXT[id]);
+}
 
 const openFight = (ctx: ActionCtx): DeepReadonly<Fight> | null => ctx.read(combat).fight;
 const alive = (ctx: ActionCtx): boolean => isAlive(ctx.read(resources));
@@ -344,6 +376,8 @@ function attackCastXp(ctx: ActionCtx, id: string, spec: SpellSpec): void {
  * afterwards. The old `castCraftedSelf`.
  */
 export function castCraftedSelf(ctx: ActionCtx, id: string, spec: SpellSpec, prepaid = false): void {
+  // Any working that lands in the toll office counts, a counterspell's prepaid payload included.
+  noteTollSpell(ctx);
   const stats = statBlockOf(ctx);
   if (!prepaid) {
     pay(ctx, stats, id, spec);
@@ -398,6 +432,7 @@ export function castCraftedSelf(ctx: ActionCtx, id: string, spec: SpellSpec, pre
  * `castCraftedAttack`.
  */
 export function castCraftedAttack(ctx: ActionCtx, id: string, spec: SpellSpec, aimAt?: number): void {
+  noteTollSpell(ctx);
   const spring = aimAt !== undefined;
   const stats = statBlockOf(ctx);
   if (!spring) {
@@ -542,6 +577,7 @@ export function castCraftedAttack(ctx: ActionCtx, id: string, spec: SpellSpec, a
         if (landed.dealt > 0) {
           landedAny = true;
           ctx.emit(strikeLanded, { target: target.entity, defId: target.defId, type, first: h === 0 });
+          reactTollGolem(ctx, target, type, h === 0);
           for (const app of strike.inflicts ?? []) {
             ctx.request(applyStatus, { entity: target.entity, app, source: spec.name, penetration: vs.penetration });
           }
