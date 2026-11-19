@@ -66,7 +66,7 @@ const setAttr = (kernel: Kernel, attr: 'str' | 'dex' | 'con' | 'int' | 'wis' | '
   patch(kernel, (slices) => ((slices.attributes as AttributesState).attrs[attr].level = level));
 
 describe('item content', () => {
-  it('holds the 47 items of the old registry, without the forged class stubs', () => {
+  it('holds the 47 items of the old registry; the forged class stubs come from smithing, not the record list', () => {
     expect(ITEM_LIST).toHaveLength(47);
     expect(ITEMS.rusty_sword).toMatchObject({ slot: 'weapon', wield: 'one_handed', tags: ['sword', 'metal'], value: 5 });
     expect(ITEM_LIST.some((def) => def.id.startsWith('forged'))).toBe(false);
@@ -476,7 +476,7 @@ describe('compareToWorn', () => {
 
   it.todo('beats: the rule (spare marks are part of selling: port 7)');
   it.todo('findSpares: the vest example, hands, rune slots with runecarving shut (port 7)');
-  it.todo('a forged item is never compared (modular smithing)');
+  it.todo('a forged item is never compared (spare marks, `beats` and `spareUids`: UI step)');
 });
 
 describe('minting an item', () => {

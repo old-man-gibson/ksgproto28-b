@@ -15,6 +15,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { ATTRIBUTE_LIST } from '../src/systems/attributes';
+import { RECIPES } from '../src/systems/crafting';
 import type { Condition } from '../src/systems/counters';
 import { ITEMS, RUNES } from '../src/systems/items';
 import { BANDS, exploreIssues, FLOORS, floorStructureIssues, TOWERS, type FloorRule } from '../src/systems/ladder';
@@ -400,7 +401,17 @@ describe('world graph', () => {
       }
     }
   });
-  it.todo('spot activities and recipe lists resolve: the recipe lists (step 3: crafting holds the recipes; `the_forges` lists 4)');
+  it('spot activities and recipe lists resolve: the recipe lists', () => {
+    let listed = 0;
+    for (const spot of Object.values(SPOTS)) {
+      for (const rid of spot.recipes ?? []) {
+        expect(RECIPES[rid], `${spot.id} recipe ${rid}`).toBeDefined();
+        listed++;
+      }
+    }
+    expect(SPOTS.the_forges.recipes).toEqual(['iron_ingot', 'copper_ingot', 'tin_ingot', 'bronze_ingot']);
+    expect(listed).toBe(4);
+  });
   it.todo('spot activities and recipe lists resolve: the bench ids (step 3: the disciplines; 7 spots of Threshold list benches)');
 
   it('exploration finds resolve, sit inside the search, and pay something', () => {

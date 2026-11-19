@@ -155,7 +155,7 @@ Converted with `node scripts/convert-content.mjs items affixes runes`.
 
 | Old read | Where the later port plugs in |
 |---|---|
-| Forged items (`assembly.ts` `forgedDef`, `forgeKey`) | `itemDefOf` in `defs.ts` is the one place an instance becomes a definition, and `stackKey` the one place it gets an identity. Modular smithing adds `forged` to `ItemInstance` and its branch in both. `itemValue` then returns the definition's value for a forged item, with no affix or slot multiplier. |
+| Forged items (`assembly.ts` `forgedDef`, `forgeKey`) | Done: step 3 smithing (below). |
 | Carved runes (`runes.ts` `composeCarved`, `runeRefKey`) | `resolveRune` and `runeRefKey` in `defs.ts`. `RuneRef` is a catalogue id today. |
 | Socketing, rune sale, rune bonus damage and technique changes | Runecarving. The pile (`runes`) and the catalogue exist; nothing reads the pile. |
 | Body grants and size (`mutagens.ts` `bearerGrants`, `playerSizeRank`) | The `items/set-bearer` request. The mutagens port calls it when the body changes. Until then the body has two arms and is medium. |
@@ -183,7 +183,7 @@ Converted with `node scripts/convert-content.mjs items affixes runes`.
 - Festival tokens of the stash (`stashToken`, `spendToken`,
   `tokenTechniques`) and `applyFestivalLegacy`: the festival.
 - Loadouts (`state.loadouts`): not part of the listed files.
-- The forged class stubs of the item registry: modular smithing.
+- The forged class stubs of the item registry: done by the smithing port (below).
 - Rune patterns, adornments and named runes: runecarving.
 
 ## Old rules ported as they are
@@ -207,3 +207,24 @@ Converted with `node scripts/convert-content.mjs items affixes runes`.
 - Weapon oils: the coating lives in the `alchemy` slice with the uid of
   the weapon it was worked into. It rides only that weapon; `items` is
   unchanged.
+
+## Step 3 (the smithing port)
+
+- `ItemInstance.forged?: { parts, q }` (old `ForgedSpec`): a piece built at
+  the anvil. `defId` is the class stub `forged:<class>`.
+- `registerForging(hooks, stubs)`, called by `smithing` at module load: the
+  derived definition (`defOf`), the forge key (`keyOf`), the exemplar of a
+  stub id (`exemplarOf`), and the 44 `forged:<class>` stubs, which go into
+  `ITEMS` as the old registry generated them (no numbers). `ITEM_LIST` and
+  the `items` registry do not hold them.
+- `itemDefOf`: a forged item's definition comes from `defOf`. `itemValue`:
+  a forged item is worth its definition's value, no affix or slot
+  multiplier. `stackKey`: `|<forge key>` appended for a forged item.
+- `items/grant` of a `forged:<class>` id mints the class exemplar at Fair,
+  no rune slots, medium (old `createItem`). New request
+  `items/grant-forged { defId, spec }`: the anvil's piece.
+- Pack rows carry `forged`, so `itemDefOf` and `stackKey` read a row as
+  they read an instance.
+- No change to `items/worn`: it reads `itemDefOf`. No command edits a worn
+  piece's parts, so the old `forgeKey` entry of `modFingerprint` has no
+  counterpart.

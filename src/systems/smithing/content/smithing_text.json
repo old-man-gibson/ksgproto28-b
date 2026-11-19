@@ -1,0 +1,12 @@
+[
+  { "id": "reason_empty", "text": "Nothing is on the anvil" },
+  { "id": "reason_unknown_part", "text": "No such part: {part}" },
+  { "id": "reason_wrong_slot", "text": "{part} does not go in the {slot} slot" },
+  { "id": "reason_material", "text": "{part} cannot be made of {material}" },
+  { "id": "reason_graded", "text": "{material} is graded stock and cannot be forged" },
+  { "id": "reason_qty", "text": "{part}: quantity must be 1 to {max}" },
+  { "id": "reason_slot_locked", "text": "The {slot} slot opens at Smithing {level}" },
+  { "id": "reason_short", "text": "Short of {material}: {held} held, {need} needed" },
+  { "id": "forged_prefix", "text": "🔨 Forged:" },
+  { "id": "locked", "text": "🔒 {reason}" }
+]

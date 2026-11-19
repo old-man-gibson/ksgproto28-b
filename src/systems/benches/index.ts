@@ -31,12 +31,21 @@ export * from './layouts';
 
 export type BenchReadCtx = DerivedReads & { read<T>(system: SystemDef<T, any>): DeepReadonly<T> };
 
+/**
+ * What an assembling bench (the anvil) lays out: a part kind and a material
+ * per slot, not graded stacks. The owner (`smithing`) gives it meaning; the
+ * old `ForgePlacement`.
+ */
+export type AssembledPlacement = { [slot: string]: { kind: string; mat: string; qty?: number } | undefined };
+
 /** What the owner of a bench answers. The old `benchPreview` and `benchCraft`. */
 export interface BenchOwner {
-  /** Whether the layout would make anything now, and why not. */
-  preview(ctx: BenchReadCtx, placement: Placement, duration?: number): { ok: boolean; reason?: string };
+  /** Whether the layout would make anything now, and why not. `forge`: an assembling bench's parts. */
+  preview(ctx: BenchReadCtx, placement: Placement, duration?: number, forge?: AssembledPlacement): { ok: boolean; reason?: string };
   /** Work it once: spend and make. False when it could not be made (the owner logs why). */
-  craft: RequestDef<{ placement: Placement; duration?: number }, boolean>;
+  craft: RequestDef<{ placement: Placement; duration?: number; forge?: AssembledPlacement }, boolean>;
+  /** An assembling bench: ticks of one craft before craft speed (old `forgeTicks`). */
+  ticks?(forge: AssembledPlacement): number;
 }
 
 const OWNERS = new Map<string, BenchOwner>();
@@ -69,6 +78,8 @@ export interface BenchJob {
   done: number;
   /** A timed bench's chosen length in units; absent: its default. */
   duration?: number;
+  /** An assembling bench: the parts being forged, repeated each craft (old `benchWork.forge`). */
+  forge?: AssembledPlacement;
 }
 
 export interface BenchesState {
@@ -84,6 +95,8 @@ export const startBench = defineCommand<{
   count: number | null;
   /** A timed bench's length in units. */
   duration?: number;
+  /** An assembling bench (the anvil): the parts to forge. The graded-stack placement is unused there. */
+  forge?: AssembledPlacement;
 }>(
   'benches/start',
 );
@@ -128,7 +141,13 @@ function tickJob(ctx: B): void {
   if (job.ticksLeft > 0) return;
   const owner = OWNERS.get(job.discipline);
   for (let i = 0; i < job.batch; i++) {
-    const made = owner ? ctx.request(owner.craft, { placement: job.placement, ...(job.duration !== undefined ? { duration: job.duration } : {}) }) : false;
+    const made = owner
+      ? ctx.request(owner.craft, {
+          placement: job.placement,
+          ...(job.duration !== undefined ? { duration: job.duration } : {}),
+          ...(job.forge ? { forge: job.forge } : {}),
+        })
+      : false;
     if (!made) {
       // The owner already logged why (out of stock, usually).
       stopJob(ctx, 'out of stock');
@@ -175,12 +194,12 @@ const benches = defineSystem<BenchesState, BenchesView>({
   tick: (ctx) => tickJob(ctx),
 
   commands: [
-    handle(startBench, (ctx, { discipline, placement, count, duration }) => {
+    handle(startBench, (ctx, { discipline, placement, count, duration, forge }) => {
       const disc = DISCIPLINES[discipline];
       if (!disc) return skipped(`no bench has the id "${discipline}"`);
       const owner = OWNERS.get(discipline);
       if (!owner) return skipped(`no system works the bench "${discipline}"`);
-      const check = owner.preview(ctx, placement, duration);
+      const check = owner.preview(ctx, placement, duration, forge);
       if (!check.ok) {
         const reason = check.reason ?? `the ${disc.benchName ?? disc.name} cannot work this layout`;
         ctx.emit(logLine, { msg: fillText(TEXT.locked, { reason }), kind: 'danger' });
@@ -188,7 +207,8 @@ const benches = defineSystem<BenchesState, BenchesView>({
       }
       // The bench is the activity now.
       ctx.request(dropActivityNow, undefined);
-      const { ticksPer, batch } = benchJobTicks(disc, placement, statBlockOf(ctx).craftSpeed, duration);
+      const assembled = disc.assembles && owner.ticks ? owner.ticks(forge ?? {}) : undefined;
+      const { ticksPer, batch } = benchJobTicks(disc, placement, statBlockOf(ctx).craftSpeed, duration, assembled);
       ctx.state.job = {
         discipline,
         spot: ctx.read(world).spot,
@@ -199,6 +219,8 @@ const benches = defineSystem<BenchesState, BenchesView>({
         batch,
         done: 0,
         ...(duration !== undefined ? { duration } : {}),
+        // A plain copy: the job outlives the panel's working layout.
+        ...(forge ? { forge: JSON.parse(JSON.stringify(forge)) as AssembledPlacement } : {}),
       };
       // A bench run is the player's own work: it ends a knockout return.
       ctx.emit(playerCommand, { type: startBench.type });

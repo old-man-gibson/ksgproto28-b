@@ -176,19 +176,19 @@ describe('wayfinding', () => {
   it('lists discovered spots whose activities train a skill or an attribute', () => {
     const g = gameAt(16, 'long_gallery');
     // Strength trains at the muster yard, but only once the yard is known.
-    expect(trainingSpots(worldOf(g), { attr: 'str' })).toEqual([]);
+    expect(trainingSpots(reads(g), worldOf(g), { attr: 'str' })).toEqual([]);
     discover(g, 'ironyard_gate');
-    const str = trainingSpots(worldOf(g), { attr: 'str' });
+    const str = trainingSpots(reads(g), worldOf(g), { attr: 'str' });
     expect(str).toContainEqual({ spot: 'ironyard_gate', activity: 'train_str_muster' });
     expect(str.every((t) => t.spot === 'ironyard_gate')).toBe(true);
-    expect(trainingSpots(worldOf(g), { attr: 'dex' })).toContainEqual({ spot: 'long_gallery', activity: 'train_dex_gallery' });
+    expect(trainingSpots(reads(g), worldOf(g), { attr: 'dex' })).toContainEqual({ spot: 'long_gallery', activity: 'train_dex_gallery' });
   });
 
   it('a skill trains wherever an activity carries its tags — the same tags the tick pays', () => {
     const g = gameAt(17, 'ironyard_gate');
     discover(g, 'long_gallery', 'f4_woods_edge');
     const def = Object.values(SKILLS).find((s) => s.tags.includes('explore'))!;
-    const spots = trainingSpots(worldOf(g), { skill: def.id });
+    const spots = trainingSpots(reads(g), worldOf(g), { skill: def.id });
     expect(spots).toContainEqual({ spot: 'f4_woods_edge', activity: 'explore' });
     for (const t of spots) {
       const act = spotActivities(SPOTS[t.spot]).find((a) => a.id === t.activity)!;

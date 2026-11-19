@@ -1,0 +1,356 @@
+[
+  {
+    "id": "thin",
+    "name": "Thin blade",
+    "icon": "🗡️",
+    "role": "head",
+    "shape": "edge",
+    "w": 1,
+    "l": 6,
+    "accepts": [
+      "metal"
+    ]
+  },
+  {
+    "id": "short",
+    "name": "Short blade",
+    "icon": "🔪",
+    "role": "head",
+    "shape": "edge",
+    "w": 2,
+    "l": 3,
+    "accepts": [
+      "metal"
+    ]
+  },
+  {
+    "id": "medium",
+    "name": "Medium blade",
+    "icon": "🗡️",
+    "role": "head",
+    "shape": "edge",
+    "w": 2,
+    "l": 4,
+    "accepts": [
+      "metal"
+    ]
+  },
+  {
+    "id": "long",
+    "name": "Long blade",
+    "icon": "⚔️",
+    "role": "head",
+    "shape": "edge",
+    "w": 2,
+    "l": 6,
+    "accepts": [
+      "metal"
+    ]
+  },
+  {
+    "id": "great",
+    "name": "Great blade",
+    "icon": "⚔️",
+    "role": "head",
+    "shape": "edge",
+    "w": 2,
+    "l": 10,
+    "accepts": [
+      "metal"
+    ]
+  },
+  {
+    "id": "curved",
+    "name": "Curved blade",
+    "icon": "🗡️",
+    "role": "head",
+    "shape": "edge",
+    "w": 2,
+    "l": 6,
+    "curved": true,
+    "accepts": [
+      "metal"
+    ]
+  },
+  {
+    "id": "curved_l",
+    "name": "Long curved blade",
+    "icon": "🗡️",
+    "role": "head",
+    "shape": "edge",
+    "w": 2,
+    "l": 10,
+    "curved": true,
+    "accepts": [
+      "metal"
+    ]
+  },
+  {
+    "id": "spearhead",
+    "name": "Spearhead",
+    "icon": "🔱",
+    "role": "head",
+    "shape": "point",
+    "w": 1,
+    "l": 3,
+    "accepts": [
+      "metal"
+    ]
+  },
+  {
+    "id": "axehead",
+    "name": "Axe head",
+    "icon": "🪓",
+    "role": "head",
+    "shape": "edge",
+    "w": 4,
+    "l": 3,
+    "cross": true,
+    "accepts": [
+      "metal"
+    ]
+  },
+  {
+    "id": "maulhead",
+    "name": "Maul head",
+    "icon": "🔨",
+    "role": "head",
+    "shape": "mass",
+    "w": 3,
+    "l": 3,
+    "cross": true,
+    "accepts": [
+      "metal"
+    ]
+  },
+  {
+    "id": "plate_s",
+    "name": "Small plate",
+    "icon": "🛡️",
+    "role": "head",
+    "shape": "plate",
+    "w": 2,
+    "l": 2,
+    "accepts": [
+      "metal",
+      "wood"
+    ]
+  },
+  {
+    "id": "plate_m",
+    "name": "Plate",
+    "icon": "🛡️",
+    "role": "head",
+    "shape": "plate",
+    "w": 3,
+    "l": 3,
+    "accepts": [
+      "metal",
+      "wood"
+    ]
+  },
+  {
+    "id": "plate_w",
+    "name": "Wide plate",
+    "icon": "🛡️",
+    "role": "head",
+    "shape": "plate",
+    "w": 4,
+    "l": 4,
+    "accepts": [
+      "metal",
+      "wood"
+    ]
+  },
+  {
+    "id": "plate_t",
+    "name": "Tall plate",
+    "icon": "🛡️",
+    "role": "head",
+    "shape": "plate",
+    "w": 3,
+    "l": 5,
+    "accepts": [
+      "metal",
+      "wood"
+    ]
+  },
+  {
+    "id": "bent_s",
+    "name": "Bent metal (small)",
+    "icon": "🪖",
+    "role": "head",
+    "shape": "bent",
+    "w": 2,
+    "l": 2,
+    "qtyMax": 2,
+    "accepts": [
+      "metal"
+    ]
+  },
+  {
+    "id": "bent_m",
+    "name": "Bent metal",
+    "icon": "🪖",
+    "role": "head",
+    "shape": "bent",
+    "w": 2,
+    "l": 3,
+    "qtyMax": 2,
+    "accepts": [
+      "metal"
+    ]
+  },
+  {
+    "id": "bent_l",
+    "name": "Long bent",
+    "icon": "🏹",
+    "role": "head",
+    "shape": "bent",
+    "w": 2,
+    "l": 5,
+    "qtyMax": 2,
+    "accepts": [
+      "metal",
+      "wood"
+    ]
+  },
+  {
+    "id": "ring",
+    "name": "Metal ring",
+    "icon": "⭕",
+    "role": "head",
+    "shape": "ring",
+    "w": 1,
+    "l": 1,
+    "qtyMax": 8,
+    "accepts": [
+      "metal"
+    ]
+  },
+  {
+    "id": "h3",
+    "name": "Short handle",
+    "icon": "🪵",
+    "role": "haft",
+    "shape": "bar",
+    "w": 1,
+    "l": 3,
+    "accepts": [
+      "wood",
+      "metal"
+    ]
+  },
+  {
+    "id": "h4",
+    "name": "Grip",
+    "icon": "🪵",
+    "role": "haft",
+    "shape": "bar",
+    "w": 1,
+    "l": 4,
+    "accepts": [
+      "wood",
+      "metal"
+    ]
+  },
+  {
+    "id": "h6",
+    "name": "Long handle",
+    "icon": "🪵",
+    "role": "haft",
+    "shape": "bar",
+    "w": 1,
+    "l": 6,
+    "accepts": [
+      "wood",
+      "metal"
+    ]
+  },
+  {
+    "id": "pole",
+    "name": "Pole",
+    "icon": "🪵",
+    "role": "haft",
+    "shape": "bar",
+    "w": 1,
+    "l": 9,
+    "accepts": [
+      "wood",
+      "metal"
+    ]
+  },
+  {
+    "id": "club",
+    "name": "Thick bar",
+    "icon": "🏏",
+    "role": "haft",
+    "shape": "bar",
+    "w": 2,
+    "l": 4,
+    "accepts": [
+      "wood",
+      "metal"
+    ]
+  },
+  {
+    "id": "cross",
+    "name": "Crossguard",
+    "icon": "✝️",
+    "role": "guard",
+    "shape": "guard",
+    "w": 3,
+    "l": 1,
+    "accepts": [
+      "metal"
+    ]
+  },
+  {
+    "id": "swept",
+    "name": "Swept guard",
+    "icon": "🛡️",
+    "role": "guard",
+    "shape": "guard",
+    "w": 3,
+    "l": 2,
+    "accepts": [
+      "metal"
+    ]
+  },
+  {
+    "id": "boss",
+    "name": "Boss",
+    "icon": "⚙️",
+    "role": "guard",
+    "shape": "guard",
+    "w": 2,
+    "l": 2,
+    "accepts": [
+      "metal"
+    ]
+  },
+  {
+    "id": "strap",
+    "name": "Strap",
+    "icon": "〰️",
+    "role": "bind",
+    "shape": "cord",
+    "w": 1,
+    "l": 3,
+    "accepts": [
+      "leather"
+    ]
+  },
+  {
+    "id": "cord",
+    "name": "Cord",
+    "icon": "〰️",
+    "role": "bind",
+    "shape": "cord",
+    "w": 1,
+    "l": 4,
+    "accepts": [
+      "leather"
+    ]
+  }
+]

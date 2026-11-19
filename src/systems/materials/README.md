@@ -103,3 +103,11 @@ carries the price of one unit per row and per grade. `materials` now imports
 - `consumable` is read by the `consumables` system; `craftTags` by
   `benches`; graded reagents are spent by `alchemy/brew` through
   `materials/take-graded`.
+
+## Step 3 (the smithing port)
+
+- `materials/take { id, qty }`: take exactly `qty` of a plain material, or
+  nothing and false. The anvil bill and a recipe's cost (the old code wrote
+  `state.materials` directly).
+- `smith` is read by `smithing` (the anvil kernel) and `craftTags` by its
+  parts.

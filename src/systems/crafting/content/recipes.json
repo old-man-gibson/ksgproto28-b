@@ -1,0 +1,46 @@
+[
+  {
+    "id": "iron_ingot",
+    "tags": ["smithing"],
+    "result": { "kind": "material", "id": "iron_ingot" },
+    "cost": [{ "id": "iron_scrap", "qty": 3 }],
+    "ticks": 120,
+    "xp": 4
+  },
+  {
+    "id": "copper_ingot",
+    "secret": true,
+    "unlock": [{ "type": "stat", "key": "flag:pattern_bronze", "value": 1 }],
+    "name": "Copper Ingot",
+    "ticks": 100,
+    "xp": 3,
+    "cost": [{ "id": "copper_ore", "qty": 3 }],
+    "tags": ["smithing"],
+    "result": { "kind": "material", "id": "copper_ingot" }
+  },
+  {
+    "id": "tin_ingot",
+    "secret": true,
+    "unlock": [{ "type": "stat", "key": "flag:pattern_bronze", "value": 1 }],
+    "name": "Tin Ingot",
+    "ticks": 60,
+    "xp": 0,
+    "cost": [{ "id": "tin_ore", "qty": 3 }],
+    "tags": ["smithing"],
+    "result": { "kind": "material", "id": "tin_ingot" }
+  },
+  {
+    "id": "bronze_ingot",
+    "secret": true,
+    "unlock": [{ "type": "stat", "key": "flag:pattern_bronze", "value": 1 }],
+    "name": "Bronze Ingot",
+    "ticks": 140,
+    "xp": 4,
+    "cost": [
+      { "id": "copper_ingot", "qty": 4 },
+      { "id": "tin_ingot", "qty": 1 }
+    ],
+    "tags": ["smithing"],
+    "result": { "kind": "material", "id": "bronze_ingot" }
+  }
+]

@@ -33,7 +33,7 @@ import { ask, emit, equip, makeGame, patch, setMods, slice, unequip } from './he
  * `items` system since spine port 3: uid 1 is the starting rusty sword.
  *
  * Left behind, for the ports of the systems they need:
- * - forged pieces (modular smithing), the festival bonus (prestige), Cooking's food
+ * - the festival bonus (prestige), Cooking's food
  *   milestones over a cooked dish (cooking);
  * - the rebuild count under a gale on the open ridge: in `tests/exposure.test.ts` since spine port 6;
  * - the long fight of the sweep. The sweep here runs every request these
@@ -75,6 +75,31 @@ describe('derived-stats cache', () => {
     const disarmed = statBlockOf(kernel);
     expect(disarmed).not.toBe(armed);
     expect(disarmed).toEqual(bare);
+    sound(kernel);
+  });
+
+  it('invalidates when the parts or the grade of a forged piece change under the same uid', () => {
+    // Step 3 (smithing). The old case re-forged the worn blade in place;
+    // here no command edits a worn piece, so the change goes through a save
+    // and a load (which touches every source), and the check is that the
+    // block follows the parts and the grade and nothing is stale.
+    const kernel = makeGame();
+    const sword = ask(kernel, grantItem, { defId: 'forged:sword' });
+    equip(kernel, sword.uid);
+    const first = statBlockOf(kernel);
+    expect(statBlockOf(kernel)).toBe(first);
+    sound(kernel);
+
+    patch(kernel, (slices) => ((slices.items as ItemsState).equipment.weapon!.forged!.parts[0].kind = 'short'));
+    const shorter = statBlockOf(kernel);
+    expect(shorter).not.toBe(first);
+    expect(shorter.damage).toBeLessThan(first.damage);
+    sound(kernel);
+
+    patch(kernel, (slices) => ((slices.items as ItemsState).equipment.weapon!.forged!.q = 's'));
+    const fine = statBlockOf(kernel);
+    expect(fine).not.toBe(shorter);
+    expect(fine.damage).toBeGreaterThan(shorter.damage);
     sound(kernel);
   });
 

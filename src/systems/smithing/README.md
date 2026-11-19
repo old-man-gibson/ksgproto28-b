@@ -185,3 +185,82 @@ John never opens the anvil (old `tests/john.ts` crafts ingots only on floor
 which returns at once with no job. Expected: John unchanged; the budget runs
 unchanged except one `forged` check per `itemDefOf` and `stackKey` call.
 The state hash of every digest changes (two new slices).
+
+## Changed while building (step 3)
+
+- `match` of a class is always a list of clauses, and the old union fields
+  are objects: `head: 'none'` is `head: { none: true }`, `haft: 'none'` is
+  `haft: { none: true }`, `haft: 'any'` is `haft: {}` (the old code already
+  read a haft object with no range as any haft). The schema has no union
+  type. The paperweight's match is `[{}]`.
+- `previewForge(reads, placement)` takes `{ level, counts }` (Smithing and
+  the plain stock), not the state; `forgeSlotLocks(level)` takes the level;
+  `formKnown(counters, id)` takes the counters slice.
+- `forgedClassOf` answers only for an own key of the class table, so an id
+  `forged:constructor` is no class. The old lookup would have returned an
+  `Object.prototype` member and thrown when minted.
+- The bench run keeps the anvil placement as given; the craft and the
+  clock read it through the same guard a stored spec gets (`placementOf`
+  over the five slots), where the old job stored `clonePlacement(forge)`.
+- The working layout of the panel resets when the run changes, keyed on
+  the prestige count (`runKey` in the view). The old key was `createdAt`
+  and the prestige count; this build has no `createdAt`, no hard reset and
+  no import, and a reload starts the layout over anyway. (The sky's seed
+  was tried and dropped: it is null until the first minute under an open
+  sky, so the key changed once mid-run and reset the layout.)
+- The old cache fingerprint entry for a forged piece (`forgeKey` in
+  `modFingerprint`) has no counterpart: no command edits a worn piece, and
+  a load touches every source. `tests/derivedcache.test.ts` changes the
+  parts through a save and a load and checks that nothing is stale.
+
+## Old rules ported as they are
+
+- A forged piece never has rune slots (`slots: 0`), whatever its size class.
+- The grade is rolled with `1 + Smithing / 20` as luck and nothing caps it
+  (old comment: there is no smithing tool yet).
+- A ring or an amulet (an accessory class with no `cover`) has no stats at
+  all: only a value.
+- The STR requirement counts the weight of every part, the haft and the
+  strap included.
+- `items/grant` of a `forged:<class>` id ignores the `size` and
+  `affixChance` fields (old `createItem` of a stub).
+- `benches/start` does not check that the spot has an anvil (old
+  `startBenchWork` did not); the panel offers the anvil only where a spot
+  lists `forging`.
+
+## Panel as built
+
+`AnvilPanel.svelte` (with `FormChart.svelte`, `Silhouette.svelte`),
+`anvilView.ts`, `drawing.ts`, `layout.svelte.ts`. Differences from the old
+panel:
+
+- A row of the comparison table previews on click (the old one on hover);
+  a second click ends the preview; "Put on the anvil" applies it, "End
+  preview" beside it, in a box of fixed height.
+- The old `Tip` hovers: the column hints are a click-open "Columns" list,
+  the head-count hint is inline text, the chart cells' tooltip text is their
+  `aria-label`.
+- Material colours are tokens of `tokens.css` (none of the old `--mat-*`
+  tokens exist): steel `--color-text`, bronze `--color-warn`, iron, unknown
+  metal and the fallback `--color-text-dim`, wood `--color-ok`, leather
+  `--color-danger`. They follow the theme; the old ones did not.
+- "Requires STR (not met)" reads attribute conditions only, from the
+  attributes view; a forged piece has no other requirement.
+- Three columns of 40rem only when the panel is at least 52rem wide, else
+  one column (the old breakpoint was narrower; at 1024 px of window the
+  middle column clipped its numbers). Run bar, reason line and apply box
+  have fixed heights.
+- Left out: the Shadow Clone row, pixel icons (the emoji is used), the
+  progress-bar transition.
+- Ported as is: Forge ×N and "Until out of stock" show only when two or
+  more pieces are affordable.
+
+Away from an anvil the panel is one line: `Anvil: at The Forges`.
+
+## Left behind (as built)
+
+- Everything under "Left behind" in the design.
+- `tests/anvilview.test.ts`: the hard reset and the import cases are
+  `it.todo` (this build has neither).
+- `tests/items.test.ts`: "a forged item is never compared" stays `it.todo`
+  (spare marks, UI step).

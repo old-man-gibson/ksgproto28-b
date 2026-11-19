@@ -22,7 +22,21 @@ import { textSchema } from '../log';
 import { conditionReader } from '../skills';
 import { statBlockOf } from '../stats';
 import worldTextData from './content/world_text.json';
-import { areas, AREAS, edgesFrom, getSpot, keyItems, REGIONS, regions, spotActivities, spots, SPOTS, STARTING_SPOT, type Edge } from './defs';
+import {
+  areas,
+  AREAS,
+  craftProvider,
+  edgesFrom,
+  getSpot,
+  keyItems,
+  REGIONS,
+  regions,
+  spotActivities,
+  spots,
+  SPOTS,
+  STARTING_SPOT,
+  type Edge,
+} from './defs';
 import {
   activityCost,
   ARRIVE_IDLE,
@@ -30,6 +44,7 @@ import {
   cancelTravelPlan,
   canStartActivity,
   climbTo,
+  craftUnlocked,
   currentActivity,
   dropActivity,
   exploreProgress,
@@ -130,6 +145,10 @@ export interface ActivityView {
   kind: string;
   /** Null when it can start now. */
   blocked: string | null;
+  /** craft: the recipe is locked. */
+  locked: boolean;
+  /** craft: the cost line when unlocked, the requirement when locked. Null for other kinds. */
+  detail: string | null;
 }
 
 export interface MapSpotView {
@@ -209,14 +228,33 @@ function reach(ctx: Reads, state: DeepReadonly<WorldState>, from: string): Map<s
   return final;
 }
 
+/**
+ * The activities a panel lists. A secret recipe not yet unlocked is left
+ * out (old `recipeHidden`). A craft is blocked only while locked: the old
+ * panel let an unaffordable craft start, and its first tick stops it.
+ */
 function activityViews(ctx: Reads, spotId: string): ActivityView[] {
-  return spotActivities(getSpot(spotId)).map((a) => ({
-    id: a.id,
-    name: a.name,
-    icon: a.icon,
-    kind: a.kind,
-    blocked: canStartActivity(ctx, spotId, a.id) ? null : 'Nothing left to find.',
-  }));
+  const kind = craftProvider();
+  const out: ActivityView[] = [];
+  for (const a of spotActivities(getSpot(spotId))) {
+    if (a.kind === 'craft') {
+      if (!kind || !a.recipe || kind.hidden(ctx, a.recipe)) continue;
+      const locked = !kind.unlocked(ctx, a.recipe);
+      const detail = kind.detail(ctx, a.recipe);
+      out.push({ id: a.id, name: a.name, icon: locked ? '🔒' : a.icon, kind: a.kind, blocked: locked ? detail : null, locked, detail });
+      continue;
+    }
+    out.push({
+      id: a.id,
+      name: a.name,
+      icon: a.icon,
+      kind: a.kind,
+      blocked: canStartActivity(ctx, spotId, a.id) ? null : 'Nothing left to find.',
+      locked: false,
+      detail: null,
+    });
+  }
+  return out;
 }
 
 // ---- the declaration ----
@@ -278,11 +316,18 @@ const world = defineSystem<WorldState, WorldView>({
       if (state.travel) return skipped('a journey is under way');
       // Not refused while knocked out: the old `selectActivity` took a pick during the
       // recovery, and the pick ends a knockout return (old knockoutReturn test, "rest-while-recovering").
+      const picked = activity === null ? undefined : spotActivities(getSpot(state.spot)).find((a) => a.id === activity);
       if (activity !== null) {
-        if (!spotActivities(getSpot(state.spot)).some((a) => a.id === activity)) return skipped(`this spot has no activity "${activity}"`);
-        if (!canStartActivity(ctx, state.spot, activity)) return skipped(`"${activity}" has nothing left to pay`);
+        if (!picked) return skipped(`this spot has no activity "${activity}"`);
+        // A craft is refused only while locked (in `startActivity`, which logs it): the old
+        // `selectActivity` started an unaffordable craft, and its first tick stops it.
+        if (picked.kind !== 'craft' && !canStartActivity(ctx, state.spot, activity)) return skipped(`"${activity}" has nothing left to pay`);
       }
-      if (!startActivity(ctx, activity)) return skipped('the fight cannot be left');
+      if (!startActivity(ctx, activity)) {
+        if (inForcedFight(ctx.read(combat))) return skipped('the fight cannot be left');
+        if (picked?.kind === 'craft' && !craftUnlocked(ctx, picked)) return skipped(`the recipe "${picked.recipe}" is locked`);
+        return skipped('the activity was refused');
+      }
       ctx.emit(playerCommand, { type: selectActivity.type });
       return OK;
     }),

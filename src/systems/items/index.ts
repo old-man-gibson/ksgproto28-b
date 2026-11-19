@@ -34,6 +34,7 @@ import itemsTextData from './content/items_text.json';
 import {
   affixOfId,
   affixRegistry,
+  forgedExemplarOf,
   itemDefOf,
   itemName,
   itemRegistry,
@@ -49,6 +50,7 @@ import {
   SLOT_IDS,
   SLOT_NAMES,
   sizeRank,
+  type ForgedSpec,
   type ItemDef,
   type ItemInstance,
   type SizeTag,
@@ -415,6 +417,13 @@ export const grantItem = defineRequest<{ defId: string; size?: SizeTag; affixCha
 );
 
 /**
+ * Put a forged piece in the pack: a new uid, the class stub as `defId`, no
+ * rune slots, medium. The anvil's half of old `forgeOnce`. Answers a copy.
+ * Step 3 (smithing).
+ */
+export const grantForged = defineRequest<{ defId: string; spec: ForgedSpec }, ItemInstance>('items/grant-forged');
+
+/**
  * Put an item on without turning anything out: only into an empty slot,
  * only when its requirements hold, and in a hand only when the body has that
  * hand and the arms budget has room. The item is placed as given, not taken
@@ -480,6 +489,8 @@ export interface ItemRow {
   slots: number;
   runes: string[];
   size?: SizeTag;
+  /** A forged piece's parts and grade (step 3, smithing): read by `itemDefOf` and `stackKey` on the row. */
+  forged?: ForgedSpec;
   rarity: RarityId;
   /** Worth before the seller's gold gain. */
   value: number;
@@ -578,6 +589,7 @@ function rowOf(
     slots: item.slots ?? 0,
     runes: [...(item.runes ?? [])],
     ...(item.size ? { size: item.size } : {}),
+    ...(item.forged ? { forged: cloneJson(item.forged) as ForgedSpec } : {}),
     rarity: itemRarity(item),
     value: itemValue(item),
     sell: sellPrice(item, statOf(ctx, 'goldGain')),
@@ -668,6 +680,15 @@ const system: SystemDef<ItemsState, ItemsView> = defineSystem<ItemsState, ItemsV
 
   requests: [
     answer(grantItem, (ctx, { defId, size, affixChance }) => {
+      // A `forged:<class>` id is a class stub with no numbers of its own:
+      // minted, it becomes the class's exemplar at Fair grade, with no rune
+      // slots (old `createItem`).
+      const exemplar = forgedExemplarOf(defId);
+      if (exemplar) {
+        const minted: ItemInstance = { uid: nextUid(ctx.state), defId, slots: 0, runes: [], size: 'medium', forged: exemplar };
+        ctx.state.inventory.push(minted);
+        return cloneJson(minted) as ItemInstance;
+      }
       const def = itemDefOf({ defId });
       const item: ItemInstance = {
         uid: nextUid(ctx.state),
@@ -679,6 +700,19 @@ const system: SystemDef<ItemsState, ItemsView> = defineSystem<ItemsState, ItemsV
       if (affixChance !== undefined && ctx.rng.chance(affixChance)) {
         item.affix = affixOfId(AFFIX_LIST[ctx.rng.int(AFFIX_LIST.length)].id);
       }
+      ctx.state.inventory.push(item);
+      return cloneJson(item) as ItemInstance;
+    }),
+
+    answer(grantForged, (ctx, { defId, spec }) => {
+      const item: ItemInstance = {
+        uid: nextUid(ctx.state),
+        defId,
+        slots: 0,
+        runes: [],
+        size: 'medium',
+        forged: cloneJson(spec) as ForgedSpec,
+      };
       ctx.state.inventory.push(item);
       return cloneJson(item) as ItemInstance;
     }),

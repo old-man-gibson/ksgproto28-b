@@ -3,7 +3,7 @@
  * `types.ts`, of `data/items.data.ts` and of the catalogue of
  * `data/runes.data.ts`.
  */
-import { registry, s, type RecordOf } from '../../kernel';
+import { registry, s, type DeepReadonly, type RecordOf } from '../../kernel';
 import { conditionSchema, type Condition } from '../counters';
 import { DAMAGE_TYPES, modifierSchema, type ContentMod, type DamageType } from '../stats';
 import affixesData from './content/affixes.json';
@@ -270,22 +270,75 @@ export interface ItemInstance {
   runes?: RuneRef[];
   /** How big this one is. Absent reads as medium. A property of the specimen, not of the design. */
   size?: SizeTag;
+  /**
+   * Set on an item built at the anvil: the parts and the grade. Everything
+   * else about it (class, mods, value, requirements) is derived from this on
+   * read (`itemDefOf`), and `defId` is only the class stub `forged:<class>`.
+   * Step 3 (smithing).
+   */
+  forged?: ForgedSpec;
+}
+
+// ---- forged items (step 3, smithing) ----
+
+/** A placed part as a forged item stores it: its slot is explicit. The old `ForgedPart`. */
+export interface ForgedPart {
+  slot: string;
+  kind: string;
+  mat: string;
+  qty?: number;
+}
+
+/** The stored form of a forged item. `q` is a quality tier. The old `ForgedSpec`. */
+export interface ForgedSpec {
+  parts: ForgedPart[];
+  q: string;
+}
+
+/** What the anvil hands the item rules. Registered by `smithing` at module load. */
+export interface ForgingHooks {
+  /** The definition derived from the parts and the grade (old `forgedDef`). */
+  defOf(spec: DeepReadonly<ForgedSpec>): ItemDef;
+  /** The canonical string of the parts and the grade (old `forgeKey`). */
+  keyOf(spec: DeepReadonly<ForgedSpec>): string;
+  /** The exemplar at Fair grade of a `forged:<class>` id, else undefined (old `createItem` of a stub). */
+  exemplarOf(defId: string): ForgedSpec | undefined;
+}
+
+let forging: ForgingHooks | null = null;
+
+/**
+ * Register the anvil. `stubs` are the `forged:<class>` records, one per item
+ * class, with no numbers: they go into `ITEMS`, as the old registry generated
+ * them, so a lookup by id lands on the right slot, hands and tags. `items`
+ * cannot import `smithing`, which imports `items`.
+ */
+export function registerForging(hooks: ForgingHooks, stubs: readonly ItemDef[]): void {
+  forging = hooks;
+  for (const stub of stubs) ITEMS[stub.id] = stub;
+}
+
+/** The forge key of a forged item (parts and grade), or '' for any other. */
+export function forgeKeyOf(item: { readonly forged?: DeepReadonly<ForgedSpec> }): string {
+  return item.forged && forging ? forging.keyOf(item.forged) : '';
+}
+
+/** The forged spec a `forged:<class>` id mints (its exemplar at Fair), or undefined. */
+export function forgedExemplarOf(defId: string): ForgedSpec | undefined {
+  return forging?.exemplarOf(defId);
 }
 
 /** What `itemDefOf` reads of an instance. */
-export type ItemRef = Pick<ItemInstance, 'defId'>;
+export type ItemRef = Pick<ItemInstance, 'defId'> & { readonly forged?: DeepReadonly<ForgedSpec> };
 
 /**
  * The definition of an item instance. Every read of an item's mods, value,
  * name, requirements, tags, wield or bonus damage goes through here and never
- * through `ITEMS[item.defId]`.
- *
- * Plug point for modular smithing: a forged item's definition is derived
- * from its parts and grade (old `assembly.ts` `forgedDef`). That port adds
- * the `forged` field to `ItemInstance` and its branch here.
+ * through `ITEMS[item.defId]`. A forged item's definition is derived from its
+ * parts and grade (old `assembly.ts` `itemDefOf`).
  */
 export function itemDefOf(item: ItemRef): ItemDef | undefined {
-  return ITEMS[item.defId];
+  return item.forged && forging ? forging.defOf(item.forged) : ITEMS[item.defId];
 }
 
 export function itemName(item: ItemRef & { readonly affix?: { readonly name: string } }): string {
@@ -305,6 +358,8 @@ export const RUNE_SLOT_VALUE_MULT = 0.3;
  */
 export function itemValue(item: ItemRef & { readonly affix?: unknown; readonly slots?: number }): number {
   const def = itemDefOf(item);
+  // A forged item is worth its parts and nothing else: no affix multiplier, no slot multiplier.
+  if (item.forged) return def?.value ?? 1;
   const affix = item.affix ? AFFIX_VALUE_MULT : 1;
   return (def?.value ?? 1) * affix * (1 + RUNE_SLOT_VALUE_MULT * (item.slots ?? 0));
 }

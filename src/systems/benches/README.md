@@ -112,3 +112,17 @@ remaining, batch. The alchemy view repeats it for its panel.
   smithing and mutagens.
 - Shadow Clones at a bench (`cloneCraft`), bonus time, performances.
 - Records of the other benches in `disciplines`.
+
+## Step 3 (the smithing port)
+
+- Record `forging` (Anvil): `assembles: true`, five slots (head, second head
+  at Smithing 15, guard at 5, haft, binding at 3), `ticks` 100, `xp` 8, the
+  old `desc`. Schema field `assembles`.
+- `AssembledPlacement`: a part kind and a material per slot. The job field
+  `forge` and the `benches/start` field `forge` carry it; the owner's
+  `preview` gets it and its `craft` request gets `{ placement, duration?,
+  forge? }`.
+- `BenchOwner.ticks(forge)`: the clock of an assembling bench before craft
+  speed (old `forgeTicks`); `benchJobTicks(disc, placement, craftSpeed,
+  duration, assembledTicks)` paces it like any skill-scaled bench.
+- `smithing` registers `forging`.

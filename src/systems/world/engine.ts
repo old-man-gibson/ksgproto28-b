@@ -52,6 +52,7 @@ import { setSituation } from '../statuses';
 import worldTextData from './content/world_text.json';
 import {
   AREAS,
+  craftProvider,
   edgesFrom,
   getSpot,
   isUnconditionalHaven,
@@ -144,7 +145,8 @@ type TextKey =
   | 'key_item'
   | 'office_wrong'
   | 'office_reception'
-  | 'office_drop';
+  | 'office_drop'
+  | 'craft_locked';
 
 export const TEXT = Object.fromEntries((worldTextData as TextRecord[]).map((r) => [r.id, r.text])) as Record<TextKey, string>;
 
@@ -292,10 +294,23 @@ function rollSearch(ctx: W, spot: string, act: ActivityDef): SearchReward | null
 /** Baseline ticks per training rep. */
 export const TRAIN_REP_TICKS = 20;
 
-/** Whether an activity can be started at a spot now. The old `canStartActivity`. */
+/** A craft activity whose recipe is unlocked. False without a craft provider. */
+export function craftUnlocked(ctx: Reads, act: ActivityDef): boolean {
+  const kind = craftProvider();
+  return !!kind && !!act.recipe && kind.unlocked(ctx, act.recipe);
+}
+
+/**
+ * Whether an activity can be started at a spot now: a craft is unlocked and
+ * affordable, a search has a reward left to pay. The old `canStartActivity`.
+ */
 export function canStartActivity(ctx: Reads, spotId: string, activityId: string): boolean {
   const act = spotActivities(getSpot(spotId)).find((a) => a.id === activityId);
   if (!act) return false;
+  if (act.kind === 'craft') {
+    const kind = craftProvider();
+    return !!kind && !!act.recipe && kind.unlocked(ctx, act.recipe) && kind.affordable(ctx, act.recipe);
+  }
   if (act.kind === 'search') return !searchSpent(ctx, spotId, act);
   return true;
 }
@@ -324,6 +339,8 @@ export function activityXpTags(act: ActivityDef): string[] {
       return ['explore', 'gather', ...(act.tags ?? [])];
     case 'job':
       return ['job', ...(act.tags ?? [])];
+    case 'craft':
+      return ['craft', ...(act.tags ?? [])];
     case 'search':
     case 'explore':
       return ['explore', ...(act.tags ?? [])];
@@ -334,8 +351,8 @@ export function activityXpTags(act: ActivityDef): string[] {
   }
 }
 
-/** Discovered spots with an activity that trains a skill or an attribute. */
-export function trainingSpots(state: State, target: { skill: string } | { attr: AttributeId }): { spot: string; activity: string }[] {
+/** Discovered spots with an activity that trains a skill or an attribute. Unlocked crafts only. */
+export function trainingSpots(ctx: Reads, state: State, target: { skill: string } | { attr: AttributeId }): { spot: string; activity: string }[] {
   const def = 'skill' in target ? SKILLS[target.skill] : null;
   if ('skill' in target && !def) return [];
   const trains = (act: ActivityDef) =>
@@ -344,7 +361,10 @@ export function trainingSpots(state: State, target: { skill: string } | { attr: 
   for (const spotId of state.discovered) {
     const spot = SPOTS[spotId];
     if (!spot) continue;
-    for (const act of spotActivities(spot)) if (trains(act)) out.push({ spot: spotId, activity: act.id });
+    for (const act of spotActivities(spot)) {
+      if (act.kind === 'craft' && !craftUnlocked(ctx, act)) continue;
+      if (trains(act)) out.push({ spot: spotId, activity: act.id });
+    }
   }
   return out;
 }
@@ -387,6 +407,9 @@ export function activityCost(act: ActivityDef, stats: Readonly<DerivedStats>): n
     case 'search':
       baselineTicks = act.ticksPer ?? 0;
       break;
+    case 'craft':
+      baselineTicks = (act.recipe ? craftProvider()?.ticks(act.recipe) : undefined) ?? 50;
+      break;
     default:
       return 0;
   }
@@ -397,7 +420,10 @@ export function activityCost(act: ActivityDef, stats: Readonly<DerivedStats>): n
 /** Units the activity bar gains per tick. */
 export function activityFillRate(ctx: Reads, act: ActivityDef, stats: Readonly<DerivedStats>): number {
   if (act.staticTime) return BASE_SPEED;
-  return stats.speed * activitySpeedMult(ctx, stats, act);
+  const speed = stats.speed * activitySpeedMult(ctx, stats, act);
+  if (act.kind !== 'craft') return speed;
+  // The flat craftSpeed, then the craftSpeed scoped to the tags of the recipe.
+  return speed * stats.craftSpeed * scopedMult(ctx, 'craftSpeed' as StatKey, act.tags ?? []);
 }
 
 // ---- roads ----
@@ -579,6 +605,13 @@ export function startActivity(ctx: W, activityId: string | null): boolean {
   if (inForcedFight(combatOf(ctx))) {
     say(ctx, 'no_leaving_fight', undefined, 'danger');
     return false;
+  }
+  if (activityId) {
+    const picked = spotActivities(getSpot(state.spot)).find((a) => a.id === activityId);
+    if (picked?.kind === 'craft' && !craftUnlocked(ctx, picked)) {
+      say(ctx, 'craft_locked', undefined, 'danger');
+      return false;
+    }
   }
   leaveFight(ctx);
   state.activity = activityId;
@@ -1396,6 +1429,18 @@ export function runWorldTick(ctx: W): void {
           }),
         );
         rollActivityDrops(ctx, act);
+      }
+      break;
+    }
+    case 'craft': {
+      const kind = craftProvider();
+      if (!kind) break;
+      if (!kind.tick(ctx, act, stats)) {
+        // Starved: stop. The resume entry stays.
+        state.activity = null;
+        state.activityProgress = 0;
+        syncPace(ctx);
+        ctx.emit(activityChanged, { spot: spot.id, activity: null, kind: null });
       }
       break;
     }

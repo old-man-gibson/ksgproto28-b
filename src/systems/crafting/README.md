@@ -96,3 +96,58 @@ the counters view; recorded below.
 John smelts only on floor 11 (out of scope). No tick hook of its own; a
 world tick with no craft activity takes the old branches. Expected
 unchanged.
+
+## Files
+
+| File | Holds |
+|---|---|
+| `defs.ts` | The `recipes` and `crafting_text` registries, the unlock reads and the route rules |
+| `index.ts` | The declaration, the craft activity (`craftActivity`), the tick (`tickCraft`) and the registration with `world` |
+| `content/recipes.json`, `crafting_text.json` | 4 recipes, 1 log line |
+
+## Skip reasons
+
+No command of its own. `world/select-activity` on a locked craft:
+`the recipe "<id>" is locked`, with the log line `🔒 You lack the skill to
+craft that.`
+
+## Changed while building (step 3)
+
+- The provider is `CraftKind` in `world/defs.ts`: `activities`, `ticks`,
+  `unlocked`, `hidden`, `affordable`, `detail`, `tick`. `tick` answers
+  false when the craft stops; the world then clears the activity, sends the
+  pace and `world/activity-changed`, as for a spent search.
+- `spotActivities` stays pure and lists every known recipe of the spot,
+  secret or not, as the old one did. The Location view (`activityViews` in
+  `world/index.ts`) asks the provider's `hidden` and leaves a secret recipe
+  not yet unlocked out. No reader is passed to the panel.
+- A locked craft is listed with the icon 🔒, disabled, and the line
+  `Requires: <conditions>` (old title text). An unlocked one carries
+  `Cost: <routes>` with the route a craft would take marked `▸`.
+- `🔒 You lack the skill to craft that.` is in `world_text` (key
+  `craft_locked`): the world's `startActivity` logs it. `crafting_text`
+  holds `out_of_materials` only.
+- `trainingSpots` takes the reads first: `trainingSpots(ctx, state, target)`.
+- The old `consumeCost` is not ported. The tick takes each cost line of the
+  chosen route through `materials/take`. The route tests do the same.
+- Quest port: no quest here has a `craft` objective (the old
+  `hammer_and_anvil` is not in scope). `tests/quests.test.ts` keeps its
+  `it.todo`.
+- Tests not ported: "crafted items land in the inventory" (`leather_cap`)
+  and "gated recipes refuse selection until the skill threshold"
+  (`wolf_cloak`) are `it.todo`: no spot through floor 6 lists those recipes.
+
+## Old rules ported as they are
+
+- An unaffordable craft can be picked: `world/select-activity` refuses a
+  craft only while it is locked. Its first tick logs `📭 Out of materials
+  for <name>.` and stops it. The resume entry stays.
+- The bar resets to 0 at the end of a cycle. Progress past the cost is lost.
+- A rune result reads its name and icon from the material registry, so it
+  shows its id and 🔨. No recipe in scope makes a rune.
+- A craft with an unknown recipe costs 50 base ticks. None exists.
+- `attributes/grant-xp-split` is sent on every craft with empty weights: no
+  craft activity sets `attrXp`.
+- `tin_ingot` has `xp: 0`. It still pays `0.2 x 60 = 12` skill XP per craft.
+- A secret recipe is in `spotActivities`. Picking one by id before it is
+  unlocked is refused as locked, which says it exists.

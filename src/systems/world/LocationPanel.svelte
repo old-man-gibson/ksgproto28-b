@@ -93,7 +93,7 @@
           title={a.blocked ?? a.kind}
           onclick={() => run(send(selectActivity({ activity: view.activity?.id === a.id ? null : a.id })))}
         >
-          {a.icon} {a.name}
+          {a.icon} {a.name}{#if a.detail}<span class="detail">{a.detail}</span>{/if}
         </Button>
       {/each}
       {#if view.travel}
@@ -301,6 +301,12 @@
   }
 
   /* Four lines, whatever the text: a longer description scrolls inside. */
+  .detail {
+    display: block;
+    color: var(--color-text-dim);
+    font-size: var(--text-sm);
+  }
+
   .desc {
     height: 5rem;
     margin: 0 0 var(--space-2);

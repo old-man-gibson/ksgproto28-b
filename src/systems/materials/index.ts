@@ -77,7 +77,7 @@ const materials = registry(
     desc: s.optional(s.string()),
     craftTags: s.optional(s.array(s.string(), { help: 'Tags a discipline slot accepts by.' })),
     graded: s.optional(s.boolean({ help: 'Held per quality instead of as one count.' })),
-    /** How the anvil reads the material. Read by modular smithing, which is not ported. */
+    /** How the anvil reads the material. Read by `smithing`. */
     smith: s.optional(
       s.object({
         rho: s.number(),
@@ -279,6 +279,13 @@ export const takeGraded = defineRequest<{ id: string; quality: QualityTier; qty?
   'materials/take-graded',
 );
 
+/**
+ * Take exactly `qty` of a plain material. False, and nothing taken, when fewer
+ * are held. Step 3 (smithing): the anvil bill and a recipe's cost, which the
+ * old code took from `state.materials` directly.
+ */
+export const takeMaterial = defineRequest<{ id: string; qty: number }, boolean>('materials/take');
+
 /** Take up to `qty` of a stack, plain or graded. Answers how many were taken. */
 export const takeStack = defineRequest<{ id: string; quality: QualityTier; qty: number }, number>(
   'materials/take-stack',
@@ -361,6 +368,13 @@ export default defineSystem<MaterialsState, MaterialsView>({
     answer(grantGraded, (ctx, { id, quality, qty = 1 }) => addGraded(ctx.state, id, quality, qty)),
     answer(takeGraded, (ctx, { id, quality, qty = 1 }) => removeGraded(ctx.state, id, quality, qty)),
     answer(takeStack, (ctx, { id, quality, qty }) => removeStack(ctx.state, id, quality, qty)),
+    answer(takeMaterial, (ctx, { id, qty }) => {
+      const have = ctx.state.counts[id] ?? 0;
+      if (have < qty) return false;
+      if (have - qty > 0) ctx.state.counts[id] = have - qty;
+      else delete ctx.state.counts[id];
+      return true;
+    }),
   ],
 
   commands: [

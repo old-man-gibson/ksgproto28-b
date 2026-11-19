@@ -165,4 +165,29 @@ Heard: `ladder/floor-cleared` (the hunt site is sent again), `combat/kill`
 - `benches` hears `world/activity-changed` and drops its run when an
   activity is picked; it emits `world/player-command` when a run starts.
 - The `benches` field of a spot is read by the Alchemy panel (`alchemy`).
-  Craft activities and performances still wait.
+  Performances still wait. Craft activities: see the next section.
+
+## Step 3 (the smithing port)
+
+- `ActivityDef` gains `kind: 'craft'` and `recipe` in its TypeScript type
+  only. The spot schema does not accept `craft`: content cannot author one.
+- `registerCraftKind(provider)` in `defs.ts`, called by `crafting` at module
+  load (`CraftKind`). `spotActivities(spot)` appends one craft activity per
+  listed recipe the provider knows, after the spot's own (old order). It
+  caches per spot object. Without a provider it is the spot's own list.
+- `activityXpTags`: `['craft', ...tags]`. `activityCost`: the recipe's
+  ticks, 50 for an unknown recipe. `activityFillRate`: speed x speed factors
+  x `craftSpeed` x the scoped `craftSpeed` of the activity's tags.
+- `startActivity` refuses a locked craft and logs `craft_locked`.
+  `world/select-activity` answers `the recipe "<id>" is locked`. It no
+  longer runs `canStartActivity` on a craft: the old `selectActivity` let an
+  unaffordable craft start.
+- `canStartActivity`: a craft is unlocked and affordable (old). Arrival,
+  `world/go-and-do` and `world/start-activity` read it.
+- `trainingSpots(ctx, state, target)`: takes the reads, skips locked crafts.
+- `runWorldTick`: `case 'craft'` runs the provider's `tick`. False stops the
+  activity (progress 0, pace, `world/activity-changed`).
+- The view: `ActivityView` gains `locked` and `detail`. A secret recipe not
+  yet unlocked is left out of the list. A locked craft is blocked with its
+  requirement line.
+- `crafting` emits `world/cycle` with `baseTicks` = the recipe's ticks.

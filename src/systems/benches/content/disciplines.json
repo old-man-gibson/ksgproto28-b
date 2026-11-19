@@ -873,5 +873,72 @@
       }
     ],
     "desc": "Cutting Board. Takes one whole ingredient and one cutting technique, and returns the ingredient in that cut. The output grade is the cut's uniformity: a higher grade narrows the range the ingredient's contribution rolls in at the next bench."
+  },
+  {
+    "id": "forging",
+    "name": "Forging",
+    "benchName": "Anvil",
+    "icon": "🔨",
+    "verb": "Forge",
+    "skill": "smithing",
+    "tag": "smithing",
+    "assembles": true,
+    "ticks": 100,
+    "xp": 8,
+    "slots": [
+      {
+        "id": "head",
+        "name": "Head",
+        "role": "base",
+        "accepts": [
+          "metal",
+          "wood"
+        ],
+        "optional": true
+      },
+      {
+        "id": "head2",
+        "name": "Second Head",
+        "role": "component",
+        "accepts": [
+          "metal",
+          "wood"
+        ],
+        "optional": true,
+        "unlockLevel": 15
+      },
+      {
+        "id": "guard",
+        "name": "Guard",
+        "role": "component",
+        "accepts": [
+          "metal"
+        ],
+        "optional": true,
+        "unlockLevel": 5
+      },
+      {
+        "id": "haft",
+        "name": "Haft",
+        "role": "component",
+        "accepts": [
+          "wood",
+          "metal"
+        ],
+        "optional": true
+      },
+      {
+        "id": "bind",
+        "name": "Binding",
+        "role": "component",
+        "accepts": [
+          "leather"
+        ],
+        "optional": true,
+        "unlockLevel": 3
+      }
+    ],
+    "outcomes": [],
+    "desc": "Anvil. Takes up to five parts, each a part kind in a material: a head, a guard (Smithing 5), a haft, a binding (Smithing 3) and a second head (Smithing 15). The proportions of the parts name the piece: a 2×3 blade on a handle is a dagger, a 2×6 blade a sword. The cost is the parts' cells in each material, rounded up to whole units. Work time grows with the cells and shrinks with Smithing, and the grade is rolled from Smithing when the piece is finished."
   }
 ]

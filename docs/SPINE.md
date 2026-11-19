@@ -1408,3 +1408,78 @@ a hunt still on, the respawn timer runs out on the floor and a fight opens
 on the tick recovery ends. A real knockout stops the hunt, so play is not
 affected; `tests/meals.test.ts` stops the hunt loop in its hand-made
 knockout case. Not changed here.
+
+## 15. Step 3: smithing
+
+Done 2026-11-18 on branch `step3-smithing`. Design and the full account:
+`src/systems/smithing/README.md` (the inventory of old `main`, "Step 3
+design", "Changed while building (step 3)", "Old rules ported as they are",
+"Panel as built", "Left behind") and `src/systems/crafting/README.md` (the
+smelting recipes as a craft activity). Additions in other folders are in
+each folder's "Step 3 (the smithing port)" section: `items` (the forged
+item, `registerForging`, `items/grant-forged`), `benches` (the `forging`
+record, `assembles`, the `forge` field and clock), `materials`
+(`materials/take`), `world` (`registerCraftKind`, the craft activity).
+
+The brief named `origin/smithing-modular` as unmerged. It is merged: pull
+request 21, merge `2de9981`, an ancestor of old `main`; the branch has no
+commit `main` lacks. The anvil on `main` is that slice 1, and it is what
+was ported. Slices 2 and 3 of the plan document were never built.
+
+### 15.1 John
+
+Unchanged. No John climb through floor 6 forges or smelts (the old John
+smelts ingots on floor 11). `npm run pacing` on this branch and on `main`
+(5e6f31f) print the same tables for seeds 42, 7 and 1234, wall clock aside.
+Every outcome digest changed in the state hash only (the slices `smithing`
+and `crafting`); kills, generator, level, gold and every John segment are
+unchanged. The digests are recorded again in their own commit.
+
+### 15.2 Offline budgets
+
+Each run of 8 hours through `scripts/budget-runs.ts`, `main` (5e6f31f, a
+worktree) and this branch alternating, two rounds, same hour, ms:
+
+| Run of 8 hours | `main` | Step 3 smithing | Budget |
+|---|---|---|---|
+| No fight, no condition | 1,718 to 1,746 | 1,642 to 1,778 | 2,200 |
+| A poison held | 6,369 to 6,644 | 6,322 to 6,722 | 8,250 |
+| Floor 1 table sent to combat | 5,772 to 6,034 | 5,728 to 6,048 | 7,700 |
+| Floor 6 Tunnels sent to combat | 11,246 to 12,054 | 11,321 to 11,936 | 14,850 |
+| World: hunt, floor 4 Woods Edge | 11,175 to 11,644 | 11,419 to 12,054 | 14,300 |
+| World: hunt, floor 6 Tunnels | 11,288 to 11,484 | 11,819 to 12,085 | 14,300 |
+
+Every budget holds; `npm run verify` passes. The branch is within the
+spread of `main` on five runs; world 6 is 3 to 5% above `main` in both
+rounds, inside its budget. What the port adds to a run: no tick hook; one
+`forged` check per `itemDefOf` and `stackKey`; `spotActivities` returns a
+cached list for a spot with recipes (none on these runs' spots). Not
+profiled.
+
+### 15.3 Browser check
+
+Desktop (1024 and 1600 px) and 375 px, on the dev server, by play on the
+dev save (`ksgb:development:save`; the save before the check is at
+`ksgb:development:save.before-smithing-check`): walked to the Forges,
+smelted iron ingots from scrap (Craft Iron Ingot; the bronze line hidden),
+bought hardwood and leather from Ferra Ostwind, forged one Iron Sword at
+the Anvil (run bar, Stop, form chart 1 of 44; it rolled below Fair:
+damage +6), equipped it from the pack against the worn Rusty Sword. No
+element of the panel moved while the run went (sampled every 0.5 s for
+10 s). No horizontal overflow at 375 px. At 1024 px the three columns
+clipped the middle one; the one-column breakpoint was raised from 47rem to
+52rem. The comparison row previews on click and the table does not move.
+No console errors.
+
+Not verified in a browser: the form chart view, the second head, a run of
+several pieces and "until out of stock" (tested headless), the bronze line
+after studying the pattern (tested headless), the forge forms of the new
+registries.
+
+### 15.4 Old rules ported as they are
+
+Listed in the two READMEs. In short: a forged piece never has rune slots;
+the grade is rolled from Smithing with no cap; a ring or an amulet has no
+stats; the STR requirement counts the haft and the strap; `benches/start`
+does not check the spot has an anvil; an unaffordable craft can be selected
+and stops on its first tick; the craft bar resets to 0, not carrying over.

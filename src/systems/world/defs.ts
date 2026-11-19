@@ -4,15 +4,16 @@
  * `registry.ts` and of the types `RegionDef`, `AreaDef`, `SpotDef`,
  * `Connection`, `ActivityDef`, `SpotFind`, `SearchReward`, `ExploreGate`.
  */
-import { registry, s, type RecordOf } from '../../kernel';
+import { registry, s, type Ctx, type RecordOf } from '../../kernel';
 import type { EncounterLine } from '../combat';
 import { conditionSchema, type Condition } from '../counters';
 import type { ModifierTierId } from '../monsters';
-import type { AttributeId } from '../stats';
+import type { AttributeId, DerivedStats } from '../stats';
 import areasData from './content/areas.json';
 import keyItemsData from './content/key_items.json';
 import regionsData from './content/regions.json';
 import spotsData from './content/spots.json';
+import type { Reads, WorldState } from './engine';
 
 // ---- schemas ----
 
@@ -200,7 +201,12 @@ export type RegionDef = RecordOf<typeof regions>;
 export type AreaDef = RecordOf<typeof areas>;
 export type KeyItemDef = RecordOf<typeof keyItems>;
 
-export type ActivityKind = 'rest' | 'hunt' | 'train' | 'search' | 'explore' | 'job' | 'gather';
+/**
+ * `craft` is synthesized from a spot's `recipes` by the craft provider
+ * (`registerCraftKind`). The spot schema does not accept it: content cannot
+ * author a craft activity.
+ */
+export type ActivityKind = 'rest' | 'hunt' | 'train' | 'search' | 'explore' | 'job' | 'gather' | 'craft';
 
 export interface ActivityFactor {
   attr?: AttributeId;
@@ -264,6 +270,8 @@ export interface ActivityDef {
   attrXp?: { attr: AttributeId; weight: number }[];
   tags?: string[];
   drops?: ActivityDrop[];
+  /** craft: the recipe worked. Set only on a synthesized craft activity. */
+  recipe?: string;
 }
 
 export interface Connection {
@@ -407,9 +415,61 @@ export function locationBreadcrumb(spotId: string): string {
   return `${region.name} › ${area.name} › ${spot.name}`;
 }
 
-/** The activities of a spot. Craft activities made from `recipes` arrive with crafting. */
+// ---- the craft kind ----
+
+/**
+ * What the system that owns recipes answers for the craft activities. The
+ * world cannot import it (it imports the world), so it registers this at
+ * module load: `crafting`. Same arrangement as `registerCardSpent`.
+ */
+export interface CraftKind {
+  /** One craft activity per listed recipe it knows, in list order. Unknown ids are left out. */
+  activities(recipeIds: readonly string[]): ActivityDef[];
+  /** Base ticks of one craft, or undefined for an unknown recipe. */
+  ticks(recipe: string): number | undefined;
+  /** The recipe's `unlock` conditions are met. False for an unknown recipe. */
+  unlocked(reads: Reads, recipe: string): boolean;
+  /** A secret recipe not yet unlocked: not listed. The old `recipeHidden`. */
+  hidden(reads: Reads, recipe: string): boolean;
+  /** Some route of the recipe is affordable now. False for an unknown recipe. */
+  affordable(reads: Reads, recipe: string): boolean;
+  /** The line under the craft: its cost when unlocked, its requirement when not. */
+  detail(reads: Reads, recipe: string): string;
+  /**
+   * One tick of the craft activity: the craft branch of the old `tickAction`.
+   * False when the craft stopped (starved); the world clears the activity.
+   */
+  tick(ctx: Ctx<WorldState>, act: ActivityDef, stats: Readonly<DerivedStats>): boolean;
+}
+
+let craftKind: CraftKind | null = null;
+let craftCache = new WeakMap<SpotDef, ActivityDef[]>();
+
+/** Register the craft provider. Called once at module load by `crafting`. */
+export function registerCraftKind(provider: CraftKind): void {
+  if (craftKind) throw new Error('world: a craft kind is registered twice');
+  craftKind = provider;
+  craftCache = new WeakMap();
+}
+
+/** The registered craft provider, or null before `crafting` loads. */
+export function craftProvider(): CraftKind | null {
+  return craftKind;
+}
+
+/**
+ * The activities of a spot: its own, then one craft activity per recipe it
+ * lists that the craft provider knows. Without a provider, its own. The old
+ * `spotActivities`.
+ */
 export function spotActivities(spot: SpotDef): ActivityDef[] {
-  return spot.activities;
+  if (!craftKind || !spot.recipes?.length) return spot.activities;
+  let all = craftCache.get(spot);
+  if (!all) {
+    all = [...spot.activities, ...craftKind.activities(spot.recipes)];
+    craftCache.set(spot, all);
+  }
+  return all;
 }
 
 /** The one hunt of a spot, or null with none or several. The old `soleCombatActivity`. */

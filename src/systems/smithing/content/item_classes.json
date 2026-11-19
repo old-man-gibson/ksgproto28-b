@@ -1,0 +1,1544 @@
+[
+  {
+    "id": "chain_mail",
+    "name": "Chain Mail",
+    "icon": "⛓️",
+    "art": "item_chain_mail",
+    "slot": "chest",
+    "tags": [],
+    "priority": 440,
+    "cover": 1,
+    "match": [
+      {
+        "head": {
+          "shape": [
+            "ring"
+          ],
+          "count": [
+            8,
+            99
+          ]
+        },
+        "haft": {
+          "none": true
+        }
+      }
+    ],
+    "exemplar": {
+      "head": {
+        "kind": "ring",
+        "mat": "iron_ingot",
+        "qty": 8
+      }
+    }
+  },
+  {
+    "id": "chain_coif",
+    "name": "Chain Coif",
+    "icon": "⛓️",
+    "art": "item_chain_coif",
+    "slot": "head",
+    "tags": [],
+    "priority": 430,
+    "cover": 0.5,
+    "match": [
+      {
+        "head": {
+          "shape": [
+            "ring"
+          ],
+          "count": [
+            4,
+            7
+          ]
+        },
+        "haft": {
+          "none": true
+        }
+      }
+    ],
+    "exemplar": {
+      "head": {
+        "kind": "ring",
+        "mat": "iron_ingot",
+        "qty": 4
+      }
+    }
+  },
+  {
+    "id": "amulet",
+    "name": "Amulet",
+    "icon": "📿",
+    "art": "item_amulet",
+    "slot": "accessory",
+    "tags": [
+      "trinket"
+    ],
+    "priority": 420,
+    "match": [
+      {
+        "head": {
+          "shape": [
+            "ring"
+          ]
+        },
+        "bind": true,
+        "haft": {
+          "none": true
+        }
+      }
+    ],
+    "exemplar": {
+      "head": {
+        "kind": "ring",
+        "mat": "iron_ingot"
+      },
+      "bind": {
+        "kind": "cord",
+        "mat": "leather"
+      }
+    }
+  },
+  {
+    "id": "ring",
+    "name": "Ring",
+    "icon": "💍",
+    "art": "item_ring",
+    "slot": "accessory",
+    "tags": [
+      "trinket"
+    ],
+    "priority": 410,
+    "match": [
+      {
+        "head": {
+          "shape": [
+            "ring"
+          ]
+        },
+        "haft": {
+          "none": true
+        }
+      }
+    ],
+    "exemplar": {
+      "head": {
+        "kind": "ring",
+        "mat": "iron_ingot"
+      }
+    }
+  },
+  {
+    "id": "hoop_pole",
+    "name": "Hoop-Pole",
+    "icon": "🪄",
+    "art": "item_hoop_pole",
+    "slot": "weapon",
+    "wield": "two_handed",
+    "tags": [
+      "staff"
+    ],
+    "priority": 400,
+    "degenerate": true,
+    "match": [
+      {
+        "head": {
+          "shape": [
+            "ring"
+          ]
+        },
+        "haft": {}
+      }
+    ],
+    "exemplar": {
+      "head": {
+        "kind": "ring",
+        "mat": "iron_ingot"
+      },
+      "haft": {
+        "kind": "h4",
+        "mat": "hardwood"
+      }
+    },
+    "desc": "A ring on a haft. Counts as a two-handed staff at 60% strength."
+  },
+  {
+    "id": "bow",
+    "name": "Bow",
+    "icon": "🏹",
+    "art": "item_bow",
+    "slot": "weapon",
+    "wield": "two_handed",
+    "tags": [
+      "bow",
+      "ranged"
+    ],
+    "priority": 390,
+    "match": [
+      {
+        "head": {
+          "shape": [
+            "bent"
+          ],
+          "mat": [
+            "wood"
+          ],
+          "l": [
+            5,
+            99
+          ]
+        },
+        "bind": true,
+        "haft": {
+          "none": true
+        }
+      }
+    ],
+    "exemplar": {
+      "head": {
+        "kind": "bent_l",
+        "mat": "hardwood"
+      },
+      "bind": {
+        "kind": "cord",
+        "mat": "leather"
+      }
+    }
+  },
+  {
+    "id": "sickle",
+    "name": "Sickle",
+    "icon": "🌙",
+    "art": "item_sickle",
+    "slot": "weapon",
+    "wield": "one_handed",
+    "tags": [
+      "sickle"
+    ],
+    "priority": 380,
+    "damageType": "slashing",
+    "match": [
+      {
+        "head": {
+          "shape": [
+            "bent"
+          ]
+        },
+        "haft": {}
+      }
+    ],
+    "exemplar": {
+      "head": {
+        "kind": "bent_m",
+        "mat": "iron_ingot"
+      },
+      "haft": {
+        "kind": "h3",
+        "mat": "hardwood"
+      }
+    }
+  },
+  {
+    "id": "helm",
+    "name": "Helm",
+    "icon": "🪖",
+    "art": "item_helm",
+    "slot": "head",
+    "tags": [],
+    "priority": 370,
+    "cover": 0.5,
+    "match": [
+      {
+        "head": {
+          "shape": [
+            "bent"
+          ],
+          "count": [
+            1,
+            1
+          ],
+          "area": [
+            0,
+            6
+          ]
+        }
+      }
+    ],
+    "exemplar": {
+      "head": {
+        "kind": "bent_s",
+        "mat": "iron_ingot"
+      }
+    }
+  },
+  {
+    "id": "gauntlets",
+    "name": "Gauntlets",
+    "icon": "🧤",
+    "art": "item_gauntlets",
+    "slot": "hands",
+    "tags": [],
+    "priority": 360,
+    "cover": 0.5,
+    "match": [
+      {
+        "head": {
+          "shape": [
+            "bent"
+          ],
+          "count": [
+            2,
+            2
+          ],
+          "l": [
+            0,
+            2
+          ]
+        }
+      }
+    ],
+    "exemplar": {
+      "head": {
+        "kind": "bent_s",
+        "mat": "iron_ingot",
+        "qty": 2
+      }
+    }
+  },
+  {
+    "id": "boots",
+    "name": "Boots",
+    "icon": "🥾",
+    "art": "item_boots",
+    "slot": "feet",
+    "tags": [],
+    "priority": 350,
+    "cover": 0.4,
+    "match": [
+      {
+        "head": {
+          "shape": [
+            "bent"
+          ],
+          "count": [
+            2,
+            2
+          ],
+          "l": [
+            0,
+            4
+          ]
+        }
+      }
+    ],
+    "exemplar": {
+      "head": {
+        "kind": "bent_m",
+        "mat": "iron_ingot",
+        "qty": 2
+      }
+    }
+  },
+  {
+    "id": "greaves",
+    "name": "Greaves",
+    "icon": "🦵",
+    "art": "item_greaves",
+    "slot": "legs",
+    "tags": [],
+    "priority": 340,
+    "cover": 0.6,
+    "match": [
+      {
+        "head": {
+          "shape": [
+            "bent"
+          ],
+          "count": [
+            2,
+            2
+          ]
+        }
+      }
+    ],
+    "exemplar": {
+      "head": {
+        "kind": "bent_l",
+        "mat": "iron_ingot",
+        "qty": 2
+      }
+    }
+  },
+  {
+    "id": "shin_guard",
+    "name": "Shin Guard",
+    "icon": "🦵",
+    "art": "item_shin_guard",
+    "slot": "legs",
+    "tags": [],
+    "priority": 330,
+    "cover": 0.6,
+    "match": [
+      {
+        "head": {
+          "shape": [
+            "bent"
+          ]
+        }
+      }
+    ],
+    "exemplar": {
+      "head": {
+        "kind": "bent_l",
+        "mat": "iron_ingot"
+      }
+    }
+  },
+  {
+    "id": "bladed_shield",
+    "name": "Bladed Shield",
+    "icon": "🛡️",
+    "art": "item_shield_bladed",
+    "slot": "offhand",
+    "wield": "offhand",
+    "tags": [
+      "shield"
+    ],
+    "priority": 320,
+    "cover": 0.5,
+    "match": [
+      {
+        "head": {
+          "shape": [
+            "plate"
+          ]
+        },
+        "anyHead": [
+          "edge"
+        ],
+        "haft": {}
+      }
+    ],
+    "exemplar": {
+      "head": {
+        "kind": "plate_m",
+        "mat": "iron_ingot"
+      },
+      "head2": {
+        "kind": "short",
+        "mat": "iron_ingot"
+      },
+      "haft": {
+        "kind": "h3",
+        "mat": "hardwood"
+      }
+    }
+  },
+  {
+    "id": "signpost",
+    "name": "Signpost",
+    "icon": "🪧",
+    "art": "item_signpost",
+    "slot": "weapon",
+    "wield": "two_handed",
+    "tags": [
+      "blunt"
+    ],
+    "priority": 310,
+    "degenerate": true,
+    "match": [
+      {
+        "head": {
+          "shape": [
+            "plate"
+          ]
+        },
+        "haft": {
+          "l": [
+            5,
+            99
+          ]
+        }
+      }
+    ],
+    "exemplar": {
+      "head": {
+        "kind": "plate_m",
+        "mat": "hardwood"
+      },
+      "haft": {
+        "kind": "pole",
+        "mat": "hardwood"
+      }
+    },
+    "desc": "A plate on a long haft. Counts as a two-handed blunt weapon at 60% strength."
+  },
+  {
+    "id": "tower_shield",
+    "name": "Tower Shield",
+    "icon": "🛡️",
+    "art": "item_tower_shield",
+    "slot": "offhand",
+    "wield": "offhand",
+    "tags": [
+      "shield",
+      "tower shield"
+    ],
+    "priority": 300,
+    "cover": 0.5,
+    "match": [
+      {
+        "head": {
+          "shape": [
+            "plate"
+          ],
+          "area": [
+            15,
+            99
+          ]
+        },
+        "haft": {}
+      }
+    ],
+    "exemplar": {
+      "head": {
+        "kind": "plate_w",
+        "mat": "hardwood"
+      },
+      "haft": {
+        "kind": "h3",
+        "mat": "hardwood"
+      }
+    }
+  },
+  {
+    "id": "shield",
+    "name": "Shield",
+    "icon": "🛡️",
+    "art": "item_shield",
+    "slot": "offhand",
+    "wield": "offhand",
+    "tags": [
+      "shield"
+    ],
+    "priority": 290,
+    "cover": 0.5,
+    "match": [
+      {
+        "head": {
+          "shape": [
+            "plate"
+          ],
+          "area": [
+            9,
+            99
+          ]
+        },
+        "haft": {}
+      }
+    ],
+    "exemplar": {
+      "head": {
+        "kind": "plate_m",
+        "mat": "hardwood"
+      },
+      "haft": {
+        "kind": "h3",
+        "mat": "hardwood"
+      }
+    }
+  },
+  {
+    "id": "buckler",
+    "name": "Buckler",
+    "icon": "🔰",
+    "art": "item_buckler",
+    "slot": "offhand",
+    "wield": "offhand",
+    "tags": [
+      "shield",
+      "buckler",
+      "parrying"
+    ],
+    "priority": 280,
+    "cover": 0.5,
+    "match": [
+      {
+        "head": {
+          "shape": [
+            "plate"
+          ]
+        },
+        "haft": {}
+      }
+    ],
+    "exemplar": {
+      "head": {
+        "kind": "plate_s",
+        "mat": "iron_ingot"
+      },
+      "haft": {
+        "kind": "h3",
+        "mat": "hardwood"
+      }
+    }
+  },
+  {
+    "id": "breastplate",
+    "name": "Breastplate",
+    "icon": "🎽",
+    "art": "item_breastplate",
+    "slot": "chest",
+    "tags": [],
+    "priority": 270,
+    "cover": 1,
+    "match": [
+      {
+        "head": {
+          "shape": [
+            "plate"
+          ],
+          "area": [
+            9,
+            99
+          ]
+        },
+        "bind": true
+      }
+    ],
+    "exemplar": {
+      "head": {
+        "kind": "plate_w",
+        "mat": "iron_ingot"
+      },
+      "bind": {
+        "kind": "strap",
+        "mat": "leather"
+      }
+    }
+  },
+  {
+    "id": "armour_scrap",
+    "name": "Armour Scrap",
+    "icon": "🔩",
+    "art": "item_armour_scrap",
+    "slot": "accessory",
+    "tags": [
+      "trinket"
+    ],
+    "priority": 260,
+    "cover": 0.2,
+    "degenerate": true,
+    "match": [
+      {
+        "head": {
+          "shape": [
+            "plate"
+          ]
+        },
+        "bind": true
+      }
+    ],
+    "exemplar": {
+      "head": {
+        "kind": "plate_s",
+        "mat": "iron_ingot"
+      },
+      "bind": {
+        "kind": "strap",
+        "mat": "leather"
+      }
+    },
+    "desc": "A strapped plate under 9 cells. Counts as an accessory at 60% strength."
+  },
+  {
+    "id": "unstrapped_plate",
+    "name": "Unstrapped Plate",
+    "icon": "🛡️",
+    "art": "item_plate_loose",
+    "slot": "chest",
+    "tags": [],
+    "priority": 250,
+    "cover": 1,
+    "degenerate": true,
+    "match": [
+      {
+        "head": {
+          "shape": [
+            "plate"
+          ]
+        }
+      }
+    ],
+    "exemplar": {
+      "head": {
+        "kind": "plate_m",
+        "mat": "iron_ingot"
+      }
+    },
+    "desc": "A plate with no strap. Counts as chest armour at 60% strength."
+  },
+  {
+    "id": "maul",
+    "name": "Maul",
+    "icon": "🔨",
+    "art": "item_maul",
+    "slot": "weapon",
+    "wield": "two_handed",
+    "tags": [
+      "blunt"
+    ],
+    "priority": 240,
+    "match": [
+      {
+        "head": {
+          "shape": [
+            "mass"
+          ]
+        },
+        "haft": {
+          "l": [
+            5,
+            99
+          ]
+        }
+      }
+    ],
+    "exemplar": {
+      "head": {
+        "kind": "maulhead",
+        "mat": "iron_ingot"
+      },
+      "haft": {
+        "kind": "h6",
+        "mat": "hardwood"
+      }
+    }
+  },
+  {
+    "id": "hammer",
+    "name": "Hammer",
+    "icon": "🔨",
+    "art": "item_hammer",
+    "slot": "weapon",
+    "wield": "one_handed",
+    "tags": [
+      "blunt"
+    ],
+    "priority": 230,
+    "match": [
+      {
+        "head": {
+          "shape": [
+            "mass"
+          ]
+        },
+        "haft": {}
+      }
+    ],
+    "exemplar": {
+      "head": {
+        "kind": "maulhead",
+        "mat": "iron_ingot"
+      },
+      "haft": {
+        "kind": "h3",
+        "mat": "hardwood"
+      }
+    }
+  },
+  {
+    "id": "halberd",
+    "name": "Halberd",
+    "icon": "🪓",
+    "art": "item_halberd",
+    "slot": "weapon",
+    "wield": "two_handed",
+    "tags": [
+      "spear"
+    ],
+    "priority": 220,
+    "damageType": "slashing",
+    "match": [
+      {
+        "head": {
+          "shape": [
+            "edge"
+          ],
+          "cross": true
+        },
+        "haft": {
+          "l": [
+            5,
+            99
+          ]
+        }
+      }
+    ],
+    "exemplar": {
+      "head": {
+        "kind": "axehead",
+        "mat": "iron_ingot"
+      },
+      "haft": {
+        "kind": "h6",
+        "mat": "hardwood"
+      }
+    }
+  },
+  {
+    "id": "axe",
+    "name": "Axe",
+    "icon": "🪓",
+    "art": "item_axe",
+    "slot": "weapon",
+    "wield": "one_handed",
+    "tags": [
+      "axe"
+    ],
+    "priority": 210,
+    "damageType": "slashing",
+    "match": [
+      {
+        "head": {
+          "shape": [
+            "edge"
+          ],
+          "cross": true
+        },
+        "haft": {}
+      }
+    ],
+    "exemplar": {
+      "head": {
+        "kind": "axehead",
+        "mat": "iron_ingot"
+      },
+      "haft": {
+        "kind": "h3",
+        "mat": "hardwood"
+      }
+    }
+  },
+  {
+    "id": "lance",
+    "name": "Lance",
+    "icon": "🔱",
+    "art": "item_lance",
+    "slot": "weapon",
+    "wield": "two_handed",
+    "tags": [
+      "spear"
+    ],
+    "priority": 200,
+    "match": [
+      {
+        "head": {
+          "shape": [
+            "point"
+          ]
+        },
+        "haft": {
+          "l": [
+            9,
+            99
+          ]
+        }
+      }
+    ],
+    "exemplar": {
+      "head": {
+        "kind": "spearhead",
+        "mat": "iron_ingot"
+      },
+      "haft": {
+        "kind": "pole",
+        "mat": "hardwood"
+      }
+    }
+  },
+  {
+    "id": "spear",
+    "name": "Spear",
+    "icon": "🔱",
+    "art": "item_spear",
+    "slot": "weapon",
+    "wield": "two_handed",
+    "tags": [
+      "spear"
+    ],
+    "priority": 190,
+    "match": [
+      {
+        "head": {
+          "shape": [
+            "point"
+          ]
+        },
+        "haft": {
+          "l": [
+            5,
+            99
+          ]
+        }
+      }
+    ],
+    "exemplar": {
+      "head": {
+        "kind": "spearhead",
+        "mat": "iron_ingot"
+      },
+      "haft": {
+        "kind": "h6",
+        "mat": "hardwood"
+      }
+    }
+  },
+  {
+    "id": "short_spear",
+    "name": "Short Spear",
+    "icon": "🔱",
+    "art": "item_spear_short",
+    "slot": "weapon",
+    "wield": "one_handed",
+    "tags": [
+      "spear"
+    ],
+    "priority": 180,
+    "match": [
+      {
+        "head": {
+          "shape": [
+            "point"
+          ]
+        },
+        "haft": {
+          "l": [
+            3,
+            99
+          ]
+        }
+      }
+    ],
+    "exemplar": {
+      "head": {
+        "kind": "spearhead",
+        "mat": "iron_ingot"
+      },
+      "haft": {
+        "kind": "h3",
+        "mat": "hardwood"
+      }
+    }
+  },
+  {
+    "id": "nail",
+    "name": "Nail",
+    "icon": "📌",
+    "art": "item_nail",
+    "slot": "weapon",
+    "wield": "light",
+    "tags": [
+      "dagger"
+    ],
+    "priority": 170,
+    "degenerate": true,
+    "match": [
+      {
+        "head": {
+          "shape": [
+            "point"
+          ]
+        }
+      }
+    ],
+    "exemplar": {
+      "head": {
+        "kind": "spearhead",
+        "mat": "iron_ingot"
+      }
+    },
+    "desc": "A spearhead with no haft. Counts as a light weapon at 60% strength."
+  },
+  {
+    "id": "twin_blade",
+    "name": "Twin-Blade",
+    "icon": "⚔️",
+    "art": "item_twin_blade",
+    "slot": "weapon",
+    "wield": "two_handed",
+    "tags": [
+      "spear"
+    ],
+    "priority": 160,
+    "degenerate": true,
+    "match": [
+      {
+        "head": {
+          "shape": [
+            "edge"
+          ],
+          "count": [
+            2,
+            99
+          ]
+        },
+        "haft": {
+          "l": [
+            5,
+            99
+          ]
+        }
+      }
+    ],
+    "exemplar": {
+      "head": {
+        "kind": "long",
+        "mat": "iron_ingot"
+      },
+      "head2": {
+        "kind": "long",
+        "mat": "iron_ingot"
+      },
+      "haft": {
+        "kind": "h6",
+        "mat": "hardwood"
+      }
+    },
+    "desc": "Two blades on one pole. Counts as a two-handed weapon at 60% strength."
+  },
+  {
+    "id": "glaive",
+    "name": "Glaive",
+    "icon": "🗡️",
+    "art": "item_glaive",
+    "slot": "weapon",
+    "wield": "two_handed",
+    "tags": [
+      "spear"
+    ],
+    "priority": 150,
+    "match": [
+      {
+        "head": {
+          "shape": [
+            "edge"
+          ],
+          "l": [
+            4,
+            99
+          ]
+        },
+        "haft": {
+          "l": [
+            5,
+            99
+          ]
+        }
+      }
+    ],
+    "exemplar": {
+      "head": {
+        "kind": "medium",
+        "mat": "iron_ingot"
+      },
+      "haft": {
+        "kind": "h6",
+        "mat": "hardwood"
+      }
+    }
+  },
+  {
+    "id": "bladed_spear",
+    "name": "Bladed Spear",
+    "icon": "🔱",
+    "art": "item_spear_bladed",
+    "slot": "weapon",
+    "wield": "two_handed",
+    "tags": [
+      "spear"
+    ],
+    "priority": 140,
+    "match": [
+      {
+        "head": {
+          "shape": [
+            "edge"
+          ]
+        },
+        "haft": {
+          "l": [
+            5,
+            99
+          ]
+        }
+      }
+    ],
+    "exemplar": {
+      "head": {
+        "kind": "short",
+        "mat": "iron_ingot"
+      },
+      "haft": {
+        "kind": "h6",
+        "mat": "hardwood"
+      }
+    }
+  },
+  {
+    "id": "rapier",
+    "name": "Rapier",
+    "icon": "🤺",
+    "art": "item_rapier",
+    "slot": "weapon",
+    "wield": "one_handed",
+    "tags": [
+      "sword",
+      "rapier",
+      "parrying"
+    ],
+    "priority": 130,
+    "match": [
+      {
+        "head": {
+          "shape": [
+            "edge"
+          ],
+          "w": [
+            1,
+            1
+          ],
+          "l": [
+            5,
+            99
+          ]
+        },
+        "guard": true,
+        "haft": {}
+      }
+    ],
+    "exemplar": {
+      "head": {
+        "kind": "thin",
+        "mat": "iron_ingot"
+      },
+      "guard": {
+        "kind": "swept",
+        "mat": "iron_ingot"
+      },
+      "haft": {
+        "kind": "h3",
+        "mat": "hardwood"
+      }
+    }
+  },
+  {
+    "id": "estoc",
+    "name": "Estoc",
+    "icon": "🗡️",
+    "art": "item_estoc",
+    "slot": "weapon",
+    "wield": "one_handed",
+    "tags": [
+      "sword"
+    ],
+    "priority": 120,
+    "match": [
+      {
+        "head": {
+          "shape": [
+            "edge"
+          ],
+          "w": [
+            1,
+            1
+          ],
+          "l": [
+            5,
+            99
+          ]
+        },
+        "haft": {}
+      }
+    ],
+    "exemplar": {
+      "head": {
+        "kind": "thin",
+        "mat": "iron_ingot"
+      },
+      "haft": {
+        "kind": "h3",
+        "mat": "hardwood"
+      }
+    }
+  },
+  {
+    "id": "odachi",
+    "name": "Odachi",
+    "icon": "🗡️",
+    "art": "item_odachi",
+    "slot": "weapon",
+    "wield": "two_handed",
+    "tags": [
+      "sword",
+      "katana"
+    ],
+    "priority": 110,
+    "match": [
+      {
+        "head": {
+          "shape": [
+            "edge"
+          ],
+          "curved": true,
+          "l": [
+            9,
+            99
+          ]
+        },
+        "haft": {}
+      }
+    ],
+    "exemplar": {
+      "head": {
+        "kind": "curved_l",
+        "mat": "iron_ingot"
+      },
+      "haft": {
+        "kind": "h3",
+        "mat": "hardwood"
+      }
+    }
+  },
+  {
+    "id": "katana",
+    "name": "Katana",
+    "icon": "🗡️",
+    "art": "item_katana",
+    "slot": "weapon",
+    "wield": "one_handed",
+    "tags": [
+      "sword",
+      "katana"
+    ],
+    "priority": 100,
+    "match": [
+      {
+        "head": {
+          "shape": [
+            "edge"
+          ],
+          "curved": true,
+          "l": [
+            5,
+            99
+          ]
+        },
+        "haft": {}
+      }
+    ],
+    "exemplar": {
+      "head": {
+        "kind": "curved",
+        "mat": "iron_ingot"
+      },
+      "haft": {
+        "kind": "h3",
+        "mat": "hardwood"
+      }
+    }
+  },
+  {
+    "id": "greatsword",
+    "name": "Greatsword",
+    "icon": "⚔️",
+    "art": "item_greatsword",
+    "slot": "weapon",
+    "wield": "two_handed",
+    "tags": [
+      "greatsword"
+    ],
+    "priority": 90,
+    "match": [
+      {
+        "head": {
+          "shape": [
+            "edge"
+          ],
+          "l": [
+            9,
+            99
+          ]
+        },
+        "haft": {}
+      },
+      {
+        "head": {
+          "shape": [
+            "edge"
+          ],
+          "area": [
+            18,
+            99
+          ]
+        },
+        "haft": {}
+      }
+    ],
+    "exemplar": {
+      "head": {
+        "kind": "great",
+        "mat": "iron_ingot"
+      },
+      "haft": {
+        "kind": "h4",
+        "mat": "hardwood"
+      }
+    }
+  },
+  {
+    "id": "sword",
+    "name": "Sword",
+    "icon": "⚔️",
+    "art": "item_sword",
+    "slot": "weapon",
+    "wield": "one_handed",
+    "tags": [
+      "sword"
+    ],
+    "priority": 80,
+    "match": [
+      {
+        "head": {
+          "shape": [
+            "edge"
+          ],
+          "l": [
+            6,
+            99
+          ]
+        },
+        "haft": {}
+      }
+    ],
+    "exemplar": {
+      "head": {
+        "kind": "long",
+        "mat": "iron_ingot"
+      },
+      "haft": {
+        "kind": "h3",
+        "mat": "hardwood"
+      }
+    }
+  },
+  {
+    "id": "shortsword",
+    "name": "Shortsword",
+    "icon": "🗡️",
+    "art": "item_shortsword",
+    "slot": "weapon",
+    "wield": "one_handed",
+    "tags": [
+      "sword"
+    ],
+    "priority": 70,
+    "match": [
+      {
+        "head": {
+          "shape": [
+            "edge"
+          ],
+          "l": [
+            4,
+            99
+          ]
+        },
+        "haft": {}
+      }
+    ],
+    "exemplar": {
+      "head": {
+        "kind": "medium",
+        "mat": "iron_ingot"
+      },
+      "haft": {
+        "kind": "h3",
+        "mat": "hardwood"
+      }
+    }
+  },
+  {
+    "id": "dagger",
+    "name": "Dagger",
+    "icon": "🔪",
+    "art": "item_dagger",
+    "slot": "weapon",
+    "wield": "light",
+    "tags": [
+      "dagger"
+    ],
+    "priority": 60,
+    "match": [
+      {
+        "head": {
+          "shape": [
+            "edge"
+          ]
+        },
+        "haft": {}
+      }
+    ],
+    "exemplar": {
+      "head": {
+        "kind": "short",
+        "mat": "iron_ingot"
+      },
+      "haft": {
+        "kind": "h3",
+        "mat": "hardwood"
+      }
+    }
+  },
+  {
+    "id": "bare_blade",
+    "name": "Bare Blade",
+    "icon": "🔪",
+    "art": "item_bare_blade",
+    "slot": "weapon",
+    "wield": "light",
+    "tags": [
+      "dagger"
+    ],
+    "priority": 50,
+    "degenerate": true,
+    "match": [
+      {
+        "head": {
+          "shape": [
+            "edge"
+          ]
+        }
+      }
+    ],
+    "exemplar": {
+      "head": {
+        "kind": "short",
+        "mat": "iron_ingot"
+      }
+    },
+    "desc": "A blade with no handle. Counts as a light weapon at 60% strength."
+  },
+  {
+    "id": "club",
+    "name": "Club",
+    "icon": "🏏",
+    "art": "item_club",
+    "slot": "weapon",
+    "wield": "one_handed",
+    "tags": [
+      "blunt"
+    ],
+    "priority": 40,
+    "match": [
+      {
+        "head": {
+          "none": true
+        },
+        "haft": {
+          "w": [
+            2,
+            99
+          ]
+        }
+      }
+    ],
+    "exemplar": {
+      "haft": {
+        "kind": "club",
+        "mat": "hardwood"
+      }
+    }
+  },
+  {
+    "id": "quarterstaff",
+    "name": "Quarterstaff",
+    "icon": "🪄",
+    "art": "item_staff",
+    "slot": "weapon",
+    "wield": "two_handed",
+    "tags": [
+      "staff"
+    ],
+    "priority": 30,
+    "match": [
+      {
+        "head": {
+          "none": true
+        },
+        "haft": {
+          "l": [
+            4,
+            99
+          ]
+        }
+      }
+    ],
+    "exemplar": {
+      "haft": {
+        "kind": "h6",
+        "mat": "hardwood"
+      }
+    }
+  },
+  {
+    "id": "stick",
+    "name": "Stick",
+    "icon": "🪵",
+    "art": "item_stick",
+    "slot": "weapon",
+    "wield": "light",
+    "tags": [
+      "staff"
+    ],
+    "priority": 20,
+    "degenerate": true,
+    "match": [
+      {
+        "head": {
+          "none": true
+        },
+        "haft": {}
+      }
+    ],
+    "exemplar": {
+      "haft": {
+        "kind": "h3",
+        "mat": "hardwood"
+      }
+    },
+    "desc": "A handle with no head. Counts as a light weapon at 60% strength."
+  },
+  {
+    "id": "paperweight",
+    "name": "Paperweight",
+    "icon": "🪨",
+    "art": "stone",
+    "slot": "accessory",
+    "tags": [
+      "trinket"
+    ],
+    "priority": 10,
+    "degenerate": true,
+    "match": [
+      {}
+    ],
+    "exemplar": {
+      "guard": {
+        "kind": "boss",
+        "mat": "iron_ingot"
+      }
+    },
+    "desc": "Matches any placement no other class accepts. An accessory with no stats."
+  }
+]

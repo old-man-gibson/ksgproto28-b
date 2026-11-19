@@ -29,5 +29,6 @@
   { "id": "key_item", "text": "{icon} Found {name}. {desc}" },
   { "id": "office_wrong", "text": "This is not the path to the toll collector." },
   { "id": "office_reception", "text": "The collector’s doorway leads back to reception. You still have the key and daybook." },
-  { "id": "office_drop", "text": "The door lets out into {landed}, not {named}." }
+  { "id": "office_drop", "text": "The door lets out into {landed}, not {named}." },
+  { "id": "craft_locked", "text": "🔒 You lack the skill to craft that." }
 ]

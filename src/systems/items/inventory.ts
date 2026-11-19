@@ -3,6 +3,7 @@
  * ordering. Port of the old `systems/inventory.ts`. Pure: no state.
  */
 import {
+  forgeKeyOf,
   itemDefOf,
   itemName,
   itemValue,
@@ -11,15 +12,18 @@ import {
   sizeRank,
   SLOT_IDS,
   SLOT_NAMES,
+  type ForgedSpec,
   type ItemInstance,
   type SlotId,
 } from './defs';
+import type { DeepReadonly } from '../../kernel';
 import { maxRuneSlots } from './runeslots';
 
 /** An item as these functions read it. A view row satisfies it. */
 type Item = Readonly<Pick<ItemInstance, 'uid' | 'defId' | 'slots' | 'size'>> & {
   readonly affix?: { readonly name: string };
   readonly runes?: readonly string[];
+  readonly forged?: DeepReadonly<ForgedSpec>;
 };
 
 // ---- categories ----
@@ -117,14 +121,15 @@ export function isMaxRarity(item: Item): boolean {
  * (order ignored) and size. A medium item adds nothing for its size. Keys are
  * not saved.
  *
- * Plug point for modular smithing: a forged item adds its forge key (parts
- * and grade), so two different forged swords do not stack.
+ * A forged item adds its forge key (parts and grade), so two different
+ * forged swords do not stack (step 3, smithing).
  */
 export function stackKey(item: Item): string {
   const runes = (item.runes ?? []).map(runeRefKey).sort().join(';');
   const rank = sizeRank(item.size);
   const sized = rank === sizeRank('medium') ? '' : `|@${SIZE_LADDER[rank]}`;
-  return `${item.defId}|${item.affix?.name ?? ''}|${item.slots ?? 0}|${runes}${sized}`;
+  const forged = item.forged ? `|${forgeKeyOf(item)}` : '';
+  return `${item.defId}|${item.affix?.name ?? ''}|${item.slots ?? 0}|${runes}${sized}${forged}`;
 }
 
 export interface ItemStack<T extends Item = Item> {

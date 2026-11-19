@@ -75,6 +75,9 @@ export const disciplines = registry(
     skill: s.string({ help: 'The skill that gates and scales the bench.' }),
     tag: s.string({ help: 'The action tag a craft trains and discovers by.' }),
     ordered: s.optional(s.boolean({ help: 'Slots are a sequence: gaps close and order is part of the craft.' })),
+    assembles: s.optional(
+      s.boolean({ help: 'An assembling bench (the anvil): each slot takes a part kind and a material; the owner computes the clock.' }),
+    ),
     work: s.optional(
       s.object({
         skillScaled: s.optional(s.boolean({ help: 'False: craft speed does not change the clock.' })),
@@ -426,18 +429,23 @@ export function benchPace(craftSpeed: number, baseTicks: number): { ticksPer: nu
 export const UNIT_TICKS = 10;
 
 /**
- * How long one craft takes as laid out. The old `benchJobTicks` without the
- * anvil: a timed bench runs its chosen duration; `per: 'ingredient'` adds
- * `ticks` per filled slot; a skill-scaled bench divides by craft speed.
+ * How long one craft takes as laid out. The old `benchJobTicks`: an
+ * assembling bench (the anvil) takes the work its owner states for the
+ * parts (`assembledTicks`, old `forgeTicks`); a timed bench runs its chosen
+ * duration; `per: 'ingredient'` adds `ticks` per filled slot; a skill-scaled
+ * bench divides by craft speed.
  */
 export function benchJobTicks(
   disc: DisciplineDef,
   placement: Placement,
   craftSpeed: number,
   duration?: number,
+  assembledTicks?: number,
 ): { ticksPer: number; batch: number } {
   let base: number;
-  if (disc.timeline) {
+  if (disc.assembles) {
+    base = assembledTicks ?? disc.ticks;
+  } else if (disc.timeline) {
     base = (duration ?? disc.timeline.default) * UNIT_TICKS;
   } else {
     base = disc.ticks;
