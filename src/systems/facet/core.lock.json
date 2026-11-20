@@ -1,0 +1,33 @@
+{
+  "note": "Hashes of the Facet core files this build expects in src/systems/facet/core/ (sha256 over the text with CRLF folded to LF, as the core's own MANIFEST.json computes them). The files are not in git; scripts/install-facet-core.mjs copies and checks them. Facet master at the time of the port: commit ce9e0d9.",
+  "order": [
+    "facet.core.js",
+    "facet.data.js",
+    "facet.registry.js",
+    "facet.cells.js",
+    "facet.relations.js",
+    "facet.pipeline.js",
+    "facet.gate.js",
+    "facet.mortal.js",
+    "facet.forge.js",
+    "facet.oracle.js",
+    "facet.compile.js",
+    "facet.cases.js",
+    "facet.bank.js"
+  ],
+  "sha256": {
+    "facet.core.js": "720f872f1688478f0d5c03188f7151485b7927738f95494c558ea7bd975aeaa3",
+    "facet.data.js": "387ca3a916df10adf4adb060fc7eaefdac506b076500592564480ab2bb1aca97",
+    "facet.registry.js": "f3beb5015946bc2d87a5416f27fe3aa7755f058229aa403062589fe4612618dd",
+    "facet.cells.js": "2507fe4996a3ba6262860430249f421c60eebc7e0280a8117cbc2a794604e022",
+    "facet.pipeline.js": "4562632d9bc70c39905f436f1a6f7ba00fbb2a2a6c720110896ca13ba1e16517",
+    "facet.gate.js": "549c864ff0af218cc5a1572e65718b521b0cba06ecbe334e3d2f417f5550d009",
+    "facet.mortal.js": "738bef83bf0734a5583fb7de51740e60f42a348bbd514caa5dfed89e03add396",
+    "facet.forge.js": "9905f4c9587171374b83f394a4e57a99a4afa7358c0d46a2b75ceafa1769d028",
+    "facet.oracle.js": "f6b36d39a55ece29ca3c8a0a4dc64f3a4e587aa0cda3e363c8a76d444783258e",
+    "facet.compile.js": "3f633fa78264fe0c12bcb9febc668973fe4a99c012c54d8765384fbedbc19f22",
+    "facet.cases.js": "01d6674f593598b271ba603888c8e19da445757a7a6e00365f9a2c717e801496",
+    "facet.relations.js": "2b044657252d66b8c276b7c25c6ecb314f6757f0e051114d3b4701255cb172f0",
+    "facet.bank.js": "dabbf6f30e24fbb16fc7aa45fac5b8f5e100805d822867ecc8d2fe46ef37b8df"
+  }
+}

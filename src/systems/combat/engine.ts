@@ -131,6 +131,7 @@ import {
   armInterception,
   blowRiders,
   bodyHooks,
+  fightHooks,
   monsterActionHandler,
   monsterActionKind,
   playerActionHandler,
@@ -1513,6 +1514,9 @@ export function runCombatTick(ctx: C): void {
   // Then whatever regenerates, after the conditions have bitten.
   tickEnemyRegen(ctx, c);
   tickEnemyMinds(c);
+  // The run's ability keeps its own clock in a fight (old `facetCombatTick`).
+  let fallen: { outcome: 'knocked_out' | 'dead'; cause: string } | null = null;
+  for (const hook of fightHooks()) fallen = hook.tick?.(ctx as ActionCtx) ?? fallen;
 
   // What `combat/damage-enemy` killed since the last tick is swept here: the
   // request has no kill of its own. The old tick swept at this point, after
@@ -1520,6 +1524,11 @@ export function runCombatTick(ctx: C): void {
   if (c.enemies.some((e) => e !== null && e.hp <= 0)) {
     sweepDead(ctx);
     if (!state.fight) return;
+  }
+  // The ability ended the fight as a loss (old `CombatState.fallen`).
+  if (fallen) {
+    onDefeat(ctx, fallen.outcome, fallen.cause);
+    return;
   }
 
   const front = c.enemies[0];
@@ -1588,12 +1597,20 @@ function playerPhase(ctx: C, c: Fight, monster: Enemy, stats: Readonly<DerivedSt
   const skippedAction = consumeSkippedAction(mine(ctx));
   ctx.request(fireStatusEvent, { entity: PLAYER, on: 'barFill' });
   ctx.emit(barFilled, { entity: PLAYER });
+  for (const hook of fightHooks()) hook.barFill?.(ctx as ActionCtx);
   if (skippedAction || statusBlocks(mine(ctx), 'attack')) {
     feed(ctx, `😵 A condition on you costs you this action.`);
     return true;
   }
   trackWeaponFamily(ctx);
-  const active = pickActive(ctx, 'attack');
+  // A pressed ability action takes this fill before the rotation is read (old `queuedAct`).
+  let tookFill = false;
+  for (const hook of fightHooks()) tookFill ||= !!hook.takeFill?.(ctx as ActionCtx);
+  const active = tookFill ? null : pickActive(ctx, 'attack');
+  if (tookFill || active?.takesFill?.(ctx as ActionCtx)) {
+    sweepDead(ctx);
+    return true;
+  }
 
   // A fast refuses the plain swing, not the fight: the fill is spent.
   if (!active && statusBlocks(mine(ctx), 'swing')) {
@@ -2019,6 +2036,47 @@ export function landSlices(
     type: monster.lastHit ?? 'bludgeoning',
   });
   return { dealt, bite, killed: monster.hp <= 0 };
+}
+
+/** Feed groups of the run's ability, one per ability; settled when the fight ends. */
+export const ABILITY_RUN = 'ability:';
+
+/**
+ * Damage the run's ability deals to an enemy: a Little Moons strike, a
+ * thorn. It always lands, with no dodge, crit or variance, and goes through
+ * resistance, the target's conditions and the on-damage hooks. The kill is
+ * left to the sweep. The strikes of one fight fold into one floating feed
+ * line per ability. Returns the damage dealt. The old `abilityStrike`;
+ * step 3, the Facet port.
+ */
+export function abilityStrike(
+  ctx: C,
+  monster: Enemy,
+  amount: number,
+  type: DamageType,
+  by: { name: string; icon: string; hit?: string },
+): number {
+  if (monster.hp <= 0 || !(amount > 0)) return 0;
+  const landed = monsterSlice(statsOf(ctx, monster), type, by.name, amount, 0);
+  const bite = statusIncomingDamageMult(heldBy(ctx, monster));
+  const dmg = Math.max(1, Math.round(landed.dealt * bite));
+  monster.hp -= dmg;
+  monster.lastHit = type;
+  noteOutgoing(ctx.state, now(ctx), dmg);
+  applyHarvest(ctx, monster, enemyTookDamage(ctx, monster, new Map([[landed.type, landed.dealt]])));
+  const steps: DamageStep[] = [{ label: by.name, value: amount }];
+  if (bite !== 1) steps.push({ label: 'Conditions on the target', mult: bite });
+  ctx.emit(feedFloatingRun, {
+    group: ABILITY_RUN + by.name,
+    prefix: `${by.icon} ${by.name}:`,
+    tally: [
+      { label: by.hit ?? 'strike', qty: 1 },
+      { label: 'damage', qty: dmg, style: 'amount' },
+    ],
+    ids: [],
+    damage: { label: by.name, target: monster.name, steps, slices: [landed], hits: 1, crit: false, total: dmg },
+  });
+  return dmg;
 }
 
 /**

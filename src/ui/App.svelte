@@ -11,7 +11,8 @@
   const DEV = import.meta.env.DEV;
 
   let activeId = $state(panels[0]?.systemId ?? '');
-  const active = $derived(panels.find((panel) => panel.systemId === activeId) ?? panels[0]);
+  const listed = $derived(panels.filter((panel) => panel.shown?.(game.view.systems) ?? true));
+  const active = $derived(listed.find((panel) => panel.systemId === activeId) ?? listed[0]);
   let backupNote = $state<string | null>(null);
 
   function gameTime(tick: number): string {
@@ -47,7 +48,7 @@
   </header>
 
   <nav aria-label="Panels">
-    {#each panels as panel (panel.systemId)}
+    {#each listed as panel (panel.systemId)}
       <Button pressed={panel.systemId === active?.systemId} onclick={() => (activeId = panel.systemId)}>
         {panel.title}
       </Button>

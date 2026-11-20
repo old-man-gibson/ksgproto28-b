@@ -73,7 +73,8 @@ describe('unresistable conditions', () => {
   ];
 
   it('exactly these thirteen are marked, each with a reason', () => {
-    const marked = Object.values(STATUSES).filter((d) => d.unresistable);
+    // Facet carriers (`fc_`, step 3, the Facet port) are marked by the ability's host, not by content.
+    const marked = Object.values(STATUSES).filter((d) => d.unresistable && !d.id.startsWith('fc_'));
     expect(marked.map((d) => d.id).sort()).toEqual([...MARKED].sort());
     for (const def of marked) expect(def.unresistable!.trim().length, def.id).toBeGreaterThan(0);
   });

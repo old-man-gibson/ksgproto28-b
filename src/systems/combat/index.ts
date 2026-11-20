@@ -52,6 +52,7 @@ import type { TypedSlice } from './damage';
 import {
   abandonCombat,
   addBuff as pushBuff,
+  abilityStrike,
   attackRetaliation,
   BUFFS_SOURCE,
   closeLedger,
@@ -179,6 +180,14 @@ export const sweepRequest = defineRequest<void, void>('combat/sweep');
 export const hurtEnemy = defineRequest<{ entity: string; amount: number; type: DamageType; outgoing?: boolean }, void>(
   'combat/hurt-enemy',
 );
+/**
+ * The run's ability hurts an enemy (`abilityStrike` in engine.ts). The HP
+ * dealt; 0 when no living enemy has the entity id. Step 3 (the Facet port).
+ */
+export const abilityStrikeRequest = defineRequest<
+  { entity: string; amount: number; type: DamageType; by: { name: string; icon: string; hit?: string } },
+  number
+>('combat/ability-strike');
 /** A buff on the player for the fight. The old `c.buffs.push`. */
 export const addBuff = defineRequest<CombatBuff, void>('combat/add-buff');
 /** Move the player to a position. The old `setPosition`. */
@@ -482,6 +491,14 @@ const combat = defineSystem<CombatState, CombatView>({
         return null;
       }
       return landBurst(ctx, e, p.slices);
+    }),
+    answer(abilityStrikeRequest, (ctx, p) => {
+      const e = enemyOf(ctx.state, p.entity);
+      if (!e || e.hp <= 0) {
+        ctx.skip(abilityStrikeRequest.type, `no living enemy has the entity id "${p.entity}"`);
+        return 0;
+      }
+      return abilityStrike(ctx, e, p.amount, p.type, p.by);
     }),
     answer(sweepRequest, (ctx) => {
       if (!ctx.state.fight) return ctx.skip(sweepRequest.type, 'no fight is open');

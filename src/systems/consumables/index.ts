@@ -9,6 +9,7 @@
 import {
   answer,
   defineCommand,
+  defineEvent,
   defineRequest,
   defineSystem,
   handle,
@@ -202,6 +203,13 @@ export const useNow = defineRequest<{ id: string; quality?: QualityTier; queued?
   'consumables/use-now',
 );
 
+/**
+ * One consumable was used, after its effects. `direct`: by the command (the
+ * old `Game.useConsumable`), not by another system. Heard by the run's
+ * ability (old `itemUsed`, `eat`). Step 3, the Facet port.
+ */
+export const consumableUsed = defineEvent<{ id: string; quality: QualityTier; direct: boolean }>('consumables/used');
+
 /** What the eater answers: one dish already taken from stock, eaten. */
 export type EaterRequest = RequestDef<{ id: string; quality: QualityTier; queued?: MealWait }, void>;
 
@@ -309,7 +317,7 @@ function useOne(ctx: K, id: string, quality: QualityTier, queued?: MealWait): vo
 }
 
 /** The old `useConsumable`: check, spend one, use it. Null when used, else the reason. */
-function useItem(ctx: K, id: string, quality: QualityTier, queued?: MealWait): string | null {
+function useItem(ctx: K, id: string, quality: QualityTier, queued?: MealWait, direct = false): string | null {
   const check = canUse(ctx, ctx.state, id, quality);
   if (!check.ok) {
     const reason = check.reason ?? say('not_usable');
@@ -318,6 +326,7 @@ function useItem(ctx: K, id: string, quality: QualityTier, queued?: MealWait): s
   }
   if (ctx.request(takeStack, { id, quality, qty: 1 }) < 1) return say('none_held');
   useOne(ctx, id, quality, queued);
+  ctx.emit(consumableUsed, { id, quality, direct: !queued && direct });
   return null;
 }
 
@@ -368,7 +377,7 @@ const consumables = defineSystem<ConsumablesState, ConsumablesView>({
 
   commands: [
     handle(useConsumable, (ctx, { id, quality = 'c' }) => {
-      const reason = useItem(ctx, id, quality);
+      const reason = useItem(ctx, id, quality, undefined, true);
       return reason === null ? OK : skipped(reason);
     }),
   ],

@@ -157,6 +157,11 @@ export interface PickedActive {
   before?(ctx: ActionCtx): void;
   /** Called after a shaped blow landed (equipment follow-through, mastery). */
   after?(ctx: ActionCtx): void;
+  /**
+   * A use that takes the bar fill at once, before the fast, hand and to-hit
+   * checks: the run's ability action (old `useFacetAction`). True when used.
+   */
+  takesFill?(ctx: ActionCtx): boolean;
 }
 
 export interface PlayerActionKind {
@@ -373,4 +378,36 @@ export interface BodyBlow {
   tags: string[];
   /** Attribute XP of the blow, on top of the swing's STR 2 and DEX 1. */
   attrXp?: { attr: 'str' | 'dex' | 'con' | 'int' | 'wis' | 'cha'; amount: number };
+}
+
+// ---- the run's ability (step 3, the Facet port) ----
+
+/**
+ * Hooks the old tick called by name for the run's ability (old
+ * `facetCombatTick`, `facetSignal('barFill')`, the pressed action). The
+ * system that owns the ability registers them; none registered: nothing runs.
+ */
+export interface FightHook {
+  /**
+   * Once per fight tick, after the enemies' conditions, regeneration and
+   * minds and before the sweep. A defeat it names ends the fight after the
+   * sweep (old `CombatState.fallen`).
+   */
+  tick?(ctx: ActionCtx): { outcome: 'knocked_out' | 'dead'; cause: string } | null;
+  /** The player's bar filled: after the `barFill` condition hook, before a blocked action is checked. */
+  barFill?(ctx: ActionCtx): void;
+  /** Before the rotation is read at the player's bar fill. True: it took the fill (a pressed action). */
+  takeFill?(ctx: ActionCtx): boolean;
+}
+
+const FIGHT_HOOKS = new Map<string, FightHook>();
+
+/** Register a fight hook. Called at module load by the system that owns it. */
+export function registerFightHook(key: string, hook: FightHook): void {
+  if (FIGHT_HOOKS.has(key)) throw new Error(`combat: fight hook "${key}" is registered twice`);
+  FIGHT_HOOKS.set(key, hook);
+}
+
+export function fightHooks(): Iterable<FightHook> {
+  return FIGHT_HOOKS.values();
 }

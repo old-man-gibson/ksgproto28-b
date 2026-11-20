@@ -219,6 +219,23 @@ function applyHeal(ctx: Ctx<ResourcesState>, pools: Pools, amount: number, kind:
   return result;
 }
 
+/**
+ * A watcher told of every blow at the damage door, inside the handler that
+ * dealt it: the old `facetSignal('hitTaken')` in `damagePlayer`, so an
+ * answer lands before the enemy phase goes on. Step 3, the Facet port.
+ */
+export type DamageWatch = (
+  ctx: Ctx<ResourcesState>,
+  hit: { lost: number; type?: DamageType; source?: DamageSource | null },
+) => void;
+
+const DAMAGE_WATCHES: DamageWatch[] = [];
+
+/** Register a damage watch. Called at module load by the system that owns it. */
+export function registerDamageWatch(watch: DamageWatch): void {
+  DAMAGE_WATCHES.push(watch);
+}
+
 function applyDamage(
   ctx: Ctx<ResourcesState>,
   payload: { amount: number; type?: DamageType; source?: DamageSource | null },
@@ -229,6 +246,7 @@ function applyDamage(
     ...(payload.type ? { type: payload.type } : {}),
     ...(payload.source !== undefined ? { source: payload.source } : {}),
   });
+  for (const watch of DAMAGE_WATCHES) watch(ctx, { lost, type: payload.type, source: payload.source });
   return lost;
 }
 

@@ -26,3 +26,8 @@ art-pack/
 # Screenshots can contain licensed pixels. Local only.
 docs/**/*.png
 docs/**/*.jpg
+
+# The Facet core (globalThis.Facet) comes from a private repository. It is
+# copied in by `npm run facet:install` (docs/SETUP.md) and never committed.
+# A checkout without it runs with Facet abilities unavailable.
+src/systems/facet/core/

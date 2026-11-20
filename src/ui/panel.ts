@@ -9,6 +9,8 @@ export interface PanelDef {
   component: Component;
   /** Position in the navigation: lower comes first. Default 0. */
   order?: number;
+  /** Whether the navigation lists it now, from the published view. Default: always. */
+  shown?: (view: Readonly<Record<string, unknown>>) => boolean;
 }
 
 /**

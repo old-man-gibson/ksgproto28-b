@@ -4,7 +4,7 @@
  * `data/attributes.data.ts`. The effective-attribute layer is in the stats
  * system. See README.md in this folder.
  */
-import { defineEvent, defineSystem, on, PLAYER, registry, s, type DeepReadonly, type RecordOf } from '../../kernel';
+import { defineEvent, defineSystem, on, PLAYER, registry, s, type Ctx, type DeepReadonly, type RecordOf } from '../../kernel';
 import { raiseCounter } from '../counters';
 import { ATTRIBUTE_PROGRESSION, bandedXpNeeded, settleLevels } from '../progression';
 import {
@@ -111,6 +111,21 @@ export const grantAttrXpSplit = defineEvent<{ weights: Partial<Record<AttributeI
 /** An attribute's trained level rose to `level`. One event per level. */
 export const attrLevelUp = defineEvent<{ attr: AttributeId; level: number }>('attributes/levelup');
 
+/**
+ * Takes an attribute XP grant instead of the attribute: true when it took it.
+ * The old `setXpRouter` (Weakest Weapon Master's XP past the ceiling). Step 3,
+ * the Facet port.
+ */
+export type XpRouter = (ctx: Ctx<AttributesState>, attr: AttributeId, amount: number) => boolean;
+
+let XP_ROUTER: XpRouter | null = null;
+
+/** Register the XP router. Called at module load by the system that owns it. */
+export function registerXpRouter(router: XpRouter): void {
+  if (XP_ROUTER) throw new Error('attributes: an XP router is registered twice');
+  XP_ROUTER = router;
+}
+
 // ---- modifier sources ----
 
 const TRAINED_SOURCE = 'attributes/trained';
@@ -196,6 +211,7 @@ const system = defineSystem<AttributesState, AttributesView>({
       const { attr, amount } = event.payload;
       const a = ctx.state.attrs[attr];
       if (!a) return ctx.skip('attributes/grant-xp', `unknown attribute "${attr}"`);
+      if (XP_ROUTER?.(ctx, attr, amount)) return;
       a.xp += amount;
       const gained = settleLevels(a, ATTRIBUTE_PROGRESSION);
       if (gained === 0) return;
