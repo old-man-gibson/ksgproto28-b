@@ -1,0 +1,19 @@
+[
+  { "id": "locked", "text": "🔒 {reason}" },
+  { "id": "carved_named", "text": "{icon} Carved {name} (named rune)." },
+  { "id": "carved", "text": "{icon} Carved: {name}" },
+  { "id": "slab_split", "text": "💥 Slab split. The slab and materials are used up." },
+  { "id": "reason_no_such_pattern", "text": "No such pattern" },
+  { "id": "reason_pattern_level", "text": "{name} needs Runecarving {level}" },
+  { "id": "reason_nothing_chosen", "text": "No rune chosen to carve" },
+  { "id": "reason_too_many_copies", "text": "A slab holds at most {max} copies of one pattern" },
+  { "id": "reason_slab_grade", "text": "{copies}× {name} needs a {grade} slab or better" },
+  { "id": "reason_no_slab", "text": "No slab on the bench" },
+  { "id": "reason_slab_refuse", "text": "An F-grade slab can't be carved: it gives negative stats" },
+  { "id": "reason_adornment_refuse", "text": "{name} is F-grade and can't be used: it gives negative stats" },
+  { "id": "socketed", "text": "{icon} Socketed {name} into {itemIcon} {item}." },
+  { "id": "sold", "text": "Sold {icon} {name} for {price} gold." },
+  { "id": "discarded", "text": "Discarded {icon} {name}." },
+  { "id": "sold_many", "text": "Sold {count} rune{plural} for {price} gold." },
+  { "id": "discarded_many", "text": "Discarded {count} rune{plural}." }
+]

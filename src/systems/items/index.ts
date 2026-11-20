@@ -11,6 +11,7 @@ import {
   answer,
   cloneJson,
   defineCommand,
+  defineEvent,
   defineRequest,
   defineSystem,
   handle,
@@ -50,9 +51,11 @@ import {
   SLOT_IDS,
   SLOT_NAMES,
   sizeRank,
+  type CarvedRune,
   type ForgedSpec,
   type ItemDef,
   type ItemInstance,
+  type RuneRef,
   type SizeTag,
   type SlotId,
 } from './defs';
@@ -459,6 +462,26 @@ export const takeWeapon = defineRequest<void, ItemInstance | null>('items/take-w
 export const giveBack = defineRequest<{ item: ItemInstance }, 'hand' | 'pack'>('items/give-back');
 export const equipNow = defineRequest<{ uid: number; slot?: SlotId }, boolean>('items/equip-now');
 
+/**
+ * Socket a rune into a free slot of an item in the pack or worn (step 3,
+ * runecarving; the item half of the old `socketRune`). A catalogue id is
+ * taken from the pile; a carving is placed as given and the caller removes
+ * it from its own pile. Answers the item's icon and name, or a reason.
+ */
+export const socketRune = defineRequest<{ uid: number; ref: RuneRef }, { ok: boolean; reason?: string; icon?: string; item?: string }>(
+  'items/socket',
+);
+/**
+ * Pry the rune at `index` out of an item (the item half of the old
+ * `unsocketRune`). A catalogue rune goes back on the pile, silently; a
+ * carving is answered to the caller. Null when there is no such rune.
+ */
+export const unsocketRune = defineRequest<{ uid: number; index: number }, { ref: RuneRef } | null>('items/unsocket');
+/** Take catalogue runes off the pile for a sale or a discard: one, or the whole pile with `all`. Answers how many were taken. */
+export const takeRune = defineRequest<{ id: string; all?: boolean }, number>('items/take-rune');
+/** The carvings a sale pried out of sold items. `runecarving` puts them back on its pile (old `sellItems`). */
+export const carvingsFreed = defineEvent<{ carvings: CarvedRune[] }>('items/carvings-freed');
+
 // ---- view ----
 
 export interface ItemFact {
@@ -487,7 +510,7 @@ export interface ItemRow {
   slotName: string;
   affix?: { name: string };
   slots: number;
-  runes: string[];
+  runes: RuneRef[];
   size?: SizeTag;
   /** A forged piece's parts and grade (step 3, smithing): read by `itemDefOf` and `stackKey` on the row. */
   forged?: ForgedSpec;
@@ -587,7 +610,7 @@ function rowOf(
     slotName: def ? SLOT_NAMES[def.slot] : '',
     ...(item.affix ? { affix: { name: item.affix.name } } : {}),
     slots: item.slots ?? 0,
-    runes: [...(item.runes ?? [])],
+    runes: (item.runes ?? []).map((ref) => cloneJson(ref) as RuneRef),
     ...(item.size ? { size: item.size } : {}),
     ...(item.forged ? { forged: cloneJson(item.forged) as ForgedSpec } : {}),
     rarity: itemRarity(item),
@@ -660,6 +683,7 @@ const system: SystemDef<ItemsState, ItemsView> = defineSystem<ItemsState, ItemsV
       const state = ctx.state;
       const goldGain = statOf(ctx, 'goldGain');
       const sold: ItemInstance[] = [];
+      const freed: CarvedRune[] = [];
       let total = 0;
       for (const uid of uids) {
         const idx = state.inventory.findIndex((i) => i.uid === uid);
@@ -668,10 +692,15 @@ const system: SystemDef<ItemsState, ItemsView> = defineSystem<ItemsState, ItemsV
         total += sellPrice(item, goldGain);
         state.inventory.splice(idx, 1);
         // Socketed runes are pried out and kept: selling never destroys them.
-        for (const ref of item.runes ?? []) state.runes[ref] = (state.runes[ref] ?? 0) + 1;
+        // A carving is one of a kind, so it goes back to the carved pile.
+        for (const ref of item.runes ?? []) {
+          if (typeof ref === 'string') state.runes[ref] = (state.runes[ref] ?? 0) + 1;
+          else freed.push(ref);
+        }
         sold.push(item);
       }
       if (sold.length === 0) return skipped('none of the listed items is in the pack');
+      if (freed.length) ctx.emit(carvingsFreed, { carvings: freed });
       ctx.request(addGold, { amount: total, earned: true });
       ctx.emit(logLine, { msg: saleMessage(sold, total), kind: 'item' });
       return OK;
@@ -731,6 +760,48 @@ const system: SystemDef<ItemsState, ItemsView> = defineSystem<ItemsState, ItemsV
       state.equipment[slot] = cloneJson(item) as ItemInstance;
       ctx.touch(WORN_SOURCE);
       return true;
+    }),
+
+    answer(socketRune, (ctx, { uid, ref }) => {
+      const state = ctx.state;
+      const item =
+        state.inventory.find((i) => i.uid === uid) ?? Object.values(state.equipment).find((i) => i?.uid === uid) ?? null;
+      if (!item) return { ok: false, reason: `no item has the uid ${uid}` };
+      const runes = (item.runes ??= []);
+      if (runes.length >= (item.slots ?? 0)) return { ok: false, reason: `${itemName(item)} has no free rune slot` };
+      if (typeof ref === 'string') {
+        if (!RUNES[ref] || (state.runes[ref] ?? 0) <= 0) return { ok: false, reason: `no rune "${ref}" is held` };
+        state.runes[ref] -= 1;
+        if (state.runes[ref] <= 0) delete state.runes[ref];
+        runes.push(ref);
+      } else {
+        runes.push(cloneJson(ref) as CarvedRune);
+      }
+      if (Object.values(state.equipment).includes(item)) ctx.touch(WORN_SOURCE);
+      const def = itemDefOf(item);
+      return { ok: true, icon: def?.icon ?? '', item: def?.name ?? item.defId };
+    }),
+
+    answer(unsocketRune, (ctx, { uid, index }) => {
+      const state = ctx.state;
+      const item =
+        state.inventory.find((i) => i.uid === uid) ?? Object.values(state.equipment).find((i) => i?.uid === uid) ?? null;
+      const ref = item?.runes?.[index];
+      if (!item || !ref) return null;
+      item.runes!.splice(index, 1);
+      if (Object.values(state.equipment).includes(item)) ctx.touch(WORN_SOURCE);
+      // A catalogue rune goes back to the pile, as the old silent `grantRune`.
+      if (typeof ref === 'string') state.runes[ref] = (state.runes[ref] ?? 0) + 1;
+      return { ref: cloneJson(ref) as RuneRef };
+    }),
+
+    answer(takeRune, (ctx, { id, all = false }) => {
+      const held = ctx.state.runes[id] ?? 0;
+      if (held <= 0) return 0;
+      const take = all ? held : 1;
+      ctx.state.runes[id] = held - take;
+      if (ctx.state.runes[id] <= 0) delete ctx.state.runes[id];
+      return take;
     }),
 
     answer(grantRune, (ctx, { id, qty = 1, silent = false }) => {

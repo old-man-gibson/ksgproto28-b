@@ -966,5 +966,64 @@
     ],
     "outcomes": [],
     "desc": "Culture Bench. Takes two copies of one gene or mutagen at the same grade plus biomatter, and returns one copy at the next grade up. Biomatter cost rises with the target grade. Nothing refines past Divine."
+  },
+  {
+    "id": "runecarving",
+    "name": "Runecarving",
+    "benchName": "Rune Table",
+    "icon": "💎",
+    "skill": "runecarving",
+    "tag": "runecarving",
+    "ticks": 60,
+    "xp": 12,
+    "slots": [
+      { "id": "slab", "name": "Rune Slab", "role": "base", "accepts": ["runestone"], "station": "centre" },
+      { "id": "rune1", "name": "First Rune", "role": "component", "picks": "design", "accepts": ["pattern"], "station": "centre" },
+      {
+        "id": "rune2",
+        "name": "Second Rune",
+        "role": "component",
+        "picks": "design",
+        "accepts": ["pattern"],
+        "optional": true,
+        "unlockLevel": 10,
+        "station": "centre"
+      },
+      {
+        "id": "rune3",
+        "name": "Third Rune",
+        "role": "component",
+        "picks": "design",
+        "accepts": ["pattern"],
+        "optional": true,
+        "unlockLevel": 25,
+        "station": "centre"
+      },
+      { "id": "inlay", "name": "Inlay", "role": "adornment", "accepts": ["inlay"], "optional": true, "station": "topLeft" },
+      { "id": "color", "name": "Color", "role": "adornment", "accepts": ["pigment"], "optional": true, "station": "topRight" },
+      { "id": "gem1", "name": "Adornment", "role": "adornment", "accepts": ["gem"], "optional": true, "station": "bottomLeft" },
+      { "id": "gem2", "name": "Second Adornment", "role": "adornment", "accepts": ["gem"], "optional": true, "station": "bottomLeft" },
+      {
+        "id": "tool",
+        "name": "Carving Tool",
+        "role": "component",
+        "picks": "tool",
+        "accepts": ["carving"],
+        "optional": true,
+        "consumed": false,
+        "station": "bottomRight"
+      }
+    ],
+    "outcomes": [
+      {
+        "id": "carve",
+        "name": "Carved Rune",
+        "icon": "🔷",
+        "requires": [{ "tag": "runestone" }],
+        "result": { "kind": "carved" },
+        "desc": "A slab cut to the chosen patterns."
+      }
+    ],
+    "desc": "Rune Table. Takes a rune slab, one to three carving patterns (second at Runecarving 10, third at 25), and optional inlay, pigment, up to two gems and a carving tool that is not consumed. Slab grade scales the pattern effects; each adornment adds its own."
   }
 ]

@@ -228,3 +228,20 @@ Converted with `node scripts/convert-content.mjs items affixes runes`.
 - No change to `items/worn`: it reads `itemDefOf`. No command edits a worn
   piece's parts, so the old `forgeKey` entry of `modFingerprint` has no
   counterpart.
+
+## Step 3 (the runecarving port)
+
+- `RuneRef` is `string | CarvedRune` (old shape: `patterns`, `stone`,
+  `adornments`). `registerCarving({ compose, key })`, called by
+  `runecarving` at module load: `resolveRune` composes a carving through it
+  and `runeRefKey` keys it. Without the hooks a carving is the inert Worn
+  Rune. `isCarved`.
+- The rune effect type: riders are one `RuneRider` or a list
+  (`runeRiders`, old `runeRiders`). Authored runes keep one.
+- Requests `items/socket { uid, ref }` (a catalogue ref is taken from the
+  pile; a carving is placed as given), `items/unsocket { uid, index }` (a
+  catalogue rune back on the pile; the ref answered), `items/take-rune {
+  id, all? }`. Each touches `items/worn` when the item is worn.
+- `items/sell`: a sold item's carvings go out in the event
+  `items/carvings-freed`; `runecarving` puts them on its pile.
+- No slice shape change of version 1: `runes` entries may now be objects.

@@ -1,0 +1,9 @@
+{
+  "carved": [
+    {
+      "patterns": ["pattern_might", "pattern_warding"],
+      "stone": { "id": "runestone_blank", "quality": "b" },
+      "adornments": [{ "id": "gold_leaf", "quality": "c" }]
+    }
+  ]
+}

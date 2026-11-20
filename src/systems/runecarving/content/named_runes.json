@@ -1,0 +1,56 @@
+[
+  {
+    "id": "stormbrand",
+    "name": "Stormbrand",
+    "icon": "🌩️",
+    "patterns": ["pattern_edge"],
+    "adornments": ["charged_slime_gel", "raw_sapphire"],
+    "minQuality": "b",
+    "desc": "Rune of the Edge with charged slime gel inlay and a raw sapphire, on a Fine or better slab. Adds in a weapon: +8% of damage dealt as lightning and +20% Crit Damage.",
+    "bonus": [
+      {
+        "context": "weapon",
+        "bonusDamagePct": { "type": "lightning", "value": 0.08 },
+        "mods": [{ "stat": "critDamage", "op": "add", "value": 0.2 }]
+      }
+    ]
+  },
+  {
+    "id": "hearthward",
+    "name": "Hearthward",
+    "icon": "🔥",
+    "patterns": ["pattern_warding"],
+    "adornments": ["warm_slime_gel"],
+    "desc": "Rune of Warding with warm slime gel inlay, on any slab grade. Adds in armor: +8% Heat Resistance.",
+    "bonus": [{ "context": "armor", "mods": [{ "stat": "resHeat", "op": "add", "value": 0.08 }] }]
+  },
+  {
+    "id": "winters_edge",
+    "name": "Winter's Edge",
+    "icon": "❄️",
+    "patterns": ["pattern_edge"],
+    "adornments": ["chilled_slime_gel", "cut_garnet"],
+    "minQuality": "a",
+    "desc": "Rune of the Edge with chilled slime gel inlay and a cut garnet, on a Superb or better slab. Adds in a weapon: +6 cold damage per hit and +3% Crit.",
+    "bonus": [
+      {
+        "context": "weapon",
+        "bonusDamage": { "type": "cold", "value": 6 },
+        "mods": [{ "stat": "crit", "op": "add", "value": 0.03 }]
+      }
+    ]
+  },
+  {
+    "id": "twiceforged",
+    "name": "Twiceforged Seal",
+    "icon": "🔱",
+    "patterns": ["pattern_might", "pattern_warding"],
+    "adornments": ["gold_leaf"],
+    "minQuality": "b",
+    "desc": "Rune of Might and Rune of Warding cut on one slab with gold leaf inlay, Fine or better. Adds +6% Damage in a weapon or +5 Armor in armor.",
+    "bonus": [
+      { "context": "weapon", "mods": [{ "stat": "damage", "op": "mult", "value": 0.06 }] },
+      { "context": "armor", "mods": [{ "stat": "armor", "op": "add", "value": 5 }] }
+    ]
+  }
+]

@@ -135,3 +135,13 @@ remaining, batch. The alchemy view repeats it for its panel.
 - `mutagens` registers the owner: `preview` is old `previewRefine`, `craft`
   is the request `mutagens/refine` (old `refineOnce`). A run refines the
   same grade until two copies of it are no longer held.
+
+## Step 3 (the runecarving port)
+
+- Record `runecarving` (Rune Table), the old numbers and text: slab, three
+  pattern cuts (`picks: 'design'`, second at 10, third at 25), inlay,
+  colour, two gems, a tool that is not spent; one outcome `carve` (result
+  kind `carved`; the old `pattern: ''` field is dropped, read by nothing).
+- No owner is registered. A carve is the command `runecarving/carve`, not a
+  run, as in the old build; `benches/start` with `runecarving` is refused
+  with `no system works the bench "runecarving"`.

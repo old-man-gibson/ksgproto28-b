@@ -14,6 +14,7 @@ import {
   SLOT_NAMES,
   type ForgedSpec,
   type ItemInstance,
+  type RuneRef,
   type SlotId,
 } from './defs';
 import type { DeepReadonly } from '../../kernel';
@@ -22,7 +23,7 @@ import { maxRuneSlots } from './runeslots';
 /** An item as these functions read it. A view row satisfies it. */
 type Item = Readonly<Pick<ItemInstance, 'uid' | 'defId' | 'slots' | 'size'>> & {
   readonly affix?: { readonly name: string };
-  readonly runes?: readonly string[];
+  readonly runes?: readonly DeepReadonly<RuneRef>[];
   readonly forged?: DeepReadonly<ForgedSpec>;
 };
 

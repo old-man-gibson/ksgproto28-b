@@ -552,3 +552,10 @@ skip.
   riders per hit, size doubling, execute, splash and `splashAll`, the
   conditions it leaves on each target it reached (the spill included), its
   XP tags and CON 3. The kind `gene` registers at rank 10.
+
+## Step 3 (the runecarving port)
+
+- The weapon rune riders of a hit read `runeRiders`: a carved rune may carry
+  several flat and percent riders, one per damage type, and each lands as
+  its own slice, flat riders of every rune first, then percent riders (old
+  `weaponRuneBonuses`). The source name reads `resolveRune`.

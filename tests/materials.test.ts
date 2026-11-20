@@ -37,8 +37,8 @@ import { ask, makeGame, patch, slice } from './helpers';
  * Changed: the call shape. `grantGraded` and the others are requests; a
  * discard is a command.
  *
- * Left behind, as `it.todo`: every sale (shops, port 7) and the rune sale and
- * discard cases (runecarving).
+ * Left behind, as `it.todo`: every sale (shops, port 7). The rune sale and
+ * discard cases are in `tests/runecarving.test.ts` (step 3, runecarving).
  */
 
 const stock = (kernel: ReturnType<typeof makeGame>) => slice<MaterialsState>(kernel, 'materials');
@@ -217,14 +217,7 @@ describe('pouch housekeeping (batch)', () => {
   });
 });
 
-describe('selling and dumping runes', () => {
-  it.todo('sells a catalogue rune for its worth and decrements the pile (selling: port 7)');
-  it.todo('discards a carved rune, removing it from the carved pile (runecarving)');
-  it.todo('refuses a ref that is not held (runecarving)');
-  it.todo('sells a batch: catalogue piles whole, carvings one each, one log line (runecarving)');
-  it.todo('dumps carved runes by descending index without shifting mishaps (runecarving)');
-  it.todo('does nothing for an empty rune batch (runecarving)');
-});
+// "selling and dumping runes": ported with runecarving, in tests/runecarving.test.ts.
 
 describe('the materials view', () => {
   it('lists held materials in registry order with their grades, best first', () => {

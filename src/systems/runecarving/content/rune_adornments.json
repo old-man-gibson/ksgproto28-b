@@ -1,0 +1,81 @@
+[
+  {
+    "id": "warm_slime_gel",
+    "effects": [
+      { "context": "weapon", "bonusDamage": { "type": "heat", "value": 2 } },
+      { "context": "armor", "mods": [{ "stat": "resHeat", "op": "add", "value": 0.05 }] },
+      { "context": "accessory", "mods": [{ "stat": "resHeat", "op": "add", "value": 0.04 }] }
+    ]
+  },
+  {
+    "id": "chilled_slime_gel",
+    "effects": [
+      { "context": "weapon", "bonusDamage": { "type": "cold", "value": 2 } },
+      { "context": "armor", "mods": [{ "stat": "resCold", "op": "add", "value": 0.05 }] },
+      { "context": "accessory", "mods": [{ "stat": "resCold", "op": "add", "value": 0.04 }] }
+    ]
+  },
+  {
+    "id": "charged_slime_gel",
+    "effects": [
+      { "context": "weapon", "bonusDamagePct": { "type": "lightning", "value": 0.06 } },
+      { "context": "armor", "mods": [{ "stat": "resLightning", "op": "add", "value": 0.05 }] },
+      { "context": "accessory", "mods": [{ "stat": "speed", "op": "mult", "value": 0.02 }] }
+    ]
+  },
+  {
+    "id": "luminous_slime_gel",
+    "effects": [
+      { "context": "weapon", "bonusDamage": { "type": "light", "value": 3 } },
+      { "context": "armor", "mods": [{ "stat": "resDark", "op": "add", "value": 0.06 }] },
+      { "context": "accessory", "mods": [{ "stat": "resLight", "op": "add", "value": 0.05 }] }
+    ]
+  },
+  {
+    "id": "gold_leaf",
+    "effects": [
+      { "context": "weapon", "mods": [{ "stat": "damage", "op": "mult", "value": 0.03 }] },
+      { "context": "armor", "mods": [{ "stat": "maxHp", "op": "add", "value": 8 }] },
+      { "context": "accessory", "mods": [{ "stat": "goldGain", "op": "mult", "value": 0.05 }] }
+    ]
+  },
+  {
+    "id": "bone_dust",
+    "effects": [
+      { "context": "armor", "mods": [{ "stat": "maxHp", "op": "add", "value": 5 }] },
+      { "context": "accessory", "mods": [{ "stat": "resDark", "op": "add", "value": 0.03 }] }
+    ]
+  },
+  {
+    "id": "ochre_pigment",
+    "effects": [
+      { "context": "weapon", "mods": [{ "stat": "damage", "op": "add", "value": 1.5 }] },
+      { "context": "armor", "mods": [{ "stat": "armor", "op": "add", "value": 1.5 }] },
+      { "context": "accessory", "mods": [{ "stat": "loot", "op": "mult", "value": 0.02 }] }
+    ]
+  },
+  {
+    "id": "verdigris_pigment",
+    "effects": [
+      { "context": "weapon", "bonusDamage": { "type": "poison", "value": 2 } },
+      { "context": "armor", "mods": [{ "stat": "resPoison", "op": "add", "value": 0.05 }] },
+      { "context": "accessory", "mods": [{ "stat": "resPoison", "op": "add", "value": 0.04 }] }
+    ]
+  },
+  {
+    "id": "raw_sapphire",
+    "effects": [
+      { "context": "weapon", "mods": [{ "stat": "spellPower", "op": "add", "value": 3 }] },
+      { "context": "armor", "mods": [{ "stat": "maxMana", "op": "add", "value": 4 }] },
+      { "context": "accessory", "mods": [{ "stat": "manaRegen", "op": "add", "value": 0.05 }] }
+    ]
+  },
+  {
+    "id": "cut_garnet",
+    "effects": [
+      { "context": "weapon", "mods": [{ "stat": "crit", "op": "add", "value": 0.02 }] },
+      { "context": "armor", "mods": [{ "stat": "armor", "op": "add", "value": 3 }] },
+      { "context": "accessory", "mods": [{ "stat": "critDamage", "op": "add", "value": 0.1 }] }
+    ]
+  }
+]

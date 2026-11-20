@@ -1,0 +1,53 @@
+[
+  {
+    "id": "pattern_might",
+    "name": "Rune of Might",
+    "icon": "🔺",
+    "desc": "Carving pattern, available from Runecarving 1. On a Fair slab: weapon +4 Damage, armor +2 Armor, accessory +2% Damage. Slab grade scales the result.",
+    "effects": [
+      { "context": "weapon", "mods": [{ "stat": "damage", "op": "add", "value": 4 }] },
+      { "context": "armor", "mods": [{ "stat": "armor", "op": "add", "value": 2 }] },
+      { "context": "accessory", "mods": [{ "stat": "damage", "op": "mult", "value": 0.02 }] }
+    ]
+  },
+  {
+    "id": "pattern_warding",
+    "name": "Rune of Warding",
+    "icon": "🛡️",
+    "desc": "Carving pattern, available from Runecarving 1. On a Fair slab: weapon +2% Parry, armor +4 Armor, accessory +12 Max HP. Slab grade scales the result.",
+    "effects": [
+      { "context": "weapon", "mods": [{ "stat": "parry", "op": "add", "value": 0.02 }] },
+      { "context": "armor", "mods": [{ "stat": "armor", "op": "add", "value": 4 }] },
+      { "context": "accessory", "mods": [{ "stat": "maxHp", "op": "add", "value": 12 }] }
+    ]
+  },
+  {
+    "id": "pattern_swiftness",
+    "name": "Rune of Swiftness",
+    "icon": "🌀",
+    "minLevel": 5,
+    "desc": "Carving pattern, Runecarving 5. On a Fair slab: weapon +4% Attack Speed, armor +2% Speed, accessory +3% Speed. Slab grade scales the result.",
+    "effects": [
+      { "context": "weapon", "mods": [{ "stat": "attackSpeed", "op": "mult", "value": 0.04 }] },
+      { "context": "armor", "mods": [{ "stat": "speed", "op": "mult", "value": 0.02 }] },
+      { "context": "accessory", "mods": [{ "stat": "speed", "op": "mult", "value": 0.03 }] }
+    ]
+  },
+  {
+    "id": "pattern_edge",
+    "name": "Rune of the Edge",
+    "icon": "🗡️",
+    "minLevel": 12,
+    "desc": "Carving pattern, Runecarving 12. On a Fair slab: weapon +3% Crit and +15% Crit Damage, accessory +2% Crit. Does nothing in armor. Slab grade scales the result.",
+    "effects": [
+      {
+        "context": "weapon",
+        "mods": [
+          { "stat": "crit", "op": "add", "value": 0.03 },
+          { "stat": "critDamage", "op": "add", "value": 0.15 }
+        ]
+      },
+      { "context": "accessory", "mods": [{ "stat": "crit", "op": "add", "value": 0.02 }] }
+    ]
+  }
+]

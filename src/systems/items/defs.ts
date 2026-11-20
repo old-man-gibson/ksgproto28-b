@@ -5,6 +5,7 @@
  */
 import { registry, s, type DeepReadonly, type RecordOf } from '../../kernel';
 import { conditionSchema, type Condition } from '../counters';
+import type { QualityTier } from '../materials';
 import { DAMAGE_TYPES, modifierSchema, type ContentMod, type DamageType } from '../stats';
 import affixesData from './content/affixes.json';
 import itemsData from './content/items.json';
@@ -96,16 +97,65 @@ export function runeContextFor(slot: SlotId): RuneContext {
   return 'armor';
 }
 
-/**
- * A socketed rune. A catalogue id today. The runecarving port widens this to
- * a catalogue id or a carving, and `runeRefKey` is where a carving gets its
- * canonical string.
- */
-export type RuneRef = string;
+/** A material at a grade, as a carving stores it. `quality` is a quality tier. */
+export interface CarvedPart {
+  id: string;
+  quality: QualityTier;
+}
 
-/** The stacking identity of a socketed rune. */
-export function runeRefKey(ref: RuneRef): string {
-  return ref;
+/**
+ * A rune the player carved: its combination, never its results. The old
+ * `CarvedRune`. Composed into a `RuneDef` by the hooks `runecarving`
+ * registers (step 3, runecarving).
+ */
+export interface CarvedRune {
+  patterns: string[];
+  stone: CarvedPart;
+  adornments: CarvedPart[];
+}
+
+/** A socketed rune: a catalogue id or a carving. */
+export type RuneRef = string | CarvedRune;
+
+/** What the Rune Table hands the item rules. Registered by `runecarving` at module load. */
+export interface CarvingHooks {
+  /** The rune a carving composes to (old `composeCarved`). */
+  compose(rune: DeepReadonly<CarvedRune>): RuneDef;
+  /** The canonical string of a carving (old `carvedKey`). */
+  key(rune: DeepReadonly<CarvedRune>): string;
+}
+
+let carving: CarvingHooks | null = null;
+
+/** Called once by `runecarving` at module load. */
+export function registerCarving(hooks: CarvingHooks): void {
+  carving = hooks;
+}
+
+/** Whether a reference is a carving rather than a catalogue id. The old `isCarved`. */
+export function isCarved(ref: RuneRef | DeepReadonly<RuneRef>): ref is CarvedRune {
+  return typeof ref !== 'string';
+}
+
+/**
+ * A rune reference as one canonical string: a catalogue id as written, a
+ * carving through its key. The old `runeRefKey`.
+ */
+export function runeRefKey(ref: RuneRef | DeepReadonly<RuneRef>): string {
+  if (typeof ref === 'string') return ref;
+  return carving ? carving.key(ref) : 'carved';
+}
+
+/** One typed on-hit damage rider. */
+export interface RuneRider {
+  type: DamageType;
+  value: number;
+}
+
+/** A rider field read as a list: one authored rider, a composed list, or none. The old `runeRiders`. */
+export function runeRiders(x: RuneRider | readonly RuneRider[] | DeepReadonly<RuneRider | RuneRider[]> | undefined): RuneRider[] {
+  if (!x) return [];
+  return (Array.isArray(x) ? x : [x]) as RuneRider[];
 }
 
 const bonusDamageSchema = s.object({ type: s.enum(DAMAGE_TYPES), value: s.number() });
@@ -144,7 +194,13 @@ const runes = registry(
   'Runes',
 );
 export { runes as runeRegistry };
-export type RuneDef = RecordOf<typeof runes>;
+type AuthoredRuneEffect = RecordOf<typeof runes>['effects'][number];
+/** A rune's effect in one context. A composed carving may carry several riders of different types. */
+export type RuneEffect = Omit<AuthoredRuneEffect, 'bonusDamage' | 'bonusDamagePct'> & {
+  bonusDamage?: RuneRider | RuneRider[];
+  bonusDamagePct?: RuneRider | RuneRider[];
+};
+export type RuneDef = Omit<RecordOf<typeof runes>, 'effects'> & { effects: RuneEffect[] };
 
 export const RUNE_LIST = runesData as unknown as RuneDef[];
 export const RUNES: Record<string, RuneDef> = Object.fromEntries(RUNE_LIST.map((r) => [r.id, r]));
@@ -154,16 +210,17 @@ const INERT_RUNE: RuneDef = { id: 'unknown', name: 'Worn Rune', icon: '🔘', va
 
 /**
  * The one door every reader of a rune goes through. A catalogue rune is a
- * lookup. Plug point for runecarving: a carving is composed here from its
- * combination.
+ * lookup; a carving is composed from its combination by the hooks of
+ * `runecarving` (memoised there). Without the hooks a carving is inert.
  */
-export function resolveRune(ref: RuneRef | undefined): RuneDef {
+export function resolveRune(ref: RuneRef | DeepReadonly<RuneRef> | undefined): RuneDef {
   if (!ref) return INERT_RUNE;
+  if (typeof ref !== 'string') return carving ? carving.compose(ref) : INERT_RUNE;
   return RUNES[ref] ?? INERT_RUNE;
 }
 
 /** The effect a rune gives in a context. Undefined: it does nothing there. */
-export function runeEffectAt(ref: RuneRef | undefined, context: RuneContext): RuneDef['effects'][number] | undefined {
+export function runeEffectAt(ref: RuneRef | DeepReadonly<RuneRef> | undefined, context: RuneContext): RuneEffect | undefined {
   return resolveRune(ref).effects.find((e) => e.context === context);
 }
 

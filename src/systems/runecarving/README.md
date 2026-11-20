@@ -141,3 +141,93 @@ line (`statTipLines`, UI step), the socketing cases of `runes.test.ts`
 the save starts at version 1), the six rune cases of
 `inventory-actions.test.ts` (they replace the `it.todo` lines in
 `tests/materials.test.ts`), the four "runecarving content" checks.
+
+## Files
+
+| File | Holds |
+|---|---|
+| `defs.ts` | Registries and schemas; composition (`carvedKey`, `namedRuneFor`, `patternEffectAt`, `adornmentEffectAt`, `composeCarved`, `clearCarvedCache`, `RESONANCE`); the bench rules (`countPatterns`, `REPEAT_MIN_QUALITY`, `availablePatterns`, `patternSlots`, `failureChance`, `previewCarve`); `describeRuneEffect` |
+| `index.ts` | The slice, `registerCarving`, the commands, the subscriber to `items/carvings-freed`, `weaponRuneBonuses`, `runeSellPrice`, the view |
+| `RunesPanel.svelte`, `panel.ts` | The Runes panel |
+| `content/*.json` | `rune_patterns`, `rune_adornments`, `named_runes`, `runecarving_text` |
+
+## Skip reasons
+
+- `runecarving/carve`: the preview's reason (also logged as `🔒 <reason>`):
+  `No such pattern`; `<pattern> needs Runecarving <n>`; `No rune chosen to
+  carve`; `An F-grade slab can't be carved: it gives negative stats`;
+  `<material> is F-grade and can't be used: it gives negative stats`; `A
+  slab holds at most 3 copies of one pattern`; `<n>× <pattern> needs a
+  <grade> slab or better`; the bench reasons of `checkCraft` (`benches`);
+  `No slab on the bench`. After the preview passed: `the stock of <id> at
+  grade <q> ran out` (old: a silent null).
+- `runecarving/socket`: `no carving is held at carved:<i>`; `no item has the
+  uid <uid>`; `<item> has no free rune slot`; `no rune "<id>" is held`.
+- `runecarving/unsocket`: `item <uid> holds no rune at socket <i>`.
+- `runecarving/sell`, `runecarving/discard`: `no rune "<ref>" is held`.
+- `runecarving/sell-batch`, `runecarving/discard-batch`: `none of the listed
+  runes is held`.
+
+## Changed while building (step 3)
+
+- The old functions returned `false`, 0 or null on a refusal; the commands
+  return a skip reason. Old log lines kept as they were.
+- `previewCarve(reads, placement)` and `failureChance(level, placement)` take
+  the bench reads or the level instead of the state, so the panel can
+  preview from the view.
+- `items` answers the item half of socketing (`items/socket`,
+  `items/unsocket`, `items/take-rune`), because the item and the catalogue
+  pile are its slice. The rune pile stays in `items` where spine port 3 put
+  it; only the carved pile is here.
+- The view's damage rider text names the type with a capital
+  (`damageTypeName`), as old `DAMAGE_TYPE_NAMES` did for every type.
+- The combat rider source for a catalogue id with no definition reads
+  "Worn Rune" (`resolveRune`); the old `RUNE_NAME` fallback printed the id.
+  Such a rune has no effect, so no rider is ever named by it.
+
+## Old rules ported as they are
+
+- The shutter is a panel shutter only. No command checks it, and nothing
+  in content lifts it (old `unlocks.ts`). Through floor 6 no source pays a
+  runestone, so no player carves.
+- `runecarving/carve` does not check that the player stands at a Rune Table
+  (old `carveRune` did not). The panel offers the table only there.
+- The tool slot is not checked against stock: `checkCraft` skips non-material
+  slots and `previewCarve` does not look at the tool. A carve command may
+  name a tool the player does not hold, at any grade, and gets the lower
+  split chance. The old panel listed held tools only.
+- A pattern's grade in the placement is ignored; only its id counts.
+- The discipline's `ticks: 60` is read by nothing: a carve is instant.
+- A carve bumps no craft counter and emits no `benches/crafted` (old
+  `carveRune` emitted no `craft` event), so no quest hears it.
+- The success XP counts every placed part, the tool and the cuts included:
+  `12 x (1 + 0.25 x parts)`. A split pays `12 x 0.4`.
+- The split chance draws the generator on every carve, also when it is 0.
+- A forged piece never has rune slots (smithing port, `slots: 0`).
+- The batch sale pays at least 1 gold per rune (`max(count, ...)`).
+
+## Panel as built
+
+`RunesPanel.svelte`, order -8.01 (after the Chromosome panel, before
+Equipment). Shut: one line naming the flag. Open: the Rune Table card (away
+from a table: the line naming The Long Bench), the effect context switch
+(weapon, armor, accessory), one full-width row per open station, the picker
+well (14rem, scrolls inside), the preview box (7.5rem: name, three context
+lines, split chance, or the reason), Carve. The loose runes (catalogue
+first, then carvings, as the old socket list) with Sell and Discard. The
+gear with rune slots (worn first, then the pack); a click opens its sockets
+in a box of fixed height: Remove per rune, a select per empty slot. Carve
+clears the spent stations and keeps the patterns and the tool (old
+`clearConsumed`).
+
+## Left behind
+
+- `base_workshop` (the player base) and its Rune Table: not ported.
+- Shadow Clones at the table, festival tokens of runes: not ported.
+- The glyph design (`docs/runecarving-review` branch): not on old `main`.
+- The damage stat tooltip lines per rider (`statTipLines`): UI step
+  (`it.todo` in `tests/runecarving.test.ts`).
+- Rune pips on the Equipment list, the rune slot range on shop wares, the
+  collection list's grade sweep of carvings, Sell spares: UI step.
+- The martial technique surgery of catalogue runes is read by `martial`
+  (ported); no pattern carries surgery in content.

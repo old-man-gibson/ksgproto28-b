@@ -19,8 +19,10 @@ import items, {
   handSwingShare,
   itemDefOf,
   runeEffectAt,
-  RUNES,
+  resolveRune,
+  runeRiders,
   weaponDef,
+  type RuneRef,
   wielderRank,
 } from '../items';
 import levels, { grantLevelXp, KILL_LEVEL_XP_RATE, killXp, levelOf, rewardLevel } from '../levels';
@@ -1814,12 +1816,12 @@ function swing(
       const effect = runeEffectAt(ref, 'weapon');
       if (!effect) continue;
       const source = RUNE_NAME(ref);
-      if (effect.bonusDamage) typed.push({ type: effect.bonusDamage.type as DamageType, value: effect.bonusDamage.value, source });
+      // A carving may carry several riders, one per damage type; each lands.
+      for (const r of runeRiders(effect.bonusDamage)) typed.push({ type: r.type, value: r.value, source });
     }
     for (const ref of weapon?.runes ?? []) {
       const effect = runeEffectAt(ref, 'weapon');
-      if (effect?.bonusDamagePct)
-        typed.push({ type: effect.bonusDamagePct.type as DamageType, value: rawHit * effect.bonusDamagePct.value, source: RUNE_NAME(ref) });
+      for (const r of runeRiders(effect?.bonusDamagePct)) typed.push({ type: r.type, value: rawHit * r.value, source: RUNE_NAME(ref) });
     }
     // A bare-handed blow adds a share of itself in the rider's type.
     const rider = weapon ? null : heldWith(mine(ctx), 'unarmedRider');
@@ -1982,7 +1984,7 @@ function swing(
   return false;
 }
 
-const RUNE_NAME = (ref: string): string => RUNES[ref]?.name ?? ref;
+const RUNE_NAME = (ref: DeepReadonly<RuneRef>): string => resolveRune(ref).name;
 
 // ---- landing from outside the normal attack ----
 
