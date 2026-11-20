@@ -299,7 +299,7 @@ the run counters the legacy keeps.
 
 ### 3.4 Tolerance
 
-Proposed (Q1): the SPINE 9.1 rule per run. Each run's total within 15% of
+Decided (Q1, 2026-11-20): the SPINE 9.1 rule per run. Each run's total within 15% of
 the old mean over the three seeds; each segment of more than two minutes
 of old mean within 35%; floors 12 and 13 within one convoy (6 minutes) of
 the old time per seed, since they are schedule-bound; boss segments and
@@ -525,9 +525,10 @@ and can run beside another port (W touches only `weather` and `clock`).
   546, 590, 613.
 - Parity: John with Facet off unchanged.
 
-## 6. Open questions
+## 6. Decided questions
 
-Each has a default; the plan above assumes the default.
+Each had a default; the plan above assumes the default. Decided by the
+user on 2026-11-20: all ten defaults accepted as written below.
 
 1. **Q1. Tolerance past floor 6.** Default: section 3.4 (per-run total
    within 15%, long segments within 35%, floors 12 and 13 within one convoy
