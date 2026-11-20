@@ -1903,3 +1903,132 @@ against stock, so a command may name a tool not held; a pattern's grade is
 ignored; the discipline's `ticks` is read by nothing; a carve bumps no craft
 counter and no quest hears it; the success XP counts the tool and the cuts;
 the split draws the generator even at 0%; a forged piece has no rune slots.
+
+## 20. Step 3: Facet abilities (tentative)
+
+Done 2026-11-20 on branch `step3-facet`, from `main` at `079e602`. Not
+merged, not pushed. The full account: `src/systems/facet/README.md`
+(licensing, the switch, every line outside the folder, ported, left
+behind, differences, old rules ported as they are).
+
+User ruling 2026-11-20: Facet abilities are a tentative incorporation. The
+port lives in `src/systems/facet` and is off by default; `?facet=on` or the
+command `facet/switch` turns it on, and the switch is saved with the game.
+Removal is deleting the folder, five test files, a fixture folder and the
+install script, and reverting the lines the README lists (combat,
+resources, attributes, consumables, `src/ui/panel.ts`, `src/ui/App.svelte`,
+`.gitignore`, `package.json`, one test line).
+
+The core is not in git (user, 2026-11-20). The FACET core comes from the
+private Facet repository; this repository is public. It lives in
+`src/systems/facet/core/`, which git ignores; `npm run facet:install --
+<source>` copies it and checks it against `core.lock.json`
+(docs/SETUP.md). `load.ts` loads it with `import.meta.glob`, so a checkout
+without it builds, tests and runs with Facet abilities unavailable:
+`?facet=on` answers "Facet core not installed" and stays off, and the
+tests that need the core are skipped.
+
+The core uses no `Math.random`, `Date` or `performance.now`. It keeps one
+global with one installed host; the host reads and writes through the
+context of the handler that called it, and re-attaches the documents when
+the core is pointed at another slice object (a load, a new run, a second
+kernel). With an ability held, a run split by a save and a load and a run
+through catch-up end on the same state as the run in one piece
+(`tests/facetReplay.test.ts`, five abilities).
+
+Left behind: the combat statue rules (Basilisk Hide's statues do not
+crumble, break, throw rocks or pay Chunks; Rubble and Stoneskin act only
+through the Stone), Shadow Clone (old `systems/clones.ts`), the hold of
+play while an evolution waits.
+
+### 20.1 John
+
+Off, unchanged. Every outcome digest changed in the state hash only (the
+slice `facet`); tick, generator, kills, defeats, level, gold and every
+John segment are equal, recorded again in their own commit. `npm run
+pacing` prints the same tables on this branch and on `main` (`079e602`),
+wall clock aside. The toll collector bound: rack climbs, seeds 42 and 7,
+5 of 10 first attempts lost, the same five as on `main` (42 sword,
+42 hammer, 7 sword, 7 spear, 7 unarmed).
+
+On: John with one ability granted after the first tick
+(`stopWhen`, a scratch script; not a test). Time to clear floor 6, seeds
+42, 7, 1234:
+
+| Ability | 42 | 7 | 1234 |
+|---|---|---|---|
+| None (`main`) | 0:26:46 | 0:22:37 | 0:25:04 |
+| Little Moons | 0:22:00 | 0:21:46 | 0:21:14 |
+| Bramble | 0:24:45 | 0:24:29 | 0:27:00 |
+| Solar Charge | 0:26:50 | 0:25:45 | 0:26:15 |
+| Zenkai | 0:24:01 | 0:22:16 | 0:21:25 |
+| Calorie Burn | 0:26:46 | 0:22:37 | 0:25:04 |
+| Weakest Weapon Master | 0:21:30 | 0:19:41 | 0:19:27 |
+| Basilisk Hide | 0:26:39 | 0:26:11 | 0:24:57 |
+
+Calorie Burn equals no ability: John eats nothing, and an empty store
+burns nothing. Solar Charge opens at -15% damage and John climbs indoors
+for long stretches.
+
+### 20.2 Offline budgets
+
+Measured on an idle machine after the core was taken out of git. An
+earlier attempt the same day ran under a game holding 90% of the processor
+and gave no usable numbers; it is not kept.
+
+`npm run verify` passes with the core folder moved away (svelte-check;
+unit 2,715 passed, 81 skipped, 159 todo; budget 4; budget-world 2; john
+13; build) and with it back (unit 2,860 passed, 4 skipped, 159 todo; the
+rest the same). The `budget` and `budget-world` projects pass on this
+branch and on `main` (079e602, a worktree), two rounds each, alternating.
+
+Each run of 8 hours through `scripts/budget-runs.ts`, same hour,
+alternating, ms (branch with the core present, switch off):
+
+| Run of 8 hours | `main` | Off | On | Budget |
+|---|---|---|---|---|
+| No fight, no condition | 1,463 / 1,461 | 1,486 / 1,492 | 3,809 (Solar Charge) | 2,200 |
+| A poison held | 4,575 / 4,600 | 4,619 / 4,598 | - | 8,250 |
+| Floor 1 table sent to combat | 4,538 / 4,463 | 4,617 / 4,728 | 5,517 (Little Moons) | 7,700 |
+| Floor 6 Tunnels sent to combat | 8,120 / 8,130 | 8,201 / 8,363 | 9,563 (Little Moons) | 14,850 |
+| World: hunt, floor 4 Woods Edge | 8,213 / 8,356 | 8,274 / 8,564 | 15,245 (Solar Charge) | 14,300 |
+| World: hunt, floor 6 Tunnels | 8,067 / 8,243 | 8,178 / 8,480 | - | 14,300 |
+
+Off, the branch is 0 to 3% slower than `main` on every run, inside every
+budget. What it adds per tick: one early return in the `facet` tick, one
+read of the facet slice per fight tick and per player bar fill, one per
+blow on the player and one per attribute XP grant, the handlers of seven
+events that return at their first line, and the fight-hook loops in
+`runCombatTick` and the player phase. No modifier source.
+
+On is not budgeted. Solar Charge more than doubles the idle run and passes
+the world 4 budget (15,245 ms against 14,300): its clauses run each game
+minute and move carrier statuses, which rebuild the player's stat block.
+Not profiled.
+
+### 20.3 Browser check
+
+Desktop (1009 px) and 375 px, dev server 5600. Dev save backed up at
+`ksgb:development:save.before-facet-check`. Off: no Ability entry, no
+console error. `?facet=on`: the Ability tab is listed; the bank opens on
+click; granted Little Moons, started a Forest Rat hunt from the Combat
+panel: the fight's settled line read "🌙 Little Moons: strike x11, 15
+damage". Granted Solar Charge: the charge bar, the Sun Blast button ("Not
+ready."), the tier rows, the sunlight input; no horizontal overflow at
+375 px. The Character panel's condition list stayed empty (carriers of
+shown cells are hidden). "Switch Facet abilities off": the tab left the
+navigation, the shell fell back to Character, the saved slice read
+`{ on: false, docs: [] }` with no `fc_` status.
+
+Not verified in a browser: Sun Blast fired (tested headless), the stance
+row of Weakest Weapon Master and the cutoff of Calorie Burn (tested
+headless as commands), the evolution window (the offer and the pick are
+tested headless), the switch from `?facet=off`.
+
+### 20.4 Old rules ported as they are
+
+Listed in the README. In short: Calorie Burn's `defeat` as `dead` is a
+death with knockout consequences and no document uses it; `itemUsed` fires
+for any direct use, a recipe card included; `miracleCast` fires for any
+divine cast with a deity in a fight; a stance with Power 0 does nothing; the
+host keeps `spendPool` though no document spends.
