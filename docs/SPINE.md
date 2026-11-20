@@ -1815,3 +1815,91 @@ no bias while the bench preview reads the taught tier with the bias; the
 daze chance reads raw grip; shaping pays no discovery bonus and bumps no
 inscription counter; `foldCoherence` is read by nothing; the Arcane
 panel's book row shows "0 mana" for a psionic spell.
+
+## 19. Step 3: runecarving
+
+Done 2026-11-20 on branch `step3-runecarving`, from `main` at `8ba256a`.
+Design and the full account: `src/systems/runecarving/README.md` (the
+inventory of old `main`, "Step 3 design", "Changed while building (step
+3)", "Old rules ported as they are", "Panel as built", "Left behind").
+Additions in other folders, each in its "Step 3 (the runecarving port)"
+section: `items` (`CarvedRune`, `registerCarving`, `runeRiders`, the
+requests `items/socket`, `items/unsocket`, `items/take-rune`, the event
+`items/carvings-freed`), `combat` (every rider of a carving lands),
+`benches` (the `runecarving` record, no owner).
+
+The branch `docs/runecarving-review` (glyph design) is not an ancestor of
+old `main` and is not ported. On old `main` a carve is instant (the panel
+called `carveRune` once per click; no bench run). Through floor 6 no player
+carves: `flag:unlock_runecarving` is shut and nothing lifts it, and no
+source pays a runestone. The Rune Table stands at The Long Bench
+(Threshold).
+
+### 19.1 John
+
+Unchanged. No climb carves or sockets. Every outcome digest changed in the
+state hash only (the slice `runecarving`); tick, generator, kills, defeats,
+level, gold and every John segment are equal, and the digests are recorded
+again in their own commit. `npm run pacing` prints the same tables on this
+branch and on `main` (`8ba256a`), wall clock aside.
+
+The toll collector bound of `tests/john.test.ts`: rack climbs, seeds 42
+and 7, first attempts lost 5 of 10 on `main` and 5 of 10 on this branch,
+the same five climbs (42 sword, 42 hammer, 7 sword, 7 spear, 7 unarmed).
+The 100-climb sample was not run: the count did not move.
+
+### 19.2 Offline budgets
+
+Each run of 8 hours through `scripts/budget-runs.ts`, this branch and
+`main` (8ba256a, a worktree) alternating, two rounds, same hour, ms:
+
+| Run of 8 hours | `main` | Step 3 runecarving | Budget |
+|---|---|---|---|
+| No fight, no condition | 1,558 to 1,913 | 1,554 to 1,627 | 2,200 |
+| A poison held | 5,225 to 6,467 | 5,367 to 5,415 | 8,250 |
+| Floor 1 table sent to combat | 5,323 to 6,101 | 5,109 to 5,141 | 7,700 |
+| Floor 6 Tunnels sent to combat | 9,838 to 10,698 | 9,681 to 10,271 | 14,850 |
+| World: hunt, floor 4 Woods Edge | 10,016 to 11,699 | 9,598 to 9,863 | 14,300 |
+| World: hunt, floor 6 Tunnels | 9,913 to 11,015 | 9,492 to 9,674 | 14,300 |
+
+Every budget holds; `npm run verify` passes. The branch is within the
+spread of `main` on every run; `main`'s second round ran slower on every
+run (the machine). The port adds no tick hook and no modifier source;
+a socketed rune's modifiers ride `items/worn`, which every socket change of
+a worn piece touches. What a fight run gains: the weapon rider loop calls
+`runeRiders` per socketed rune (none socketed in these runs). Not
+profiled.
+
+### 19.3 Browser check
+
+Desktop (1009 px) and 375 px, on the dev server (port 5600). Dev save
+edited from the forge page (`ksgb:development:save` only: the shutter flag,
+Runecarving 12, runestones Fair, Fine and Superb, charged and warm gel, a
+raw sapphire, gold leaf, a Superb steel burin, an Iron Sword with two slots,
+later an Apprentice's Ring with one slot; standing at The Long Bench; the
+save before the edit is at `ksgb:development:save.before-runecarving-check`).
+Laid out a Fine slab, Rune of the Edge, charged gel inlay, raw sapphire and
+the burin: the preview read Stormbrand (crit +4.8%, the named bonus, +17.6%
+as lightning) and split chance 2% (`(0.30 - 0.24) x (1 - 0.70)`); Carve made
+it, emptied the spent stations and kept the cut and the tool. Socketed it
+into the Iron Sword from the pack; it survived a save and a load. Carved a
+Fair Rune of Warding, equipped the ring, socketed the rune into the worn
+ring: the Character panel's HP maximum went from 50 to 62, and back to 50
+on Remove, the rune back on the loose pile. No box of the panel moved while
+picking stations or opening sockets. No horizontal overflow at 375 px with
+the picker or the sockets open. No console errors.
+
+Not verified in a browser: a split slab (tested headless), the lightning
+and heat riders in a live fight (tested headless, "a carving with two
+riders lands both on a hit in a fight"), the sale and discard buttons
+(tested headless as commands), the shut-shutter line (tested through the
+view), the forge forms of the new registries.
+
+### 19.4 Old rules ported as they are
+
+Listed in the README. In short: the shutter is a panel shutter and nothing
+lifts it; a carve does not check the spot; the tool slot is not checked
+against stock, so a command may name a tool not held; a pattern's grade is
+ignored; the discipline's `ticks` is read by nothing; a carve bumps no craft
+counter and no quest hears it; the success XP counts the tool and the cuts;
+the split draws the generator even at 0%; a forged piece has no rune slots.
