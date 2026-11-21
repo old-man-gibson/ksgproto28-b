@@ -670,8 +670,15 @@ every budget run took about twice its limit on `main` and on this branch.
 | Floor 6 Tunnels | 28,029 to 28,603 | 28,386 to 28,602 |
 | World: hunt, floor 6 Tunnels | 27,466 to 29,158 | 28,225 to 28,940 |
 
-Within the spread of `main`. The budgets against their limits are not
-verified; rerun `npm run verify` on an idle machine. The port adds no tick
+Within the spread of `main`.
+
+Rerun later the same day with the other program closed (CPU 32% at the
+start), `npm run verify` on this branch (at `124a19b`) and then on `main`
+(`e7bb9a7`), each green. Budget cases, ms, branch against `main`: idle
+1,571 / 1,565 (limit 2,200); poison 4,731 / 4,861 (8,250); floor 1 4,912
+/ 4,885 (7,700); floor 6 8,756 / 8,714 (14,850); world 4 8,576 / 8,702
+(14,300); world 6 8,659 / 8,685 (14,300). Branch: unit 2,919 passed, 4
+skipped, 149 todo; budget 4; budget-world 2; john 13; build. The port adds no tick
 hook; it adds a `combat/kill` and a `counters/changed` handler and one
 modifier source (touched on a claim only).
 
