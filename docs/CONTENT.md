@@ -556,3 +556,128 @@ user on 2026-11-20: all ten defaults accepted as written below.
 9. **Q9. Branch-only content** (section 2). Default: not ported.
 10. **Q10. The royale split.** Default: one port C5; the session may split
     it in two if it cannot land green in one.
+
+## 7. Port L: Threshold leftovers (done)
+
+Done 2026-11-20 on branch `step4-L`, from `main` at `e7bb9a7`. Not merged,
+not pushed. The full account: `src/systems/bestiary/README.md`,
+`src/systems/achievements/README.md`, and the "Step 4 port L" sections of
+the `quests`, `npcs` and `prestige` READMEs.
+
+What was ported:
+
+- `quests`: `faces_of_threshold` and `a_taste_of_everything` (old
+  `quests.data.ts` 19-65). The Warden lists all three quests. The quest
+  machinery (talk, stat and craft objectives, `benches/crafted`, favour on
+  turn-in) was already here; this port adds the records. `npcs`: the shaper
+  Ilex (`psionic_shaper`, Censer Walk), the eighth talk objective.
+- `bestiary` (new system): old `systems/bestiary.ts` (the slice half, the
+  profile, search, shelves), `BESTIARY_FACTS`, `BESTIARY_TUNING`, the three
+  log lines, the panel. Hears `combat/fight-started` (sightings),
+  `combat/kill` and `counters/changed` (the veil). Bumps `bestiary:entries`.
+- `achievements` (new system): the ten records, tiers claimed on
+  `counters/changed`, the modifier source `achievements/held`, the panel.
+  `titles` checks on `achievements/claimed`.
+- `prestige`: the `achievements` harvest source reads the tiers;
+  `bestiary` pays through `bestiary:entries`. Both paid 0 before.
+- `monsters`: `MonsterDef.veil` typed. `world`: the `caged` help text.
+- Spec ported: the bestiary cases (`tests/bestiary.test.ts`, 24 old cases
+  and 2 new), the eight onboarding todos, the hunter case and the hunter
+  bonuses of `hunters.test.ts` on the achievements slice, the craft
+  objective and questmaster cases of `quests.test.ts`, the harvest case of
+  `prestige.test.ts` (16 points, the old number). New:
+  `tests/achievements.test.ts` (9).
+
+Old bugs and rules kept:
+
+- The book's level range adds `levelRise` and dynamic levels, not the
+  band's level step: from band 3 on it shows levels below what spawns.
+- An entry opened at tick 0 keeps `firstKill` 0, the mark of a veiled entry
+  not yet opened (the old `totalTicks` had the same edge).
+- The averaged profile uses the tier's mid multiplier, no modifier tier or
+  rarity; Defences reads declared resistances only.
+- A counter set lower keeps its claimed tiers. Goal text uses the old
+  `fmt` ("Defeat 1.00K monsters").
+- `faces_of_threshold` says "the eight trades"; the old comment says nine.
+
+Changed while porting (no rule): sightings come from every fight start
+(the old event came from spot encounters only; no staged fight exists
+before step 4 content); entries a veil releases open on the counter's
+`counters/changed` delivery, after the first-calm line, not before it;
+panels without portraits, tag rules on click, "Label: fact" text.
+
+Left out: nothing of the scope. The calm offline line and the Malgeri
+NPC lore wait for C6, as planned.
+
+### 7.1 John
+
+`npm run pacing` (seeds 42, 7, 1234, through floor 6), floor 6 clear:
+
+| Seed | Old `7c1267b` | `main` `e7bb9a7` | `step4-L` |
+|---|---|---|---|
+| 42 | 0:26:41 | 0:26:46 | 0:26:14 |
+| 7 | 0:22:52 | 0:22:37 | 0:26:26 |
+| 1234 | 0:24:13 | 0:25:04 | 0:25:51 |
+| Mean | 0:24:35 | 0:24:49 | 0:26:10 |
+
+Run 1 mean is 6.5% over the old mean (tolerance 15%, section 3.4). Every
+segment moved: each kill now rolls the bestiary's open facts on the
+generator, and the achievement bonuses apply (Fortune Seeker, Wanderer,
+Honed Body, Eternal Student, Breaker reach tiers in run 1, as in the old
+run). Seed 7 lost 14 fights on floor 4 against 7 on `main`.
+
+Harvest at the first prestige (points; old read with the old `harvest`
+on the old John's state, nothing edited):
+
+| Seed | Old | `main` | `step4-L` | `step4-L` by source |
+|---|---|---|---|---|
+| 42 | 17 | 11 | 17 | floors 6, bestiary 3 (16 entries), skills 4, achievements 3 (10 tiers), gold 1 |
+| 7 | 18 | 11 | 16 | floors 6, bestiary 2 (14), skills 4, achievements 3 (10), gold 1 |
+| 1234 | 17 | 11 | 17 | floors 6, bestiary 3 (16), skills 4, achievements 3 (10), gold 1 |
+
+The old build: bestiary 2, 3, 3 (14, 15, 15 entries), achievements 3, 3, 3
+(10, 9, 9 tiers), skills 5, 5, 5. The skills gap (4 against 5) is older
+than this port. Run 2 times: the new John has no run 2 segment yet (C1
+adds it). The old John buys `city_key` (3 points) and nothing else, so the
+6 more points do not reach run 2 for John.
+
+Rack climbs, `tests/john.test.ts` "the toll collector is a fight": first
+attempts lost, seeds 42 and 7 (10 climbs): old 1, `main` 5, `step4-L` 0;
+seeds 1 to 6 and 8 to 21 (100 climbs): old 20, `main` 15, `step4-L` 16.
+The rate is unchanged; the 0 of 10 fails the lower bound of the test
+(at least 1). Open: see the hand-over note.
+
+### 7.2 Offline budgets
+
+Measured 2026-11-20 while another program held the processor at about 90%:
+every budget run took about twice its limit on `main` and on this branch.
+`scripts/budget-runs.ts`, alternating, same hour, ms:
+
+| Run of 8 hours | `main` | `step4-L` |
+|---|---|---|
+| No fight, no condition | 3,146 to 3,166 | 3,106 to 3,257 |
+| Floor 1 table | 15,335 to 15,580 | 15,663 to 16,286 |
+| Floor 6 Tunnels | 28,029 to 28,603 | 28,386 to 28,602 |
+| World: hunt, floor 6 Tunnels | 27,466 to 29,158 | 28,225 to 28,940 |
+
+Within the spread of `main`. The budgets against their limits are not
+verified; rerun `npm run verify` on an idle machine. The port adds no tick
+hook; it adds a `combat/kill` and a `counters/changed` handler and one
+modifier source (touched on a claim only).
+
+Outcome digests recorded again in their own commit (`a3eb6e9`): every
+state hash; generator, kills and gold of the four fight runs; defeats and
+level of world 4; every John segment and harvest.
+
+### 7.3 Browser check
+
+Desktop (1009 px) and 375 px, dev server 5600, the dev save (backup at
+`ksgb:development:save.before-step4L-check`). Its 8 hours of offline
+catch-up hunted forest rats: Bestiary 1 of 128, the rat with 8 of 8
+facts, its haunt confirmed. Tag filter (Beast), tag rule on click, every
+fact block filled. Achievements: Slayer 2/3, Honed Body 2/3, Fortune
+Seeker 3/3, Eternal Student 1/3. Found and fixed: a haunt line at a spot
+with no name overflowed the row; the Honed Body counter showed a raw
+float. No horizontal overflow at 375 px after the fix; no console errors.
+Not checked in a browser: the Warden's two quests in the Quests panel
+(tested headless), a veil lifting (tested headless).
