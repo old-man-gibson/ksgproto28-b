@@ -645,8 +645,17 @@ adds it). The old John buys `city_key` (3 points) and nothing else, so the
 Rack climbs, `tests/john.test.ts` "the toll collector is a fight": first
 attempts lost, seeds 42 and 7 (10 climbs): old 1, `main` 5, `step4-L` 0;
 seeds 1 to 6 and 8 to 21 (100 climbs): old 20, `main` 15, `step4-L` 16.
-The rate is unchanged; the 0 of 10 fails the lower bound of the test
-(at least 1). Open: see the hand-over note.
+The rate is unchanged; the 0 of 10 failed the lower bound of the test
+(at least 1).
+
+User decision (2026-11-20): widen the sample. The loss count of that case
+now runs over seeds 1 to 8, every rack weapon (40 climbs of band 1); the
+10 climbs of seeds 42 and 7 keep the other checks (fight length, attempts).
+Measured on the 40: old 13, `main` 9, `step4-L` 9. Over seeds 1 to 40 (200
+climbs): old 34, `main` 41, `step4-L` 31. Bounds from the old rate of
+about 20% (8 of 40): at least 2, at most 16. Chance of a sample under 2 at
+a 20% rate about 0.2%, at 15% about 1%. `tests/john.test.ts` takes 12.1 s
+on an idle machine, against 3.7 s on `main`.
 
 ### 7.2 Offline budgets
 

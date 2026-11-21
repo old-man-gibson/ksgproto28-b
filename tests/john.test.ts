@@ -25,12 +25,30 @@ const label = (r: ClimbReport) => `${r.opts.weapon === 'skip' ? 'john' : r.opts.
 
 const john: ClimbReport[] = [];
 const rack: ClimbReport[] = [];
+/**
+ * The loss-rate sample of "the toll collector is a fight": seeds 1 to 8,
+ * every rack weapon, 40 climbs of band 1. Added 2026-11-20 (step 4 port L).
+ * The old bound counted first attempts lost over the 10 rack climbs of
+ * seeds 42 and 7 (at least 1, at most half). A port that draws the
+ * generator on every kill shifts every later roll of a climb, and 10 climbs
+ * flipped the bound with no change of rate: port L lost 0 of 10 (`main` 5,
+ * old build 1) and 16 of 100 on seeds 1 to 6 and 8 to 21 (`main` 15, old
+ * 20). Measured on this sample: old build `7c1267b` 13 of 40, `main`
+ * `e7bb9a7` 9, `step4-L` 9. Over seeds 1 to 40 (200 climbs): old 34,
+ * `main` 41, `step4-L` 31, a rate of 15 to 21%. Bounds from the old rate,
+ * about 20% (8 of 40): at least 2 and at most 16 (40%). At a 20% rate a
+ * sample under 2 has a chance of about 0.2%; at 15%, about 1%. The 40
+ * climbs take this file from 3.7 s to 12.1 s on an idle machine.
+ */
+const lossSample: ClimbReport[] = [];
+const LOSS_SEEDS = [1, 2, 3, 4, 5, 6, 7, 8];
 beforeAll(() => {
   for (const seed of SEEDS) {
     john.push(runJohn({ seed, weapon: 'skip' }));
     for (const weapon of RACK) rack.push(runJohn({ seed, weapon, spell: 'fire' }));
   }
-}, 120_000);
+  for (const seed of LOSS_SEEDS) for (const weapon of RACK) lossSample.push(runJohn({ seed, weapon, spell: 'fire' }));
+}, 180_000);
 
 describe('John — the floor build clears band 1', () => {
   it('skips the tutorial, swings a rusty sword, and still reaches the top of band 1', () => {
@@ -72,9 +90,12 @@ describe('pacing — band 1 by the obvious road, every rack weapon', () => {
     }
     const lengths = rack.map((r) => r.firstBoss!.ticks).sort((a, b) => a - b);
     expect(lengths[Math.floor(lengths.length / 2)], 'median first boss fight').toBeGreaterThanOrEqual(20 * TPS);
-    const lost = rack.filter((r) => !r.firstBoss!.won).length;
-    expect(lost, 'the collector never won a first attempt').toBeGreaterThanOrEqual(1);
-    expect(lost, 'the collector won most first attempts').toBeLessThanOrEqual(rack.length / 2);
+    // Neither a formality nor a wall: some first attempts lose, most win.
+    // Counted over the 40-climb sample (see `lossSample`), not the 10 above.
+    for (const r of lossSample) expect(r.firstBoss, label(r)).not.toBeNull();
+    const lost = lossSample.filter((r) => !r.firstBoss!.won).length;
+    expect(lost, 'the collector almost never won a first attempt').toBeGreaterThanOrEqual(2);
+    expect(lost, 'the collector won too many first attempts').toBeLessThanOrEqual(16);
   });
 
   it('the long hall and the third floor knock a player down, not out of the game', () => {
