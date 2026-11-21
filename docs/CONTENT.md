@@ -622,9 +622,10 @@ NPC lore wait for C6, as planned.
 
 Run 1 mean is 6.5% over the old mean (tolerance 15%, section 3.4). Every
 segment moved: each kill now rolls the bestiary's open facts on the
-generator, and the achievement bonuses apply (Fortune Seeker, Wanderer,
-Honed Body, Eternal Student, Breaker reach tiers in run 1, as in the old
-run). Seed 7 lost 14 fights on floor 4 against 7 on `main`.
+generator, and the achievement bonuses apply. At floor 6 every seed holds
+Eternal Student 2, Wanderer 2, Fortune Seeker 3, Honed Body 2 and Breaker
+1, the tiers of the old seed 42 run (old 7 and 1234: one tier less on
+Honed Body or Fortune Seeker). Seed 7 lost 14 fights on floor 4 against 7 on `main`.
 
 Harvest at the first prestige (points; old read with the old `harvest`
 on the old John's state, nothing edited):
