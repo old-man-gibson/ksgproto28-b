@@ -851,3 +851,143 @@ rode to the castle court; the button is disabled there. No horizontal
 overflow at 375 px other than the panel tab strip, which scrolls; no
 console errors. `wards` has no panel. Not checked in a browser: a ward
 window opening or lapsing, the demon fight (tested headless).
+
+## 9. Port C2: the stronghold and the hold (done)
+
+Done 2026-11-20 on branch `step4-C2`, from `main` at `edbe69b`. Not merged,
+not pushed. The full account: `src/systems/bonus/README.md` and the "Step 4
+port C2" sections of the `prestige`, `ladder`, `world`, `quests` and `npcs`
+READMEs.
+
+What was ported:
+
+- Content, appended from the old registry: region `the_hold`, areas
+  `player_base_v1_area` and `ascent_f11_area`, the 25 spots of the hold and
+  the 4 stronghold spots of floor 11 (road, gatehouse, yard, wall), band 4
+  `ascent_harbor` and floor 11; the steward `f11_steward` and his two
+  repair quests. 125 spots, 23 areas, 4 regions, 4 bands, 12 floors.
+- `prestige` (slice version 2, field `stronghold`): `STRONGHOLD_WAVE`,
+  `STRONGHOLD_HELD`, `STRONGHOLD_KEY`, `strongholdHeld`, `autoPrestigeDue`,
+  `canPrestige` by the warchief or the stronghold. The automatic prestige
+  is a tick at order -200, before every other system, through
+  `ctx.endRun()` (decision 30, no kernel change). `legacy:stronghold` is
+  set at the start of every later run. Dev command
+  `prestige/debug-hold-wall` (Q5) for John.
+- `bonus` (new system, decision Q4): the bank. One tick banked per idle
+  tick, capped at 8 hours; the automatic prestige keeps the bank (event
+  `bonus/bank` from `prestige`'s `newRun`), a prestige by choice does not.
+- `ladder`: `OFF_LADDER_DOORS`, `offLadderDoor`.
+- `knockout`: no change; `NEVER_TARGET_SPOTS` already named `f11_wall`.
+- Spec ported: `stronghold.test.ts` (15 old cases; the road's edge on to
+  the quay is a todo for C3); the stronghold line of the `prestige:count`
+  case of `prestige.test.ts`; the hold cases of `towers.test.ts` (the todo
+  at 103, and the two door cases back on the hold from the floor 1 doors
+  they stood on); the Training Area case of `practice.test.ts` (the todo
+  at 71); the wall cases of `knockoutReturn.test.ts` on the real spot;
+  three of the five bonus time cases of `navigation.test.ts`; the door
+  exemption and the quest condition check of `worldContent.test.ts`; the
+  John smoke case at the siege.
+
+Old bugs and rules kept:
+
+- Floor 11's clear is the harbor's (8 crates won and a fight won on the
+  roadstead). A first climb never clears floor 11: it ends there by the
+  automatic prestige.
+- The kill objective of `f11_arm_the_wall` counts raiders killed anywhere
+  (the `at` of an objective is a link, as in the old build).
+- The hold's spots keep their old names ("Player Base Entrance") and their
+  `benches` lists, so the hold's tables work (the Arcane Library is a third
+  Spellcrafting Table).
+- The bank fills while catching up, as the old offline run did.
+
+Changed while porting (no rule): the old automatic prestige took the whole
+tick; here the systems after `prestige` in the same kernel tick run in the
+new run, so the new run starts one tick earlier. `strongholdHeld` reads the
+run's `legacy:stronghold` counter, which is set from the legacy flag at
+every run start (the old read the flag). The skip reason of `prestige/now`
+names both openings.
+
+Left out:
+
+- Port C3: the road's edge on to `f11_quay`; floor 11's clear spot and the
+  label of `sea:crates:won`, so the floor 11 rung of the ladder card shows
+  the raw keys ("8 sea:crates:won", "1 wins at f11_roadstead");
+  `tests/worldContent.test.ts` skips floor 11 and band 4 in the clear,
+  spine and band size lints (`HARBOR_PENDING`).
+- The UI step: spending the bank as double speed (the second advance) and
+  its control; the two `navigation.test.ts` cases and the ward case of
+  `wards.test.ts` about it stay `it.todo`. `bonus` has no panel.
+- `stations.test.ts`: the old list of worked spots is not ported, so its
+  wall case has nowhere to run.
+- Not of this scope, noticed: the old `Game.prestige` wrote the log line
+  "Prestige {count}: {points} points harvested."; the new prestige writes
+  none (since spine port 7).
+
+### 9.1 John
+
+`tests/john.ts` gains segment `siege` (`through` 11): after the four wards,
+John takes Shore Up the Gate, salvages 20 hardwood in the yard and hunts
+the road for 15 iron scrap, turns it in, takes Arm the Wall, hunts the road
+for 10 raiders and the scrap for four ingots, goes down to the Forges,
+smelts four iron ingots, climbs back, turns it in, and hunts the wall until
+the stronghold ends the run. The old order of moves. The segment records
+the level and gold the run ended with. `npm run pacing -- --through 11`, no
+wall on any seed:
+
+| Segment | Old 42 / 7 / 1234 | New 42 / 7 / 1234 | Old mean | New mean | Change | KO old | KO new |
+|---|---|---|---|---|---|---|---|
+| f11 siege | 0:07:29 / 0:06:54 / 0:07:03 | 0:08:23 / 0:08:11 / 0:07:30 | 0:07:09 | 0:08:01 | +12.1% | 3/2/2 | 5/4/4 |
+| Run 2 total | 0:53:15 / 1:01:10 / 0:53:51 | 0:53:18 / 0:47:03 / 0:59:55 | 0:56:05 | 0:53:25 | -4.8% | | |
+
+Against section 3.4: the run 2 total is within 15% of the old mean; the
+siege (over two minutes, not a keeper alone) is within 35%. Captain tries
+and losses, old 2/1, 2/1, 1/0, new 3/2, 2/1, 3/2. Level at the stronghold,
+old 21 / 24 / 23, new 20 / 21 / 23. Run 1 and the segments of run 2 before
+the siege are those of section 8.1 (the siege adds no move before it).
+
+### 9.2 Offline budgets
+
+The port adds two tick hooks: `prestige` (two counter lookups a tick) and
+`bonus` (`isIdle`: three slice reads a tick). `scripts/budget-runs.ts`,
+alternating `main` (`edbe69b`) and this branch, the same hour, ms:
+
+| Run of 8 hours | `main` | `step4-C2` |
+|---|---|---|
+| No fight, no condition | 1,598 / 1,572 | 1,755 / 1,751 |
+| Poison held | 5,309 / 5,356 | 5,467 / 5,605 |
+| Floor 1 table | 5,217 / 5,310 | 5,544 / 5,674 |
+
+About 160 ms on the idle run (+10%), 0.55 microseconds a tick. Measured
+apart: an empty `bonus` hook costs nothing measurable; the three reads of
+`isIdle` about 100 ms; the `prestige` hook 25 to 50 ms. A read is the
+kernel's `ctx.read`; no cheaper read exists without a kernel change. Kept.
+
+`npm run verify` on this branch (CPU 14% at the start): unit 3,053 passed,
+4 skipped, 149 todo; budget 4 (idle 1,809 ms of 2,200, poison 5,586 of
+8,250, floor 1 5,663 of 7,700, floor 6 9,736 of 14,850); budget-world 2
+(9,624 and 9,735 of 14,300); john 14; build.
+
+Outcome digests recorded again in their own commit (`d433996`): every
+state hash, nothing else (the new slice `bonus`, `prestige` version 2). No
+run reaches floor 11.
+
+### 9.3 Browser check
+
+Dev server 5600, desktop (800 px pane) and 375 px. Two saves made by the
+John driver (seed 7) loaded into the dev slot through the forge page (the
+game page saves on `pagehide`); the dev save was put back after (backup
+`ksgb:development:save.before-step4C2-check`, the floor 11 save kept as
+`ksgb:development:save.step4C2-siege`).
+
+- Run 3, after the stronghold, standing at the hold's entrance: the map
+  "Your Hold" with exits to The Ascent and Threshold; walked to the Main
+  Hall; took the exit to The Ascent, which walked through the door to the
+  Gatehouse of floor 11, whose map lists the exit to Your Hold. The steward
+  offers nothing.
+- Run 2, in the yard of floor 11 with Shore Up the Gate active: the quest
+  in the Quests panel (20 hardwood 0/20, 15 scrap 15/15), Salvage Timber,
+  the wall stair a shut unknown place, the floor 11 rung (see Left out).
+
+No horizontal overflow at 375 px on Location and Quests; no console errors.
+Not checked in a browser: the wave on the wall and the automatic prestige
+(tested headless, and by John on three seeds).
