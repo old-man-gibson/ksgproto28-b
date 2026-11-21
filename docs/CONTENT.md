@@ -808,3 +808,46 @@ the death knight at level 14 at the first try; old seeds lost 2 to 3.
 Harvest at the first prestige: 17 / 16 / 17, unchanged from port L.
 Floors 0 to 6 of run 1: unchanged from port L (0:26:14 / 0:26:26 /
 0:25:51).
+
+### 8.2 Offline budgets
+
+The first build of the port cost about 13% on the idle run (+200 ms) and
+9% on the floor 1 run (+450 ms): the `wards` tick, a few calls and three
+counter lookups on every tick. The tick now reads the counter table once
+and its keys are built once (no rule change, the same state hashes); the
+ladder's clear check reads `floorCleared` once per floor and call and
+keeps the floors of each band in a table. `scripts/budget-runs.ts`,
+alternating `main` (`5b61195`) and this branch, the same hour, ms:
+
+| Run of 8 hours | `main` | `step4-C1` |
+|---|---|---|
+| No fight, no condition | 1,589 / 1,581 | 1,616 / 1,612 |
+| Poison held | 5,352 / 5,242 | 5,303 / 5,393 |
+| Floor 1 table | 5,305 / 5,179 | 5,386 / 5,604 |
+| Floor 6 Tunnels | 9,543 / 9,463 | 9,371 / 9,690 |
+| World: hunt, floor 4 | 9,540 / 9,459 | 9,560 / 9,959 |
+| World: hunt, floor 6 | 9,366 / 9,388 | 9,533 / 9,484 |
+
+`npm run verify` on this branch (CPU 25% at the start): unit 3,021
+passed, 4 skipped, 153 todo; budget 4 (idle 1,697 ms of 2,200, poison
+5,391 of 8,250, floor 1 5,430 of 7,700, floor 6 9,300 of 14,850);
+budget-world 2 (9,460 and 9,428 of 14,300); john 14; build.
+
+Outcome digests recorded again in their own commit: every state hash (the
+new slice `wards`, empty), nothing else. No run reaches band 3, and the
+John digest now keeps run 1's segments only (it stops at the first
+prestige, as before).
+
+### 8.3 Browser check
+
+Dev server 5600, desktop and 375 px. A save made by the John driver
+(seed 7, run 2, standing at the lodge of floor 8, floor 7 cleared) loaded
+into the dev slot; the dev save was put back after (backup
+`ksgb:development:save.before-step4C1-check`, the band 3 save kept as
+`ksgb:development:save.step4C1-band3`). Location panel, ladder card: the
+hub row before floor 7 (The Castle Court, open, the key's gate met), the
+ward rungs with their gate and clear words. "Ride to the hub of The City"
+rode to the castle court; the button is disabled there. No horizontal
+overflow at 375 px other than the panel tab strip, which scrolls; no
+console errors. `wards` has no panel. Not checked in a browser: a ward
+window opening or lapsing, the demon fight (tested headless).

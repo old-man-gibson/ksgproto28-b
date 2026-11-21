@@ -77,6 +77,10 @@ export function wardClockKey(w: Pick<WardWindowDef, 'atKey'>): string {
   return `${w.atKey}:clock`;
 }
 
+/** Per window, built once: the position key and the clock key the tick reads. A window added later (a test fixture) builds its keys on each read. */
+const POS_KEYS = WARD_WINDOWS.map((w) => bandPosKey(w.floorId));
+const CLOCK_KEYS = WARD_WINDOWS.map((w) => wardClockKey(w));
+
 /** A counter is set when present at all: the open tick may be 0. */
 function isSet(state: DeepReadonly<CountersState>, key: string): boolean {
   return state.counts[key] !== undefined;
@@ -137,15 +141,17 @@ function lapseWindow(ctx: W, w: WardWindowDef): void {
  * the only caller in the game.
  */
 export function tickWards(ctx: W): void {
-  for (const w of WARD_WINDOWS) {
-    const counts = ctx.read(counters);
-    if (counterValue(counts, w.doneKey) >= 1) continue;
-    if (!isSet(counts, w.atKey)) {
-      openWindow(ctx, w);
+  const counts = ctx.read(counters).counts;
+  for (let i = 0; i < WARD_WINDOWS.length; i++) {
+    const w = WARD_WINDOWS[i];
+    if ((counts[w.doneKey] ?? 0) >= 1) continue;
+    if (counts[w.atKey] === undefined) {
+      // Most ticks of most runs stop here: the position is below the window's.
+      if ((counts[POS_KEYS[i] ?? bandPosKey(w.floorId)] ?? 0) >= w.position) openWindow(ctx, w);
       continue;
     }
-    const key = wardClockKey(w);
-    let clock = counterValue(counts, key);
+    const key = CLOCK_KEYS[i] ?? wardClockKey(w);
+    let clock = counts[key] ?? 0;
     if (!ctx.catchingUp && clock < w.ticks) {
       clock += 1;
       ctx.emit(setCounter, { key, value: clock });

@@ -109,10 +109,18 @@ export const CLIMB_TICKS_PER_FLOOR = 45;
 
 /** The floors of a band, in ladder order. */
 export function floorsInBand(bandId: string): FloorDef[] {
-  return Object.values(FLOORS)
-    .filter((f) => f.bandId === bandId)
-    .sort((a, b) => a.index - b.index);
+  return BAND_FLOORS.get(bandId) ?? [];
 }
+
+/** The floors of each band in ladder order, built once: the clear check reads them on every kill. */
+const BAND_FLOORS: ReadonlyMap<string, FloorDef[]> = new Map(
+  Object.keys(BANDS).map((id) => [
+    id,
+    Object.values(FLOORS)
+      .filter((f) => f.bandId === id)
+      .sort((a, b) => a.index - b.index),
+  ]),
+);
 
 // ---- reads (old `ladder.ts`) ----
 
@@ -430,6 +438,15 @@ export function ladderReader(ctx: ReadCtx): ConditionReader {
 function checkFloorClears(ctx: Ctx<LadderState>): void {
   const r = ladderReader(ctx);
   const counts = ctx.read(counters);
+  // `floorCleared` once per floor and call: the band stamps and the
+  // positions below read the same floors. Counters set here are read as set
+  // by the next call (see above), so the memo holds for the whole call.
+  const memo = new Map<string, boolean>();
+  const cleared = (f: FloorDef): boolean => {
+    let v = memo.get(f.id);
+    if (v === undefined) memo.set(f.id, (v = floorCleared(r, f)));
+    return v;
+  };
   for (const floor of Object.values(FLOORS)) {
     if (!floor.clearXp) continue;
     const key = floorXpKey(floor.id);
@@ -448,7 +465,9 @@ function checkFloorClears(ctx: Ctx<LadderState>): void {
   }
   for (const band of Object.values(BANDS)) {
     const key = bandClearedKey(band.id);
-    if (counterValue(counts, key) >= 1 || !bandCleared(r, band)) continue;
+    if (counterValue(counts, key) >= 1) continue;
+    const list = floorsInBand(band.id);
+    if (!(list.length > 0 && list.every(cleared))) continue;
     ctx.emit(setCounter, { key, value: 1 });
     if (band.order === 'any') ctx.emit(logLine, { msg: levelsLine('band', { name: band.name }), kind: 'info' });
   }
@@ -456,7 +475,7 @@ function checkFloorClears(ctx: Ctx<LadderState>): void {
   for (const band of Object.values(BANDS)) {
     if (band.order !== 'any') continue;
     const list = floorsInBand(band.id);
-    const uncleared = list.filter((f) => !floorCleared(r, f));
+    const uncleared = list.filter((f) => !cleared(f));
     const position = list.length - uncleared.length;
     for (const floor of uncleared) {
       const key = bandPosKey(floor.id);
