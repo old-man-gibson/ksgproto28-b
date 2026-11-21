@@ -85,3 +85,11 @@ is logged before the completed line, as the old order.
   its counter.
 - The text of `faces_of_threshold` says "the eight trades"; the old comment
   above it says nine. Ported as the text has it.
+
+## Step 4 port C2
+
+The steward's two repairs (old `quests.data.ts` 80-110), giver
+`f11_steward`: `f11_shore_up_the_gate` (20 hardwood, 15 iron scrap) and
+`f11_arm_the_wall` (10 raiders, 4 iron ingots; requires the first). Both
+require `legacy:stronghold` 0, so neither is offered on a run after the
+stronghold. No new machinery.

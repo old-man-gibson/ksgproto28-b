@@ -33,5 +33,15 @@
       "x": 14.3,
       "y": 21.6
     }
+  },
+  {
+    "id": "the_hold",
+    "name": "Your Hold",
+    "terrain": "plains",
+    "sheltered": true,
+    "world": {
+      "x": 14.8,
+      "y": 21
+    }
   }
 ]

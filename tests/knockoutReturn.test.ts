@@ -38,7 +38,6 @@
  * - floor 10 (the Row and the Mine): the Tunnels and the Drop of floor 6.
  * - the harbor waters and the roadstead: `kr_pit` and `kr_roadstead`.
  * - the Door of floor 19: a test spot with a boss line behind a forced road.
- * - `f11_wall`: a test spot under that id.
  * - the festival, performances and prestige are `it.todo`. The bench run
  *   case runs since the alchemy port (step 3).
  */
@@ -137,9 +136,6 @@ const KR: Record<string, SpotDef> = {
   kr_roadstead: pocket('kr_roadstead', 'Test Roadstead', { fightLimit: 1, activities: [hunt], encounters: rats() }),
 };
 
-/** `f11_wall` is step 4 content. A test spot stands under its id: a hunt with a fight budget of 8, no road to it. */
-const WALL = pocket('f11_wall', 'Test Wall', { fightLimit: 8, activities: [hunt], encounters: rats() });
-
 /**
  * Test spots on real floors, each with one road from a real spot. `forced`
  * is on the road in and never on the road back, as the registry mirrors.
@@ -193,7 +189,6 @@ beforeAll(() => {
   Object.assign(SPOTS, KR);
   // Mirrors every road and leaves `forced` off the way back, as the real build does.
   for (const [id, edges] of buildAdjacency(Object.values(KR))) ADJACENCY.set(id, edges);
-  SPOTS[WALL.id] = WALL;
   for (const { spot, from, forced } of SPLICED) {
     SPOTS[spot.id] = spot;
     ADJACENCY.get(from)!.push({ from, to: spot.id, ticks: 5, ...(forced ? { forced: true } : {}) });
@@ -206,7 +201,6 @@ afterAll(() => {
     delete SPOTS[id];
     ADJACENCY.delete(id);
   }
-  delete SPOTS[WALL.id];
   for (const { spot, from } of SPLICED) {
     delete SPOTS[spot.id];
     ADJACENCY.delete(spot.id);
@@ -561,7 +555,6 @@ describe('what the return never walks back into', () => {
 
   it('the stronghold wall is never a target', () => {
     expect(NEVER_TARGET_SPOTS).toContain('f11_wall');
-    // `f11_wall` is step 4 content: the spot found here is the test spot mounted above.
     for (const id of NEVER_TARGET_SPOTS) expect(SPOTS[id], `${id} must exist`).toBeDefined();
     const g = pocketGame(11);
     expect(blockOf(g, { spot: 'f11_wall', activity: 'hunt' })).toBe('wall');

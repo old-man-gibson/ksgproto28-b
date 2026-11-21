@@ -40,5 +40,13 @@
       9
     ],
     "desc": "Floors 7 to 10: a city whose castle is the band’s hub, and its four wards, south, west, north and east. Gate: the Key to the City prestige boon. The wards open together and may be cleared in any order; each one cleared raises the level of every monster in the wards by +2, then +5, then +9."
+  },
+  {
+    "id": "ascent_harbor",
+    "name": "The Harbor",
+    "towerId": "the_ascent",
+    "index": 4,
+    "clearsToAdvance": 4,
+    "desc": "Floors 11 to 14, the harbor band. Pick a side at the harbor on floor 11 (merchants, pirates, privateers or the navy; one per run), sail its convoys on floors 11 to 13 for crates, and finish its mission on floor 14."
   }
 ]

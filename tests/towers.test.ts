@@ -5,16 +5,14 @@
  * The ladder reads take a condition reader (`ladderOf`), counters are set by
  * the event, and the old `climbTo` is the command `world/climb`.
  *
- * The hold is step 4. Its two road cases stand on the same structure in the
- * content here: the door from `f1_forms` to `f1_reception` is shut until the
- * daybook is held (`flag:key_item:toll_clerk_book`), and the doors from
- * `f1_reception` into the offices are shut until the office key is held while
- * the door back to `f1_forms` is always open.
+ * The hold and its door on floor 11 are step 4 port C2. Until then its two
+ * road cases stood on the daybook and office doors of floor 1; they stand on
+ * the hold again.
  */
 import { describe, expect, it } from 'vitest';
 import type { Kernel } from '../src/kernel';
-import { floorCleared, FLOORS, floorUnlocked, rungStatus } from '../src/systems/ladder';
-import { climb, floorOfSpot, STARTING_SPOT, towerAt } from '../src/systems/world';
+import { floorCleared, FLOOR_BY_AREA, FLOORS, floorUnlocked, rungStatus } from '../src/systems/ladder';
+import { AREAS, climb, floorOfSpot, SPOTS, STARTING_SPOT, towerAt } from '../src/systems/world';
 import { gameAt, hop, ladderOf, patchWorld, sent, setCounters, worldOf } from './worldHelpers';
 
 /**
@@ -100,41 +98,45 @@ describe('the sequential ascent', () => {
 });
 
 describe('the hold (shut roads: Connection.requires)', () => {
-  it.todo('is its own map, off every ladder (step 4: the hold)');
+  it('is its own map, off every ladder', () => {
+    // The hold left the tower in the old build (2026-09-12). No floor names
+    // its area, so nothing on the ladder can ever gate on it or be gated by it.
+    expect(FLOOR_BY_AREA.has('player_base_v1_area')).toBe(false);
+    expect(AREAS.player_base_v1_area.regionId).toBe('the_hold');
+    expect(AREAS.player_base_v1_area.regionId).not.toBe(AREAS[SPOTS[STARTING_SPOT].areaId].regionId);
+  });
 
-  // On the daybook door of floor 1, not on the hold: see the note at the top.
   it("the hold's door is on floor 11: shut until the stronghold, never from the Foot", () => {
     const k = fresh();
-    // No road from the Foot, whatever the counters say.
+    // No road from the Foot, prestiged or not.
     setCounters(k, { 'prestige:count': 3 });
-    expect(hop(k, 'f1_reception')).toBe(false);
+    expect(hop(k, 'base_entrance')).toBe(false);
     expect(worldOf(k).travel).toBeNull();
 
     patchWorld(k, (w) => {
-      w.spot = 'f1_forms';
+      w.spot = 'f11_gatehouse';
     });
-    expect(hop(k, 'f1_reception')).toBe(false);
-    setCounters(k, { 'flag:key_item:toll_clerk_book': 1 });
-    expect(hop(k, 'f1_reception')).toBe(true);
+    expect(hop(k, 'base_entrance')).toBe(false);
+    setCounters(k, { 'legacy:stronghold': 1 });
+    expect(hop(k, 'base_entrance')).toBe(true);
     arrive(k);
-    expect(worldOf(k).spot).toBe('f1_reception');
+    expect(worldOf(k).spot).toBe('base_entrance');
   });
 
-  // On the office doors of floor 1, not on the hold: see the note at the top.
   it('a save inside the hold always walks out to the Foot, and back to floor 11 only with the stronghold', () => {
     const k = fresh();
     patchWorld(k, (w) => {
-      w.spot = 'f1_reception';
+      w.spot = 'base_entrance';
     });
-    expect(hop(k, 'f1_registry')).toBe(false);
-    expect(hop(k, 'f1_forms')).toBe(true);
+    expect(hop(k, 'f11_gatehouse')).toBe(false);
+    expect(hop(k, FOOT)).toBe(true);
     arrive(k);
-    expect(worldOf(k).spot).toBe('f1_forms');
+    expect(worldOf(k).spot).toBe(FOOT);
 
     patchWorld(k, (w) => {
-      w.spot = 'f1_reception';
+      w.spot = 'base_entrance';
     });
-    setCounters(k, { 'flag:key_item:toll_office_key': 1 });
-    expect(hop(k, 'f1_registry')).toBe(true);
+    setCounters(k, { 'legacy:stronghold': 1 });
+    expect(hop(k, 'f11_gatehouse')).toBe(true);
   });
 });

@@ -204,3 +204,28 @@ cold and lightning are set in `spellcraft` (`cast.ts`).
 - The ladder card of the location panel shows the hub before the band's
   first floor: status, the band gate, a ride button.
 
+
+## Step 4 port C2
+
+- Content, appended from the old registry: region `the_hold` (Your Hold,
+  sheltered), areas `player_base_v1_area` (the hold, no floor) and
+  `ascent_f11_area` (open sky), the 25 `base_*` spots of the hold and the 4
+  stronghold spots of floor 11 (`f11_road`, `f11_gatehouse`, `f11_yard`,
+  `f11_wall`). 125 spots in all.
+- Left out until port C3: the road's edge on to the harbor (`f11_road` to
+  `f11_quay`, gated on `legacy:stronghold`); the quay is not here.
+- The hold's doors: `f11_gatehouse` to `base_entrance` and back, both
+  one-way and gated on `legacy:stronghold` (`OFF_LADDER_DOORS` of `ladder`);
+  `base_entrance` to `ascent_foot` one-way, always open. No road from the
+  Foot into the hold. `base_entrance` is no waypoint. The map lists the
+  gatehouse door as an exit of the Ascent once it is visible, and the two
+  doors as exits of the hold (`view.map.exits`, no new code).
+- The wall stair (`f11_yard` to `f11_wall`) needs `f11_arm_the_wall` done
+  and `legacy:stronghold` 0; its encounter lines read the same and the
+  wall's fight count (raiders and brutes to 6 fights won, the captain at
+  7). `f11_wall` has `fightLimit` 8.
+- The hold's spots keep their old `benches` lists (spellcraft table,
+  alchemy, mutagens, the kitchen line, runecarving): the bench systems read
+  them, so the hold's tables work as the old ones did. The Arcane Library
+  is a third Spellcrafting Table in the psionic view.
+- The Training Area hunts `training_dummy` (passive, pays no level XP).

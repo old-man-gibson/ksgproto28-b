@@ -1,9 +1,15 @@
 /**
  * The location, tower and floor lints of the old `tests/content.test.ts`
  * ("world graph", "towers, bands & floors", the activity drops, the region
- * skies, the band 3 wards), under their old names, on the registries here: 3
- * regions, 21 areas, 96 spots, 1 tower, 3 bands, 11 floors (step 4 port C1
- * added band 3, the City).
+ * skies, the band 3 wards), under their old names, on the registries here: 4
+ * regions, 23 areas, 125 spots, 1 tower, 4 bands, 12 floors (step 4 port C1
+ * added band 3, the City; port C2 floor 11's stronghold, band 4 and the
+ * hold).
+ *
+ * Floor 11 (port C2) stands without its harbor half, port C3: its clear names
+ * the roadstead (`fights:f11_roadstead`) and the convoy's crates, and band 4
+ * asks for four clears with one floor. `HARBOR_PENDING` names what the lints
+ * of clears, spines and band sizes skip until C3.
  *
  * Changed: imports; a find's gold is `{ min, max }`; an activity's `attrXp` is
  * a list. The old cases stood on the shelved countryside where they named a
@@ -19,9 +25,10 @@ import { ATTRIBUTE_LIST } from '../src/systems/attributes';
 import { RECIPES } from '../src/systems/crafting';
 import type { Condition } from '../src/systems/counters';
 import { ITEMS, RUNES } from '../src/systems/items';
-import { BANDS, exploreIssues, FLOORS, floorStructureIssues, TOWERS, type FloorRule } from '../src/systems/ladder';
+import { BANDS, exploreIssues, FLOORS, floorStructureIssues, offLadderDoor, TOWERS, type FloorRule } from '../src/systems/ladder';
 import { MATERIALS } from '../src/systems/materials';
 import { MONSTERS, monsterTagsOf } from '../src/systems/monsters';
+import { QUESTS } from '../src/systems/quests';
 import { SKILLS } from '../src/systems/skills';
 import { STAT_NAMES } from '../src/systems/stats';
 import { WARD_WINDOWS, wardContentIssues, wardStatKeys } from '../src/systems/wards';
@@ -41,6 +48,9 @@ import {
 } from '../src/systems/world';
 
 const VALID_ATTRS = new Set<string>(ATTRIBUTE_LIST.map((a) => a.id));
+
+/** Floor 11's clear and band 4's size wait for the harbor, port C3. Empty again once C3 lands. */
+const HARBOR_PENDING = { floors: new Set(['ascent_f11']), bands: new Set(['ascent_harbor']) };
 const VALID_STATS = new Set<string>(Object.keys(STAT_NAMES));
 
 /** Every `flag:*` key a find or a search reward writes: what conditions may read. Cards that stamp a flag are step 3. */
@@ -65,7 +75,8 @@ let wardKeys: Set<string> | undefined;
  * sea, the festival, weapon families, miracles, the bestiary).
  */
 function statCounterValid(key: string): boolean {
-  const staticKeys = new Set(['kills', 'defeats', 'gold:earned', 'skill:levels']);
+  // `legacy:stronghold`: the prestige's `newRun`, once the stronghold is held.
+  const staticKeys = new Set(['kills', 'defeats', 'gold:earned', 'skill:levels', 'legacy:stronghold']);
   if (staticKeys.has(key)) return true;
   // Band 3's ward machinery (wards/validation.ts): an any-order floor's
   // position, a spot's clear stamp, and a ward window's keys and flags.
@@ -107,11 +118,11 @@ function checkFactors(owner: string, factors: ActivityFactor[] | undefined): voi
   }
 }
 
-/** The old `checkConditions`. A quest condition is checked with port 7; none is in scope (asserted below). */
+/** The old `checkConditions`. */
 function checkConditions(owner: string, conds: Condition[] | undefined): void {
   for (const c of conds ?? []) {
     if (c.type === 'skill') expect(SKILLS[c.id], `${owner}: unlock skill ${c.id}`).toBeDefined();
-    expect(c.type, `${owner}: a quest condition, and quests are port 7`).not.toBe('quest');
+    if (c.type === 'quest') expect(QUESTS[c.id], `${owner}: unlock quest ${c.id}`).toBeDefined();
     if (c.type === 'attr') expect(VALID_ATTRS.has(c.attr), `${owner}: unlock attr ${c.attr}`).toBe(true);
     if (c.type === 'stat') expect(statCounterValid(c.key), `${owner}: stat counter '${c.key}' is never bumped`).toBe(true);
   }
@@ -156,22 +167,25 @@ function searchContentIssues(spot: SpotDef): string[] {
 
 // New here: what the port holds.
 describe('the registries in scope', () => {
-  it('96 spots (27 in Threshold, 53 on floors 0 to 6, 16 in the City), 21 areas, 3 regions', () => {
+  it('125 spots (27 in Threshold, 53 on floors 0 to 6, 16 in the City, 4 on floor 11, 25 in the hold), 23 areas, 4 regions', () => {
     const inRegion = (regionId: string) => Object.values(SPOTS).filter((s) => AREAS[s.areaId]?.regionId === regionId).length;
     const cityAreas = new Set(['ascent_castle_area', ...['ascent_f7', 'ascent_f8', 'ascent_f9', 'ascent_f10'].map((id) => FLOORS[id].areaId)]);
     const inCity = Object.values(SPOTS).filter((s) => cityAreas.has(s.areaId)).length;
-    expect(Object.keys(SPOTS)).toHaveLength(96);
+    const onFloor11 = Object.values(SPOTS).filter((s) => s.areaId === FLOORS.ascent_f11.areaId).length;
+    expect(Object.keys(SPOTS)).toHaveLength(125);
     expect(inRegion('threshold')).toBe(27);
     expect(inCity).toBe(16);
-    expect(inRegion('holding_level') + inRegion('the_ascent') - inCity).toBe(53);
-    expect(Object.keys(AREAS)).toHaveLength(21);
-    expect(Object.keys(REGIONS).sort()).toEqual(['holding_level', 'the_ascent', 'threshold']);
+    expect(onFloor11).toBe(4);
+    expect(inRegion('the_hold')).toBe(25);
+    expect(inRegion('holding_level') + inRegion('the_ascent') - inCity - onFloor11).toBe(53);
+    expect(Object.keys(AREAS)).toHaveLength(23);
+    expect(Object.keys(REGIONS).sort()).toEqual(['holding_level', 'the_ascent', 'the_hold', 'threshold']);
   });
 
-  it('1 tower, 3 bands, 11 floors', () => {
+  it('1 tower, 4 bands, 12 floors', () => {
     expect(Object.keys(TOWERS)).toEqual(['the_ascent']);
-    expect(Object.keys(BANDS)).toEqual(['ascent_lower', 'ascent_middle', 'ascent_upper']);
-    expect(Object.values(FLOORS).map((f) => f.index).sort((a, b) => a - b)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    expect(Object.keys(BANDS)).toEqual(['ascent_lower', 'ascent_middle', 'ascent_upper', 'ascent_harbor']);
+    expect(Object.values(FLOORS).map((f) => f.index).sort((a, b) => a - b)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
   });
 
   it('the starting spot is the cell of floor 0', () => {
@@ -658,7 +672,7 @@ describe('towers, bands & floors', () => {
   it('no band asks for more clears than it has floors', () => {
     for (const band of Object.values(BANDS)) {
       const floors = Object.values(FLOORS).filter((f) => f.bandId === band.id);
-      if (!floors.length) continue;
+      if (!floors.length || HARBOR_PENDING.bands.has(band.id)) continue;
       expect(band.clearsToAdvance, `${band.id}: clearsToAdvance must be at least 1`).toBeGreaterThan(0);
       expect(
         band.clearsToAdvance,
@@ -741,6 +755,7 @@ describe('towers, bands & floors', () => {
   it('clear counters point at spawns that can actually pay them', () => {
     // The old case let a water of the sea count fights with no budget: step 4.
     for (const floor of Object.values(FLOORS)) {
+      if (HARBOR_PENDING.floors.has(floor.id)) continue;
       for (const cond of floor.clear ?? []) {
         if (cond.type !== 'stat') continue;
         const slain = cond.key.match(/^slain:([^:]+):(.+)$/);
@@ -775,8 +790,8 @@ describe('towers, bands & floors', () => {
   });
 
   it('no authored edge crosses a banded floor boundary', () => {
-    // The old case exempted the doors of `OFF_LADDER_DOORS` (the gatehouse of
-    // floor 11 and the hold): step 4. No door in scope is exempt.
+    // The doors of `OFF_LADDER_DOORS` (the gatehouse of floor 11 and the
+    // hold) are exempt, as in the old case.
     const bandedAreas = new Set(
       Object.values(FLOORS)
         .filter((f) => f.bandId !== undefined)
@@ -786,6 +801,7 @@ describe('towers, bands & floors', () => {
       for (const c of spot.connections) {
         const toArea = SPOTS[c.to]?.areaId;
         if (!toArea) continue; // unknown targets fail the referential lint instead
+        if (offLadderDoor(spot.id, c.to)) continue;
         if (bandedAreas.has(spot.areaId) || bandedAreas.has(toArea)) {
           expect(
             spot.areaId,
@@ -798,14 +814,15 @@ describe('towers, bands & floors', () => {
 
   const reports = () =>
     Object.values(FLOORS)
-      .filter((f) => f.bandId !== undefined)
+      .filter((f) => f.bandId !== undefined && !HARBOR_PENDING.floors.has(f.id))
       .map((f) => ({ floor: f, report: floorStructureIssues(f, SPOTS, ADJACENCY) }));
   const issuesOf = (rule: FloorRule) =>
     reports().flatMap(({ report }) => report.issues.filter((i) => i.rule === rule).map((i) => `${i.floor}: ${i.message}`));
 
   it('every banded floor has a spine: its clear names a spot to measure from', () => {
     // The old list of floors whose spine rules did not run was floor 14
-    // (`SPINE_EXEMPT`, step 4). No banded floor in scope is skipped.
+    // (`SPINE_EXEMPT`, step 4). No banded floor in scope is skipped; floor 11
+    // waits for its clear spot, port C3 (`HARBOR_PENDING`).
     const skipped = reports()
       .filter(({ report }) => report.skipped !== undefined)
       .map(({ floor, report }) => `${floor.id} (${report.skipped})`);

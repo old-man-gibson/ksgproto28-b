@@ -23,8 +23,6 @@
  * - "through the Game: the state object keeps its identity" has no meaning
  *   here (the UI holds no state). It is replaced by "a save after a prestige
  *   loads and runs".
- * - The stronghold door (`base_entrance`) is step 4; that line of the
- *   `prestige:count` case is left out.
  *
  * `it.todo`:
  * - the prepared-page half of "ceilings and pages": `preparedCap` arrives
@@ -62,7 +60,7 @@ import { preparedCap } from '../src/systems/spellcraft';
 import { attrBreakdown, attrValue, computeBlock, statOf } from '../src/systems/stats';
 import { TUTORIAL_EXIT } from '../src/systems/tutorial';
 import { CALM_SEEN_KEY, type WeatherState } from '../src/systems/weather';
-import { AREAS, SPOTS, STARTING_SPOT } from '../src/systems/world';
+import { AREAS, SPOTS, STARTING_SPOT, travelTo } from '../src/systems/world';
 import { makeGame, patch, reads, slice } from './helpers';
 import { counterOf, setCounters, worldOf } from './worldHelpers';
 
@@ -275,11 +273,12 @@ describe('the reset', () => {
   });
 
   it('stamps prestige:count; the hold door is not at the Foot any more', () => {
-    // The hold door (`base_entrance`) is the stronghold, step 4.
     const k = bandOneCleared();
     prestige(k);
     expect(counterOf(k, 'prestige:count')).toBe(1);
     expect(countsOf(k)['legacy:stronghold']).toBeUndefined();
+    expect(worldOf(k).spot).toBe(TUTORIAL_EXIT);
+    expect(k.dispatch(travelTo({ to: 'base_entrance' })).ok).toBe(false);
   });
 
   it('keeps every opened alpha shutter and leaves shut ones shut', () => {

@@ -119,5 +119,18 @@
     "regionId": "the_ascent",
     "sheltered": false,
     "scene": "hall"
+  },
+  {
+    "id": "player_base_v1_area",
+    "name": "Your Hold",
+    "regionId": "the_hold",
+    "scene": "hall"
+  },
+  {
+    "id": "ascent_f11_area",
+    "name": "The Stronghold Road",
+    "regionId": "the_ascent",
+    "sheltered": false,
+    "scene": "hall"
   }
 ]

@@ -215,5 +215,28 @@
     ],
     "clearXp": 500,
     "desc": "Floor 10, the city’s east ward: the artificers’ row, the mine past the east gate, and an ore eater in the deep seam below it. The eater is at stage 1 with none of the other wards cleared and one stage larger for each one cleared, up to stage 4 with all three. Clear: win the deep seam’s one fight."
+  },
+  {
+    "id": "ascent_f11",
+    "name": "The Stronghold Road",
+    "towerId": "the_ascent",
+    "bandId": "ascent_harbor",
+    "index": 11,
+    "areaId": "ascent_f11_area",
+    "landing": "f11_road",
+    "clear": [
+      {
+        "type": "stat",
+        "key": "sea:crates:won",
+        "value": 8
+      },
+      {
+        "type": "stat",
+        "key": "fights:f11_roadstead",
+        "value": 1
+      }
+    ],
+    "clearXp": 600,
+    "desc": "Floor 11. On your first climb here: the stronghold. Repair it through the steward’s two quests, then hold the wall through eight fights; the eighth ends the run in an automatic prestige, and the stronghold stays yours on every later run. On later runs: the door to your hold is in the gatehouse, and the road leads on to the harbor, where a join quest picks your side for the run. Clear: 8 crates won on the roadstead’s convoy and one fight won there."
   }
 ]

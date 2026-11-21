@@ -58,3 +58,8 @@ A greeting bumps `met:<npc>`, sends `skills/check-discovery` and
 text) is added for `faces_of_threshold`. It teaches and sells nothing, as in
 the old build. The Warden's `quests` lists `the_first_ascent`,
 `faces_of_threshold`, `a_taste_of_everything`.
+
+## Step 4 port C2
+
+The steward `f11_steward` in the gatehouse of floor 11 (old `npcs.data.ts`
+249-262, text `npcs.text.ts` 107-112). Gives the two repair quests.

@@ -64,11 +64,13 @@ describe('names at the widths the layout gives', () => {
   }
 
   it('covers every region and every floor', () => {
-    // In scope: Threshold, floor 0 (the Holding Level), floors 1 to 6, and
-    // since step 4 port C1 floors 7 to 10 (the castle is not a floor).
-    expect(MAPS.length).toBe(12);
+    // In scope: Threshold, floor 0 (the Holding Level), floors 1 to 6,
+    // since step 4 port C1 floors 7 to 10 (the castle is not a floor), and
+    // since port C2 floor 11 and the hold.
+    expect(MAPS.length).toBe(14);
     expect(MAPS.some((m) => m.region === 'threshold')).toBe(true);
-    expect(MAPS.filter((m) => m.region === 'the_ascent').length).toBe(10);
+    expect(MAPS.some((m) => m.region === 'the_hold')).toBe(true);
+    expect(MAPS.filter((m) => m.region === 'the_ascent').length).toBe(11);
   });
 
   it.todo('touch nothing: no name on another name, a pin or a chip, and none outside the frame (UI step: the surveyed plan)');

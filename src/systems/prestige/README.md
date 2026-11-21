@@ -50,7 +50,8 @@ Source `prestige/legacy`: `boon:<id>` rank, `foresight`, `scale:talent:<skill>`
 
 - Readers of grimoire pages (step 3, arcane), Cook's Notes (cooking, step 3), Foresight in the skill
   view, Wayfinding go links (UI step; `wayfinding` is in the view).
-- The stronghold and its automatic prestige, festival legacy (step 4).
+- The festival legacy (step 4). The stronghold and its automatic prestige:
+  step 4 port C2, below.
 
 ## Step 4 port L
 
@@ -74,3 +75,37 @@ The city key's gate reads the boon fact `boon:city_key` of the source
 condition); nothing new was needed here. The `floors` harvest source
 skips a floor cleared by a lapsed ward window (`clearLapsed`, old Q24).
 
+
+## Step 4 port C2
+
+Old sources: `prestige.data.ts` 29-41, `prestige.ts` 39-57 and 246-269,
+`game.ts` 220-225.
+
+- Slice version 2: `stronghold` (boolean, never unset). Migration step 1
+  adds `stronghold: false`. Fixtures `tests/fixtures/prestige/v1.json`,
+  `v2.json`.
+- `STRONGHOLD_WAVE` 8, `STRONGHOLD_HELD` (`fights:f11_wall` 8),
+  `STRONGHOLD_KEY` (`legacy:stronghold`). `strongholdHeld(r)`: the wave is
+  held and the run's `legacy:stronghold` is 0. The old read was the legacy
+  flag; the counter is set from the flag at the start of every later run,
+  so the two answer the same. `canPrestige` is the warchief or the
+  stronghold. `autoPrestigeDue` is `strongholdHeld`.
+- The automatic prestige: a tick at order -200, before every other system
+  (the old `Game.tick` checked it before it advanced). It reads the two
+  counters first and ends the run through the same function as
+  `prestige/now` (`ctx.endRun()`, decision 30). The prestige sets
+  `stronghold`.
+- `newRun`: `legacy:stronghold` 1 when the legacy holds the stronghold. When
+  the run that ended held the wave (read from the old run's counters), it
+  sends `bonus/bank` with the old bank: the automatic prestige keeps the
+  bank, a prestige by choice does not.
+- Command `prestige/debug-hold-wall` (CONTENT.md Q5): writes the wall's
+  fight count to the wave. Used by the John driver only. Skip reasons:
+  refused in a production build; the stronghold is already held.
+- Skip reason of `prestige/now` changed: "prestige opens when the warchief
+  of floor 6 is dead or the stronghold of floor 11 is held".
+
+Difference from the old build: the old automatic prestige took the whole
+tick (no other system moved, the clock did not advance). Here the prestige
+tick ends the run, and the systems after it in the same kernel tick run in
+the new run: the new run starts one tick earlier.

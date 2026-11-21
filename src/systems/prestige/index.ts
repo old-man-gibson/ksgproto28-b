@@ -32,7 +32,8 @@ import {
 } from '../../kernel';
 import achievements, { totalTiers } from '../achievements';
 import attributes from '../attributes';
-import counters, { conditionsMet, counterValue, setCounter, type Condition, type ConditionReader } from '../counters';
+import bonus, { bankTicks } from '../bonus';
+import counters, { conditionsMet, counterValue, setCounter, type Condition, type ConditionReader, type CountersState } from '../counters';
 import { addGold } from '../gold';
 import { clearLapsed, clearMet, floorSeenKey, floorsReachedThisRun, ladderFloors, registerBandPass, TOWERS } from '../ladder';
 import { raiseStartingLevel } from '../levels';
@@ -115,6 +116,18 @@ export const PRESTIGE_BOONS: Record<string, PrestigeBoonDef> = Object.fromEntrie
  */
 export const PRESTIGE_UNLOCK: Condition[] = [{ type: 'stat', key: 'slain:f6_great_hall:goblin_warchief', value: 1 }];
 
+/**
+ * The stronghold on floor 11 (old `prestige.data.ts` 29-41). The wave is held
+ * when every fight on the wall is won. That ends the run on the next tick, an
+ * automatic prestige, and the legacy records the stronghold for good: every
+ * later run starts with `STRONGHOLD_KEY` at 1, which opens the hold's door on
+ * floor 11 and shuts the siege.
+ */
+export const STRONGHOLD_WAVE = 8;
+export const STRONGHOLD_WALL_KEY = 'fights:f11_wall';
+export const STRONGHOLD_HELD: Condition[] = [{ type: 'stat', key: STRONGHOLD_WALL_KEY, value: STRONGHOLD_WAVE }];
+export const STRONGHOLD_KEY = 'legacy:stronghold';
+
 /** Where every run after a prestige starts. */
 export const RUN_START_SPOT = 'ascent_foot';
 /** The counter the content gates read. */
@@ -153,6 +166,8 @@ export interface PrestigeState {
   peakAttrs: Record<string, number>;
   /** Ladder floors reached in any run that ended in a prestige. Never shortened. */
   floorsSeen: string[];
+  /** The stronghold of floor 11 was held on some run. Never unset. */
+  stronghold: boolean;
   lastHarvest: HarvestReport | null;
   /** The review after a prestige is owed. */
   review: boolean;
@@ -270,7 +285,26 @@ registerBandPass((r: ConditionReader, bandId: string) =>
 // ---- the harvest (old `prestige.ts`) ----
 
 export function canPrestige(r: ConditionReader): boolean {
-  return conditionsMet(r, PRESTIGE_UNLOCK);
+  return conditionsMet(r, PRESTIGE_UNLOCK) || strongholdHeld(r);
+}
+
+/**
+ * The stronghold's wave was held on this run, and no earlier run did it. It
+ * opens prestige on its own, so a run that passed band 2 without the
+ * warchief still ends here. The old build read the legacy flag; the run's
+ * `STRONGHOLD_KEY` counter is that flag, set at the start of every run after.
+ */
+export function strongholdHeld(r: ConditionReader): boolean {
+  return r.counter(STRONGHOLD_KEY) < 1 && conditionsMet(r, STRONGHOLD_HELD);
+}
+
+/**
+ * The run ends without asking: the prestige tick ends it on the tick after
+ * the wave is held. During offline catch-up the remaining ticks run in the
+ * new run, idle at the Foot, where they bank as bonus time.
+ */
+export function autoPrestigeDue(r: ConditionReader): boolean {
+  return strongholdHeld(r);
 }
 
 /** The tab shows once the run could prestige, or once any run has. */
@@ -370,6 +404,16 @@ export const prestigeNow = defineCommand<void>('prestige/now');
 export const buyBoon = defineCommand<{ boon: string }>('prestige/buy-boon');
 /** Close the review after a prestige. The old `leaveReview`. */
 export const leaveReview = defineCommand<void>('prestige/leave-review');
+/**
+ * DEBUG, not a player action (docs/CONTENT.md decision Q5): write the wall's
+ * fight count to the wave, as the old John's siege skip wrote
+ * `fights:f11_wall`. The next tick holds the stronghold. Used by the John
+ * driver past a wall only. Refused in a production build.
+ */
+export const debugHoldWall = defineCommand<void>('prestige/debug-hold-wall');
+
+/** A production build of the page: the debug skip is refused. Tests, scripts and the dev server run it. */
+const PRODUCTION = (import.meta as { env?: { PROD?: boolean } }).env?.PROD === true;
 
 /** Per-run grants for every rank bought: starting gold and starting level. The old `applyRunStart`. */
 function applyRunStart(ctx: Ctx<PrestigeState>): void {
@@ -378,6 +422,44 @@ function applyRunStart(ctx: Ctx<PrestigeState>): void {
   }
   const level = startingLevel(ctx.state);
   if (level > 1) ctx.emit(raiseStartingLevel, { level });
+}
+
+/**
+ * Bank the harvest into the legacy and end the run: the old `prestigeNow`.
+ * Called by the command and, for the stronghold, by the tick.
+ */
+function endTheRun(ctx: Ctx<PrestigeState>): void {
+  const r = conditionReader(ctx);
+  const report = harvest(ctx, ctx.state);
+  const state = ctx.state;
+  // Peaks never lower.
+  for (const [id, sk] of Object.entries(ctx.read(skills).skills)) {
+    state.peakLevels[id] = Math.max(state.peakLevels[id] ?? 0, sk.level);
+  }
+  for (const [id, a] of Object.entries(ctx.read(attributes).attrs)) {
+    state.peakAttrs[id] = Math.max(state.peakAttrs[id] ?? 0, a.level);
+  }
+  // Floors reached stay named on the ladder in every later run.
+  state.floorsSeen = [...new Set([...state.floorsSeen, ...floorsReachedThisRun(r)])];
+  // Auto boons: rank 1 arrives with the first prestige, unasked and free.
+  for (const def of PRESTIGE_BOON_LIST) {
+    if (def.auto && !(state.purchases[def.id] > 0) && def.cost[0] === 0) state.purchases[def.id] = 1;
+  }
+  // One base, unlocked for good.
+  state.stronghold = state.stronghold || strongholdHeld(r);
+  state.count += 1;
+  state.points += report.total;
+  state.lastHarvest = report;
+  state.review = true;
+  state.spentThisReview = 0;
+  ctx.endRun();
+}
+
+/** The run that `previous` reads held the stronghold: the old `strongholdHeld` on the state before the prestige. */
+function heldBefore(previousCounters: DeepReadonly<CountersState>): boolean {
+  return (
+    counterValue(previousCounters, STRONGHOLD_KEY) < 1 && counterValue(previousCounters, STRONGHOLD_WALL_KEY) >= STRONGHOLD_WAVE
+  );
 }
 
 // ---- view ----
@@ -412,7 +494,7 @@ export interface PrestigeView {
 
 const system: SystemDef<PrestigeState, PrestigeView> = defineSystem<PrestigeState, PrestigeView>({
   id: 'prestige',
-  version: 1,
+  version: 2,
   migrations,
   initial: () => ({
     count: 0,
@@ -421,11 +503,24 @@ const system: SystemDef<PrestigeState, PrestigeView> = defineSystem<PrestigeStat
     peakLevels: {},
     peakAttrs: {},
     floorsSeen: [],
+    stronghold: false,
     lastHarvest: null,
     review: false,
     spentThisReview: 0,
   }),
   content: { prestige_sources: sources, prestige_boons: boons, prestige_text: prestigeText },
+  // First in the tick: the old `Game.tick` checked the automatic prestige
+  // before it advanced anything.
+  order: -200,
+
+  // The stronghold's wave was held: the run ends here, unasked. The old check
+  // read the conditions every tick; the two counters are read first, so a run
+  // that never stands on the wall pays two lookups.
+  tick: (ctx) => {
+    const counts = ctx.read(counters);
+    if (counterValue(counts, STRONGHOLD_WALL_KEY) < STRONGHOLD_WAVE || counterValue(counts, STRONGHOLD_KEY) >= 1) return;
+    if (autoPrestigeDue(conditionReader(ctx))) endTheRun(ctx);
+  },
 
   modifiers: [
     {
@@ -436,28 +531,9 @@ const system: SystemDef<PrestigeState, PrestigeView> = defineSystem<PrestigeStat
 
   commands: [
     handle(prestigeNow, (ctx) => {
-      if (!canPrestige(conditionReader(ctx))) return skipped('prestige opens when the warchief of floor 6 is dead');
-      const report = harvest(ctx, ctx.state);
-      const state = ctx.state;
-      // Peaks never lower.
-      for (const [id, sk] of Object.entries(ctx.read(skills).skills)) {
-        state.peakLevels[id] = Math.max(state.peakLevels[id] ?? 0, sk.level);
-      }
-      for (const [id, a] of Object.entries(ctx.read(attributes).attrs)) {
-        state.peakAttrs[id] = Math.max(state.peakAttrs[id] ?? 0, a.level);
-      }
-      // Floors reached stay named on the ladder in every later run.
-      state.floorsSeen = [...new Set([...state.floorsSeen, ...floorsReachedThisRun(conditionReader(ctx))])];
-      // Auto boons: rank 1 arrives with the first prestige, unasked and free.
-      for (const def of PRESTIGE_BOON_LIST) {
-        if (def.auto && !(state.purchases[def.id] > 0) && def.cost[0] === 0) state.purchases[def.id] = 1;
-      }
-      state.count += 1;
-      state.points += report.total;
-      state.lastHarvest = report;
-      state.review = true;
-      state.spentThisReview = 0;
-      ctx.endRun();
+      if (!canPrestige(conditionReader(ctx)))
+        return skipped('prestige opens when the warchief of floor 6 is dead or the stronghold of floor 11 is held');
+      endTheRun(ctx);
       return OK;
     }),
 
@@ -487,6 +563,13 @@ const system: SystemDef<PrestigeState, PrestigeView> = defineSystem<PrestigeStat
       return OK;
     }),
 
+    handle(debugHoldWall, (ctx) => {
+      if (PRODUCTION) return skipped('the debug skip is refused in a production build');
+      if (ctx.state.stronghold) return skipped('the stronghold is already held');
+      ctx.emit(setCounter, { key: STRONGHOLD_WALL_KEY, value: STRONGHOLD_WAVE });
+      return OK;
+    }),
+
     handle(leaveReview, (ctx) => {
       if (!ctx.state.review) return skipped('no review is open');
       ctx.state.review = false;
@@ -509,6 +592,10 @@ const system: SystemDef<PrestigeState, PrestigeView> = defineSystem<PrestigeStat
       if (key.startsWith(UNLOCK_PREFIX) && value >= 1) ctx.emit(setCounter, { key, value: 1 });
     }
     for (const floor of ctx.state.floorsSeen) ctx.emit(setCounter, { key: floorSeenKey(floor), value: 1 });
+    if (ctx.state.stronghold) ctx.emit(setCounter, { key: STRONGHOLD_KEY, value: 1 });
+    // The stronghold ends the run without asking, so the bank the player had
+    // not spent stays theirs; a prestige by choice starts it at 0.
+    if (heldBefore(old)) ctx.emit(bankTicks, { ticks: previous(bonus).banked });
     ctx.request(placeNow, { spot: RUN_START_SPOT, newRun: true });
     applyRunStart(ctx);
     ctx.emit(prestiged, { count: ctx.state.count, points: ctx.state.points });

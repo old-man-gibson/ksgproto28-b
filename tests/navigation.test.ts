@@ -16,9 +16,16 @@
  * The old `Game.travelTo` was one hop (`startTravel`): `hop` here. The old
  * `Game.travelPlanTo` is the command `world/travel-to`.
  *
- * Not ported: banked idle time (step 3) and the wayfinding boon (port 7).
+ * Banked idle time is the `bonus` system (step 4 port C2): its slice is read
+ * for the old `state.bonusTime`. The old `setPaused` has no counterpart in the
+ * kernel (a paused page runs no tick), so "banks nothing while paused" runs
+ * no tick. Spending the bank (double speed) is the UI step: its two cases
+ * stay `it.todo`.
+ *
+ * Not ported: the wayfinding boon (port 7).
  */
 import { describe, expect, it } from 'vitest';
+import { BONUS_CAP_TICKS, isIdle, type BonusState } from '../src/systems/bonus';
 import { SKILLS, skillTrainedBy } from '../src/systems/skills';
 import {
   activityXpTags,
@@ -33,7 +40,7 @@ import {
   trainingSpots,
   travelTo,
 } from '../src/systems/world';
-import { makeGame, reads } from './helpers';
+import { makeGame, patch, reads, slice } from './helpers';
 import { discover, gameAt, hop, patchWorld, sent, walkUntilStill, worldOf } from './worldHelpers';
 
 describe('resume on return', () => {
@@ -165,11 +172,33 @@ describe('go and do', () => {
 });
 
 describe('banked idle time', () => {
-  it.todo('banks one tick per idle tick and nothing while working (step 3: bonus time)');
-  it.todo('banks nothing while paused (step 3: bonus time)');
-  it.todo('caps the bank (step 3: bonus time)');
-  it.todo('spending doubles working ticks, one banked tick each, and never spends on idleness (step 3: bonus time)');
-  it.todo('is off by default and the choice survives a save (step 3: bonus time)');
+  const banked = (g: ReturnType<typeof makeGame>) => slice<BonusState>(g, 'bonus').banked;
+
+  it('banks one tick per idle tick and nothing while working', () => {
+    const g = gameAt(11, 'ironyard_gate');
+    expect(isIdle(reads(g))).toBe(true);
+    for (let i = 0; i < 50; i++) g.tick();
+    expect(banked(g)).toBe(50);
+    expect(sent(g, selectActivity({ activity: 'train_str_muster' }))).toBe(true);
+    for (let i = 0; i < 50; i++) g.tick();
+    expect(banked(g)).toBe(50);
+  });
+
+  it('banks nothing while paused', () => {
+    // A paused page runs no tick: there is no pause flag in the kernel.
+    const g = gameAt(12, 'ironyard_gate');
+    expect(banked(g)).toBe(0);
+  });
+
+  it('caps the bank', () => {
+    const g = gameAt(13, 'ironyard_gate');
+    patch(g, (s) => (s.bonus.banked = BONUS_CAP_TICKS));
+    g.tick();
+    expect(banked(g)).toBe(BONUS_CAP_TICKS);
+  });
+
+  it.todo('spending doubles working ticks, one banked tick each, and never spends on idleness (UI step: the double speed control)');
+  it.todo('is off by default and the choice survives a save (UI step: the double speed control)');
 });
 
 describe('wayfinding', () => {

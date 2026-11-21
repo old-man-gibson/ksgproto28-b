@@ -476,7 +476,17 @@ describe('open sky in the tower', () => {
     const open = Object.values(AREAS)
       .filter((a) => a.regionId === 'the_ascent' && a.sheltered === false)
       .map((a) => a.id);
-    expect(open).toEqual(['ascent_f4_area', 'ascent_f5_area', 'ascent_f6_area', 'ascent_f7_area', 'ascent_f8_area', 'ascent_f9_area', 'ascent_f10_area']);
+    // Floor 11 since step 4 port C2.
+    expect(open).toEqual([
+      'ascent_f4_area',
+      'ascent_f5_area',
+      'ascent_f6_area',
+      'ascent_f7_area',
+      'ascent_f8_area',
+      'ascent_f9_area',
+      'ascent_f10_area',
+      'ascent_f11_area',
+    ]);
   });
 
   it('the castle keeps the roof: its sky is the sheltered Ascent', () => {

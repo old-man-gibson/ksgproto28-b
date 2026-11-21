@@ -36,7 +36,8 @@
  * `it.todo`:
  * - "a save that cleared wards before positions existed": there is no
  *   importer of the old save, and a position is written with every clear.
- * - "a bonus-time tick ...": bonus time is a step 4 port.
+ * - "a bonus-time tick ...": the bank is ported (step 4 port C2, `bonus`);
+ *   spending it, the second advance, is the UI step.
  * - the save migration v59 to v60: no importer of the old save.
  */
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -554,7 +555,7 @@ describe('ward windows', () => {
     expect(flags(g)).toEqual([W.flags.unmet]);
   });
 
-  it.todo('a bonus-time tick is a second advance and counts twice, travel included (step 4: bonus time)');
+  it.todo('a bonus-time tick is a second advance and counts twice, travel included (UI step: the double speed control)');
 });
 
 // ---------- Save migration v59 → v60 ----------

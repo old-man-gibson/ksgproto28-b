@@ -28,9 +28,17 @@
  * DEBUG SKIP (`ladder/debug-skip-wall`, not a player action) and measures
  * on, with `skipBefore` marking every later segment.
  *
+ * Floor 11 on the first climb (step 4 port C2, `through` 11): the siege.
+ * John takes the steward's two repairs (`quests/accept`, `quests/turn-in`),
+ * gathers timber in the yard and scrap on the road, smelts four iron ingots
+ * at the Forges in Threshold, and holds the wall. The eighth fight won there
+ * ends the run: the prestige system's tick prestiges, and John closes the
+ * review. The segment records the level and gold the run ended with. Its
+ * debug skip is `prestige/debug-hold-wall`.
+ *
  * Differences from the old driver, each from a port not done yet:
- * - The stronghold (`siege`) and run 3 (floors 11 to 20) are ports C2 to
- *   C7. `through` stops at 10.
+ * - Run 3 (floors 11 to 20 after the siege) is ports C3 to C7. `through`
+ *   stops at 11, the siege.
  * - The prestige takes no seed: the old `Game.prestige(seed)` reseeded the
  *   generator; the kernel's generator runs on.
  *
@@ -41,9 +49,19 @@ import { TPS, type Command, type Ctx, type Kernel } from '../src/kernel';
 import combat, { type CombatState } from '../src/systems/combat';
 import counters, { counterValue } from '../src/systems/counters';
 import gold from '../src/systems/gold';
+import materials, { heldOf } from '../src/systems/materials';
+import quests, { acceptQuest, objectiveProgress, QUESTS, turnInQuest } from '../src/systems/quests';
 import { clearMet, debugSkipWall, FLOORS, ladderReader, type FloorDef } from '../src/systems/ladder';
 import levels from '../src/systems/levels';
-import prestige, { buyBoon, leaveReview, prestigeNow } from '../src/systems/prestige';
+import prestige, {
+  buyBoon,
+  debugHoldWall,
+  leaveReview,
+  prestigeNow,
+  STRONGHOLD_KEY,
+  STRONGHOLD_WALL_KEY,
+  STRONGHOLD_WAVE,
+} from '../src/systems/prestige';
 import resources from '../src/systems/resources';
 import { statOf } from '../src/systems/stats';
 import { learnFromTeacher, lessonsOf } from '../src/systems/martial';
@@ -74,6 +92,8 @@ export const SEGMENTS = [
   // wards in the order `wards` gives (the ids name floors, not places in
   // the order).
   'reclimb2', 'floor7', 'floor8', 'floor9', 'floor10',
+  // Floor 11 on the first climb: the stronghold (`through` 11).
+  'siege',
 ] as const;
 export type ClimbSegment = (typeof SEGMENTS)[number];
 
@@ -88,7 +108,11 @@ const BOSSES: Partial<Record<ClimbSegment, string[]>> = {
   floor8: ['f8_lodge'],
   floor9: ['f9_ossuary'],
   floor10: ['f10_foundry'],
+  siege: ['f11_wall'],
 };
+
+/** A try at a boss counts only when this foe is in the fight (the wall's eighth fight, its captain). */
+const BOSS_FOE: Partial<Record<ClimbSegment, string>> = { siege: 'ph_siege_captain' };
 
 /** After a knockout at a keeper, John hunts the den this long before the next try. */
 const GRIND = 6 * 60 * TPS;
@@ -102,7 +126,7 @@ export interface ClimbOptions {
   attentive?: boolean;
   /** Give up after this many ticks of play. Default two hours, 80 past floor 6. */
   budget?: number;
-  /** The last floor: 3 (band 1, the default) to 6 (band 2), 7 to 10 (band 3, run 2). */
+  /** The last floor: 3 (band 1, the default) to 6 (band 2), 7 to 10 (band 3, run 2), 11 (the siege, run 2). */
   through?: number;
   /** Ticks of play one floor past 6 may take before it is a wall. Default four hours. */
   floorCap?: number;
@@ -189,6 +213,7 @@ export function runJohn(options: ClimbOptions): ClimbReport {
   const hp = () => eye.read(resources).values.hp;
   const maxHp = () => statOf(eye, 'maxHp');
   const send = (command: Command) => k.dispatch(command).ok;
+  const held = (id: string) => heldOf(eye.read(materials), id);
 
   const blank = <T>(v: T) => Object.fromEntries(SEGMENTS.map((s) => [s, v])) as Record<ClimbSegment, T>;
   const report: ClimbReport = {
@@ -224,12 +249,27 @@ export function runJohn(options: ClimbOptions): ClimbReport {
   let inFight = false;
   let fightBoss: ClimbSegment | null = null;
   let stopped = false;
+  /** Level, gold and run when the stronghold ended the run: the siege segment records these. */
+  let ended: { level: number; gold: number; run: number } | null = null;
 
   const tick = () => {
     const before = inFight;
     const wasDown = W().recovering;
+    // The stronghold ends the run unasked on this tick (the prestige tick):
+    // what the run ended with is read before it.
+    const ending = stat(STRONGHOLD_WALL_KEY) >= STRONGHOLD_WAVE && stat(STRONGHOLD_KEY) < 1;
+    if (ending) ended = { level: level(), gold: purse(), run: runNo };
+    const count = eye.read(prestige).count;
     k.tick();
     t++;
+    if (eye.read(prestige).count > count) {
+      // The old John closed the review at once and counted the next run.
+      runNo++;
+      send(leaveReview());
+      inFight = !!C().fight;
+      if (opts.stopWhen(k)) stopped = true;
+      return;
+    }
     const down = W().recovering;
     if (!wasDown && down) {
       knockouts++;
@@ -239,7 +279,9 @@ export function runJohn(options: ClimbOptions): ClimbReport {
     inFight = after;
     if (!before && after) {
       const spots = BOSSES[segment];
-      fightBoss = spots && spots.includes(W().spot) ? segment : null;
+      const foe = BOSS_FOE[segment];
+      const foeHere = !foe || C().fight!.enemies.some((e) => e?.defId === foe);
+      fightBoss = spots && spots.includes(W().spot) && foeHere ? segment : null;
       if (fightBoss) report.bossTries[fightBoss]++;
     } else if (before && !after) {
       report.fights++;
@@ -301,10 +343,11 @@ export function runJohn(options: ClimbOptions): ClimbReport {
   };
   /** Close a segment. */
   const record = (seg: ClimbSegment) => {
+    const at = seg === 'siege' && ended ? ended : { level: level(), gold: purse(), run: runNo };
     report.done[seg] = t;
-    report.levels[seg] = level();
-    report.gold[seg] = purse();
-    report.runs[seg] = runNo;
+    report.levels[seg] = at.level;
+    report.gold[seg] = at.gold;
+    report.runs[seg] = at.run;
     report.skipBefore[seg] = report.firstSkip;
   };
   const mark = (seg: ClimbSegment, next: ClimbSegment) => {
@@ -490,8 +533,13 @@ export function runJohn(options: ClimbOptions): ClimbReport {
    * the segment when its clear holds. A floor still open at the cap is a
    * wall: record it, send the debug skip and report whether the climb goes on.
    */
-  const attempt = (seg: ClimbSegment, floorId: string, work: () => void): boolean => {
-    const goal = () => clearMet(r, FLOORS[floorId]);
+  const attempt = (
+    seg: ClimbSegment,
+    floorId: string,
+    work: () => void,
+    o: { goal?: () => boolean; skip?: () => void } = {},
+  ): boolean => {
+    const goal = o.goal ?? (() => clearMet(r, FLOORS[floorId]));
     segment = seg;
     segStart = t;
     capEnd = t + opts.floorCap;
@@ -520,11 +568,14 @@ export function runJohn(options: ClimbOptions): ClimbReport {
         : 'the script stopped with the floor open (no rule left to try; not a measured wall)';
     report.stuck[seg] = { at: t, spent: t - segStart, knockouts: knockouts - k0, level: level(), wall: capped, why };
     if (!opts.skipWalls) return false;
+    // Recorded as the floor stood, before the skip: the stronghold's skip
+    // ends the run, and the prestige resets the level and the gold.
     record(seg);
     report.firstSkip ??= seg;
     // DEBUG SKIP, not a player action: the floor's gate and clear counters
     // written, its clear XP stamped as paid.
-    send(debugSkipWall({ floor: floorId }));
+    if (o.skip) o.skip();
+    else send(debugSkipWall({ floor: floorId }));
     return true;
   };
   /**
@@ -586,6 +637,49 @@ export function runJohn(options: ClimbOptions): ClimbReport {
   for (const n of wardsFor) {
     if (!attempt(`floor${n}` as ClimbSegment, `ascent_f${n}`, wardWork[n])) return finish();
   }
+  if (opts.through <= 10) return finish();
+
+  // ---- Floor 11 on the first climb: the stronghold. The steward's two repairs
+  // (timber and scrap for the gate; ten raiders and four iron ingots, smelted
+  // at the Forges in Threshold, for the wall), then eight fights on the wall.
+  // Holding the wave ends the run unasked. ----
+  const strongholdHeld = () => eye.read(prestige).stronghold;
+  const questState = () => eye.read(quests).quests;
+  const siegeWork = () => {
+    const toGatehouse = () => scout(['f11_gatehouse']);
+    const take = (id: string) => {
+      if (toGatehouse()) send(acceptQuest({ quest: id }));
+    };
+    const handIn = (id: string) => {
+      if (toGatehouse()) send(turnInQuest({ quest: id }));
+    };
+    // The gate: twenty hardwood from the yard, fifteen iron scrap from the raiders on the road.
+    take('f11_shore_up_the_gate');
+    if (scout(['f11_yard'])) persist('f11_yard', 'gather_f11_timber', () => held('hardwood') >= 20);
+    persist('f11_road', 'hunt', () => held('iron_scrap') >= 15);
+    handIn('f11_shore_up_the_gate');
+    // The wall: ten raiders, and the scrap for four ingots (three each).
+    take('f11_arm_the_wall');
+    const raiders = () =>
+      questState().f11_arm_the_wall ? objectiveProgress(eye, eye.read(quests), QUESTS.f11_arm_the_wall, 0).current : 0;
+    persist('f11_road', 'hunt', () => raiders() >= 10 && held('iron_scrap') + 3 * held('iron_ingot') >= 12);
+    if (raiders() < 10) return;
+    // The ingots are smelted at the Forges, down in Threshold.
+    send(climb({ floor: null }));
+    until(() => !W().travel, 60 * TPS);
+    if (!walk('the_forges')) return;
+    persist('the_forges', 'craft_iron_ingot', () => held('iron_ingot') >= 4);
+    if (!climbTo('ascent_f11')) return;
+    handIn('f11_arm_the_wall');
+    if (questState().f11_arm_the_wall?.status !== 'done') return;
+    if (scout(['f11_yard', 'f11_wall'])) persist('f11_wall', 'hunt', strongholdHeld);
+  };
+  // DEBUG SKIP: the wall's fight count written; the next tick ends the run.
+  const siegeSkip = () => {
+    send(debugHoldWall());
+    tick();
+  };
+  attempt('siege', 'ascent_f11', siegeWork, { goal: strongholdHeld, skip: siegeSkip });
   return finish();
 }
 
@@ -605,6 +699,7 @@ export const FLOOR_OF: Record<ClimbSegment, string> = {
   tutorial: 'f0', vermin: 'f1 vermin', floor1: 'f1', floor2: 'f2', gate3: 'f3 gate', descent: 'f3 stairs', floor3: 'f3',
   floor4: 'f4', gate5: 'f5 gate', floor5: 'f5', gate6: 'f6 gate', floor6: 'f6',
   reclimb2: 'f1-6 again', floor7: 'f7', floor8: 'f8', floor9: 'f9', floor10: 'f10',
+  siege: 'f11 siege',
 };
 
 /** The per-floor table of one climb, in the old pacing script's columns. */

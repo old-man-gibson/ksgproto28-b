@@ -94,8 +94,9 @@ Sent: `resources/defeat`, `counters/bump`, `raise`, `set`, `clear`,
 
 ## Left behind
 
-- `f11_wall` and the festival floors are never targets. The wall id is kept
-  in `NEVER_TARGET_SPOTS`; the festival check arrives with the festival.
+- The festival floors are never targets: the check arrives with the
+  festival. `f11_wall` (in `NEVER_TARGET_SPOTS`) is a real spot since step 4
+  port C2; `tests/knockoutReturn.test.ts` reads it instead of a test spot.
 - A bench run or a performance ends the return: with those systems.
 - Spine port 7: a prestige ends the return, because the new run starts
   this slice new (kernel decision 30). The defeat summary is the overlay

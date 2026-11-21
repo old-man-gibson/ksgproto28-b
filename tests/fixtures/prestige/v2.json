@@ -1,0 +1,80 @@
+{
+  "count": 1,
+  "points": 6,
+  "purchases": {
+    "talent": 1,
+    "endowment": 1,
+    "provisions": 1
+  },
+  "peakLevels": {
+    "fighting": 12,
+    "scouting": 7
+  },
+  "peakAttrs": {
+    "str": 9,
+    "dex": 8,
+    "con": 10,
+    "int": 1,
+    "wis": 1,
+    "cha": 2
+  },
+  "floorsSeen": [
+    "ascent_f1",
+    "ascent_f2",
+    "ascent_f3",
+    "ascent_f4",
+    "ascent_f5",
+    "ascent_f6"
+  ],
+  "stronghold": false,
+  "lastHarvest": {
+    "ordinal": 1,
+    "total": 7,
+    "lines": [
+      {
+        "id": "floors",
+        "name": "Floors cleared",
+        "icon": "🗼",
+        "points": 6,
+        "detail": "6 floors (1 per point)"
+      },
+      {
+        "id": "quests",
+        "name": "Quests completed",
+        "icon": "⭐",
+        "points": 0,
+        "detail": "1 quest (2 per point)"
+      },
+      {
+        "id": "bestiary",
+        "name": "Bestiary entries",
+        "icon": "📖",
+        "points": 0,
+        "detail": "0 entries (5 per point)"
+      },
+      {
+        "id": "skills",
+        "name": "Skill levels",
+        "icon": "📜",
+        "points": 1,
+        "detail": "31 levels (25 per point)"
+      },
+      {
+        "id": "achievements",
+        "name": "Achievement tiers",
+        "icon": "🏆",
+        "points": 0,
+        "detail": "0 tiers (3 per point)"
+      },
+      {
+        "id": "gold",
+        "name": "Gold earned",
+        "icon": "💰",
+        "points": 0,
+        "detail": "9498 gold (next at 10000)"
+      }
+    ]
+  },
+  "review": true,
+  "spentThisReview": 1
+}

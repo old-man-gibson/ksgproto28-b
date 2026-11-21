@@ -68,8 +68,8 @@ None: this system has no command and no request.
   prestige sets at the start of every run from its `floorsSeen` list.
 - The festival verdicts of the old ride gate (`shut`, `closed`, `forfeit`,
   `royale`) and `festivalLocked`: step 4.
-- Bands 4 to 7 and floors 11 to 20: step 4. `OFF_LADDER_DOORS` and
-  `SPINE_EXEMPT` name floors 11 and 14 and arrive with them.
+- Bands 5 to 7 and floors 12 to 20: step 4. `SPINE_EXEMPT` names floor
+  14 and arrives with it (port C3).
 - The floor rules are not called by the forge validator yet.
 
 ## Old rules ported as they are
@@ -103,3 +103,17 @@ None: this system has no command and no request.
   The City cleared" and "at most N ..." (old `condText`); a boon gate names
   the boon.
 
+
+## Step 4 port C2
+
+- Band 4 `ascent_harbor` (The Harbor, `clearsToAdvance` 4) and floor 11
+  `ascent_f11` (The Stronghold Road), old records. Floor 11's clear is the
+  harbor's (`sea:crates:won` 8 and `fights:f11_roadstead` 1): nothing in
+  this port can meet it. A first climb ends on floor 11 by the stronghold's
+  automatic prestige (`prestige`). Floors 12 to 14 and the roadstead are
+  port C3; until then `tests/worldContent.test.ts` names floor 11 and band 4
+  in `HARBOR_PENDING`.
+- `OFF_LADDER_DOORS` and `offLadderDoor(from, to)` (old `towers.data.ts`
+  466-483): the two doors between the gatehouse and the hold, the only
+  authored edges allowed across a banded floor's boundary.
+- `SPINE_EXEMPT` (floor 14) is port C3.

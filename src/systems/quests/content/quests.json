@@ -63,5 +63,32 @@
       "levelXp": 100
     },
     "desc": "Take the toll stamp from the Toll Collector on floor 1. Clear the Vermin Hall, find the clerk’s daybook in the Archive and the office key at reception, then visit the offices in the order the daybook gives. Reward: 350 gold, 100 level XP, 1 favor."
+  },
+  {
+    "id": "f11_shore_up_the_gate",
+    "name": "Shore Up the Gate",
+    "giver": "f11_steward",
+    "requirements": [{ "type": "statMax", "key": "legacy:stronghold", "value": 0 }],
+    "objectives": [
+      { "type": "collect", "materialId": "hardwood", "qty": 20, "at": "f11_yard", "desc": "Bring 20 hardwood" },
+      { "type": "collect", "materialId": "iron_scrap", "qty": 15, "at": "f11_road", "desc": "Bring 15 iron scrap" }
+    ],
+    "rewards": { "gold": 200, "levelXp": 150 },
+    "desc": "Bring the steward on floor 11 twenty hardwood and fifteen iron scrap. The yard has timber; the road’s raiders drop scrap. Reward: 200 gold, 150 level XP."
+  },
+  {
+    "id": "f11_arm_the_wall",
+    "name": "Arm the Wall",
+    "giver": "f11_steward",
+    "requirements": [
+      { "type": "quest", "id": "f11_shore_up_the_gate" },
+      { "type": "statMax", "key": "legacy:stronghold", "value": 0 }
+    ],
+    "objectives": [
+      { "type": "kill", "monsterId": "ph_siege_raider", "count": 10, "at": "f11_road", "desc": "Kill 10 raiders" },
+      { "type": "collect", "materialId": "iron_ingot", "qty": 4, "at": "the_forges", "desc": "Bring 4 iron ingots" }
+    ],
+    "rewards": { "gold": 250, "levelXp": 200 },
+    "desc": "Kill ten raiders on the road and bring four iron ingots. Turning it in opens the way up onto the wall, where the wave comes. Reward: 250 gold, 200 level XP."
   }
 ]

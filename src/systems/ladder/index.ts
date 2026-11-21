@@ -107,6 +107,27 @@ export const FLOOR_BY_AREA: ReadonlyMap<string, FloorDef> = new Map(Object.value
 /** Base ticks to climb or descend past one rung. */
 export const CLIMB_TICKS_PER_FLOOR = 45;
 
+/**
+ * Authored edges allowed across a banded floor's boundary (old
+ * `towers.data.ts` 466-483). The ladder is the only door into a floor
+ * (`tests/worldContent.test.ts`); each pair here is a decision, both
+ * directions listed.
+ *
+ * - The hold's door on floor 11. Both edges are one-way and gated on
+ *   `legacy:stronghold`, and the hold's only other exit is one-way out to the
+ *   Foot, so nothing reaches floor 11 through the hold without having climbed
+ *   there first.
+ */
+export const OFF_LADDER_DOORS: readonly (readonly [from: string, to: string])[] = [
+  ['f11_gatehouse', 'base_entrance'],
+  ['base_entrance', 'f11_gatehouse'],
+];
+
+/** True for an authored edge listed in `OFF_LADDER_DOORS`. */
+export function offLadderDoor(from: string, to: string): boolean {
+  return OFF_LADDER_DOORS.some(([f, t]) => f === from && t === to);
+}
+
 /** The floors of a band, in ladder order. */
 export function floorsInBand(bandId: string): FloorDef[] {
   return BAND_FLOORS.get(bandId) ?? [];

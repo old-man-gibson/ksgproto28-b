@@ -120,7 +120,8 @@ describe('the view', () => {
     let v = viewOf(g);
     expect(v.unlocked).toBe(false);
     expect(v.atTable).toBe(false);
-    expect(v.tables).toEqual(['The Reading Hall', 'The Nine Chapels']);
+    // The hold's Arcane Library holds a Spellcrafting Table since step 4 port C2.
+    expect(v.tables).toEqual(['The Reading Hall', 'The Nine Chapels', 'Arcane Library']);
     expect(v.cap).toBe(3);
     expect(v.axes).toEqual(['force', 'reach']);
     patch(g, (s) => {

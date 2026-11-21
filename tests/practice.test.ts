@@ -4,13 +4,15 @@
  *
  * One case runs: the Sand offers the post, and the fight is a practice fight.
  * The XP shaping of a practice fight (`practiceShare`, `practiceXp`,
- * `practising`, the practice clock of a fight) is step 3; the Training Area
- * is a spot of the hold, step 4. Each of those cases is an `it.todo` under
- * its old `describe` and name.
+ * `practising`, the practice clock of a fight) is step 3: each of those
+ * cases is an `it.todo` under its old `describe` and name. The Training Area
+ * is a spot of the hold (step 4 port C2); its case runs.
  */
 import { describe, expect, it } from 'vitest';
 import type { Kernel } from '../src/kernel';
 import { isPracticeFight, type CombatState } from '../src/systems/combat';
+import type { CountersState } from '../src/systems/counters';
+import type { LevelsState } from '../src/systems/levels';
 import { MONSTERS } from '../src/systems/monsters';
 import { selectActivity, SPOTS } from '../src/systems/world';
 import { makeGame, patch, slice } from './helpers';
@@ -68,5 +70,21 @@ describe('the post on The Sand', () => {
 });
 
 describe('the Training Area dummies', () => {
-  it.todo('die and respawn but pay no character-level XP (step 4: the hold)');
+  it('die and respawn but pay no character-level XP', () => {
+    const g = makeGame({ seed: 5 });
+    patch(g, (slices) => {
+      slices.world.spot = 'base_training_area';
+      if (!slices.world.discovered.includes('base_training_area')) slices.world.discovered.push('base_training_area');
+    });
+    expect(g.dispatch(selectActivity({ activity: 'hunt' }))).toEqual({ ok: true });
+    patch(g, (slices) => {
+      slices.combat.respawnTimer = 0;
+    });
+    const kills = () => slice<CountersState>(g, 'counters').counts.kills ?? 0;
+    for (let t = 0; t < 20000 && kills() < 1; t++) g.tick();
+    expect(kills()).toBeGreaterThan(0);
+    const lv = slice<LevelsState>(g, 'levels');
+    expect(lv.level).toBe(1);
+    expect(lv.levelXp).toBe(0);
+  });
 });
