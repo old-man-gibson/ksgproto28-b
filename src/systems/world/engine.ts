@@ -24,8 +24,10 @@ import counters, { bumpCounter, conditionsMet, counterValue, setCounter, type Co
 import gold, { addGold, goldOf, spendGold } from '../gold';
 import { grantItem, grantRune, ITEMS, RUNES } from '../items';
 import {
+  BANDS,
   bandDynamicLevel,
   bandLevelStep,
+  bandStop,
   checkClears,
   climbVerb,
   FLOOR_BY_AREA,
@@ -950,6 +952,23 @@ export function climbTo(ctx: W, floorId: string | null, opts: TravelOpts = {}): 
   const here = floorOfSpot(state.spot);
   const seam = here && stop.index === spotIndex(state.spot, areaOf(state.spot)) + 1 ? here.seam?.verb : undefined;
   return ride(ctx, tower, stop.spot, stop.index, seam, opts);
+}
+
+/** Ride the ladder to a band's hub (band 3's castle) once the band is open. The old `climbToHub`. */
+export function climbToHub(ctx: W, bandId: string, opts: TravelOpts = {}): boolean {
+  const state = ctx.state;
+  if (state.travel || state.recovering) return false;
+  if (inForcedFight(combatOf(ctx))) {
+    say(ctx, 'no_leaving_fight', undefined, 'danger');
+    return false;
+  }
+  const tower = towerAt(state.spot);
+  if (!tower) return false;
+  const band = BANDS[bandId];
+  if (!band?.hub || band.towerId !== tower.id) return false;
+  const stop = bandStop(band);
+  if (!stopOpen(reader(ctx), stop)) return false;
+  return ride(ctx, tower, stop.spot, stop.index, undefined, opts);
 }
 
 /** Walk to any discovered spot, or to an unknown place one visible road past known ground. The old `travelPlanTo`. */

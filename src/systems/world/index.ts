@@ -44,6 +44,7 @@ import {
   cancelTravelPlan,
   canStartActivity,
   climbTo,
+  climbToHub,
   craftUnlocked,
   currentActivity,
   dropActivity,
@@ -95,6 +96,8 @@ export const setIntent = defineCommand<{ activity: string | null }>('world/set-i
 export const cancelPlan = defineCommand<void>('world/cancel-plan');
 /** Ride the ladder to the landing of a floor. `null` is the hub of the tower. */
 export const climb = defineCommand<{ floor: string | null }>('world/climb');
+/** Ride the ladder to the hub of a band (band 3's castle). */
+export const climbHub = defineCommand<{ band: string }>('world/climb-hub');
 /** The caravan: waypoint to waypoint for gold. */
 export const fastTravel = defineCommand<{ to: string }>('world/fast-travel');
 
@@ -350,6 +353,16 @@ const world = defineSystem<WorldState, WorldView>({
         return skipped(floor === null ? 'no ladder answers here' : `the ladder does not go to "${floor}" from here now`);
       }
       ctx.emit(playerCommand, { type: climb.type });
+      return OK;
+    }),
+    handle(climbHub, (ctx, { band }) => {
+      if (ctx.state.travel) return skipped('a journey is under way');
+      if (ctx.state.recovering) return skipped('the character is knocked out');
+      if (!climbToHub(ctx, band)) {
+        if (inForcedFight(ctx.read(combat))) return skipped('the fight cannot be left');
+        return skipped(`the ladder does not go to the hub of "${band}" from here now`);
+      }
+      ctx.emit(playerCommand, { type: climbHub.type });
       return OK;
     }),
     handle(fastTravel, (ctx, { to }) => {

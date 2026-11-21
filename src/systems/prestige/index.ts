@@ -34,7 +34,7 @@ import achievements, { totalTiers } from '../achievements';
 import attributes from '../attributes';
 import counters, { conditionsMet, counterValue, setCounter, type Condition, type ConditionReader } from '../counters';
 import { addGold } from '../gold';
-import { clearMet, floorSeenKey, floorsReachedThisRun, ladderFloors, registerBandPass, TOWERS } from '../ladder';
+import { clearLapsed, clearMet, floorSeenKey, floorsReachedThisRun, ladderFloors, registerBandPass, TOWERS } from '../ladder';
 import { raiseStartingLevel } from '../levels';
 import { fillText, logLine, textSchema, type TextRecord } from '../log';
 import skills, { conditionReader } from '../skills';
@@ -284,9 +284,13 @@ export function sourceAmount(ctx: ReadCtx, src: PrestigeSourceDef): number {
     case 'stat':
       return Math.floor(counterValue(ctx.read(counters), src.key ?? ''));
     case 'floors': {
-      // The floor's own clear, not a pass: a passed band pays nothing.
+      // The floor's own clear, not a pass: a passed band pays nothing, and a
+      // floor cleared by a lapsed ward window pays nothing (old Q24).
       const r = conditionReader(ctx);
-      return Object.keys(TOWERS).reduce((n, towerId) => n + ladderFloors(towerId).filter((f) => clearMet(r, f)).length, 0);
+      return Object.keys(TOWERS).reduce(
+        (n, towerId) => n + ladderFloors(towerId).filter((f) => clearMet(r, f) && !clearLapsed(r, f)).length,
+        0,
+      );
     }
     case 'skillLevels':
       return Object.values(ctx.read(skills).skills).reduce((n, sk) => n + sk.level, 0);

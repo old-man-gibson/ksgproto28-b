@@ -20,9 +20,19 @@
  * and the spell (`tutorial/choose-spell`) at the Field, since the arcane
  * port.
  *
+ * Past floor 6 (step 4 port C1): the first prestige buys the Key to the
+ * City, run 2 climbs floors 1 to 6 again (`reclimb2`, one segment) and plays
+ * band 3's four wards in the order `wards` gives (`floor7` to `floor10`).
+ * Every floor past 6 has a cap of game time (`floorCap`); a floor open at
+ * the cap is a wall: the report records it in `stuck` and John sends the
+ * DEBUG SKIP (`ladder/debug-skip-wall`, not a player action) and measures
+ * on, with `skipBefore` marking every later segment.
+ *
  * Differences from the old driver, each from a port not done yet:
- * - Runs 2 and 3 (floors 7 to 20) are step 4. `through` stops at 6; the
- *   climb ends with the first prestige.
+ * - The stronghold (`siege`) and run 3 (floors 11 to 20) are ports C2 to
+ *   C7. `through` stops at 10.
+ * - The prestige takes no seed: the old `Game.prestige(seed)` reseeded the
+ *   generator; the kernel's generator runs on.
  *
  * He reports; he never tunes. Deterministic: everything rides the kernel's
  * seeded generator.
@@ -31,7 +41,7 @@ import { TPS, type Command, type Ctx, type Kernel } from '../src/kernel';
 import combat, { type CombatState } from '../src/systems/combat';
 import counters, { counterValue } from '../src/systems/counters';
 import gold from '../src/systems/gold';
-import { FLOORS, type FloorDef } from '../src/systems/ladder';
+import { clearMet, debugSkipWall, FLOORS, ladderReader, type FloorDef } from '../src/systems/ladder';
 import levels from '../src/systems/levels';
 import prestige, { buyBoon, leaveReview, prestigeNow } from '../src/systems/prestige';
 import resources from '../src/systems/resources';
@@ -60,6 +70,10 @@ const JOB = { spot: 'the_rolls', via: 'chancery_arch', activity: 'job_copying' }
 export const SEGMENTS = [
   'tutorial', 'vermin', 'floor1', 'floor2', 'gate3', 'descent', 'floor3',
   'floor4', 'gate5', 'floor5', 'gate6', 'floor6',
+  // Run 2 (`through` 7 and up): floors 1 to 6 again, then band 3's four
+  // wards in the order `wards` gives (the ids name floors, not places in
+  // the order).
+  'reclimb2', 'floor7', 'floor8', 'floor9', 'floor10',
 ] as const;
 export type ClimbSegment = (typeof SEGMENTS)[number];
 
@@ -70,7 +84,14 @@ const BOSSES: Partial<Record<ClimbSegment, string[]>> = {
   floor4: ['f4_ravine_floor'],
   floor5: ['f5_back_door'],
   floor6: ['f6_great_hall'],
+  floor7: ['f7_chiefs_tent', 'f7_burnt_camp'],
+  floor8: ['f8_lodge'],
+  floor9: ['f9_ossuary'],
+  floor10: ['f10_foundry'],
 };
+
+/** After a knockout at a keeper, John hunts the den this long before the next try. */
+const GRIND = 6 * 60 * TPS;
 
 export interface ClimbOptions {
   seed: number;
@@ -79,10 +100,16 @@ export interface ClimbOptions {
   /** The floor 0 one-word spell: 'fire', 'ice' or 'spark'. Default 'fire'. Unused on 'skip'. */
   spell?: string;
   attentive?: boolean;
-  /** Give up after this many ticks of play. Default two hours. */
+  /** Give up after this many ticks of play. Default two hours, 80 past floor 6. */
   budget?: number;
-  /** The last floor: 3 (band 1, the default) to 6 (band 2). */
+  /** The last floor: 3 (band 1, the default) to 6 (band 2), 7 to 10 (band 3, run 2). */
   through?: number;
+  /** Ticks of play one floor past 6 may take before it is a wall. Default four hours. */
+  floorCap?: number;
+  /** After a wall, take the debug skip and measure on. False ends the climb at the first wall. Default true. */
+  skipWalls?: boolean;
+  /** The order of band 3's wards, by floor number. Default: ladder order. */
+  wards?: number[];
   /** After floor 6, take the first prestige. Default true when `through` is 6. */
   prestige?: boolean;
   /** Called after every tick; the climb ends when it answers true. For tools that need a state mid-climb. */
@@ -108,8 +135,28 @@ export interface ClimbReport {
   prestiged: boolean;
   /** Points the first harvest paid. */
   harvest: number | null;
-  /** Ticks for one prestige command, none: kept for the table. */
+  /** The run each segment closed in: 1, or 2 after the first prestige. */
+  runs: Record<ClimbSegment, number | null>;
+  /** Floors past 6 that were walls (or the script stopped on), by segment. */
+  stuck: Partial<Record<ClimbSegment, StuckRecord>>;
+  /** The first segment closed by a debug skip; null while none was. */
+  firstSkip: ClimbSegment | null;
+  /** Per segment: the first skip before it closed, so a number measured past a wall reads as such. */
+  skipBefore: Record<ClimbSegment, ClimbSegment | null>;
   kernel: Kernel;
+}
+
+/** What a wall looked like when the cap ran out (floors past 6). */
+export interface StuckRecord {
+  at: number;
+  /** Ticks spent on the floor. */
+  spent: number;
+  /** Knockouts on the floor. */
+  knockouts: number;
+  level: number;
+  /** True when the cap ran out; false when the script stopped with the floor open. */
+  wall: boolean;
+  why: string;
 }
 
 function gateValue(floor: FloorDef, key: string): number {
@@ -122,8 +169,11 @@ export function runJohn(options: ClimbOptions): ClimbReport {
   const opts: Required<ClimbOptions> = {
     attentive: false,
     spell: 'fire',
-    budget: 2 * 3600 * TPS,
+    budget: (through > 6 ? 80 : 2) * 3600 * TPS,
     prestige: through >= 6,
+    floorCap: 4 * 3600 * TPS,
+    skipWalls: true,
+    wards: [7, 8, 9, 10],
     stopWhen: () => false,
     ...options,
     through,
@@ -156,11 +206,20 @@ export function runJohn(options: ClimbOptions): ClimbReport {
     fights: 0,
     prestiged: false,
     harvest: null,
+    runs: blank(null),
+    stuck: {},
+    firstSkip: null,
+    skipBefore: blank(null),
     kernel: k,
   };
 
   let t = 0;
+  /** 1 the first life; the prestige starts run 2. */
+  let runNo = 1;
   let segment: ClimbSegment = 'tutorial';
+  /** The tick the floor in play began, and the tick its cap ends. */
+  let segStart = 0;
+  let capEnd = Infinity;
   let knockouts = 0;
   let inFight = false;
   let fightBoss: ClimbSegment | null = null;
@@ -188,7 +247,7 @@ export function runJohn(options: ClimbOptions): ClimbReport {
     }
     if (opts.stopWhen(k)) stopped = true;
   };
-  const outOfTime = () => stopped || t >= opts.budget;
+  const outOfTime = () => stopped || t >= opts.budget || t >= capEnd;
   const until = (done: () => boolean, max = opts.budget) => {
     for (let i = 0; !done() && i < max && !outOfTime(); i++) tick();
     return done();
@@ -240,10 +299,18 @@ export function runJohn(options: ClimbOptions): ClimbReport {
     until(() => !W().travel, 60 * TPS);
     return W().spot === FLOORS[floorId].landing;
   };
-  const mark = (seg: ClimbSegment, next: ClimbSegment) => {
+  /** Close a segment. */
+  const record = (seg: ClimbSegment) => {
     report.done[seg] = t;
     report.levels[seg] = level();
     report.gold[seg] = purse();
+    report.runs[seg] = runNo;
+    report.skipBefore[seg] = report.firstSkip;
+  };
+  const mark = (seg: ClimbSegment, next: ClimbSegment) => {
+    // A replay (run 2 climbs floors 1 to 6 again) reports as one segment.
+    if (runNo > 1) return;
+    record(seg);
     segment = next;
   };
   // A floor starts fogged: the planner knows only rooms John has stood next to.
@@ -274,96 +341,106 @@ export function runJohn(options: ClimbOptions): ClimbReport {
   if (W().spot !== 'ascent_foot') return finish();
   mark('tutorial', 'vermin');
 
-  // ---- Floor 1: vermin, records, the office key, the route, the collector. ----
-  if (!climbTo('ascent_f1')) return finish();
-  if (!persist('f1_storerooms', 'hunt', () => stat('fights:f1_storerooms') >= SPOTS.f1_storerooms.fightLimit!)) return finish();
-  mark('vermin', 'floor1');
-  walk('f1_bonded_deep');
-  persist('f1_archive', 'search', () => hasKeyItem('toll_clerk_book'));
-  walk('f1_bonded_deep');
-  walk('f1_forms');
-  persist('f1_reception', 'explore_reception', () => hasKeyItem('toll_office_key'));
-  for (let tries = 0; stat('boss:f1_toll_hall') < 1 && !outOfTime() && tries < 20; tries++) {
-    // The office door is a fight that cannot be fled; John heals before it.
-    walk('f1_landing');
-    restUp();
-    walk('f1_reception');
-    for (const room of OFFICE_ROUTE) walk(room);
-    report.bossAttempts++;
-    const t0 = t;
-    until(() => !C().fight);
-    report.firstBoss ??= { ticks: t - t0, won: stat('boss:f1_toll_hall') >= 1 };
-  }
-  if (stat('boss:f1_toll_hall') < 1) return finish();
-  mark('floor1', 'floor2');
+  /**
+   * Floors 1 to 6, from the Foot. False when John ran out of time or the
+   * climb is over (`through` reached on the first life). Runs again,
+   * unmarked, after the prestige: the reset puts every floor back.
+   */
+  function lowerBands(): boolean {
+    // ---- Floor 1: vermin, records, the office key, the route, the collector. ----
+    if (!climbTo('ascent_f1')) return false;
+    if (!persist('f1_storerooms', 'hunt', () => stat('fights:f1_storerooms') >= SPOTS.f1_storerooms.fightLimit!)) return false;
+    mark('vermin', 'floor1');
+    walk('f1_bonded_deep');
+    persist('f1_archive', 'search', () => hasKeyItem('toll_clerk_book'));
+    walk('f1_bonded_deep');
+    walk('f1_forms');
+    persist('f1_reception', 'explore_reception', () => hasKeyItem('toll_office_key'));
+    for (let tries = 0; stat('boss:f1_toll_hall') < 1 && !outOfTime() && tries < 20; tries++) {
+      // The office door is a fight that cannot be fled; John heals before it.
+      walk('f1_landing');
+      restUp();
+      walk('f1_reception');
+      for (const room of OFFICE_ROUTE) walk(room);
+      report.bossAttempts++;
+      const t0 = t;
+      until(() => !C().fight);
+      report.firstBoss ??= { ticks: t - t0, won: stat('boss:f1_toll_hall') >= 1 };
+    }
+    if (stat('boss:f1_toll_hall') < 1) return false;
+    mark('floor1', 'floor2');
 
-  // ---- Floor 2: the Long Hall. The tutor's lessons wait for step 3. ----
-  if (!climbTo('ascent_f2')) return finish();
-  walk('f2_gym');
-  // The tutor's door is the first off the hall; the lessons are free.
-  for (const lesson of lessonsOf('hall_tutor')) {
-    if (lesson.technique) send(learnFromTeacher({ npc: 'hall_tutor', technique: lesson.technique }));
-  }
-  for (const stretch of HALL) {
-    if (!persist(stretch, 'hunt', () => stat(`fights:${stretch}`) >= SPOTS[stretch].fightLimit!)) return finish();
-  }
-  // The break room's cupboards, on the way out: most of the floor's coin.
-  const breakFinds = SPOTS.f2_break_room.finds?.length ?? 0;
-  persist('f2_break_room', 'explore_f2', () => finds('f2_break_room') >= breakFinds);
-  mark('floor2', 'gate3');
+    // ---- Floor 2: the Long Hall. The tutor's lessons wait for step 3. ----
+    if (!climbTo('ascent_f2')) return false;
+    walk('f2_gym');
+    // The tutor's door is the first off the hall; the lessons are free.
+    for (const lesson of lessonsOf('hall_tutor')) {
+      if (lesson.technique) send(learnFromTeacher({ npc: 'hall_tutor', technique: lesson.technique }));
+    }
+    for (const stretch of HALL) {
+      if (!persist(stretch, 'hunt', () => stat(`fights:${stretch}`) >= SPOTS[stretch].fightLimit!)) return false;
+    }
+    // The break room's cupboards, on the way out: most of the floor's coin.
+    const breakFinds = SPOTS.f2_break_room.finds?.length ?? 0;
+    persist('f2_break_room', 'explore_f2', () => finds('f2_break_room') >= breakFinds);
+    mark('floor2', 'gate3');
 
-  // ---- The third floor's gate, the descent and the Hearing Room. ----
-  if (!climbTo('ascent_f3')) return finish();
-  mark('gate3', 'descent');
-  for (const { room, plan, below } of DESCENT) {
-    if (!persist(room, 'search_room', () => stat(plan) >= 1)) return finish();
+    // ---- The third floor's gate, the descent and the Hearing Room. ----
+    if (!climbTo('ascent_f3')) return false;
+    mark('gate3', 'descent');
+    for (const { room, plan, below } of DESCENT) {
+      if (!persist(room, 'search_room', () => stat(plan) >= 1)) return false;
+      if (opts.attentive) {
+        const all = SPOTS[room].finds?.length ?? 0;
+        persist(room, 'search_room', () => finds(room) >= all);
+      }
+      if (below && SPOTS[below].fightLimit) {
+        if (!persist(below, 'hunt', () => stat(`fights:${below}`) >= SPOTS[below].fightLimit!)) return false;
+      }
+    }
+    mark('descent', 'floor3');
+    // The Hearing Room forces its one fight on arrival.
+    if (!persist('f3_hearing_room', 'hunt', () => stat('slain:f3_hearing_room:puppet_bureaucrat') >= 1)) return false;
+    mark('floor3', 'floor4');
+    if (runNo === 1 && opts.through < 4) return false;
+
+    // ---- Band 2: grind where the goblins are until the next gate's kill count is met. ----
+    const goblins = () => stat('kills:tag:goblin');
+    const GATE5 = gateValue(FLOORS.ascent_f5, 'kills:tag:goblin');
+    const GATE6 = gateValue(FLOORS.ascent_f6, 'kills:tag:goblin');
+    if (!climbTo('ascent_f4')) return false;
+    if (!scout(['f4_woods_edge', 'f4_deep_woods'])) return false;
+    if (!persist('f4_deep_woods', 'hunt', () => goblins() >= GATE5)) return false;
+    if (!scout(['f4_ravine_rim', 'f4_ravine_floor'])) return false;
+    if (!persist('f4_ravine_floor', 'hunt', () => stat('slain:f4_ravine_floor:goblin_raid_leader') >= 1)) return false;
+    mark('floor4', 'gate5');
+
+    if (!climbTo('ascent_f5')) return false;
+    mark('gate5', 'floor5');
+    if (!scout(['f5_bog', 'f5_cave_mouth', 'f5_hollows'])) return false;
+    if (!persist('f5_hollows', 'explore', () => stat('flag:f5_back_door') >= 1)) return false;
+    if (!persist('f5_back_door', 'hunt', () => stat('slain:f5_back_door:hobgoblin_champion') >= 1)) return false;
+    mark('floor5', 'gate6');
+
+    // Floor 6's gate: goblins at the drowned village.
+    if (!scout(['f5_cave_mouth', 'f5_bog', 'f5_drowned_village'])) return false;
+    if (!persist('f5_drowned_village', 'hunt', () => goblins() >= GATE6)) return false;
+    if (!climbTo('ascent_f6')) return false;
+    mark('gate6', 'floor6');
+    if (!scout(['f6_tunnels'])) return false;
     if (opts.attentive) {
-      const all = SPOTS[room].finds?.length ?? 0;
-      persist(room, 'search_room', () => finds(room) >= all);
+      for (const room of ['f6_pens', 'f6_kitchens', 'f6_shrine']) {
+        const all = SPOTS[room].finds?.length ?? 0;
+        if (!persist(room, 'explore', () => finds(room) >= all)) return false;
+      }
     }
-    if (below && SPOTS[below].fightLimit) {
-      if (!persist(below, 'hunt', () => stat(`fights:${below}`) >= SPOTS[below].fightLimit!)) return finish();
-    }
+    if (!scout(['f6_shrine', 'f6_drop'])) return false;
+    if (!persist('f6_great_hall', 'hunt', () => stat('slain:f6_great_hall:goblin_warchief') >= 1)) return false;
+    mark('floor6', 'floor6');
+    return true;
   }
-  mark('descent', 'floor3');
-  // The Hearing Room forces its one fight on arrival.
-  if (!persist('f3_hearing_room', 'hunt', () => stat('slain:f3_hearing_room:puppet_bureaucrat') >= 1)) return finish();
-  mark('floor3', 'floor4');
-  if (opts.through < 4) return finish();
 
-  // ---- Band 2: grind where the goblins are until the next gate's kill count is met. ----
-  const goblins = () => stat('kills:tag:goblin');
-  const GATE5 = gateValue(FLOORS.ascent_f5, 'kills:tag:goblin');
-  const GATE6 = gateValue(FLOORS.ascent_f6, 'kills:tag:goblin');
-  if (!climbTo('ascent_f4')) return finish();
-  if (!scout(['f4_woods_edge', 'f4_deep_woods'])) return finish();
-  if (!persist('f4_deep_woods', 'hunt', () => goblins() >= GATE5)) return finish();
-  if (!scout(['f4_ravine_rim', 'f4_ravine_floor'])) return finish();
-  if (!persist('f4_ravine_floor', 'hunt', () => stat('slain:f4_ravine_floor:goblin_raid_leader') >= 1)) return finish();
-  mark('floor4', 'gate5');
-
-  if (!climbTo('ascent_f5')) return finish();
-  mark('gate5', 'floor5');
-  if (!scout(['f5_bog', 'f5_cave_mouth', 'f5_hollows'])) return finish();
-  if (!persist('f5_hollows', 'explore', () => stat('flag:f5_back_door') >= 1)) return finish();
-  if (!persist('f5_back_door', 'hunt', () => stat('slain:f5_back_door:hobgoblin_champion') >= 1)) return finish();
-  mark('floor5', 'gate6');
-
-  // Floor 6's gate: goblins at the drowned village.
-  if (!scout(['f5_cave_mouth', 'f5_bog', 'f5_drowned_village'])) return finish();
-  if (!persist('f5_drowned_village', 'hunt', () => goblins() >= GATE6)) return finish();
-  if (!climbTo('ascent_f6')) return finish();
-  mark('gate6', 'floor6');
-  if (!scout(['f6_tunnels'])) return finish();
-  if (opts.attentive) {
-    for (const room of ['f6_pens', 'f6_kitchens', 'f6_shrine']) {
-      const all = SPOTS[room].finds?.length ?? 0;
-      if (!persist(room, 'explore', () => finds(room) >= all)) return finish();
-    }
-  }
-  if (!scout(['f6_shrine', 'f6_drop'])) return finish();
-  if (!persist('f6_great_hall', 'hunt', () => stat('slain:f6_great_hall:goblin_warchief') >= 1)) return finish();
-  mark('floor6', 'floor6');
+  if (!lowerBands()) return finish();
   finish();
 
   // ---- The first prestige: the warchief opened it. ----
@@ -377,7 +454,139 @@ export function runJohn(options: ClimbOptions): ClimbReport {
       send(leaveReview());
     }
   }
-  return report;
+  if (!report.prestiged || opts.through < 7) return report;
+
+  // ---- Run 2: floors 1 to 6 again, one segment. ----
+  runNo = 2;
+  segment = 'reclimb2';
+  segStart = t;
+  if (!lowerBands()) return finish();
+  record('reclimb2');
+
+  // ---- Floor-level machinery for everything past floor 6. ----
+
+  const r = ladderReader(eye);
+  /** Settle what the last floor left: a knockout slept off, a fight that cannot be fled finished. */
+  const settle = () => {
+    if (C().fight?.forced) until(() => !C().fight, 5 * 60 * TPS);
+    if (W().recovering) {
+      restUp();
+      until(() => !W().recovering, 10 * 60 * TPS);
+    }
+  };
+  /**
+   * Run `step` until `goal` holds, the clock runs out, or a pass spends no
+   * time at all (a walk that is refused would otherwise spin forever).
+   */
+  const repeat = (goal: () => boolean, step: () => void) => {
+    while (!goal() && !outOfTime()) {
+      const t0 = t;
+      step();
+      if (t === t0) break;
+    }
+  };
+  /**
+   * Play one floor of run 2 inside its cap: climb to it, `work` it, and close
+   * the segment when its clear holds. A floor still open at the cap is a
+   * wall: record it, send the debug skip and report whether the climb goes on.
+   */
+  const attempt = (seg: ClimbSegment, floorId: string, work: () => void): boolean => {
+    const goal = () => clearMet(r, FLOORS[floorId]);
+    segment = seg;
+    segStart = t;
+    capEnd = t + opts.floorCap;
+    const k0 = knockouts;
+    const onFloor = () => SPOTS[W().spot]?.areaId === FLOORS[floorId].areaId;
+    let entered = true;
+    // A pass that ends early (a knockout moved him, a route was refused) is
+    // taken up again until the floor opens, the cap runs out, or a pass does
+    // nothing. Each pass settles first and climbs if he is not on the floor.
+    repeat(goal, () => {
+      settle();
+      entered = onFloor() || climbTo(floorId);
+      if (entered) work();
+    });
+    const capped = t >= capEnd;
+    capEnd = Infinity;
+    if (goal()) {
+      record(seg);
+      return true;
+    }
+    if (t >= opts.budget || stopped) return false;
+    const why = capped
+      ? `open at the ${Math.round(opts.floorCap / TPS / 60)} min cap` + (entered ? '' : ' (the climb was refused: the floor gate is unmet)')
+      : !entered
+        ? 'the climb was refused (the floor gate is unmet) and no rule could meet it'
+        : 'the script stopped with the floor open (no rule left to try; not a measured wall)';
+    report.stuck[seg] = { at: t, spent: t - segStart, knockouts: knockouts - k0, level: level(), wall: capped, why };
+    if (!opts.skipWalls) return false;
+    record(seg);
+    report.firstSkip ??= seg;
+    // DEBUG SKIP, not a player action: the floor's gate and clear counters
+    // written, its clear XP stamped as paid.
+    send(debugSkipWall({ floor: floorId }));
+    return true;
+  };
+  /**
+   * Work a floor's keeper: walk in, fight, and after every knockout hunt the
+   * den for a while before the next try, as a player who lost goes and levels.
+   * The first try is made at once, with the level John arrived at.
+   */
+  const keeperLoop = (den: string, keeper: string, goal: () => boolean) =>
+    repeat(goal, () => {
+      const k0 = knockouts;
+      persist(keeper, 'hunt', () => goal() || knockouts > k0);
+      if (goal() || outOfTime()) return;
+      restUp();
+      const end = t + GRIND;
+      persist(den, 'hunt', () => goal() || t >= end);
+    });
+
+  // ---- Band 3: the four wards (floors 7 to 10), in the order `wards` gives. ----
+  // Each ward is worked as a floor of its own: the fights its form asks for,
+  // then the keeper, with the district's patrol as the den. John reads the
+  // ward's position (how many other wards are cleared) when he starts and
+  // again each time a knockout sends him back.
+  const wardWork: Record<number, () => void> = {
+    7: () => {
+      const done = () => clearMet(r, FLOORS.ascent_f7);
+      const pos = () => stat('band:pos:ascent_f7');
+      repeat(done, () => {
+        const at = pos();
+        const same = () => done() || pos() !== at;
+        if (at === 0) {
+          // The merchant road: twelve fights of two to four bandits.
+          if (scout(['f7_merchant_road'])) persist('f7_merchant_road', 'hunt', same);
+        } else if (at <= 2) {
+          // The salt-flats camp: the stockade, the watchtowers, then the chief.
+          // Another ward falling changes the form: the pass ends and the next one reads the position again.
+          const fought = (spot: string, n: number) => persist(spot, 'hunt', () => same() || stat(`fights:${spot}`) >= n) && !same();
+          if (!scout(['f7_stockade']) || !fought('f7_stockade', 4)) return;
+          if (!scout(['f7_watchtowers']) || !fought('f7_watchtowers', 3)) return;
+          if (scout(['f7_chiefs_tent'])) keeperLoop('f7_docks', 'f7_chiefs_tent', same);
+        } else {
+          // The demon in the burnt camp. Its window (24 in-game hours) runs
+          // out on its own, so this ward cannot stay shut.
+          if (scout(['f7_burnt_camp'])) keeperLoop('f7_docks', 'f7_burnt_camp', same);
+        }
+      });
+    },
+    8: () => {
+      if (scout(['f8_old_forest', 'f8_lodge'])) keeperLoop('f8_old_forest', 'f8_lodge', () => clearMet(r, FLOORS.ascent_f8));
+    },
+    9: () => {
+      if (scout(['f9_barrow_fields', 'f9_ossuary'])) keeperLoop('f9_barrow_fields', 'f9_ossuary', () => clearMet(r, FLOORS.ascent_f9));
+    },
+    10: () => {
+      if (scout(['f10_quarry', 'f10_foundry'])) keeperLoop('f10_quarry', 'f10_foundry', () => clearMet(r, FLOORS.ascent_f10));
+    },
+  };
+  /** `through` 7 to 9 stops after those wards; 10 plays all four. */
+  const wardsFor = opts.through >= 10 ? opts.wards : opts.wards.filter((n) => n <= opts.through);
+  for (const n of wardsFor) {
+    if (!attempt(`floor${n}` as ClimbSegment, `ascent_f${n}`, wardWork[n])) return finish();
+  }
+  return finish();
 }
 
 /** Seconds, for reading. */
@@ -395,13 +604,16 @@ export const clock = (ticks: number | null): string => {
 export const FLOOR_OF: Record<ClimbSegment, string> = {
   tutorial: 'f0', vermin: 'f1 vermin', floor1: 'f1', floor2: 'f2', gate3: 'f3 gate', descent: 'f3 stairs', floor3: 'f3',
   floor4: 'f4', gate5: 'f5 gate', floor5: 'f5', gate6: 'f6 gate', floor6: 'f6',
+  reclimb2: 'f1-6 again', floor7: 'f7', floor8: 'f8', floor9: 'f9', floor10: 'f10',
 };
 
 /** The per-floor table of one climb, in the old pacing script's columns. */
 export function climbTable(r: ClimbReport): string {
   const head = ['floor', 'cleared at', 'took', 'KO', 'boss tries/lost', 'level', 'gold'];
   let prev = 0;
-  const body = SEGMENTS.filter((s) => r.done[s] !== null).map((s) => {
+  // In play order: band 3's wards close in the order `wards` gave.
+  const shown = SEGMENTS.filter((s) => r.done[s] !== null).sort((a, b) => r.done[a]! - r.done[b]!);
+  const body = shown.map((s) => {
     const row = [
       FLOOR_OF[s],
       clock(r.done[s]),
@@ -414,12 +626,17 @@ export function climbTable(r: ClimbReport): string {
     prev = r.done[s]!;
     return row;
   });
+  const walls = SEGMENTS.filter((s) => r.stuck[s]).map((s) => {
+    const st = r.stuck[s]!;
+    return `${FLOOR_OF[s]}: ${st.why}; ${clock(st.spent)} on the floor, ${st.knockouts} KO, level ${st.level}; debug skip`;
+  });
   const w = head.map((h, i) => Math.max(h.length, ...body.map((b) => b[i].length)));
   const fmt = (c: string[]) => c.map((x, i) => (i === 0 ? x.padEnd(w[i]) : x.padStart(w[i]))).join('  ');
   return [
     `John ${r.opts.weapon}, seed ${r.opts.seed}: ${clock(r.ticks)} of play, ${r.fights} fights, ${r.goldEarned} gold earned` +
       (r.prestiged ? `, prestiged (harvest ${r.harvest} points)` : ''),
     fmt(head),
-    ...body.map(fmt),
+    ...body.map((row, i) => fmt(row) + (r.skipBefore[shown[i]] ? '  (measured after skip)' : '')),
+    ...walls,
   ].join('\n');
 }

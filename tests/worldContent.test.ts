@@ -1,8 +1,9 @@
 /**
  * The location, tower and floor lints of the old `tests/content.test.ts`
  * ("world graph", "towers, bands & floors", the activity drops, the region
- * skies), under their old names, on the registries here: 3 regions, 16 areas,
- * 80 spots, 1 tower, 2 bands, 7 floors.
+ * skies, the band 3 wards), under their old names, on the registries here: 3
+ * regions, 21 areas, 96 spots, 1 tower, 3 bands, 11 floors (step 4 port C1
+ * added band 3, the City).
  *
  * Changed: imports; a find's gold is `{ min, max }`; an activity's `attrXp` is
  * a list. The old cases stood on the shelved countryside where they named a
@@ -23,6 +24,7 @@ import { MATERIALS } from '../src/systems/materials';
 import { MONSTERS, monsterTagsOf } from '../src/systems/monsters';
 import { SKILLS } from '../src/systems/skills';
 import { STAT_NAMES } from '../src/systems/stats';
+import { WARD_WINDOWS, wardContentIssues, wardStatKeys } from '../src/systems/wards';
 import { ELEMENT_TAGS, PLACE_TAGS, SKY_TABLES, TERRAIN_PROFILES, WEATHER_KINDS } from '../src/systems/weather';
 import {
   ADJACENCY,
@@ -54,14 +56,21 @@ function contentFlags(): Set<string> {
   return keys;
 }
 
+/** The ward machinery's run counters, read once. */
+let wardKeys: Set<string> | undefined;
+
 /**
  * Counters some system here bumps. The old `statCounterValid` without the
  * keys of systems that are not ported (crafts, quests, shops, prestige, the
- * sea, the festival, the wards, weapon families, miracles, the bestiary).
+ * sea, the festival, weapon families, miracles, the bestiary).
  */
 function statCounterValid(key: string): boolean {
   const staticKeys = new Set(['kills', 'defeats', 'gold:earned', 'skill:levels']);
   if (staticKeys.has(key)) return true;
+  // Band 3's ward machinery (wards/validation.ts): an any-order floor's
+  // position, a spot's clear stamp, and a ward window's keys and flags.
+  wardKeys ??= wardStatKeys(WARD_WINDOWS, { bands: BANDS, floors: FLOORS, spots: SPOTS });
+  if (wardKeys.has(key)) return true;
   const COMBAT_COUNTERS = new Set(['attacks', 'crits', 'dodges', 'parries', 'hitsTaken']);
   if (key.startsWith('combat:')) return COMBAT_COUNTERS.has(key.slice(7));
   if (key.startsWith('kills:tag:')) {
@@ -147,19 +156,22 @@ function searchContentIssues(spot: SpotDef): string[] {
 
 // New here: what the port holds.
 describe('the registries in scope', () => {
-  it('80 spots (27 in Threshold, 53 on floors 0 to 6), 16 areas, 3 regions', () => {
+  it('96 spots (27 in Threshold, 53 on floors 0 to 6, 16 in the City), 21 areas, 3 regions', () => {
     const inRegion = (regionId: string) => Object.values(SPOTS).filter((s) => AREAS[s.areaId]?.regionId === regionId).length;
-    expect(Object.keys(SPOTS)).toHaveLength(80);
+    const cityAreas = new Set(['ascent_castle_area', ...['ascent_f7', 'ascent_f8', 'ascent_f9', 'ascent_f10'].map((id) => FLOORS[id].areaId)]);
+    const inCity = Object.values(SPOTS).filter((s) => cityAreas.has(s.areaId)).length;
+    expect(Object.keys(SPOTS)).toHaveLength(96);
     expect(inRegion('threshold')).toBe(27);
-    expect(inRegion('holding_level') + inRegion('the_ascent')).toBe(53);
-    expect(Object.keys(AREAS)).toHaveLength(16);
+    expect(inCity).toBe(16);
+    expect(inRegion('holding_level') + inRegion('the_ascent') - inCity).toBe(53);
+    expect(Object.keys(AREAS)).toHaveLength(21);
     expect(Object.keys(REGIONS).sort()).toEqual(['holding_level', 'the_ascent', 'threshold']);
   });
 
-  it('1 tower, 2 bands, 7 floors', () => {
+  it('1 tower, 3 bands, 11 floors', () => {
     expect(Object.keys(TOWERS)).toEqual(['the_ascent']);
-    expect(Object.keys(BANDS)).toEqual(['ascent_lower', 'ascent_middle']);
-    expect(Object.values(FLOORS).map((f) => f.index).sort((a, b) => a - b)).toEqual([0, 1, 2, 3, 4, 5, 6]);
+    expect(Object.keys(BANDS)).toEqual(['ascent_lower', 'ascent_middle', 'ascent_upper']);
+    expect(Object.values(FLOORS).map((f) => f.index).sort((a, b) => a - b)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
   });
 
   it('the starting spot is the cell of floor 0', () => {
@@ -798,7 +810,7 @@ describe('towers, bands & floors', () => {
       .filter(({ report }) => report.skipped !== undefined)
       .map(({ floor, report }) => `${floor.id} (${report.skipped})`);
     expect(skipped, 'floors whose spine rules did not run').toEqual([]);
-    expect(reports()).toHaveLength(6);
+    expect(reports()).toHaveLength(10);
     expect(issuesOf('spine')).toEqual([]);
   });
 
@@ -821,8 +833,16 @@ describe('towers, bands & floors', () => {
   it.todo('the festival’s strategies, plans and staged fighters resolve (step 4: the festival)');
 });
 
+/**
+ * Band 3's wards: clear stamps, kept wounds and ward windows. One pure
+ * function in `src/systems/wards/validation.ts`, run here on the live
+ * registries and by the forge validator on the staged copy.
+ */
 describe('band 3 wards: stamps, kept wounds and windows', () => {
-  it.todo('every stamp has a fight budget, every kept wound a share, every window resolves (step 4: band 3)');
+  it('every stamp has a fight budget, every kept wound a share, every window resolves', () => {
+    const issues = wardContentIssues(WARD_WINDOWS, { bands: BANDS, floors: FLOORS, spots: SPOTS, monsters: MONSTERS });
+    expect(issues.map((i) => `${i.kind} ${i.id}: ${i.message}`)).toEqual([]);
+  });
 });
 
 describe('the harbor band: sides and convoys', () => {

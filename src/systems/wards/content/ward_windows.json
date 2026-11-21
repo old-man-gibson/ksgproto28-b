@@ -1,0 +1,15 @@
+[
+  {
+    "id": "f7_demon",
+    "floorId": "ascent_f7",
+    "position": 3,
+    "ticks": 14400,
+    "spotId": "f7_burnt_camp",
+    "monsterId": "ph_camp_demon",
+    "doneKey": "ward:f7:done",
+    "atKey": "ward:f7:demon:at",
+    "goneKey": "ward:f7:demon:gone",
+    "foughtKey": "ward:f7:demon:fought",
+    "flags": { "fought": "flag:f7:demon_marked", "unmet": "flag:f7:demon_unmet" }
+  }
+]

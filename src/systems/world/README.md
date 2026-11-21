@@ -125,7 +125,7 @@ cold and lightning are set in `spellcraft` (`cast.ts`).
   until those systems exist.
 - The approach of a road (`ApproachSpec`, `pendingApproach`): no road in
   scope has one. Step 4.
-- Band hubs (`climbToHub`), the festival forfeit, the seam verb of floor 20.
+- The festival forfeit, the seam verb of floor 20.
 - `noteTravelSkies` (Weathersense), bonus time.
 - The surveyed plan of the map and the Stations row.
 
@@ -190,3 +190,17 @@ cold and lightning are set in `spellcraft` (`cast.ts`).
   yet unlocked is left out of the list. A locked craft is blocked with its
   requirement line.
 - `crafting` emits `world/cycle` with `baseTicks` = the recipe's ticks.
+
+## Step 4 port C1
+
+- Content: the castle area and floors 7 to 10 (5 areas, 16 spots: the
+  castle court and 15 ward spots), appended from the old registry.
+- Command `world/climb-hub { band }` (old `climbToHub`): ride to a band's
+  hub once the band is open. Skip reasons: a journey is under way, the
+  character is knocked out, the fight cannot be left, the ladder does not go
+  to the hub from here now. Band hubs were already ride stops and router
+  stops (`rideStops`).
+- The castle court is a haven by the existing rule (a rest activity).
+- The ladder card of the location panel shows the hub before the band's
+  first floor: status, the band gate, a ride button.
+

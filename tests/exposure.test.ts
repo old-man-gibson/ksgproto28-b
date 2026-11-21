@@ -1,7 +1,7 @@
 /**
  * Exposure, darkness, moonlight, sunlight, sky tables and sky rules. Port of
  * the old `tests/exposure.test.ts` and `tests/sky.test.ts`, of the cases of
- * `tests/openSky.test.ts` on floors 0 to 6, of the gale case of
+ * `tests/openSky.test.ts` on floors 0 to 10 and the castle, of the gale case of
  * `tests/derivedcache.test.ts`, and of single cases of `content.test.ts`,
  * `facet.test.ts` and `mutagens.test.ts`.
  *
@@ -445,23 +445,83 @@ describe('open sky in the tower', () => {
     expect(wet('f1_landing')).toBe(false);
   });
 
-  // ---- openSky.test.ts, the floors of this port ----
+  // ---- openSky.test.ts, floors 0 to 10 and the castle ----
 
   /** Spots inside an open tower area that carry `indoor`, by floor. */
   const INDOOR_SPOTS: Record<string, string[]> = {
     f0: ['f0_cell', 'f0_cellblock'],
     f5: ['f5_hollows'],
     f6: ['f6_tunnels', 'f6_kitchens', 'f6_drop', 'f6_great_hall'],
+    f7: ['f7_chiefs_tent'],
+    f8: ['f8_lodge'],
+    f9: ['f9_ossuary'],
+    f10: ['f10_quarry', 'f10_foundry'],
   };
-  const LEFT_OPEN = ['f0_gate', 'f5_cave_mouth', 'f5_back_door', 'f6_warren_mouth'];
-  const OPEN_AREAS = ['ascent_f0_area', 'ascent_f4_area', 'ascent_f5_area', 'ascent_f6_area'];
+  const LEFT_OPEN = ['f0_gate', 'f5_cave_mouth', 'f5_back_door', 'f6_warren_mouth', 'f7_watchtowers', 'f10_artificers_row'];
+  const OPEN_AREAS = [
+    'ascent_f0_area',
+    'ascent_f4_area',
+    'ascent_f5_area',
+    'ascent_f6_area',
+    'ascent_f7_area',
+    'ascent_f8_area',
+    'ascent_f9_area',
+    'ascent_f10_area',
+  ];
+  /** One open spot per floor of band 3, for the night checks. */
+  const NIGHT_SPOT: Record<number, string> = { 7: 'f7_docks', 8: 'f8_forest_gate', 9: 'f9_cathedral_close', 10: 'f10_artificers_row' };
   const skyAt = (spot: string) => skyKindAt(reads(gameAt(spot, at(40, 12), undefined, SEED_B)), spot);
 
   it('the areas that set sheltered: false are the open Ascent floors of this port', () => {
     const open = Object.values(AREAS)
       .filter((a) => a.regionId === 'the_ascent' && a.sheltered === false)
       .map((a) => a.id);
-    expect(open).toEqual(['ascent_f4_area', 'ascent_f5_area', 'ascent_f6_area']);
+    expect(open).toEqual(['ascent_f4_area', 'ascent_f5_area', 'ascent_f6_area', 'ascent_f7_area', 'ascent_f8_area', 'ascent_f9_area', 'ascent_f10_area']);
+  });
+
+  it('the castle keeps the roof: its sky is the sheltered Ascent', () => {
+    expect(skyRegionOf('castle_court')?.sheltered).toBe(true);
+    expect(skyAt('castle_court')).toBeNull();
+  });
+
+  it('floors 7 to 10 read the one sky the Ascent pins, so two floors share a kind at one tick', () => {
+    const kinds = new Set<string>();
+    for (const spot of Object.values(NIGHT_SPOT)) {
+      const kind = skyKindAt(reads(gameAt(spot, at(120, 9), undefined, SEED_B)), spot);
+      // A null would read as one shared kind through String(): every spot must have a sky.
+      expect(kind, spot).not.toBeNull();
+      kinds.add(String(kind));
+    }
+    expect(kinds.size).toBe(1);
+  });
+
+  it('the night on floors 7 to 10 is dark and moonlit under the open sky, and teaches Darkvision', () => {
+    for (const [floor, spot] of Object.entries(NIGHT_SPOT)) {
+      const r = reads(gameAt(spot, at(3, 23), undefined, SEED_B));
+      const moon = moonlightOn(r);
+      expect(moon, `f${floor} ${spot}: moonlight`).not.toBeNull();
+      expect(darknessFactor(r), `f${floor} ${spot}`).toBeCloseTo(skyDarkness(23, moon!.lit), 12);
+      expect(darknessFactor(r), `f${floor} ${spot}`).toBeGreaterThan(0);
+      const trained = minuteAt(spot, at(3, 23), undefined, SEED_B);
+      expect(skillsOf(trained).darkvision?.xp ?? 0, `f${floor} ${spot}: darkvision xp`).toBeGreaterThan(0);
+    }
+  });
+
+  it('the night on floors 7 to 10 is not dark by day', () => {
+    for (const spot of Object.values(NIGHT_SPOT)) {
+      expect(darknessFactor(reads(gameAt(spot, at(3, 12), undefined, SEED_B))), spot).toBe(0);
+    }
+  });
+
+  it('the castle adds no darkness at night', () => {
+    const r = reads(gameAt('castle_court', at(3, 23), undefined, SEED_B));
+    expect(darknessFactor(r)).toBe(0);
+    expect(moonlightOn(r)).toBeNull();
+  });
+
+  it('floor 10 lets the sun in by day at an open spot and not at an inside one', () => {
+    expect(sunlight(reads(gameAt('f10_artificers_row', at(3, 12), undefined, SEED_B)))).toBeGreaterThan(0);
+    expect(sunlight(reads(gameAt('f10_quarry', at(3, 12), undefined, SEED_B)))).toBe(0);
   });
 
   it('every named inside spot is roofed by its tag and not by its area', () => {
@@ -531,7 +591,7 @@ describe('open sky in the tower', () => {
     }
   });
 
-  it.todo('floors 7 to 20, the castle and the festival: open and roofed areas, night and sun (step 4: floors above 6)');
+  it.todo('floors 11 to 20 and the festival: open and roofed areas, night and sun (step 4: floors above 10)');
   it.todo('the header weather chip shows `still` at a roofed spot (the UI step: `headerSky` of the old shell)');
 });
 

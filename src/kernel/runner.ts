@@ -66,7 +66,7 @@ export interface CatchUpInput {
  */
 export function catchUp(input: CatchUpInput): SaveEnvelope {
   // Content was validated when the calling kernel was created.
-  const kernel = createKernel({ systems: input.systems, validateContent: false });
+  const kernel = createKernel({ systems: input.systems, validateContent: false, catchingUp: true });
   const loaded = kernel.load(input.envelope);
   if (!loaded.ok) throw new Error(`catch-up could not load the state: ${loaded.error}`);
   runHeadless(kernel, { ticks: input.ticks, commands: input.commands, onProgress: input.onProgress });

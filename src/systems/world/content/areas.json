@@ -87,5 +87,37 @@
     "regionId": "the_ascent",
     "sheltered": false,
     "scene": "crypt"
+  },
+  {
+    "id": "ascent_castle_area",
+    "name": "The Castle",
+    "regionId": "the_ascent",
+    "scene": "hall"
+  },
+  {
+    "id": "ascent_f7_area",
+    "name": "The South Ward",
+    "regionId": "the_ascent",
+    "sheltered": false
+  },
+  {
+    "id": "ascent_f8_area",
+    "name": "The West Ward",
+    "regionId": "the_ascent",
+    "sheltered": false
+  },
+  {
+    "id": "ascent_f9_area",
+    "name": "The North Ward",
+    "regionId": "the_ascent",
+    "sheltered": false,
+    "scene": "crypt"
+  },
+  {
+    "id": "ascent_f10_area",
+    "name": "The East Ward",
+    "regionId": "the_ascent",
+    "sheltered": false,
+    "scene": "hall"
   }
 ]

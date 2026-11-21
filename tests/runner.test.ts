@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { catchUp, runHeadless, type ScheduledCommand } from '../src/kernel';
+import { catchUp, runHeadless, type Kernel, type ScheduledCommand } from '../src/kernel';
 import { systems } from '../src/systems';
 import { buyStep } from '../src/systems/counter';
-import { makeKernel } from './helpers';
+import type { CountersState } from '../src/systems/counters';
+import { bandPosKey, FLOORS } from '../src/systems/ladder';
+import { WARD_WINDOWS, wardClockKey } from '../src/systems/wards';
+import { makeKernel, patch } from './helpers';
 
 describe('headless runner', () => {
   it('runs N ticks and the commands at their ticks', () => {
@@ -59,4 +62,49 @@ describe('offline catch-up', () => {
   });
 
   // The 8-hour budget of this runner is in tests/budgets.test.ts.
+});
+
+/**
+ * Kernel change K1 (docs/KERNEL.md decision 34): `ctx.catchingUp` is true in
+ * every handler of a `catchUp` run and false elsewhere, `runHeadless` on a
+ * live kernel included. The equality case above holds for content with no
+ * clock of live play. The systems that read the flag, each with a case:
+ * - `wards`: a ward window's clock counts live ticks only.
+ * Later: `sea` (offline convoys paid by a share), the festival clock.
+ */
+describe('systems that behave differently in catch-up', () => {
+  const W = WARD_WINDOWS[0];
+  const clockKey = wardClockKey(W);
+
+  /** Wards 8 to 10 cleared, ward 7's position 3: the demon's window opens on the first tick. */
+  function windowOpen(): Kernel {
+    const kernel = makeKernel();
+    patch(kernel, (slices) => {
+      const counts = (slices.counters as CountersState).counts;
+      for (const id of ['ascent_f8', 'ascent_f9', 'ascent_f10']) {
+        for (const c of FLOORS[id].clear ?? []) if (c.type === 'stat') counts[c.key] = c.value;
+      }
+      counts[bandPosKey(W.floorId)] = 3;
+    });
+    kernel.tick();
+    const counts = kernel.snapshot().slices.counters as CountersState;
+    expect(counts.counts[W.atKey]).toBeDefined();
+    return kernel;
+  }
+
+  const clockOf = (snapshot: { slices: Record<string, unknown> }) => (snapshot.slices.counters as CountersState).counts[clockKey] ?? 0;
+
+  it('wards: a ward window clock does not advance under catchUp, and does under runHeadless on a live kernel', () => {
+    const live = windowOpen();
+    const before = clockOf(live.snapshot());
+
+    const returned = catchUp({ systems, envelope: live.save(1000), ticks: 500, now: 2000 });
+    const viaCatchUp = makeKernel();
+    expect(viaCatchUp.load(returned).ok).toBe(true);
+    expect(viaCatchUp.tickCount).toBe(live.tickCount + 500);
+    expect(clockOf(viaCatchUp.snapshot())).toBe(before);
+
+    runHeadless(live, { ticks: 500 });
+    expect(clockOf(live.snapshot())).toBe(before + 500);
+  });
 });

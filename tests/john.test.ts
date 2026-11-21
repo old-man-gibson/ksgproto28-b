@@ -10,12 +10,16 @@
  *
  * Not ported: "the archive's club and the cut strings both answer the
  * bureaucrat" (a duel harness over forced fights with pinned attributes,
- * left for the next John work); "the road past band 2" (runs 2 and 3, step 4).
+ * left for the next John work).
+ *
+ * "The road past band 2" (the old smoke case at floor 20) is ported at
+ * floor 10 since step 4 port C1: run 2 ends after band 3's wards; the siege
+ * and run 3 arrive with ports C2 to C7.
  */
 import { beforeAll, describe, expect, it } from 'vitest';
 import { TPS } from '../src/kernel';
 import { counterValue } from '../src/systems/counters';
-import { runJohn, secs, type ClimbReport } from './john';
+import { runJohn, secs, SEGMENTS, type ClimbReport } from './john';
 
 const RACK = ['sword', 'spear', 'dagger', 'hammer', 'unarmed'];
 const SEEDS = [42, 7];
@@ -151,4 +155,20 @@ describe('John through band 2', () => {
       expect(k.staleStats()).toEqual([]);
     }
   });
+});
+
+describe('John: the road past band 2 (smoke test, no bounds)', () => {
+  /**
+   * The driver's own health, not the game's pacing: `through: 10` plays two
+   * runs (one prestige) and reports a time for every floor. A floor that
+   * stays shut for the cap is a finding (`stuck`, then a debug skip), so this
+   * does not fail on one; it fails when John stops for want of a rule, or
+   * when a segment never closes. The numbers are `npm run pacing -- --through 10`.
+   */
+  it('plays every floor to 10 and never stops for want of a rule', () => {
+    const r = runJohn({ seed: 42, weapon: 'skip', through: 10 });
+    for (const k of SEGMENTS) expect(r.done[k], `${k} never closed`).not.toBeNull();
+    for (const [k, st] of Object.entries(r.stuck)) expect(st.wall, `${k}: ${st.why}`).toBe(true);
+    expect(r.runs.floor10, 'floor 10 is played in the second run').toBe(2);
+  }, 60_000);
 });

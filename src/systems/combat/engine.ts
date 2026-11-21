@@ -277,7 +277,11 @@ export const enemyKilled = defineEvent<{
 /** The last enemy died. The old `fight:won`. */
 export const fightWon = defineEvent<{ site: string; forced: boolean }>('combat/fight-won');
 /** A fight ended for any reason. The old `fight:closed`. */
-export const fightClosed = defineEvent<{ site: string; standing: EnemyRef[] }>('combat/fight-closed');
+/**
+ * The fight ended, won or not. `standing` is every enemy still alive; `hurt`
+ * says it lost HP in this fight (the old `lastHit` stamp, read by `wards`).
+ */
+export const fightClosed = defineEvent<{ site: string; standing: (EnemyRef & { hurt: boolean })[] }>('combat/fight-closed');
 
 /**
  * The player went down in a fight. The old `defeat` bus event, with what
@@ -1059,7 +1063,7 @@ export function fallToCondition(ctx: C): void {
  */
 function closeCombat(ctx: C): void {
   const fight = ctx.state.fight;
-  const standing = fight ? liveEnemies(fight).map(refOf) : [];
+  const standing = fight ? liveEnemies(fight).map((e) => ({ ...refOf(e), hurt: e.lastHit !== undefined })) : [];
   const counts = ctx.read(counters);
   for (const [key, value] of Object.entries(pendingWounds(ctx, fight))) {
     if (counterValue(counts, key) !== value) ctx.emit(setCounter, { key, value });

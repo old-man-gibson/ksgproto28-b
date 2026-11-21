@@ -698,3 +698,113 @@ with no name overflowed the row; the Honed Body counter showed a raw
 float. No horizontal overflow at 375 px after the fix; no console errors.
 Not checked in a browser: the Warden's two quests in the Quests panel
 (tested headless), a veil lifting (tested headless).
+
+## 8. Port C1: band 3, the City (done)
+
+Done 2026-11-20 on branch `step4-C1`, from `main` at `5b61195`. Not merged,
+not pushed. The full account: `src/systems/wards/README.md` and the "Step 4
+port C1" sections of the `ladder`, `world` and `prestige` READMEs;
+docs/KERNEL.md decision 34.
+
+What was ported:
+
+- Kernel K1: `ctx.catchingUp`, read-only on every handler context. `catchUp`
+  creates its kernel with the option `catchingUp: true`; every other kernel
+  has it false. `tests/runner.test.ts` keeps the equality of catch-up and
+  running in place and names `wards` as the system that differs (`sea` and
+  the festival clock to come), with a case: a ward window's clock stands
+  still for 500 ticks of `catchUp` and moves 500 under `runHeadless`.
+- Content: band `ascent_upper`, floors 7 to 10, the castle area and the four
+  ward areas, 16 spots (the castle court and 15 ward spots; section 1.2
+  says 17), their text. Appended from the old registry by a one-off script.
+- `wards` (new system): old `wards.ts`, `wards.data.ts` (`f7_demon`) and
+  `wardValidation.ts` (`wardContentIssues`, `wardStatKeys`). No slice of its
+  own: every key is a run counter, as in the old build. Tick order 16,
+  after combat. Hears `combat/fight-closed` and `combat/kill`.
+- `combat`: `combat/fight-closed` carries `hurt` on each standing enemy (the
+  old `lastHit` stamp).
+- `ladder`: `clearLapsed` (registered by `wards`), the lapse line and no
+  clear XP for a lapsed clear, `ladder/debug-skip-wall` (Q5), the hub on the
+  view, ward term words (old `stampTerm`, `otherFloorsOf`).
+- `world`: `world/climb-hub` (old `climbToHub`); the hub row on the ladder
+  card of the location panel. The castle court is a haven by the existing
+  rest rule; band hubs were already ride and router stops.
+- `prestige`: the `floors` harvest source skips a lapsed floor. The city
+  key's gate needed nothing new (boon fact `boon:city_key`).
+- Spec ported: `band3.test.ts` (19 old cases and the band hub case of
+  `rideEdges.test.ts`), `band3-ward7.test.ts`, `band3-wards-8-10.test.ts`,
+  `band3-wards-live.test.ts`, `wards.test.ts`, `wardLabels.test.ts` (2 and
+  1 todo for C6), the ward case of `worldContent.test.ts` (the todo at 825),
+  floors 7 to 10 and the castle of `exposure.test.ts` (from the old
+  `openSky.test.ts`), the old John smoke case at floor 10.
+
+Old bugs and rules kept:
+
+- A ward window whose clock is full waits out a live fight with its threat;
+  a kill then sets no flag.
+- The stamp clear of floor 7 reads "Win The Merchant Road, The Chief's Tent
+  or The Burnt Camp" once the floor is cleared: no spot is live, so every
+  spot is named (old `stampTerm`).
+- Every rung of band 3 repeats the band's gate, as the old terms did.
+
+Changed while porting (no rule): the debug skip is a command refused in a
+production build, not a write into the state; the term words come from the
+ladder view, so a fight count reads "4 wins at <spot>" where the old text
+said "win 4 fights at <spot>".
+
+Left out:
+
+- The forge validator calls no content lint here (as for the floor rules
+  and smithing); `wardContentIssues` runs in `tests/worldContent.test.ts`.
+- `ladderEnd.test.ts` has no band 3 case (all need floor 20, C7);
+  `towers.test.ts` has none. The old `ladderView.test.ts` band 3 cases test
+  the old UI card builder (folding, foreknown cards, `hubTerms`), which has
+  no counterpart here: UI step.
+
+### 8.1 John
+
+`tests/john.ts` gains run 2 (section 3.1): the first prestige buys
+`city_key`, `reclimb2` climbs floors 1 to 6 again, then `floor7` to
+`floor10` in the order of the option `wards`, each with a cap (`floorCap`,
+240 minutes), the stuck record and the debug skip. `npm run pacing --
+--through 10 [--wards 10,9,8,7] [--cap N]`. No wall on any seed. The
+prestige takes no seed here (the old one reseeded the generator), so run 2
+starts from a different stream.
+
+Default order (7, 8, 9, 10), segment time and knockouts, seeds 42/7/1234:
+
+| Segment | Old | New | Old mean | New mean | Change | KO old | KO new |
+|---|---|---|---|---|---|---|---|
+| f1-6 again | 0:23:16 / 0:25:29 / 0:24:04 | 0:22:45 / 0:23:08 / 0:24:06 | 0:24:16 | 0:23:20 | -3.9% | 21/20/22 | 20/21/20 |
+| f7 | 0:03:02 / 0:02:58 / 0:03:05 | 0:02:45 / 0:02:25 / 0:02:41 | 0:03:02 | 0:02:37 | -13.6% | 3/3/3 | 2/2/2 |
+| f8 (keeper) | 0:06:33 / 0:00:15 / 0:00:13 | 0:12:42 / 0:00:15 / 0:06:26 | 0:02:20 | 0:06:28 | +176% | 9/0/0 | 15/0/8 |
+| f9 (keeper) | 0:12:44 / 0:12:51 / 0:19:13 | 0:00:12 / 0:12:48 / 0:06:29 | 0:14:56 | 0:06:30 | -56.5% | 11/15/20 | 0/16/9 |
+| f10 (keeper) | 0:00:11 / 0:12:42 / 0:00:15 | 0:06:30 / 0:00:14 / 0:12:42 | 0:04:23 | 0:06:29 | +48.0% | 0/2/0 | 3/0/5 |
+| Run 2 to f10 | 0:45:46 / 0:54:16 / 0:46:48 | 0:44:55 / 0:38:52 / 0:52:25 | 0:48:57 | 0:45:24 | -7.2% | | |
+
+`--wards 10,9,8,7`, old run on `D:\ksgproto28` at `7c1267b`, nothing
+edited, the same day:
+
+| Segment | Old | New | Old mean | New mean | Change | KO old | KO new |
+|---|---|---|---|---|---|---|---|
+| f1-6 again | 0:23:16 / 0:25:29 / 0:24:04 | 0:22:45 / 0:23:08 / 0:24:06 | 0:24:16 | 0:23:20 | -3.9% | 21/20/22 | 20/21/20 |
+| f10 (keeper) | 0:06:31 / 0:00:29 / 0:06:32 | 0:06:34 / 0:00:27 / 0:00:26 | 0:04:31 | 0:02:29 | -45.0% | 4/1/4 | 7/1/1 |
+| f9 (keeper) | 0:00:14 / 0:06:28 / 0:06:28 | 0:00:14 / 0:12:51 / 0:00:17 | 0:04:23 | 0:04:27 | +1.5% | 0/7/6 | 0/10/0 |
+| f8 (keeper) | 0:06:30 / 0:12:53 / 0:00:17 | 0:06:34 / 0:00:13 / 0:25:11 | 0:06:33 | 0:10:39 | +62.5% | 9/18/0 | 10/0/34 |
+| f7 (the demon) | 0:12:43 / 0:06:26 / 0:06:25 | 0:12:48 / 0:06:26 / 0:12:39 | 0:08:31 | 0:10:38 | +24.7% | 2/1/1 | 2/1/2 |
+| Run 2 to f10 | 0:49:13 / 0:51:45 / 0:43:45 | 0:48:55 / 0:43:05 / 1:02:40 | 0:48:14 | 0:51:33 | +6.9% | | |
+
+Against section 3.4: run 2 to floor 10 is within 15% of the old mean in
+both orders (the run 2 total with the siege waits for C2). The held
+segments (over two minutes, not a keeper) are within 35%: f1-6 again
+-3.9%, f7 -13.6%. Floors 8 to 10, and floor 7 when it is the demon, are
+keeper segments and are reported: each is one to five tries at a keeper,
+with a 6 minute grind (`GRIND`) between tries, so a seed's time is a
+multiple of about 6:30 and moves with one fight won or lost. The keepers
+and levels match the old ones (f8 young beast L16 or the final form L23;
+f9 death knight L18 at position 2; f10 ore eater stage 4 L23). Seed 42 won
+the death knight at level 14 at the first try; old seeds lost 2 to 3.
+
+Harvest at the first prestige: 17 / 16 / 17, unchanged from port L.
+Floors 0 to 6 of run 1: unchanged from port L (0:26:14 / 0:26:26 /
+0:25:51).

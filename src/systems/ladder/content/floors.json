@@ -143,5 +143,77 @@
     ],
     "clearXp": 400,
     "desc": "Floor 6, the goblin warren, two maps. Gate: 40 goblins killed. Three sabotages in the outer warren each take a level off the Goblin Warchief. Clear: kill the warchief in the Great Hall, which also opens prestige."
+  },
+  {
+    "id": "ascent_f7",
+    "name": "The South Ward",
+    "towerId": "the_ascent",
+    "bandId": "ascent_upper",
+    "index": 7,
+    "areaId": "ascent_f7_area",
+    "landing": "f7_docks",
+    "clear": [
+      {
+        "type": "stat",
+        "key": "ward:f7:done",
+        "value": 1
+      }
+    ],
+    "clearXp": 500,
+    "desc": "Floor 7, the city’s south ward: bandits raiding the merchants and convoys that feed the city. The ward’s form depends on how many of the other three wards are cleared this run. None: 12 fights on the merchant road. One or two: siege the bandits’ camp in the salt flats, the stockade and the watchtowers, then the chief in his tent. All three: a demon in the burnt camp, for 24 in-game hours; floor 7 clears when it dies or when the time runs out."
+  },
+  {
+    "id": "ascent_f8",
+    "name": "The West Ward",
+    "towerId": "the_ascent",
+    "bandId": "ascent_upper",
+    "index": 8,
+    "areaId": "ascent_f8_area",
+    "landing": "f8_forest_gate",
+    "clear": [
+      {
+        "type": "stat",
+        "key": "fights:f8_lodge",
+        "value": 1
+      }
+    ],
+    "clearXp": 500,
+    "desc": "Floor 8, the city’s west ward, facing the forest: the forest gate, the old forest past it, and a rogue beast in the hunting lodge. The fighting in the city crowds the beasts into the forest, and the beast changes under it: with one or none of the other wards cleared it is the young form, with two or three the final form. Clear: win the lodge’s one fight."
+  },
+  {
+    "id": "ascent_f9",
+    "name": "The North Ward",
+    "towerId": "the_ascent",
+    "bandId": "ascent_upper",
+    "index": 9,
+    "areaId": "ascent_f9_area",
+    "landing": "f9_cathedral_close",
+    "clear": [
+      {
+        "type": "stat",
+        "key": "fights:f9_ossuary",
+        "value": 1
+      }
+    ],
+    "clearXp": 500,
+    "desc": "Floor 9, the city’s north ward: the cathedral close, the barrow fields past the north gate, and the ossuary’s keeper. With one or none of the other wards cleared it is a Death Squire, with two or three a Death Knight. Clear: win the ossuary’s one fight."
+  },
+  {
+    "id": "ascent_f10",
+    "name": "The East Ward",
+    "towerId": "the_ascent",
+    "bandId": "ascent_upper",
+    "index": 10,
+    "areaId": "ascent_f10_area",
+    "landing": "f10_artificers_row",
+    "clear": [
+      {
+        "type": "stat",
+        "key": "fights:f10_foundry",
+        "value": 1
+      }
+    ],
+    "clearXp": 500,
+    "desc": "Floor 10, the city’s east ward: the artificers’ row, the mine past the east gate, and an ore eater in the deep seam below it. The eater is at stage 1 with none of the other wards cleared and one stage larger for each one cleared, up to stage 4 with all three. Clear: win the deep seam’s one fight."
   }
 ]

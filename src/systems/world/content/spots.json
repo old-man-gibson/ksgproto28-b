@@ -4575,5 +4575,1358 @@
       }
     ],
     "desc": "The way out of floor 0. The road through it into Threshold (3 s) is one-way: the Foot of the Ascent is on the other side and the floor closes behind you."
+  },
+  {
+    "id": "castle_court",
+    "name": "The Castle Court",
+    "icon": "🏰",
+    "areaId": "ascent_castle_area",
+    "map": {
+      "x": 50,
+      "y": 50
+    },
+    "activities": [
+      {
+        "id": "rest_castle",
+        "kind": "rest",
+        "name": "Rest in the Castle",
+        "icon": "🛏️"
+      }
+    ],
+    "connections": [],
+    "desc": "The castle at the heart of the city, the hub of band 3. The four wards (south, west, north and east) are each one climb from here. Rest in the Castle is a rest activity, and the court is a haven."
+  },
+  {
+    "id": "f7_docks",
+    "name": "The Docks",
+    "icon": "⚓",
+    "areaId": "ascent_f7_area",
+    "map": {
+      "x": 50,
+      "y": 10
+    },
+    "activities": [
+      {
+        "id": "camp_f7",
+        "kind": "rest",
+        "name": "Camp on the Docks",
+        "icon": "🏕️"
+      },
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Patrol the Docks",
+        "icon": "⚔️"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 70
+      },
+      {
+        "size": 2,
+        "weight": 30
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "forest_rat",
+        "weight": 50,
+        "level": [
+          12,
+          13
+        ]
+      },
+      {
+        "monsterId": "slime_water",
+        "weight": 50,
+        "level": [
+          12,
+          13
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "to": "f7_merchant_road",
+        "ticks": 30,
+        "label": "Out the South Gate",
+        "returnLabel": "Back Through the South Gate",
+        "revealWhen": [
+          {
+            "type": "statMax",
+            "key": "band:pos:ascent_f7",
+            "value": 0
+          }
+        ],
+        "requires": [
+          {
+            "type": "statMax",
+            "key": "band:pos:ascent_f7",
+            "value": 0
+          }
+        ]
+      },
+      {
+        "to": "f7_stockade",
+        "ticks": 45,
+        "label": "Out to the Salt Flats",
+        "returnLabel": "Back to the Docks",
+        "revealWhen": [
+          {
+            "type": "stat",
+            "key": "band:pos:ascent_f7",
+            "value": 1
+          },
+          {
+            "type": "statMax",
+            "key": "band:pos:ascent_f7",
+            "value": 2
+          },
+          {
+            "type": "statMax",
+            "key": "ward:f7:done",
+            "value": 0
+          }
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "band:pos:ascent_f7",
+            "value": 1
+          },
+          {
+            "type": "statMax",
+            "key": "band:pos:ascent_f7",
+            "value": 2
+          },
+          {
+            "type": "statMax",
+            "key": "ward:f7:done",
+            "value": 0
+          }
+        ]
+      },
+      {
+        "to": "f7_burnt_camp",
+        "ticks": 45,
+        "label": "Out to the Burnt Camp",
+        "returnLabel": "Back to the Docks",
+        "revealWhen": [
+          {
+            "type": "stat",
+            "key": "band:pos:ascent_f7",
+            "value": 3
+          },
+          {
+            "type": "statMax",
+            "key": "ward:f7:done",
+            "value": 0
+          }
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "band:pos:ascent_f7",
+            "value": 3
+          }
+        ]
+      }
+    ],
+    "desc": "Landing of floor 7, the south ward. Bandits raid the merchants and convoys that feed the city. Which road leaves the docks depends on how many of the other three wards are cleared this run: none, the merchant road; one or two, the bandits' camp in the salt flats; all three, the burnt camp. Camp on the Docks is a rest activity, and the landing is a haven. Endless hunt: rats and water slimes, level 12 to 13 before the band's step."
+  },
+  {
+    "id": "f7_merchant_road",
+    "name": "The Merchant Road",
+    "icon": "🛤️",
+    "areaId": "ascent_f7_area",
+    "map": {
+      "x": 25,
+      "y": 40
+    },
+    "fightLimit": 12,
+    "stampOnClear": "ward:f7:done",
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Patrol the Road",
+        "icon": "⚔️"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 2,
+        "weight": 45
+      },
+      {
+        "size": 3,
+        "weight": 40
+      },
+      {
+        "size": 4,
+        "weight": 15
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "ph_bandit_thug",
+        "weight": 45,
+        "level": [
+          12,
+          13
+        ],
+        "requires": [
+          {
+            "type": "statMax",
+            "key": "band:pos:ascent_f7",
+            "value": 0
+          },
+          {
+            "type": "statMax",
+            "key": "ward:f7:done",
+            "value": 0
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_bandit_archer",
+        "weight": 30,
+        "level": [
+          12,
+          13
+        ],
+        "requires": [
+          {
+            "type": "statMax",
+            "key": "band:pos:ascent_f7",
+            "value": 0
+          },
+          {
+            "type": "statMax",
+            "key": "ward:f7:done",
+            "value": 0
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_bandit_cutthroat",
+        "weight": 25,
+        "level": [
+          12,
+          13
+        ],
+        "requires": [
+          {
+            "type": "statMax",
+            "key": "band:pos:ascent_f7",
+            "value": 0
+          },
+          {
+            "type": "statMax",
+            "key": "ward:f7:done",
+            "value": 0
+          }
+        ]
+      }
+    ],
+    "connections": [],
+    "desc": "Open while no other ward is cleared. 12 fights of 2 to 4 bandits (thugs, archers, cutthroats), level 12 to 13. The 12th win clears floor 7. If another ward is cleared first, the raids stop: fights already won here count toward nothing."
+  },
+  {
+    "id": "f7_stockade",
+    "name": "The Stockade",
+    "icon": "🪵",
+    "areaId": "ascent_f7_area",
+    "map": {
+      "x": 62,
+      "y": 40
+    },
+    "fightLimit": 4,
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Storm the Stockade",
+        "icon": "⚔️"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 2,
+        "weight": 40
+      },
+      {
+        "size": 3,
+        "weight": 45
+      },
+      {
+        "size": 4,
+        "weight": 15
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "ph_bandit_thug",
+        "weight": 50,
+        "level": [
+          11,
+          12
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "band:pos:ascent_f7",
+            "value": 1
+          },
+          {
+            "type": "statMax",
+            "key": "band:pos:ascent_f7",
+            "value": 2
+          },
+          {
+            "type": "statMax",
+            "key": "ward:f7:done",
+            "value": 0
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_bandit_cutthroat",
+        "weight": 35,
+        "level": [
+          11,
+          12
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "band:pos:ascent_f7",
+            "value": 1
+          },
+          {
+            "type": "statMax",
+            "key": "band:pos:ascent_f7",
+            "value": 2
+          },
+          {
+            "type": "statMax",
+            "key": "ward:f7:done",
+            "value": 0
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_bandit_archer",
+        "weight": 15,
+        "level": [
+          11,
+          12
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "band:pos:ascent_f7",
+            "value": 1
+          },
+          {
+            "type": "statMax",
+            "key": "band:pos:ascent_f7",
+            "value": 2
+          },
+          {
+            "type": "statMax",
+            "key": "ward:f7:done",
+            "value": 0
+          }
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "to": "f7_watchtowers",
+        "ticks": 20,
+        "label": "Along the Palisade",
+        "revealWhen": [
+          {
+            "type": "statMax",
+            "key": "ward:f7:done",
+            "value": 0
+          }
+        ],
+        "requires": [
+          {
+            "type": "statMax",
+            "key": "ward:f7:done",
+            "value": 0
+          }
+        ]
+      },
+      {
+        "to": "f7_chiefs_tent",
+        "ticks": 20,
+        "label": "Into the Chief’s Tent",
+        "returnLabel": "Out to the Stockade",
+        "revealWhen": [
+          {
+            "type": "statMax",
+            "key": "ward:f7:done",
+            "value": 0
+          }
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "fights:f7_stockade",
+            "value": 4
+          },
+          {
+            "type": "stat",
+            "key": "fights:f7_watchtowers",
+            "value": 3
+          }
+        ]
+      }
+    ],
+    "desc": "The camp's palisade, open while one or two other wards are cleared. 4 fights of 2 to 4 bandits, mostly thugs and cutthroats, level 11 to 12 before the band's step (+2 or +5). Spending these fights and the watchtowers' opens the chief's tent."
+  },
+  {
+    "id": "f7_watchtowers",
+    "name": "The Watchtowers",
+    "icon": "🗼",
+    "areaId": "ascent_f7_area",
+    "map": {
+      "x": 85,
+      "y": 40
+    },
+    "fightLimit": 3,
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Take the Watchtowers",
+        "icon": "⚔️"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 2,
+        "weight": 50
+      },
+      {
+        "size": 3,
+        "weight": 50
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "ph_bandit_archer",
+        "weight": 60,
+        "level": [
+          11,
+          12
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "band:pos:ascent_f7",
+            "value": 1
+          },
+          {
+            "type": "statMax",
+            "key": "band:pos:ascent_f7",
+            "value": 2
+          },
+          {
+            "type": "statMax",
+            "key": "ward:f7:done",
+            "value": 0
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_bandit_thug",
+        "weight": 25,
+        "level": [
+          11,
+          12
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "band:pos:ascent_f7",
+            "value": 1
+          },
+          {
+            "type": "statMax",
+            "key": "band:pos:ascent_f7",
+            "value": 2
+          },
+          {
+            "type": "statMax",
+            "key": "ward:f7:done",
+            "value": 0
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_bandit_cutthroat",
+        "weight": 15,
+        "level": [
+          11,
+          12
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "band:pos:ascent_f7",
+            "value": 1
+          },
+          {
+            "type": "statMax",
+            "key": "band:pos:ascent_f7",
+            "value": 2
+          },
+          {
+            "type": "statMax",
+            "key": "ward:f7:done",
+            "value": 0
+          }
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "to": "f7_chiefs_tent",
+        "ticks": 20,
+        "label": "Into the Chief’s Tent",
+        "returnLabel": "Out to the Watchtowers",
+        "revealWhen": [
+          {
+            "type": "statMax",
+            "key": "ward:f7:done",
+            "value": 0
+          }
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "fights:f7_stockade",
+            "value": 4
+          },
+          {
+            "type": "stat",
+            "key": "fights:f7_watchtowers",
+            "value": 3
+          }
+        ]
+      }
+    ],
+    "desc": "The camp's towers, open while one or two other wards are cleared. 3 fights of 2 or 3 bandits, mostly archers, level 11 to 12 before the band's step (+2 or +5). Spending these fights and the stockade's opens the chief's tent."
+  },
+  {
+    "id": "f7_chiefs_tent",
+    "name": "The Chief’s Tent",
+    "icon": "⛺",
+    "areaId": "ascent_f7_area",
+    "map": {
+      "x": 74,
+      "y": 65
+    },
+    "tags": [
+      "indoor"
+    ],
+    "fightLimit": 1,
+    "stampOnClear": "ward:f7:done",
+    "modifierWeights": {
+      "normal": 100
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Face the Chief",
+        "icon": "⚔️"
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "ph_bandit_chief",
+        "weight": 1,
+        "boss": true,
+        "level": [
+          12,
+          12
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "band:pos:ascent_f7",
+            "value": 1
+          },
+          {
+            "type": "statMax",
+            "key": "band:pos:ascent_f7",
+            "value": 2
+          },
+          {
+            "type": "statMax",
+            "key": "ward:f7:done",
+            "value": 0
+          }
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "to": "f7_docks",
+        "ticks": 45,
+        "oneWay": true,
+        "label": "Out the Back Gate"
+      }
+    ],
+    "desc": "Shut until the stockade's 4 fights and the watchtowers' 3 are won. One fight, started when you choose: the Bandit Chief and two escorts, level 12 before the band's step (14 or 17). Killing the chief clears floor 7."
+  },
+  {
+    "id": "f7_burnt_camp",
+    "name": "The Burnt Camp",
+    "icon": "🔥",
+    "areaId": "ascent_f7_area",
+    "map": {
+      "x": 45,
+      "y": 65
+    },
+    "fightLimit": 1,
+    "stampOnClear": "ward:f7:done",
+    "modifierWeights": {
+      "normal": 100
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Face the Demon",
+        "icon": "⚔️"
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "ph_camp_demon",
+        "weight": 1,
+        "boss": true,
+        "level": [
+          12,
+          12
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "band:pos:ascent_f7",
+            "value": 3
+          },
+          {
+            "type": "statMax",
+            "key": "ward:f7:done",
+            "value": 0
+          }
+        ]
+      }
+    ],
+    "connections": [],
+    "desc": "The bandits' camp, burnt out. Open only when floor 7 is the last ward of the city left. A demon summoned into the camp absorbed the bandits; it stays for 24 in-game hours from the third ward's clear. One fight, started when you choose: the Camp Demon, level 12 before the band's step (21). Walking away ends the fight; the demon keeps half of the HP it lost. Killing it clears floor 7. If the 24 hours run out, the demon is gone and floor 7 is cleared anyway."
+  },
+  {
+    "id": "f8_forest_gate",
+    "name": "The Forest Gate",
+    "icon": "🚪",
+    "areaId": "ascent_f8_area",
+    "map": {
+      "x": 50,
+      "y": 10
+    },
+    "activities": [
+      {
+        "id": "camp_f8",
+        "kind": "rest",
+        "name": "Camp at the Gate",
+        "icon": "🏕️"
+      },
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Hold the Gate",
+        "icon": "⚔️"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 70
+      },
+      {
+        "size": 2,
+        "weight": 30
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "young_wolf",
+        "weight": 60,
+        "level": [
+          12,
+          13
+        ]
+      },
+      {
+        "monsterId": "forest_rat",
+        "weight": 40,
+        "level": [
+          12,
+          13
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "to": "f8_old_forest",
+        "ticks": 30,
+        "label": "Out the West Gate",
+        "returnLabel": "Back Through the West Gate"
+      }
+    ],
+    "desc": "Landing of floor 8, the west ward, facing the forest. Camp at the Gate is a rest activity, and the landing is a haven. Endless hunt: young wolves and forest rats, level 12 to 13 before the band's step."
+  },
+  {
+    "id": "f8_old_forest",
+    "name": "The Old Forest",
+    "icon": "🌲",
+    "areaId": "ascent_f8_area",
+    "map": {
+      "x": 50,
+      "y": 40
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Hunt the Old Forest",
+        "icon": "🏹"
+      },
+      {
+        "id": "explore",
+        "kind": "explore",
+        "name": "Forage",
+        "icon": "🌿"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 60
+      },
+      {
+        "size": 2,
+        "weight": 30
+      },
+      {
+        "size": 3,
+        "weight": 10
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "wolf",
+        "weight": 40,
+        "level": [
+          13,
+          14
+        ]
+      },
+      {
+        "monsterId": "boar",
+        "weight": 30,
+        "level": [
+          13,
+          14
+        ]
+      },
+      {
+        "monsterId": "cliff_hawk",
+        "weight": 30,
+        "level": [
+          13,
+          14
+        ]
+      }
+    ],
+    "exploreTicks": 300,
+    "finds": [
+      {
+        "id": "f8_forest_berries",
+        "at": 0.3,
+        "material": {
+          "id": "forest_berries",
+          "qty": 5
+        },
+        "desc": "🫐 Five handfuls of forest berries."
+      },
+      {
+        "id": "f8_forest_meat",
+        "at": 0.6,
+        "material": {
+          "id": "raw_meat",
+          "qty": 4
+        },
+        "desc": "🥩 Four cuts of meat from a hunter's snare."
+      }
+    ],
+    "connections": [
+      {
+        "to": "f8_lodge",
+        "ticks": 30,
+        "label": "To the Hunting Lodge"
+      }
+    ],
+    "desc": "Past the west gate. Endless hunt: wolves, which cause bleeding, boars and cliff hawks, level 13 to 14 before the band's step. Forage explores (30 s) for berries and meat."
+  },
+  {
+    "id": "f8_lodge",
+    "name": "The Hunting Lodge",
+    "icon": "🛖",
+    "areaId": "ascent_f8_area",
+    "map": {
+      "x": 50,
+      "y": 70
+    },
+    "tags": [
+      "indoor"
+    ],
+    "fightLimit": 1,
+    "modifierWeights": {
+      "normal": 100
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Take the Lodge",
+        "icon": "⚔️"
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "ph_rogue_beast_young",
+        "weight": 1,
+        "once": true,
+        "level": [
+          14,
+          14
+        ],
+        "requires": [
+          {
+            "type": "statMax",
+            "key": "band:pos:ascent_f8",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_rogue_beast_final",
+        "weight": 1,
+        "once": true,
+        "level": [
+          14,
+          14
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "band:pos:ascent_f8",
+            "value": 2
+          }
+        ]
+      }
+    ],
+    "connections": [],
+    "desc": "One fight, started when you choose: the rogue beast, alone. With one or none of the other wards cleared it is the young form, level 14 or 16; with two or three, the final form, level 19 or 23, with about a third more health at the same level. Levels include the band's step. The fighting in the city crowds the beasts into the forest, and the crowding drives the change. Winning the fight clears floor 8."
+  },
+  {
+    "id": "f9_cathedral_close",
+    "name": "The Cathedral Close",
+    "icon": "⛪",
+    "areaId": "ascent_f9_area",
+    "map": {
+      "x": 50,
+      "y": 10
+    },
+    "activities": [
+      {
+        "id": "camp_f9",
+        "kind": "rest",
+        "name": "Shelter in the Close",
+        "icon": "🏕️"
+      },
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Clear the Close",
+        "icon": "⚔️"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 70
+      },
+      {
+        "size": 2,
+        "weight": 30
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "living_doll",
+        "weight": 50,
+        "level": [
+          12,
+          13
+        ]
+      },
+      {
+        "monsterId": "slime_zombie",
+        "weight": 50,
+        "level": [
+          12,
+          13
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "to": "f9_barrow_fields",
+        "ticks": 30,
+        "label": "Out the North Gate",
+        "returnLabel": "Back Through the North Gate"
+      }
+    ],
+    "desc": "Landing of floor 9, the north ward. Shelter in the Close is a rest activity, and the landing is a haven. Endless hunt: living dolls and zombie slimes, level 12 to 13 before the band's step."
+  },
+  {
+    "id": "f9_barrow_fields",
+    "name": "The Barrow Fields",
+    "icon": "🪦",
+    "areaId": "ascent_f9_area",
+    "map": {
+      "x": 50,
+      "y": 40
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Walk the Barrows",
+        "icon": "⚔️"
+      },
+      {
+        "id": "explore",
+        "kind": "explore",
+        "name": "Search the Barrows",
+        "icon": "🔍"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 60
+      },
+      {
+        "size": 2,
+        "weight": 30
+      },
+      {
+        "size": 3,
+        "weight": 10
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "slime_zombie",
+        "weight": 45,
+        "level": [
+          13,
+          14
+        ]
+      },
+      {
+        "monsterId": "living_doll",
+        "weight": 30,
+        "level": [
+          13,
+          14
+        ]
+      },
+      {
+        "monsterId": "ph_death_squire",
+        "weight": 25,
+        "level": [
+          13,
+          14
+        ]
+      }
+    ],
+    "exploreTicks": 300,
+    "finds": [
+      {
+        "id": "f9_barrow_salves",
+        "at": 0.3,
+        "material": {
+          "id": "healing_salve",
+          "qty": 2
+        },
+        "desc": "🧴 Two healing salves left as a grave offering."
+      },
+      {
+        "id": "f9_barrow_grave_gold",
+        "at": 1,
+        "gold": {
+          "min": 100,
+          "max": 180
+        },
+        "desc": "💰 Grave goods: 100 to 180 gold."
+      }
+    ],
+    "connections": [
+      {
+        "to": "f9_ossuary",
+        "ticks": 30,
+        "label": "Into the Ossuary"
+      }
+    ],
+    "desc": "Past the north gate. Endless hunt: zombie slimes, living dolls and death squires, level 13 to 14 before the band's step. Search the Barrows explores (30 s) for salves and grave gold."
+  },
+  {
+    "id": "f9_ossuary",
+    "name": "The Ossuary",
+    "icon": "💀",
+    "areaId": "ascent_f9_area",
+    "map": {
+      "x": 50,
+      "y": 70
+    },
+    "tags": [
+      "indoor"
+    ],
+    "fightLimit": 1,
+    "modifierWeights": {
+      "normal": 100
+    },
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 100
+      }
+    ],
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Enter the Ossuary",
+        "icon": "⚔️"
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "ph_death_squire",
+        "weight": 1,
+        "once": true,
+        "level": [
+          14,
+          14
+        ],
+        "requires": [
+          {
+            "type": "statMax",
+            "key": "band:pos:ascent_f9",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "death_knight",
+        "weight": 1,
+        "once": true,
+        "level": [
+          13,
+          13
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "band:pos:ascent_f9",
+            "value": 2
+          }
+        ]
+      }
+    ],
+    "connections": [],
+    "desc": "One fight, started when you choose, against one keeper. With one or none of the other wards cleared: a Death Squire, level 14 or 16. With two or three: a Death Knight, level 18 or 22. Levels include the band's step. Winning the fight clears floor 9."
+  },
+  {
+    "id": "f10_artificers_row",
+    "name": "The Artificers' Row",
+    "icon": "⚙️",
+    "areaId": "ascent_f10_area",
+    "map": {
+      "x": 50,
+      "y": 10
+    },
+    "activities": [
+      {
+        "id": "camp_f10",
+        "kind": "rest",
+        "name": "Camp in a Workshop",
+        "icon": "🏕️"
+      },
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Patrol the Row",
+        "icon": "⚔️"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 70
+      },
+      {
+        "size": 2,
+        "weight": 30
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "sorting_automaton",
+        "weight": 50,
+        "level": [
+          12,
+          13
+        ]
+      },
+      {
+        "monsterId": "filing_automaton",
+        "weight": 50,
+        "level": [
+          12,
+          13
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "to": "f10_quarry",
+        "ticks": 30,
+        "label": "Out the East Gate",
+        "returnLabel": "Back Through the East Gate"
+      }
+    ],
+    "desc": "Landing of floor 10, the east ward. Camp in a Workshop is a rest activity, and the landing is a haven. Endless hunt: sorting and filing automata, level 12 to 13 before the band's step."
+  },
+  {
+    "id": "f10_quarry",
+    "name": "The Mine",
+    "icon": "⛏️",
+    "areaId": "ascent_f10_area",
+    "map": {
+      "x": 50,
+      "y": 40
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Work the Mine",
+        "icon": "⚔️"
+      },
+      {
+        "id": "explore",
+        "kind": "explore",
+        "name": "Search the Spoil Heaps",
+        "icon": "🔍"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 70
+      },
+      {
+        "size": 2,
+        "weight": 30
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "filing_automaton",
+        "weight": 45,
+        "level": [
+          13,
+          14
+        ]
+      },
+      {
+        "monsterId": "sorting_automaton",
+        "weight": 35,
+        "level": [
+          13,
+          14
+        ]
+      },
+      {
+        "monsterId": "stone_golem",
+        "weight": 20,
+        "level": [
+          13,
+          14
+        ]
+      }
+    ],
+    "exploreTicks": 300,
+    "finds": [
+      {
+        "id": "f10_quarry_ore",
+        "at": 0.3,
+        "material": {
+          "id": "copper_ore",
+          "qty": 5
+        },
+        "desc": "⛏️ Five chunks of copper ore."
+      },
+      {
+        "id": "f10_quarry_scrap",
+        "at": 0.6,
+        "material": {
+          "id": "iron_scrap",
+          "qty": 5
+        },
+        "desc": "🔩 Five iron scrap from a broken winch."
+      }
+    ],
+    "connections": [
+      {
+        "to": "f10_foundry",
+        "ticks": 30,
+        "label": "Down to the Deep Seam",
+        "returnLabel": "Up to the Mine"
+      }
+    ],
+    "desc": "Past the east gate, the ward's copper and iron mine. Endless hunt: automata and stone golems, which shrug off blades, level 13 to 14 before the band's step. Search the Spoil Heaps explores (30 s) for copper ore and iron scrap."
+  },
+  {
+    "id": "f10_foundry",
+    "name": "The Deep Seam",
+    "icon": "🪨",
+    "areaId": "ascent_f10_area",
+    "map": {
+      "x": 50,
+      "y": 70
+    },
+    "tags": [
+      "indoor"
+    ],
+    "fightLimit": 1,
+    "modifierWeights": {
+      "normal": 100
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Go Down the Seam",
+        "icon": "⚔️"
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "ph_ore_eater_1",
+        "weight": 1,
+        "once": true,
+        "level": [
+          14,
+          14
+        ],
+        "requires": [
+          {
+            "type": "statMax",
+            "key": "band:pos:ascent_f10",
+            "value": 0
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_ore_eater_2",
+        "weight": 1,
+        "once": true,
+        "level": [
+          14,
+          14
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "band:pos:ascent_f10",
+            "value": 1
+          },
+          {
+            "type": "statMax",
+            "key": "band:pos:ascent_f10",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_ore_eater_3",
+        "weight": 1,
+        "once": true,
+        "level": [
+          14,
+          14
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "band:pos:ascent_f10",
+            "value": 2
+          },
+          {
+            "type": "statMax",
+            "key": "band:pos:ascent_f10",
+            "value": 2
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_ore_eater_4",
+        "weight": 1,
+        "once": true,
+        "level": [
+          14,
+          14
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "band:pos:ascent_f10",
+            "value": 3
+          }
+        ]
+      }
+    ],
+    "connections": [],
+    "desc": "One fight, started when you choose: the ore eater, alone, at the stage set by how many of the other wards are cleared. None: stage 1, level 14. One: stage 2, level 16. Two: stage 3, level 19. Three: stage 4, level 23. Levels include the band's step. Each stage is bigger, with more health and a thicker shell; blunt blows do more against the shell, edges and points less. It eats the mine's ore as it grows. Winning the fight clears floor 10."
   }
 ]

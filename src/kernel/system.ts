@@ -188,6 +188,12 @@ export interface Ctx<S> extends DerivedReads {
   /** The system's own slice. Mutate it in place. */
   readonly state: S;
   readonly tick: number;
+  /**
+   * True while the kernel runs offline catch-up (`catchUp`), false in play
+   * and in `runHeadless` on a live kernel. Read-only. A system that reads it
+   * behaves differently in catch-up; `tests/runner.test.ts` names each one.
+   */
+  readonly catchingUp: boolean;
   readonly rng: Rng;
   readonly content: ContentIndex;
   /** Another system's slice, read-only. */

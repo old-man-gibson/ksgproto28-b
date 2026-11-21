@@ -8,9 +8,13 @@
  * the stops are and whether the gate is open.
  */
 import {
+  defineCommand,
   defineEvent,
   defineSystem,
+  handle,
+  OK,
   on,
+  skipped,
   registry,
   s,
   type Ctx,
@@ -139,6 +143,26 @@ export function registerBandPass(read: (r: R, bandId: string) => boolean): void 
 
 export function bandPassed(r: R, bandId: string): boolean {
   return bandPass(r, bandId);
+}
+
+/**
+ * Whether a floor was cleared by a ward window running out, not by a kill.
+ * The `wards` system states it (`registerLapse`); until then no floor lapses.
+ */
+let lapse: (r: R, floorId: string) => boolean = () => false;
+
+/** The wards system registers the read of its lapsed windows. */
+export function registerLapse(read: (r: R, floorId: string) => boolean): void {
+  lapse = read;
+}
+
+/**
+ * The floor was cleared by a ward window running out (old `clearLapsed`,
+ * bands-2-3.md Q24): the way up opens, but it pays no clear XP and no
+ * harvest floor.
+ */
+export function clearLapsed(r: R, floor: Pick<FloorDef, 'id'>): boolean {
+  return lapse(r, floor.id);
 }
 
 /** Cleared for the ladder: the clear holds, or a pass covers the band. */
@@ -285,6 +309,13 @@ export function bandPosKey(floorId: string): string {
   return `band:pos:${floorId}`;
 }
 
+/** "other floors of The City" for a position key (`band:pos:<floor>`). The old `otherFloorsOf`. */
+export function otherFloorsOf(key: string): string {
+  const floor = FLOORS[key.slice('band:pos:'.length)];
+  const band = floor?.bandId === undefined ? undefined : BANDS[floor.bandId];
+  return band ? `other floors of ${band.name}` : 'other floors';
+}
+
 // ---- stops and the gate (old `towers.ts`, without the ride) ----
 
 /**
@@ -371,6 +402,17 @@ export const checkClears = defineEvent<void>('ladder/check');
 /** A floor paid its clear this run. */
 export const floorClearedEvent = defineEvent<{ floor: string }>('ladder/floor-cleared');
 
+/**
+ * DEBUG SKIP, not a player action (CONTENT.md Q5, the old John's
+ * `debugSkipWall`): raise every counter the floor's gate and clear read to
+ * the value asked, stamp its clear XP as paid, and check the clears. Used by
+ * the John driver past a wall only. Refused in a production build.
+ */
+export const debugSkipWall = defineCommand<{ floor: string }>('ladder/debug-skip-wall');
+
+/** A production build of the page: the debug skip is refused. Tests, scripts and the dev server run it. */
+const PRODUCTION = (import.meta as { env?: { PROD?: boolean } }).env?.PROD === true;
+
 type ReadCtx = DerivedReads & { read<T>(system: SystemDef<T, any>): DeepReadonly<T> };
 
 /** The condition reader of the player, for the reads above. */
@@ -393,6 +435,12 @@ function checkFloorClears(ctx: Ctx<LadderState>): void {
     const key = floorXpKey(floor.id);
     if (counterValue(counts, key) >= 1 || !clearMet(r, floor)) continue;
     ctx.emit(setCounter, { key, value: 1 });
+    // A clear by a lapsed ward window opens the way and pays nothing (Q24).
+    if (clearLapsed(r, floor)) {
+      ctx.emit(logLine, { msg: levelsLine('floor_lapsed', { name: floor.name }), kind: 'info' });
+      ctx.emit(floorClearedEvent, { floor: floor.id });
+      continue;
+    }
     ctx.emit(logLine, { msg: levelsLine('floor', { name: floor.name, xp: floor.clearXp }), kind: 'info' });
     ctx.emit(grantLevelXp, { xp: floor.clearXp });
     if (topRung(floor.towerId)?.id === floor.id) ctx.emit(logLine, { msg: endNotice(floor), kind: 'info' });
@@ -428,6 +476,17 @@ export interface TermView {
   met: boolean;
 }
 
+/** A band's hub (band 3's castle), shown before the band's first rung. */
+export interface HubView {
+  band: string;
+  spot: string;
+  name: string;
+  icon: string;
+  status: Exclude<RungStatus, 'cleared'>;
+  /** The gate of the band. */
+  gate: TermView[];
+}
+
 export interface RungView {
   id: string;
   name: string;
@@ -439,6 +498,8 @@ export interface RungView {
   gate: TermView[];
   clear: TermView[];
   desc: string;
+  /** The hub of this rung's band, on the band's first rung only. */
+  hub: HubView | null;
 }
 
 export interface LadderView {
@@ -451,6 +512,21 @@ const ladder = defineSystem<LadderState, LadderView>({
   migrations,
   initial: () => ({}),
   content: { towers, bands, floors, ladder_text: ladderText },
+
+  commands: [
+    handle(debugSkipWall, (ctx, { floor }) => {
+      if (PRODUCTION) return skipped('the debug skip is refused in a production build');
+      const def = FLOORS[floor];
+      if (!def) return skipped(`no floor has the id "${floor}"`);
+      const counts = ctx.read(counters);
+      for (const c of [...(def.gate ?? []), ...(def.clear ?? [])]) {
+        if (c.type === 'stat' && counterValue(counts, c.key) < c.value) ctx.emit(setCounter, { key: c.key, value: c.value });
+      }
+      ctx.emit(setCounter, { key: floorXpKey(floor), value: 1 });
+      ctx.emit(checkClears, undefined);
+      return OK;
+    }),
+  ],
 
   events: [
     // The clear counters of a kill are bumped by events of the same handler,
@@ -475,10 +551,34 @@ const ladder = defineSystem<LadderState, LadderView>({
       if (part[0] === 'boss') return `keeper of ${nameOf('spots', part[1])} slain`;
       return key;
     };
+    type SpotRow = {
+      id: string;
+      name: string;
+      fightLimit?: number;
+      stampOnClear?: string;
+      encounters?: { requires?: Condition[] }[];
+    };
+    // The old `stampTerm`: the spots that write a stamp clear, live ones first.
+    const stampText = (key: string): string | null => {
+      const spots = ctx.content.all<SpotRow>('spots').filter((sp) => sp.stampOnClear === key);
+      if (!spots.length) return null;
+      const live = spots.filter(
+        (sp) =>
+          !(sp.fightLimit && r.counter(`fights:${sp.id}`) >= sp.fightLimit) &&
+          (sp.encounters ?? []).some((e) => !e.requires || conditionsMet(r, e.requires)),
+      );
+      const names = (live.length ? live : spots).map((sp) => sp.name);
+      const list = names.length > 1 ? `${names.slice(0, -1).join(', ')} or ${names[names.length - 1]}` : names[0];
+      return `Win ${list}`;
+    };
     const term = (cond: Condition): TermView => {
       const met = conditionsMet(r, [cond]);
       if (cond.type === 'stat') {
         const current = Math.min(cond.value, r.counter(cond.key));
+        const stamp = stampText(cond.key);
+        if (stamp) return { text: stamp, current, needed: cond.value, met };
+        if (cond.key.startsWith('band:pos:'))
+          return { text: `${cond.value}+ ${otherFloorsOf(cond.key)} cleared`, current, needed: cond.value, met };
         return { text: `${cond.value.toLocaleString('en-US')} ${subject(cond.key)}`, current, needed: cond.value, met };
       }
       const text =
@@ -487,13 +587,30 @@ const ladder = defineSystem<LadderState, LadderView>({
           : cond.type === 'attr'
             ? `Attribute ${cond.attr} at ${cond.level}`
             : cond.type === 'statMax'
-              ? `${subject(cond.key)} at most ${cond.value}`
+              ? cond.key.startsWith('band:pos:')
+                ? `at most ${cond.value} ${otherFloorsOf(cond.key)} cleared`
+                : `${subject(cond.key)} at most ${cond.value}`
               : cond.type === 'equippedTag'
                 ? `Wielding: ${cond.tag}`
                 : cond.type === 'quest'
                   ? `Quest done: ${cond.id}`
-                  : `Boon owned: ${cond.id}`;
+                  : `Boon owned: ${nameOf('prestige_boons', cond.id)}`;
       return { text, current: met ? 1 : 0, needed: 1, met };
+    };
+    const hubOf = (floor: FloorDef): HubView | null => {
+      const band = floor.bandId === undefined ? undefined : BANDS[floor.bandId];
+      if (!band?.hub || floorsInBand(band.id)[0]?.id !== floor.id) return null;
+      const spot = ctx.content.get<{ id: string; name: string; icon: string }>('spots', band.hub) as
+        | { name?: string; icon?: string }
+        | undefined;
+      return {
+        band: band.id,
+        spot: band.hub,
+        name: spot?.name ?? band.hub,
+        icon: spot?.icon ?? '',
+        status: hubStatus(r, band),
+        gate: (band.gate ?? []).map(term),
+      };
     };
     return {
       towers: Object.values(TOWERS).map((tower) => {
@@ -516,6 +633,7 @@ const ladder = defineSystem<LadderState, LadderView>({
             gate: [...(BANDS[floor.bandId!]?.gate ?? []), ...(floor.gate ?? [])].map(term),
             clear: (floor.clear ?? []).map(term),
             desc: floor.desc,
+            hub: hubOf(floor),
           })),
         };
       }),

@@ -57,6 +57,11 @@ export interface KernelOptions {
   freezeViews?: boolean;
   /** How many skipped actions to keep. Default 50. */
   skipLogSize?: number;
+  /**
+   * This kernel runs offline catch-up: `ctx.catchingUp` is true in every
+   * handler. Set by `catchUp`; false everywhere else. Decision 34.
+   */
+  catchingUp?: boolean;
 }
 
 export type LoadResult = { ok: true; warnings: string[] } | { ok: false; error: string };
@@ -123,6 +128,7 @@ export function createKernel(options: KernelOptions): Kernel {
   }
   const content = new ContentIndex(registries);
   const skipLogSize = options.skipLogSize ?? 50;
+  const catchingUp = options.catchingUp === true;
 
   let state: KernelState = freshState(normalizeSeed(options.seed ?? 1));
   const skipLog: SkipEntry[] = [];
@@ -189,6 +195,7 @@ export function createKernel(options: KernelOptions): Kernel {
       get tick() {
         return state.kernel.tick;
       },
+      catchingUp,
       rng,
       content,
       ...reads,

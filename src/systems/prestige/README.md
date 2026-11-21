@@ -48,8 +48,7 @@ Source `prestige/legacy`: `boon:<id>` rank, `foresight`, `scale:talent:<skill>`
 
 ## Left behind
 
-- Readers of grimoire pages (step 3, arcane), the city key's gate
-  (band 3, step 4), Cook's Notes (cooking, step 3), Foresight in the skill
+- Readers of grimoire pages (step 3, arcane), Cook's Notes (cooking, step 3), Foresight in the skill
   view, Wayfinding go links (UI step; `wayfinding` is in the view).
 - The stronghold and its automatic prestige, festival legacy (step 4).
 
@@ -67,3 +66,11 @@ case of `tests/prestige.test.ts` is the old one again (16 points).
 
 `legacyTechniqueSlots` is read by martial's `techniqueSlots` since step 3
 (the `technique_slot` boon: +1 slot per rank).
+
+## Step 4 port C1
+
+The city key's gate reads the boon fact `boon:city_key` of the source
+`prestige/legacy` through the band gate of `ascent_upper` (a `boon`
+condition); nothing new was needed here. The `floors` harvest source
+skips a floor cleared by a lapsed ward window (`clearLapsed`, old Q24).
+

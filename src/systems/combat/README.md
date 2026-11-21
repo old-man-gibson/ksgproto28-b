@@ -124,7 +124,7 @@ Every payload names entities by id and carries copies.
 | `combat/hit` | Damage landed on a combatant | `attacker`, `target`, `total`, `crit`, `type`, `thrown?`, `kind`: `attack`, `graze`, `riposte`, `spill`, `condition`, `strike` |
 | `combat/kill` | An enemy died (old `kill` bus event) | `entity`, `defId`, `name`, `level`, `rewardLevel`, `xp`, `tags`, `lastHit`, `site`, `boss`, `once` |
 | `combat/fight-won` | The last enemy died (old `fight:won`) | `site`, `forced` |
-| `combat/fight-closed` | A fight ended for any reason (old `fight:closed`) | `site`, `standing[]` |
+| `combat/fight-closed` | A fight ended for any reason (old `fight:closed`) | `site`, `standing[]` (each with `hurt`: it lost HP in the fight, the old `lastHit` stamp; step 4 port C1, read by `wards`) |
 | `combat/defeat` | The player went down (old `defeat` bus event, plus what `onDefeat` handed to the retreat) | `monster { entity, defId, name, level }` or null, `forced`, `outcome`, `cause`, `site`, `byCondition` |
 | `combat/skipped-action` | A rotation entry of a kind nobody registered | `entity`, `kind` |
 

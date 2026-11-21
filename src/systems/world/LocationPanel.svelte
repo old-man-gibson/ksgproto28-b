@@ -4,7 +4,7 @@
   import { send, viewOf } from '../../ui/game.svelte';
   import knockout, { stayHere } from '../knockout';
   import ladder from '../ladder';
-  import world, { cancelPlan, climb, goAndDoCommand, selectActivity, setIntent, travelTo, type MapSpotView as SpotView } from './index';
+  import world, { cancelPlan, climb, climbHub, goAndDoCommand, selectActivity, setIntent, travelTo, type MapSpotView as SpotView } from './index';
 
   type MapSpotView = DeepReadonly<SpotView>;
 
@@ -176,6 +176,25 @@
       </p>
       <ol class="rungs">
         {#each tower.rungs as r (r.id)}
+          {#if r.hub}
+            <li class="rung" data-testid="location-hub">
+              <div class="runghead">
+                <span><strong>Hub: {r.hub.status === 'sealed' ? 'not reached' : `${r.hub.icon} ${r.hub.name}`}</strong></span>
+                <span class={`state ${r.hub.status}`}>{statusWord[r.hub.status]}</span>
+              </div>
+              <ul class="terms">
+                {#each r.hub.gate as t (t.text)}
+                  <li>Gate: {t.text} ({t.current.toLocaleString('en-US')} of {t.needed.toLocaleString('en-US')}){t.met ? ', met' : ''}</li>
+                {/each}
+              </ul>
+              <Button
+                disabled={view.tower !== tower.id || r.hub.status !== 'open' || view.recovering || r.hub.spot === view.spot.id}
+                onclick={() => run(send(climbHub({ band: r.hub!.band })))}
+              >
+                Ride to the hub of {r.band}
+              </Button>
+            </li>
+          {/if}
           <li class="rung">
             <div class="runghead">
               <span><strong>Floor {r.index}: {r.status === 'sealed' ? 'not reached' : r.name}</strong></span>

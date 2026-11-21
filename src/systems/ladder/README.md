@@ -68,8 +68,7 @@ None: this system has no command and no request.
   prestige sets at the start of every run from its `floorsSeen` list.
 - The festival verdicts of the old ride gate (`shut`, `closed`, `forfeit`,
   `royale`) and `festivalLocked`: step 4.
-- `clearLapsed` (ward windows): step 4.
-- Bands 3 to 7 and floors 7 to 20: step 4. `OFF_LADDER_DOORS` and
+- Bands 4 to 7 and floors 11 to 20: step 4. `OFF_LADDER_DOORS` and
   `SPINE_EXEMPT` name floors 11 and 14 and arrive with them.
 - The floor rules are not called by the forge validator yet.
 
@@ -83,3 +82,24 @@ None: this system has no command and no request.
 - A floor with no `clear` reads never cleared, not trivially cleared.
 - A floor and its band are stamped in the same check, because both read the
   clear conditions and not each other's stamps.
+
+## Step 4 port C1
+
+- Band 3 `ascent_upper` (The City, `order: 'any'`, hub `castle_court`,
+  gate boon `city_key`, `levelSteps` [0, 2, 5, 9]) and floors 7 to 10.
+  The `any` reads (`floorsBelow`, `rungIndex`, positions) were ported in
+  spine port 6; this port adds the content.
+- `clearLapsed(r, floor)`: the `wards` system registers the read
+  (`registerLapse`). A lapsed clear writes the `floor_lapsed` line of
+  `levels`, pays no clear XP and no top-rung notice; `prestige` counts no
+  harvest floor for it.
+- Command `ladder/debug-skip-wall { floor }` (CONTENT.md Q5): raises the
+  floor's gate and clear counters, stamps its clear XP as paid, checks the
+  clears. Used by the John driver only. Skip reasons: refused in a
+  production build (`import.meta.env.PROD`), unknown floor.
+- View: `RungView.hub` on a band's first rung (name, status, band gate).
+  Term words: a stamp clear reads "Win <spot>" with the spots that can
+  write it now (old `stampTerm`); `band:pos:` keys read "N+ other floors of
+  The City cleared" and "at most N ..." (old `condText`); a boon gate names
+  the boon.
+

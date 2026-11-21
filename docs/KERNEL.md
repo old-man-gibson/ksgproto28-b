@@ -52,6 +52,7 @@ The context (`ctx`) given to `tick`, command handlers and event handlers:
 |---|---|
 | `state` | The system's own slice. Mutate in place. |
 | `tick` | Current tick number. |
+| `catchingUp` | True while the kernel runs offline catch-up (decision 34). |
 | `rng` | The seeded generator: `next()`, `int(n)`, `chance(p)`. |
 | `content` | `all<T>(registry)`, `get<T>(registry, id)`. |
 | `derived(stat, entity?, variant?)` | A derived value. `entity` defaults to the player. |
@@ -245,6 +246,9 @@ An answer returns copies, never a reference into its slice.
 - `catchUp({ systems, envelope, ticks, commands, now })` loads an envelope
   into a new kernel, runs it with `runHeadless`, and returns the new envelope.
   JSON in, JSON out.
+- `catchUp` creates its kernel with `catchingUp: true`: `ctx.catchingUp`
+  is true in every handler of that run and false in every other kernel
+  (decision 34).
 - `src/worker/catchup.worker.ts` calls `catchUp` and nothing else. The page
   sends `kernel.save(now)` and loads the reply with `kernel.load`. If a worker
   cannot be created, `src/ui/catchup.ts` calls `catchUp` on the main thread.
@@ -686,3 +690,15 @@ point. Each took the simpler option.
     `ctx.resolved` at the start as well, which cost the poison run about
     2.6%; or read it on first use, which gives a later block when the
     record was dirty at the start.
+34. **`ctx.catchingUp` (step 4 port C1, request K1).** Old content keeps
+    clocks that run in play only: the ward window counts live ticks (old
+    `tickWards(state, catchingUp)`), the sea pays offline convoys by a
+    share, the festival clock reads the same flag. The context of every
+    handler carries `catchingUp`, read-only. `catchUp` creates its kernel
+    with `catchingUp: true`; every other kernel, including one run by
+    `runHeadless`, has it false. `tests/runner.test.ts` keeps the
+    equality of catch-up and running in place for content with no such
+    clock and names each system that reads the flag, with a case showing
+    the difference. Alternative: a mode argument on `tick()`; rejected,
+    because a command or event handler inside a catch-up tick must see the
+    same value.

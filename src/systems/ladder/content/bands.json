@@ -18,5 +18,27 @@
       "capShare": 1
     },
     "desc": "Floors 4 to 6: the Greenwood, the Mire and the Warren. A goblin war band holds the wilds above the Lower Reaches; its warchief waits at the bottom of the Warren."
+  },
+  {
+    "id": "ascent_upper",
+    "name": "The City",
+    "towerId": "the_ascent",
+    "index": 3,
+    "clearsToAdvance": 4,
+    "order": "any",
+    "gate": [
+      {
+        "type": "boon",
+        "id": "city_key"
+      }
+    ],
+    "hub": "castle_court",
+    "levelSteps": [
+      0,
+      2,
+      5,
+      9
+    ],
+    "desc": "Floors 7 to 10: a city whose castle is the band’s hub, and its four wards, south, west, north and east. Gate: the Key to the City prestige boon. The wards open together and may be cleared in any order; each one cleared raises the level of every monster in the wards by +2, then +5, then +9."
   }
 ]
