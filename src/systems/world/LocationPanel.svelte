@@ -167,6 +167,24 @@
     </div>
   {/each}
 
+  {#if view.map.exits.length > 0}
+    <div class="card" data-testid="location-exits">
+      <h3>Exits</h3>
+      <div class="acts">
+        {#each view.map.exits as e (`${e.from}|${e.to}`)}
+          <Button
+            variant="primary"
+            disabled={!!view.travel || view.recovering || view.inForcedFight}
+            title={`Travel toward ${e.region}, by the road from ${e.fromName}`}
+            onclick={() => run(send(travelTo({ to: e.to })))}
+          >
+            → {e.region}
+          </Button>
+        {/each}
+      </div>
+    </div>
+  {/if}
+
   {#each rungs as tower (tower.id)}
     <h2>{tower.icon} {tower.name}</h2>
     <div class="card" data-testid="location-ladder">

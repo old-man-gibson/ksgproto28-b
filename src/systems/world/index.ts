@@ -173,6 +173,22 @@ export interface MapSpotView {
   resumes: string | null;
 }
 
+/**
+ * A visible road from a discovered spot of the current region into another
+ * region: the only way off a region by road. One entry per road, as the old
+ * map drew one label per road (`mapPlan.ts` exitList). A one-way road shows
+ * only from its source end.
+ */
+export interface MapExitView {
+  /** The spot the road leaves from. */
+  from: string;
+  fromName: string;
+  /** The spot the road arrives at, in the other region. */
+  to: string;
+  /** The name of the region the road leads into. */
+  region: string;
+}
+
 export interface WorldView {
   spot: { id: string; name: string; icon: string; desc: string; area: string; region: string };
   recovering: boolean;
@@ -182,7 +198,7 @@ export interface WorldView {
   explore: { progress: number; gate: string | null } | null;
   inForcedFight: boolean;
   /** The areas of the region the character is in, with every spot the map shows. */
-  map: { region: string; areas: { id: string; name: string; spots: MapSpotView[] }[] };
+  map: { region: string; areas: { id: string; name: string; spots: MapSpotView[] }[]; exits: MapExitView[] };
   /** The ladder rides open from here, by landing spot. */
   rides: { to: string; ticks: number; label: string }[];
   /** The tower whose ladder answers where the character stands, or null. */
@@ -419,11 +435,19 @@ const world = defineSystem<WorldState, WorldView>({
     const routes = state.travel || state.recovering ? new Map<string, { ticks: number; legs: number }>() : reach(ctx, state, state.spot);
 
     // The map shows discovered spots, and unknown places one visible road past known ground.
+    // A visible road into another region is an exit, not a spot of this map.
+    // The old `buildPlan` exitList: from known spots only, every visible road,
+    // shut or not; the travel command reports a shut road.
     const shown = new Set<string>();
+    const exits: MapExitView[] = [];
     for (const id of state.discovered) {
       if (AREAS[SPOTS[id]?.areaId]?.regionId !== region.id) continue;
       shown.add(id);
-      for (const edge of visibleEdges(ctx, state, id)) shown.add(edge.to);
+      for (const edge of visibleEdges(ctx, state, id)) {
+        const to = REGIONS[AREAS[SPOTS[edge.to].areaId].regionId];
+        if (to.id === region.id) shown.add(edge.to);
+        else exits.push({ from: id, fromName: SPOTS[id].name, to: edge.to, region: to.name });
+      }
     }
     const spotView = (id: string): MapSpotView => {
       const spot = SPOTS[id];
@@ -485,6 +509,7 @@ const world = defineSystem<WorldState, WorldView>({
               .map((sp) => spotView(sp.id)),
           }))
           .filter((a) => a.spots.length > 0),
+        exits,
       },
       rides: state.travel ? [] : rideEdges(ctx, state, state.spot).map((e) => ({ to: e.to, ticks: e.ticks, label: e.label ?? '' })),
       tower: state.travel ? null : (towerAt(state.spot)?.id ?? null),

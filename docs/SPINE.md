@@ -745,6 +745,18 @@ with the tick or the fight. The old surveyed plan drawn from `map`
 coordinates and the Stations row are left to the UI step; the `map` field
 is ported.
 
+Gap found after step 4 (branch `fix-map-exits`): the list of spots kept
+only the current region, and the panel had no control for a road into
+another region. The old plan drew those roads as "→ {region}" labels
+(`mapPlan.ts` exitList, `MapPlan.svelte`). Without them the road `f0_gate`
+to `ascent_foot` existed but could not be taken from the UI, so a player
+could not leave floor 0. Fix: `view.map.exits` lists every visible road
+from a discovered spot of the current region into another region, one
+entry per road; the panel draws an "Exits" card with one "→ {region}"
+button each, which sends `world/travel`. Tests: `tests/mapExits.test.ts`.
+In current content `f0_gate` to `ascent_foot` is the only road between
+regions; the castle hub and the band 3 wards are in `the_ascent`.
+
 ### 7.8 Waits
 
 Port 7: quests, shops, the floor 0 script and the weapon rack, prestige

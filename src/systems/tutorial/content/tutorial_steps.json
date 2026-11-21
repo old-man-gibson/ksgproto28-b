@@ -54,6 +54,6 @@
     "id": "leave",
     "title": "Leave floor 0",
     "spot": "ascent_foot",
-    "desc": "Select → Threshold beside the Gate (3 s); the road is one-way and floor 0 closes behind you. The Warden of the Foot gives the next step, the floor 1 quest The First Ascent."
+    "desc": "Select → Threshold in the Exits card of the map (3 s); the road is one-way and floor 0 closes behind you. The Warden of the Foot gives the next step, the floor 1 quest The First Ascent."
   }
 ]
