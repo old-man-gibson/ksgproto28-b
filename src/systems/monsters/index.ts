@@ -10,7 +10,7 @@
  * This system holds no state. A live monster is owned by `combat`.
  */
 import { defineSystem, registry, s, type Rng } from '../../kernel';
-import { conditionSchema } from '../counters';
+import { conditionSchema, type Condition } from '../counters';
 import { sizeRank, type SizeTag } from '../items';
 import { dropTableSchema, type DropTable } from '../loot';
 import {
@@ -121,7 +121,7 @@ export const monsters = registry(
       }),
     ),
     escorts: s.optional(s.array(s.ref('monsters'))),
-    veil: s.optional(s.array(conditionSchema, { help: 'Bestiary gate. Not read by combat.' })),
+    veil: s.optional(s.array(conditionSchema, { help: 'Bestiary gate: the book hides the species until every condition holds. Not read by combat.' })),
     resistances: s.optional(perType),
     armor: s.optional(s.number({ min: 0 })),
     regen: s.optional(s.number({ min: 0, help: 'Share of max health per tick.' })),
@@ -220,6 +220,8 @@ export interface MonsterDef {
   passive?: boolean;
   group?: GroupSpec;
   escorts?: string[];
+  /** Read by the bestiary only. */
+  veil?: Condition[];
   resistances?: Partial<Record<DamageType, number>>;
   armor?: number;
   regen?: number;

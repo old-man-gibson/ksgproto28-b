@@ -51,3 +51,10 @@ A greeting bumps `met:<npc>`, sends `skills/check-discovery` and
   of Everything and "all eight trades", which are not in this build yet.
 - The smith's dialogue names the iron ingot recipe and A Taste of
   Everything (crafting, step 3).
+
+## Step 4 port L
+
+`psionic_shaper` (Ilex, Censer Walk; old `npcs.data.ts` 117-123 and its
+text) is added for `faces_of_threshold`. It teaches and sells nothing, as in
+the old build. The Warden's `quests` lists `the_first_ascent`,
+`faces_of_threshold`, `a_taste_of_everything`.

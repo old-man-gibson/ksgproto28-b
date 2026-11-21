@@ -28,8 +28,9 @@ lines.
 Event `titles/check`. This system emits it after each of
 `attributes/levelup`, `skills/levelup`, `combat/kill`, `quests/completed`
 and `world/arrived`, so the check reads the counters the same handler
-bumped (combat bumps `kills` after it emits the kill). The old build also
-checked on `achievement`, `craft` and `superattr:unlock`, and by direct
+bumped (combat bumps `kills` after it emits the kill). Since step 4 port
+L it also runs after `achievements/claimed` (the old `achievement`). The
+old build also checked on `craft` and `superattr:unlock`, and by direct
 call from consumables and the festival: those ports emit `titles/check`.
 
 ## Modifiers

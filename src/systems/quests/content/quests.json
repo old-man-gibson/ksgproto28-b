@@ -1,5 +1,51 @@
 [
   {
+    "id": "faces_of_threshold",
+    "name": "The Faces of Threshold",
+    "giver": "warden_of_the_foot",
+    "objectives": [
+      { "type": "talk", "npcId": "master_smith", "desc": "Meet the smith at the Forges" },
+      { "type": "talk", "npcId": "lectory_wizard", "desc": "Meet the docent in the Reading Hall" },
+      { "type": "talk", "npcId": "chapel_priest", "desc": "Meet the prior at the Nine Chapels" },
+      { "type": "talk", "npcId": "militia_captain", "desc": "Meet the captain at the Muster Gate" },
+      { "type": "talk", "npcId": "head_chef", "desc": "Meet the chef in the Granary Kitchens" },
+      { "type": "talk", "npcId": "row_alchemist", "desc": "Meet the alchemist at the Alembics" },
+      { "type": "talk", "npcId": "psionic_shaper", "desc": "Meet Ilex on Censer Walk" },
+      { "type": "talk", "npcId": "dojo_master", "desc": "Meet Master Ekwe on the Sand" }
+    ],
+    "rewards": {
+      "gold": 60,
+      "levelXp": 50,
+      "favor": 4,
+      "materials": [
+        { "id": "iron_scrap", "qty": 6 },
+        { "id": "raw_meat", "qty": 4 },
+        { "id": "common_herb", "qty": 4 },
+        { "id": "spring_water", "qty": 3 },
+        { "id": "mendroot", "qty": 3 }
+      ],
+      "skillXp": [{ "id": "scouting", "xp": 25 }]
+    },
+    "desc": "Talk to the eight trades of Threshold, one per district. Each vendor charges strangers half again the price until spoken to. Reward: 60 gold, 50 level XP, 4 favor, 25 Scouting XP, and a crate of iron scrap, raw meat, common herb, spring water and mendroot."
+  },
+  {
+    "id": "a_taste_of_everything",
+    "name": "A Taste of Everything",
+    "giver": "warden_of_the_foot",
+    "requirements": [{ "type": "quest", "id": "faces_of_threshold" }],
+    "objectives": [
+      { "type": "craft", "recipeId": "iron_ingot", "count": 1, "at": "the_forges", "desc": "Smelt iron at the Forges" },
+      { "type": "craft", "discipline": "cooking", "count": 1, "at": "granary_kitchens", "desc": "Cook a dish on the Cooking Stove in the Granary Kitchens" },
+      { "type": "craft", "discipline": "alchemy", "count": 1, "at": "the_alembics", "desc": "Bottle a brew at the Alembics" },
+      { "type": "stat", "key": "bestiary:entries", "value": 3, "at": "the_cages", "desc": "Add 3 species to your bestiary (the Cages)" },
+      { "type": "stat", "key": "kills", "value": 5, "at": "the_cages", "desc": "Defeat 5 monsters (floor 0 counts)" },
+      { "type": "stat", "key": "spells:inscribed", "value": 1, "at": "the_reading_hall", "desc": "Inscribe a new spell at the Reading Hall’s Spellcrafting Table" },
+      { "type": "stat", "key": "miracles:learned", "value": 1, "at": "the_nine_chapels", "desc": "Learn a miracle at the Nine Chapels (Spellcrafting Table, Divine tab)" }
+    ],
+    "rewards": { "gold": 250, "levelXp": 75 },
+    "desc": "Use each open craft once with the Warden’s crate: smelt an ingot, cook a dish, bottle a brew, add 3 bestiary species, defeat 5 monsters, inscribe a new spell, learn a miracle. Reward: 250 gold, 75 level XP. Requires The Faces of Threshold."
+  },
+  {
     "id": "the_first_ascent",
     "name": "The First Ascent",
     "giver": "warden_of_the_foot",

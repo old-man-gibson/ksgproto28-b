@@ -24,9 +24,13 @@
  * - `state.spot`, `state.skills`, `state.materials` and `state.quests` are
  *   written through `patch`.
  *
+ * The craft case stood on the shelved `hammer_and_anvil` of `thora_ironbrand`
+ * at the shelved `hamlet_forge`. It is mounted the same way, the giver at
+ * `the_forges`, where the craft activity `craft_iron_ingot` is listed.
+ * The questmaster case completes the same three quests as the old case and
+ * reads the `achievements` slice (step 4 port L).
+ *
  * `it.todo`:
- * - craft objectives: crafting is step 3.
- * - the questmaster achievement: achievements are step 3.
  * - the v3 to v4 save migration: there is no importer of the old save; the
  *   save starts at version 1.
  *
@@ -36,6 +40,7 @@
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { Kernel } from '../src/kernel';
+import type { AchievementsState } from '../src/systems/achievements';
 import { enemyKilled } from '../src/systems/combat';
 import { conditionsMet } from '../src/systems/counters';
 import type { DivineState } from '../src/systems/divine';
@@ -56,7 +61,7 @@ import {
   type QuestsState,
 } from '../src/systems/quests';
 import { conditionReader, type SkillsState } from '../src/systems/skills';
-import { arrived, type WorldState } from '../src/systems/world';
+import { arrived, selectActivity, type WorldState } from '../src/systems/world';
 import type { ItemsState } from '../src/systems/items';
 import { ask, emit, makeGame, patch, reads, slice } from './helpers';
 import { counterOf, patchWorld, setCounters } from './worldHelpers';
@@ -73,6 +78,15 @@ const TEST_NPCS: Record<string, NpcDef> = {
     desc: 'Test record.',
     dialogue: [],
   },
+  thora_ironbrand: {
+    id: 'thora_ironbrand',
+    name: 'Thora Ironbrand',
+    icon: 'x',
+    spotId: 'the_forges',
+    quests: ['hammer_and_anvil'],
+    desc: 'Test record.',
+    dialogue: [],
+  },
   elder_maren: {
     id: 'elder_maren',
     name: 'Elder Maren',
@@ -85,6 +99,14 @@ const TEST_NPCS: Record<string, NpcDef> = {
 };
 
 const TEST_QUESTS: Record<string, QuestDef> = {
+  hammer_and_anvil: {
+    id: 'hammer_and_anvil',
+    name: 'Hammer and Anvil',
+    desc: 'Test record.',
+    giver: 'thora_ironbrand',
+    objectives: [{ type: 'craft', recipeId: 'iron_ingot', count: 3, desc: 'Smelt Iron Ingots' }],
+    rewards: { gold: 60, materials: [{ id: 'iron_ingot', qty: 2 }], skillXp: [{ id: 'smithing', xp: 20 }] },
+  },
   first_posting: {
     id: 'first_posting',
     name: 'First Posting',
@@ -222,7 +244,21 @@ describe('quest lifecycle', () => {
 });
 
 describe('objective types', () => {
-  it.todo('craft objectives advance via the craft event (step 3: crafting)');
+  it('craft objectives advance via the craft event', () => {
+    const g = gameAtSpot(3, 'the_forges');
+    expect(g.dispatch(acceptQuest({ quest: 'hammer_and_anvil' })).ok).toBe(true);
+    patch(g, (s) => {
+      (s.materials as MaterialsState).counts.iron_scrap = 9;
+    });
+    expect(g.dispatch(selectActivity({ activity: 'craft_iron_ingot' })).ok).toBe(true);
+    for (let i = 0; i < 400 && !complete(g, 'hammer_and_anvil'); i++) g.tick();
+    expect(complete(g, 'hammer_and_anvil')).toBe(true);
+
+    const ingotsBefore = slice<MaterialsState>(g, 'materials').counts.iron_ingot ?? 0;
+    expect(g.dispatch(turnInQuest({ quest: 'hammer_and_anvil' })).ok).toBe(true);
+    expect(slice<MaterialsState>(g, 'materials').counts.iron_ingot).toBe(ingotsBefore + 2); // reward materials
+    expect(questsOf(g).quests.hammer_and_anvil.status).toBe('done');
+  });
 
   it('reach objectives fire on arrival; collect objectives read and consume materials', () => {
     const g = gameAtSpot(4, 'long_gallery');
@@ -270,7 +306,22 @@ describe('chains & gating', () => {
     expect(g.dispatch(acceptQuest({ quest: 'first_posting' })).ok).toBe(true);
   });
 
-  it.todo('questmaster achievement tiers on completions (step 3: achievements)');
+  it('questmaster achievement tiers on completions', () => {
+    const g = gameAtSpot(7, 'ironyard_gate');
+    // Complete three real quests the direct way.
+    g.dispatch(acceptQuest({ quest: 'first_posting' }));
+    for (let i = 0; i < 10; i++) killEvent(g, 'goblin');
+    g.dispatch(turnInQuest({ quest: 'first_posting' }));
+    g.dispatch(acceptQuest({ quest: 'head_of_the_problem' }));
+    killEvent(g, 'goblin_boss');
+    g.dispatch(turnInQuest({ quest: 'head_of_the_problem' }));
+    at(g, 'long_gallery');
+    g.dispatch(acceptQuest({ quest: 'word_from_the_west' }));
+    emit(g, arrived, { spot: 'the_sand', from: 'long_gallery', ambushed: false });
+    g.dispatch(turnInQuest({ quest: 'word_from_the_west' }));
+    expect(counterOf(g, 'quests:completed')).toBe(3);
+    expect(slice<AchievementsState>(g, 'achievements').claimed.questmaster).toBe(1);
+  });
 });
 
 describe('migration', () => {

@@ -1,0 +1,10 @@
+[
+  { "id": "lore", "name": "Field Notes", "icon": "📝", "minKills": 1, "sureKills": 10, "difficulty": 1.4, "hint": "Reveals the field notes for this species. Can unlock from 1 kill; guaranteed at 10." },
+  { "id": "rewards", "name": "Worth", "icon": "🪙", "minKills": 2, "sureKills": 20, "difficulty": 1.2, "hint": "Reveals experience and coin per kill. Can unlock from 2 kills; guaranteed at 20." },
+  { "id": "vitals", "name": "Vitals", "icon": "❤️", "minKills": 3, "sureKills": 30, "difficulty": 1, "hint": "Reveals health and evasion. Can unlock from 3 kills; guaranteed at 30." },
+  { "id": "offense", "name": "Offence", "icon": "⚔️", "minKills": 3, "sureKills": 30, "difficulty": 1, "hint": "Reveals damage, damage type, attack interval and reach. Can unlock from 3 kills; guaranteed at 30." },
+  { "id": "behavior", "name": "Behaviour", "icon": "🧠", "minKills": 5, "sureKills": 45, "difficulty": 0.8, "hint": "Reveals group size, escorts and rank behaviour. Can unlock from 5 kills; guaranteed at 45." },
+  { "id": "defenses", "name": "Defences", "icon": "🛡️", "minKills": 8, "sureKills": 70, "difficulty": 0.6, "hint": "Reveals resistances and weaknesses. Can unlock from 8 kills; guaranteed at 70." },
+  { "id": "loot_common", "name": "Common Spoils", "icon": "🎒", "minKills": 5, "sureKills": 45, "difficulty": 0.8, "hint": "Reveals the common drop table with chances. Can unlock from 5 kills; guaranteed at 45." },
+  { "id": "loot_rare", "name": "Rare Spoils", "icon": "💎", "minKills": 15, "sureKills": 150, "difficulty": 0.35, "hint": "Reveals the rare drop table with chances. Can unlock from 15 kills; guaranteed at 150." }
+]

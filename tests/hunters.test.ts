@@ -8,19 +8,18 @@
  * - the old test fired the `kill` bus event and the achievements listener
  *   bumped the counters. Here combat bumps them where it kills, so a kill
  *   is a real one: a staged fight against a specimen on 1 HP;
- * - the hunter bonuses came from two achievements, which are not ported.
- *   The probe states the same kind of modifier (`requiresMonsterTag`), as
- *   the tests of ports 1 to 3 did for unported sources.
- *
- * Left behind: the achievement tier a counter crosses (the achievements port).
+ * - `g.state.achievements` is the `achievements` slice (`claimed`), written
+ *   through `patch` (step 4 port L). Until that port the probe stated the
+ *   same modifiers.
  */
 import { describe, expect, it } from 'vitest';
 import type { Kernel } from '../src/kernel';
+import type { AchievementsState } from '../src/systems/achievements';
 import { monsterTagSet } from '../src/systems/monsters';
-import { statBlockOf, statMod, vsVariant, type StatMod } from '../src/systems/stats';
+import { statBlockOf, statMod, vsVariant } from '../src/systems/stats';
 import type { ResourcesState } from '../src/systems/resources';
 import { combatOf, counterOf, stage } from './combatHelpers';
-import { equip, makeGame, patch, reads, setMods } from './helpers';
+import { equip, makeGame, patch, reads, setMods, slice } from './helpers';
 
 /** Kill `times` specimens of a species, one staged fight each. */
 function killed(g: Kernel, defId: string, times = 1): void {
@@ -67,23 +66,20 @@ describe('tag kill counters', () => {
     expect(counterOf(g, 'kills:slime_base_basic')).toBe(3);
   });
 
-  it.todo('crossing a tier threshold grants the hunter achievement (the achievements port)');
+  it('crossing a tier threshold grants the hunter achievement', () => {
+    const g = fighter(3);
+    killed(g, 'slime_base_basic', 5); // Slime Hunter I at 5
+    expect(slice<AchievementsState>(g, 'achievements').claimed.slime_kills).toBe(1);
+  });
 });
 
 describe('tag-gated bonuses', () => {
-  const gated = (stat: 'damage' | 'penetration', kind: 'add' | 'mult', value: number, tag: string): StatMod => ({
-    ...statMod(stat, kind, value, `${tag} hunter`),
-    requiresMonsterTag: tag,
-  });
-
-  /** A hunter holding the bonuses the two old achievements gave at tier 3. */
+  /** A hunter with every tier of both example achievements claimed. */
   function hunter(seed: number): Kernel {
     const g = makeGame({ seed });
-    setMods(g, [
-      gated('damage', 'mult', 0.15, 'slime'),
-      gated('damage', 'mult', 0.15, 'inorganic'),
-      gated('penetration', 'add', 0.1, 'inorganic'),
-    ]);
+    patch(g, (slices) => {
+      (slices.achievements as AchievementsState).claimed = { slime_kills: 3, inorganic_kills: 3 };
+    });
     return g;
   }
 

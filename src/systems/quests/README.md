@@ -50,10 +50,7 @@ is logged before the completed line, as the old order.
 
 ## Left behind
 
-- Craft objectives advance on a `craft` event that crafting sends (step 3).
-- `faces_of_threshold`, `a_taste_of_everything` (step 3); the floor 11 and
-  harbor quests (step 4).
-- The questmaster achievement (achievements).
+- The floor 11 and harbor quests (step 4, ports C2 and C3).
 
 ## Differences from the old build
 
@@ -69,3 +66,22 @@ is logged before the completed line, as the old order.
   emitted `craft`: `alchemy/brew` emits it before its Brewed line. No quest
   in scope has a craft objective (`a_taste_of_everything` waits for the last
   of the six system people).
+
+## Step 4 port L
+
+- Content: `faces_of_threshold` and `a_taste_of_everything` of the Warden
+  (old `quests.data.ts` 19-65), before `the_first_ascent` as in the old
+  file. The Warden lists all three, `the_first_ascent` first. `quests` holds
+  3 records.
+- `faces_of_threshold`: eight talk objectives (the shaper Ilex,
+  `psionic_shaper`, added to `npcs` with it); pays 60 gold, 50 level XP,
+  favour 1 + 4, 25 Scouting XP and the Warden's crate.
+- `a_taste_of_everything`: craft objectives for `iron_ingot` (the craft
+  activity at the Forges sends `benches/crafted { discipline: 'craft',
+  recipe }`), `cooking` and `alchemy`; stat objectives on
+  `bestiary:entries` (the `bestiary` system), `kills`, `spells:inscribed`
+  and `miracles:learned`.
+- The questmaster achievement is in `achievements`; `quests:completed` is
+  its counter.
+- The text of `faces_of_threshold` says "the eight trades"; the old comment
+  above it says nine. Ported as the text has it.

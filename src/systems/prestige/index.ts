@@ -30,6 +30,7 @@ import {
   type RecordOf,
   type SystemDef,
 } from '../../kernel';
+import achievements, { totalTiers } from '../achievements';
 import attributes from '../attributes';
 import counters, { conditionsMet, counterValue, setCounter, type Condition, type ConditionReader } from '../counters';
 import { addGold } from '../gold';
@@ -290,8 +291,7 @@ export function sourceAmount(ctx: ReadCtx, src: PrestigeSourceDef): number {
     case 'skillLevels':
       return Object.values(ctx.read(skills).skills).reduce((n, sk) => n + sk.level, 0);
     case 'achievements':
-      // Achievement tiers arrive with achievements (step 3).
-      return 0;
+      return totalTiers(ctx.read(achievements));
   }
 }
 

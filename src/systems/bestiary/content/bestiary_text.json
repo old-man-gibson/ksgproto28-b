@@ -1,0 +1,5 @@
+[
+  { "id": "species_added", "text": "📖 Bestiary: {icon} {name} added." },
+  { "id": "fact_learned", "text": "📖 {icon} {name} learned for {monster}." },
+  { "id": "den_learned", "text": "📖 Den located: {monster} at {spot}." }
+]

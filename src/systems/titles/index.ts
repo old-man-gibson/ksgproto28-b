@@ -20,6 +20,7 @@ import {
   type DeepReadonly,
   type RecordOf,
 } from '../../kernel';
+import { tierClaimed } from '../achievements';
 import { attrLevelUp } from '../attributes';
 import { enemyKilled } from '../combat';
 import { conditionSchema, conditionsMet, type Condition } from '../counters';
@@ -169,6 +170,7 @@ const system = defineSystem<TitlesState, TitlesView>({
     on(enemyKilled, (ctx) => ctx.emit(checkTitles, undefined)),
     on(questCompleted, (ctx) => ctx.emit(checkTitles, undefined)),
     on(arrived, (ctx) => ctx.emit(checkTitles, undefined)),
+    on(tierClaimed, (ctx) => ctx.emit(checkTitles, undefined)),
     // Titles latch: a restraint (`statMax`) broken later never revokes one.
     // The old `checkTitleUnlocks`.
     on(checkTitles, (ctx) => {

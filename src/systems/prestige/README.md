@@ -51,9 +51,14 @@ Source `prestige/legacy`: `boon:<id>` rank, `foresight`, `scale:talent:<skill>`
 - Readers of grimoire pages (step 3, arcane), the city key's gate
   (band 3, step 4), Cook's Notes (cooking, step 3), Foresight in the skill
   view, Wayfinding go links (UI step; `wayfinding` is in the view).
-- Harvest sources with no counter yet: bestiary entries and achievement tiers
-  pay 0.
 - The stronghold and its automatic prestige, festival legacy (step 4).
+
+## Step 4 port L
+
+The two harvest sources that paid 0 now pay: `bestiary` reads the counter
+`bestiary:entries` (bumped by the `bestiary` system on each new entry) and
+`achievements` reads `totalTiers` of the `achievements` slice. The harvest
+case of `tests/prestige.test.ts` is the old one again (16 points).
 
 ## Old data ported as it is
 

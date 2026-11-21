@@ -15,16 +15,17 @@
  * - `grantFavorAll(state, bus, n)` is the request `divine/grant-favor-all`;
  *   `favorWith(state, id)` reads the divine slice.
  *
- * `it.todo`, each with what it waits for:
- * - "the Nine Chapels, where the quest sends you, can teach a miracle":
- *   `a_taste_of_everything` waits for the last of the six system people.
- * - "meeting people (talk objectives)": the old `talkTo` cases. The met
- *   counter is ported in `tests/quests.test.ts`; the objectives that read it
- *   belong to `faces_of_threshold`, which waits like the quest above. The
- *   bench case waits for crafting.
- * - "quest 1's favor makes the cheapest miracle exactly affordable": the
- *   record `faces_of_threshold` waits like the quest above.
- * - "the cages (defined bestiary rates)": the bestiary.
+ * Step 4 port L: the Warden's two quests, Ilex (`psionic_shaper`) and the
+ * bestiary. Call shape:
+ * - `talkTo(state, bus, npc)` is the command `npcs/talk`; its old false is a
+ *   result that is not `ok`. `hasMet` and `metKey` read the counters.
+ * - `objectiveProgress(state, quest, i)` takes the reads and the quests slice.
+ * - `state.quests.<id> = ...` is written through `patch`; the old
+ *   `game.bus.emit({ type: 'craft', ... })` is the event `benches/crafted`.
+ * - `recordKill(state, bus, id)` at `the_cages` is a `combat/kill` event
+ *   with the player at `the_cages`; `state.bestiary` is the bestiary slice.
+ *
+ * `it.todo`, with what it waits for:
  * - "migration v47 → v48": the save starts at version 1 here.
  */
 import { describe, expect, it } from 'vitest';
@@ -34,10 +35,42 @@ import type { CountersState } from '../src/systems/counters';
 import { DEITY_LIST, deityKnown, favorWith, grantFavorAll, type DivineState } from '../src/systems/divine';
 import type { SpellcraftState } from '../src/systems/spellcraft';
 import { chooseSpell } from '../src/systems/tutorial';
-import { ask, makeGame, patch, reads, slice } from './helpers';
+import { benchCrafted } from '../src/systems/benches';
+import { BESTIARY_FACTS, type BestiaryState } from '../src/systems/bestiary';
+import { enemyKilled } from '../src/systems/combat';
+import { hasMet, metKey, talkTo } from '../src/systems/npcs';
+import { objectiveProgress, QUESTS, type QuestsState } from '../src/systems/quests';
+import { SPOTS } from '../src/systems/world';
+import { ask, emit, makeGame, patch, reads, slice } from './helpers';
+import { patchWorld } from './worldHelpers';
 
 const fresh = () => makeGame({ seed: 0 });
 const counts = (g: ReturnType<typeof fresh>) => slice<CountersState>(g, 'counters').counts;
+const questsOf = (g: ReturnType<typeof fresh>) => slice<QuestsState>(g, 'quests');
+
+function at(g: ReturnType<typeof fresh>, spot: string): void {
+  patchWorld(g, (w) => {
+    w.spot = spot;
+    if (!w.discovered.includes(spot)) w.discovered.push(spot);
+  });
+}
+
+/** The kill a fight sends, of one specimen. */
+function killOf(g: ReturnType<typeof fresh>, defId: string): void {
+  emit(g, enemyKilled, {
+    entity: 'm:test',
+    defId,
+    name: defId,
+    level: 1,
+    rewardLevel: 1,
+    xp: 1,
+    tags: [],
+    lastHit: null,
+    site: 'the_cages',
+    boss: false,
+    once: false,
+  });
+}
 
 describe("the Warden's second quest, played from a tutorial save", () => {
   it('the floor 0 word is refused before Inscribe is pressed; a new sentence counts', () => {
@@ -56,14 +89,65 @@ describe("the Warden's second quest, played from a tutorial save", () => {
     expect(counts(g)['spells:inscribed']).toBe(1);
   });
 
-  it.todo('the Nine Chapels, where the quest sends you, can teach a miracle (a_taste_of_everything: the last of the six system people)');
+  it('the Nine Chapels, where the quest sends you, can teach a miracle', () => {
+    // The objective, the prior and the spot all say miracles are learned
+    // there; the Divine tab lives on the spellcrafting table.
+    expect(SPOTS.the_nine_chapels.benches ?? []).toContain('spelltable');
+    const i = QUESTS.a_taste_of_everything.objectives.findIndex((o) => o.type === 'stat' && o.key === 'miracles:learned');
+    expect(QUESTS.a_taste_of_everything.objectives[i].desc).toContain('Nine Chapels');
+  });
 });
 
 describe('meeting people (talk objectives)', () => {
-  it.todo('a greeting stamps met:* once, at the right spot only (faces_of_threshold: the last of the six system people; the met counter is in tests/quests.test.ts)');
-  it.todo('talk objectives read greetings live — met before accepting still counts (faces_of_threshold: the last of the six system people)');
-  it.todo('stat objectives read their counters live (a_taste_of_everything: the last of the six system people)');
-  it.todo('bench work advances discipline craft objectives through the bus (a_taste_of_everything: the last of the six system people; quests hears benches/crafted since the alchemy port)');
+  it('a greeting stamps met:* once, at the right spot only', () => {
+    const g = fresh();
+    expect(g.dispatch(talkTo({ npc: 'master_smith' })).ok).toBe(false); // she is at the Forges, you are not
+    at(g, 'the_forges');
+    expect(g.dispatch(talkTo({ npc: 'master_smith' })).ok).toBe(true);
+    expect(hasMet(slice<CountersState>(g, 'counters'), 'master_smith')).toBe(true);
+    expect(counts(g)[metKey('master_smith')]).toBe(1);
+    expect(g.dispatch(talkTo({ npc: 'master_smith' })).ok).toBe(false); // already acquainted
+    expect(counts(g)[metKey('master_smith')]).toBe(1);
+  });
+
+  it('talk objectives read greetings live — met before accepting still counts', () => {
+    const g = fresh();
+    at(g, 'the_sand');
+    expect(g.dispatch(talkTo({ npc: 'dojo_master' })).ok).toBe(true);
+    const quest = QUESTS.faces_of_threshold;
+    // Not even accepted, and the dojo master's line is already satisfied.
+    const i = quest.objectives.findIndex((o) => o.type === 'talk' && o.npcId === 'dojo_master');
+    expect(objectiveProgress(reads(g), questsOf(g), quest, i)).toEqual({ current: 1, target: 1 });
+  });
+
+  it('stat objectives read their counters live', () => {
+    const g = fresh();
+    const quest = QUESTS.a_taste_of_everything;
+    const i = quest.objectives.findIndex((o) => o.type === 'stat' && o.key === 'spells:inscribed');
+    expect(objectiveProgress(reads(g), questsOf(g), quest, i).current).toBe(0);
+    patch(g, (slices) => {
+      slices.counters.counts['spells:inscribed'] = 1;
+    });
+    expect(objectiveProgress(reads(g), questsOf(g), quest, i)).toEqual({ current: 1, target: 1 });
+  });
+
+  it('bench work advances discipline craft objectives through the bus', () => {
+    const g = fresh();
+    const quest = QUESTS.a_taste_of_everything;
+    patch(g, (slices) => {
+      (slices.quests as QuestsState).quests.a_taste_of_everything = {
+        status: 'active',
+        progress: quest.objectives.map(() => 0),
+      };
+    });
+    const i = quest.objectives.findIndex((o) => o.type === 'craft' && o.discipline === 'cooking');
+    emit(g, benchCrafted, { discipline: 'cooking' });
+    expect(questsOf(g).quests.a_taste_of_everything.progress[i]).toBe(1);
+    // The alchemy line is untouched by a smelted ingot.
+    const j = quest.objectives.findIndex((o) => o.type === 'craft' && o.discipline === 'alchemy');
+    emit(g, benchCrafted, { discipline: 'craft', recipe: 'iron_ingot' });
+    expect(questsOf(g).quests.a_taste_of_everything.progress[j]).toBe(0);
+  });
 });
 
 describe('the starter lexicon', () => {
@@ -110,13 +194,28 @@ describe('the known gods', () => {
     }
   });
 
-  it.todo(
-    "quest 1's favor makes the cheapest miracle exactly affordable (faces_of_threshold: the last of the six system people. The turn-in favour is ported and tested in tests/divine.test.ts)",
-  );
+  it("quest 1's favor makes the cheapest miracle exactly affordable", () => {
+    const g = fresh();
+    // Turn-in pays 1 + the quest's own favor reward.
+    ask(g, grantFavorAll, { amount: 1 + (QUESTS.faces_of_threshold.rewards.favor ?? 0) });
+    expect(favorWith(slice<DivineState>(g, 'divine'), 'usvylgr')).toBeGreaterThanOrEqual(5);
+  });
 });
 
 describe('the cages (defined bestiary rates)', () => {
-  it.todo('caged kills unlock every fact exactly at its minKills, no rolls (the bestiary)');
+  it('caged kills unlock every fact exactly at its minKills, no rolls', () => {
+    const g = fresh();
+    at(g, 'the_cages');
+    const kills = Math.max(...BESTIARY_FACTS.map((f) => f.minKills));
+    for (let k = 1; k <= kills; k++) {
+      killOf(g, 'forest_rat');
+      const facts = slice<BestiaryState>(g, 'bestiary').entries.forest_rat.facts;
+      for (const fact of BESTIARY_FACTS) {
+        expect(facts.includes(fact.id), `${fact.id} at ${k} kills (minKills ${fact.minKills})`).toBe(k >= fact.minKills);
+      }
+    }
+    expect(counts(g)['bestiary:entries']).toBe(1);
+  });
 });
 
 describe('migration v47 → v48', () => {

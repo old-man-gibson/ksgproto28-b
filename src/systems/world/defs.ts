@@ -147,7 +147,7 @@ export const spots = registry(
     fightLimit: s.optional(s.number({ integer: true, min: 1 })),
     stampOnClear: s.optional(s.string()),
     scene: s.optional(s.enum(['town', 'hall', 'crypt', 'cistern', 'webs'])),
-    caged: s.optional(s.boolean({ help: 'Not read until the bestiary exists.' })),
+    caged: s.optional(s.boolean({ help: 'Bestiary: a kill here grants each fact at its minKills, no roll.' })),
     healBetweenBouts: s.optional(s.object({ maxAttrTotal: s.number() }, { help: 'Not read until step 3.' })),
     dare: s.optional(
       s.object(

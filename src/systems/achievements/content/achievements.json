@@ -1,0 +1,128 @@
+[
+  {
+    "id": "slayer",
+    "name": "Slayer",
+    "icon": "💀",
+    "statKey": "kills",
+    "desc": "Defeat {n} monsters",
+    "tiers": [
+      { "threshold": 100, "bonus": [{ "stat": "damage", "op": "mult", "value": 0.02 }] },
+      { "threshold": 1000, "bonus": [{ "stat": "damage", "op": "mult", "value": 0.03 }] },
+      { "threshold": 10000, "bonus": [{ "stat": "damage", "op": "mult", "value": 0.05 }] }
+    ]
+  },
+  {
+    "id": "honed_body",
+    "name": "Honed Body",
+    "icon": "🏋️",
+    "statKey": "attr:str",
+    "desc": "Reach Strength level {n}",
+    "tiers": [
+      { "threshold": 10, "bonus": [{ "stat": "maxHp", "op": "add", "value": 10 }] },
+      { "threshold": 25, "bonus": [{ "stat": "maxHp", "op": "add", "value": 25 }] },
+      {
+        "threshold": 50,
+        "bonus": [
+          { "stat": "maxHp", "op": "add", "value": 50 },
+          { "stat": "str", "op": "add", "value": 2 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "wanderer",
+    "name": "Wanderer",
+    "icon": "🥾",
+    "statKey": "travel:trips",
+    "desc": "Complete {n} journeys",
+    "tiers": [
+      { "threshold": 10, "bonus": [{ "stat": "travelSpeed", "op": "mult", "value": 0.05 }] },
+      { "threshold": 50, "bonus": [{ "stat": "travelSpeed", "op": "mult", "value": 0.1 }] },
+      { "threshold": 200, "bonus": [{ "stat": "travelSpeed", "op": "mult", "value": 0.15 }] }
+    ]
+  },
+  {
+    "id": "fortune_seeker",
+    "name": "Fortune Seeker",
+    "icon": "💰",
+    "statKey": "gold:earned",
+    "desc": "Earn {n} gold in total",
+    "tiers": [
+      { "threshold": 100, "bonus": [{ "stat": "loot", "op": "mult", "value": 0.03 }] },
+      { "threshold": 1000, "bonus": [{ "stat": "loot", "op": "mult", "value": 0.05 }] },
+      { "threshold": 10000, "bonus": [{ "stat": "loot", "op": "mult", "value": 0.1 }] }
+    ]
+  },
+  {
+    "id": "miner",
+    "name": "Miner",
+    "icon": "⛏️",
+    "statKey": "gather:iron_scrap",
+    "desc": "Mine {n} iron scrap in total",
+    "tiers": [
+      { "threshold": 5, "bonus": [{ "stat": "loot", "op": "mult", "value": 0.03 }] },
+      { "threshold": 10, "bonus": [{ "stat": "loot", "op": "mult", "value": 0.05 }] },
+      { "threshold": 50, "bonus": [{ "stat": "loot", "op": "mult", "value": 0.1 }] }
+    ]
+  },
+  {
+    "id": "slime_kills",
+    "name": "Slime Hunter",
+    "icon": "🫧",
+    "statKey": "kills:tag:slime",
+    "desc": "Kill {n} slimes of any kind",
+    "tiers": [
+      { "threshold": 5, "bonus": [{ "stat": "damage", "op": "mult", "value": 0.03, "requiresMonsterTag": "slime" }] },
+      { "threshold": 10, "bonus": [{ "stat": "damage", "op": "mult", "value": 0.05, "requiresMonsterTag": "slime" }] },
+      { "threshold": 50, "bonus": [{ "stat": "damage", "op": "mult", "value": 0.1, "requiresMonsterTag": "slime" }] }
+    ]
+  },
+  {
+    "id": "inorganic_kills",
+    "name": "Breaker",
+    "icon": "🧱",
+    "statKey": "kills:tag:inorganic",
+    "desc": "Kill {n} Inorganic monsters",
+    "tiers": [
+      { "threshold": 5, "bonus": [{ "stat": "penetration", "op": "add", "value": 0.02, "requiresMonsterTag": "inorganic" }] },
+      { "threshold": 25, "bonus": [{ "stat": "damage", "op": "mult", "value": 0.05, "requiresMonsterTag": "inorganic" }] },
+      { "threshold": 100, "bonus": [{ "stat": "penetration", "op": "add", "value": 0.05, "requiresMonsterTag": "inorganic" }] }
+    ]
+  },
+  {
+    "id": "questmaster",
+    "name": "Questmaster",
+    "icon": "⭐",
+    "statKey": "quests:completed",
+    "desc": "Complete {n} quests",
+    "tiers": [
+      { "threshold": 3, "bonus": [{ "stat": "skillXp", "op": "mult", "value": 0.05 }] },
+      { "threshold": 6, "bonus": [{ "stat": "goldGain", "op": "mult", "value": 0.05 }] },
+      { "threshold": 12, "bonus": [{ "stat": "skillXp", "op": "mult", "value": 0.1 }] }
+    ]
+  },
+  {
+    "id": "artisan",
+    "name": "Artisan",
+    "icon": "🔨",
+    "statKey": "crafts",
+    "desc": "Craft {n} items",
+    "tiers": [
+      { "threshold": 10, "bonus": [{ "stat": "craftSpeed", "op": "mult", "value": 0.05 }] },
+      { "threshold": 100, "bonus": [{ "stat": "craftSpeed", "op": "mult", "value": 0.08 }] },
+      { "threshold": 1000, "bonus": [{ "stat": "craftSpeed", "op": "mult", "value": 0.12 }] }
+    ]
+  },
+  {
+    "id": "student",
+    "name": "Eternal Student",
+    "icon": "🎓",
+    "statKey": "skill:levels",
+    "desc": "Gain {n} skill levels in total",
+    "tiers": [
+      { "threshold": 25, "bonus": [{ "stat": "skillXp", "op": "mult", "value": 0.05 }] },
+      { "threshold": 100, "bonus": [{ "stat": "skillXp", "op": "mult", "value": 0.08 }] },
+      { "threshold": 500, "bonus": [{ "stat": "skillXp", "op": "mult", "value": 0.12 }] }
+    ]
+  }
+]

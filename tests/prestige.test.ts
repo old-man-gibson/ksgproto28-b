@@ -18,8 +18,8 @@
  *   through `prestige/buy-boon`, and `kernel.staleStats()` is checked empty.
  * - `state.createdAt` and `state.lastSaved` are not in this save; the
  *   weather seed is what carries (old `next.createdAt = state.createdAt`).
- * - The achievements source pays 0 until achievements are ported (step 3):
- *   the old harvest of 16 is 14 here, with `achievements: 0`.
+ * - `s.achievements` is the `achievements` slice (`claimed`), written through
+ *   `patch` (step 4 port L).
  * - "through the Game: the state object keeps its identity" has no meaning
  *   here (the UI holds no state). It is replaced by "a save after a prestige
  *   loads and runs".
@@ -33,6 +33,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import type { Kernel } from '../src/kernel';
+import type { AchievementsState } from '../src/systems/achievements';
 import type { AttributesState } from '../src/systems/attributes';
 import type { CountersState } from '../src/systems/counters';
 import type { GoldState } from '../src/systems/gold';
@@ -164,16 +165,18 @@ describe('the harvest', () => {
       'gold:earned': 999_999, // thresholds 10k, 100k, 1M → 2
     });
     setSkills(k, { fighting: 30, scouting: 20 });
-    // Achievement tiers pay 0 until achievements are ported (step 3).
+    patch(k, (slices) => {
+      (slices.achievements as AchievementsState).claimed = { a: 2, b: 5 }; // 7 tiers, 3 per point → 2
+    });
     const preview = harvestOf(k);
     const byId = Object.fromEntries(preview.lines.map((l) => [l.id, l.points]));
-    expect(byId).toEqual({ floors: 6, quests: 2, bestiary: 2, skills: 2, achievements: 0, gold: 2 });
-    expect(preview.total).toBe(14);
+    expect(byId).toEqual({ floors: 6, quests: 2, bestiary: 2, skills: 2, achievements: 2, gold: 2 });
+    expect(preview.total).toBe(16);
     expect(preview.ordinal).toBe(1);
 
     prestige(k);
     expect(prestigeOf(k).lastHarvest).toEqual(preview);
-    expect(prestigeOf(k).points).toBe(14);
+    expect(prestigeOf(k).points).toBe(16);
   });
 
   it('gold pays geometrically: each point ten times further than the last, from 10,000', () => {

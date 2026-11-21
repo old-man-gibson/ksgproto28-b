@@ -5,7 +5,9 @@
     "icon": "🗝️",
     "spotId": "ascent_foot",
     "quests": [
-      "the_first_ascent"
+      "the_first_ascent",
+      "faces_of_threshold",
+      "a_taste_of_everything"
     ],
     "desc": "Stands at the Foot of the Ascent. Gives the three starting quests: The First Ascent (floor 1, recommended first), then The Faces of Threshold and A Taste of Everything (town, optional).",
     "dialogue": [
@@ -224,6 +226,19 @@
       "Talking to me counts toward The Faces of Threshold. I sell nothing.",
       "The Cages stage one fight at a time: rats, slimes and goblins, levels 1 to 3. The Sand trains footwork and sparring. Then the tower.",
       "A lost fight returns you to the last haven you stood in: the Doorstep Inn at the Foot, or a tower landing."
+    ]
+  },
+  {
+    "id": "psionic_shaper",
+    "name": "Ilex",
+    "icon": "🧠",
+    "spotId": "censer_walk",
+    "quests": [],
+    "desc": "Stands on Censer Walk. Teaches nothing and sells nothing at present; the psionic system is closed. Talking counts toward The Faces of Threshold.",
+    "dialogue": [
+      "I teach nothing at present. Psionics is closed in this city.",
+      "Talking to me counts toward The Faces of Threshold.",
+      "Work the Colonnade, here on the walk, trains Charisma."
     ]
   },
   {
