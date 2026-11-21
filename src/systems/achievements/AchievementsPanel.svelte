@@ -1,5 +1,6 @@
 <script lang="ts">
   import { viewOf } from '../../ui/game.svelte';
+  import { fmt } from '../items';
   import achievements from './index';
 
   // The achievements list of the old achievements panel. A row opens on
@@ -24,7 +25,7 @@
         </button>
         <div class="goal">
           <span class="dim">{row.goal ?? 'Goal: all tiers claimed'}</span>
-          <span class="num dim">{row.value}{row.next === null ? '' : ` / ${row.next}`}</span>
+          <span class="num dim">{fmt(row.value)}{row.next === null ? '' : ` / ${fmt(row.next)}`}</span>
         </div>
         <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow={Math.round(share(row.value, row.next) * 100)}>
           <div class="fill" style:width="{share(row.value, row.next) * 100}%"></div>

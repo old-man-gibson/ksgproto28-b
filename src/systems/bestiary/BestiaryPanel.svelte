@@ -546,8 +546,18 @@
 
   .kv {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
-    gap: var(--space-2);
+    gap: 0 var(--space-2);
+  }
+
+  .kv span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .mon[aria-pressed='true'] .dim {
+    color: inherit;
   }
 
   .weak b {
