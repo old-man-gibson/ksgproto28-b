@@ -34,7 +34,9 @@
  * facts on the generator, and claimed achievement tiers give their bonuses,
  * as the old build did: the generator, kills and gold of the floor 1, floor
  * 6 and two world runs, defeats and level of the floor 4 world run, and
- * every John segment and harvest).
+ * every John segment and harvest), and on branch `step4-C1` after port C1
+ * (the new slice `wards`, empty: every state hash, nothing else; no run
+ * reaches band 3 and the John digest stops at the first prestige).
  * A change that only makes the simulation faster leaves every one
  * of them equal. A change to a rule, a formula or content changes them;
  * record them again then, and say why in the commit.
@@ -50,7 +52,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 1,
     'gold': 0,
-    'state': '2321964b'
+    'state': '8bbb06f7'
   },
   'poison': {
     'tick': 288000,
@@ -59,7 +61,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 1,
     'gold': 0,
-    'state': '8d9acc59'
+    'state': '819dd7a1'
   },
   'floor1': {
     'tick': 288000,
@@ -68,7 +70,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 9,
     'gold': 33649,
-    'state': '60575cfd'
+    'state': '820661d5'
   },
   'floor6': {
     'tick': 288000,
@@ -77,7 +79,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 26,
     'gold': 1627909,
-    'state': '6b03dcb0'
+    'state': 'c513e418'
   },
   'world4': {
     'tick': 288000,
@@ -86,7 +88,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 4,
     'level': 18,
     'gold': 362564,
-    'state': '7073d3f1'
+    'state': 'f3175309'
   },
   'world6': {
     'tick': 288000,
@@ -95,7 +97,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 26,
     'gold': 1627911,
-    'state': '91b15f17'
+    'state': '9d426de3'
   }
 };
 
@@ -181,7 +183,7 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'defeats': 0,
       'level': 1,
       'gold': 0,
-      'state': '276d67c2'
+      'state': '6164d7b6'
     }
   },
   '42': {
@@ -265,7 +267,7 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'defeats': 0,
       'level': 1,
       'gold': 0,
-      'state': 'a36d2a44'
+      'state': '26c8e434'
     }
   },
   '1234': {
@@ -349,7 +351,7 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'defeats': 0,
       'level': 1,
       'gold': 0,
-      'state': 'd8559bc6'
+      'state': '6a01b6c4'
     }
   }
 };
