@@ -28,7 +28,13 @@
  * the runecarving port (the new slice `runecarving`: every state hash,
  * nothing else; no run and no John carves, and the shutter is shut), and
  * on branch `step3-facet` after the Facet port (the new slice `facet`, off:
- * every state hash, nothing else; the switch is off in every run and climb).
+ * every state hash, nothing else; the switch is off in every run and climb),
+ * and on branch `step4-L` after port L (the new slices `bestiary` and
+ * `achievements`: every state hash. Each kill rolls the bestiary's open
+ * facts on the generator, and claimed achievement tiers give their bonuses,
+ * as the old build did: the generator, kills and gold of the floor 1, floor
+ * 6 and two world runs, defeats and level of the floor 4 world run, and
+ * every John segment and harvest).
  * A change that only makes the simulation faster leaves every one
  * of them equal. A change to a rule, a formula or content changes them;
  * record them again then, and say why in the commit.
@@ -44,7 +50,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 1,
     'gold': 0,
-    'state': 'c40e6253'
+    'state': '2321964b'
   },
   'poison': {
     'tick': 288000,
@@ -53,61 +59,61 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 1,
     'gold': 0,
-    'state': 'ccc2ee94'
+    'state': '8d9acc59'
   },
   'floor1': {
     'tick': 288000,
-    'rng': 3664690361,
-    'kills': 9667,
+    'rng': 715818999,
+    'kills': 9677,
     'defeats': 0,
     'level': 9,
-    'gold': 33071,
-    'state': '968cde12'
+    'gold': 33649,
+    'state': '60575cfd'
   },
   'floor6': {
     'tick': 288000,
-    'rng': 2910183033,
-    'kills': 11405,
+    'rng': 1152550808,
+    'kills': 11571,
     'defeats': 0,
     'level': 26,
-    'gold': 1593017,
-    'state': '94f032b3'
+    'gold': 1627909,
+    'state': '6b03dcb0'
   },
   'world4': {
     'tick': 288000,
-    'rng': 1341769031,
-    'kills': 9821,
-    'defeats': 5,
-    'level': 17,
-    'gold': 352118,
-    'state': '75ef3598'
+    'rng': 3326362229,
+    'kills': 10020,
+    'defeats': 4,
+    'level': 18,
+    'gold': 362564,
+    'state': '7073d3f1'
   },
   'world6': {
     'tick': 288000,
-    'rng': 2910183033,
-    'kills': 11405,
+    'rng': 1152550808,
+    'kills': 11571,
     'defeats': 0,
     'level': 26,
-    'gold': 1593019,
-    'state': '13811ec6'
-  },
+    'gold': 1627911,
+    'state': '91b15f17'
+  }
 };
 
 export const JOHN_DIGESTS: Record<number, JohnDigest> = {
   '7': {
     'done': {
       'tutorial': 0,
-      'vermin': 882,
-      'floor1': 2352,
-      'floor2': 4063,
-      'gate3': 6067,
-      'descent': 6814,
-      'floor3': 7300,
-      'floor4': 10049,
-      'gate5': 10087,
-      'floor5': 10724,
-      'gate6': 13387,
-      'floor6': 13567
+      'vermin': 838,
+      'floor1': 2149,
+      'floor2': 3845,
+      'gate3': 6497,
+      'descent': 7276,
+      'floor3': 8095,
+      'floor4': 12541,
+      'gate5': 12574,
+      'floor5': 13173,
+      'gate6': 15520,
+      'floor6': 15864
     },
     'knockouts': {
       'tutorial': 0,
@@ -116,12 +122,12 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'floor2': 1,
       'gate3': 0,
       'descent': 0,
-      'floor3': 1,
-      'floor4': 7,
+      'floor3': 2,
+      'floor4': 14,
       'gate5': 0,
       'floor5': 1,
-      'gate6': 7,
-      'floor6': 1
+      'gate6': 6,
+      'floor6': 2
     },
     'levels': {
       'tutorial': 1,
@@ -139,17 +145,17 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
     },
     'gold': {
       'tutorial': 0,
-      'vermin': 16,
-      'floor1': 197,
-      'floor2': 482,
-      'gate3': 603,
-      'descent': 667,
-      'floor3': 755,
-      'floor4': 2709,
-      'gate5': 2709,
-      'floor5': 4718,
-      'gate6': 6381,
-      'floor6': 10482
+      'vermin': 20,
+      'floor1': 215,
+      'floor2': 433,
+      'gate3': 602,
+      'descent': 699,
+      'floor3': 889,
+      'floor4': 3012,
+      'gate5': 3012,
+      'floor5': 4187,
+      'gate6': 6078,
+      'floor6': 10877
     },
     'bossTries': {
       'tutorial': 0,
@@ -158,44 +164,44 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'floor2': 0,
       'gate3': 0,
       'descent': 0,
-      'floor3': 2,
+      'floor3': 3,
       'floor4': 1,
       'gate5': 0,
       'floor5': 2,
       'gate6': 0,
-      'floor6': 1
+      'floor6': 2
     },
-    'fights': 78,
-    'goldEarned': 10482,
-    'harvest': 11,
+    'fights': 85,
+    'goldEarned': 10877,
+    'harvest': 16,
     'end': {
-      'tick': 13575,
-      'rng': 3370002649,
+      'tick': 15884,
+      'rng': 727186057,
       'kills': 0,
       'defeats': 0,
       'level': 1,
       'gold': 0,
-      'state': '68d0e929'
+      'state': '276d67c2'
     }
   },
   '42': {
     'done': {
       'tutorial': 0,
-      'vermin': 651,
-      'floor1': 2189,
-      'floor2': 3932,
-      'gate3': 6156,
-      'descent': 6905,
-      'floor3': 7700,
-      'floor4': 12121,
-      'gate5': 12159,
-      'floor5': 12554,
-      'gate6': 15104,
-      'floor6': 16062
+      'vermin': 847,
+      'floor1': 2394,
+      'floor2': 4059,
+      'gate3': 6710,
+      'descent': 7412,
+      'floor3': 8165,
+      'floor4': 12676,
+      'gate5': 12709,
+      'floor5': 13570,
+      'gate6': 15542,
+      'floor6': 15744
     },
     'knockouts': {
       'tutorial': 0,
-      'vermin': 0,
+      'vermin': 1,
       'floor1': 1,
       'floor2': 1,
       'gate3': 0,
@@ -203,9 +209,93 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'floor3': 2,
       'floor4': 14,
       'gate5': 0,
+      'floor5': 2,
+      'gate6': 4,
+      'floor6': 1
+    },
+    'levels': {
+      'tutorial': 1,
+      'vermin': 1,
+      'floor1': 2,
+      'floor2': 3,
+      'gate3': 3,
+      'descent': 3,
+      'floor3': 5,
+      'floor4': 7,
+      'gate5': 7,
+      'floor5': 7,
+      'gate6': 8,
+      'floor6': 9
+    },
+    'gold': {
+      'tutorial': 0,
+      'vermin': 13,
+      'floor1': 164,
+      'floor2': 436,
+      'gate3': 605,
+      'descent': 718,
+      'floor3': 875,
+      'floor4': 3606,
+      'gate5': 3606,
+      'floor5': 5397,
+      'gate6': 7446,
+      'floor6': 11827
+    },
+    'bossTries': {
+      'tutorial': 0,
+      'vermin': 0,
+      'floor1': 2,
+      'floor2': 0,
+      'gate3': 0,
+      'descent': 0,
+      'floor3': 3,
+      'floor4': 1,
+      'gate5': 0,
+      'floor5': 3,
+      'gate6': 0,
+      'floor6': 1
+    },
+    'fights': 85,
+    'goldEarned': 11827,
+    'harvest': 17,
+    'end': {
+      'tick': 15804,
+      'rng': 1133562174,
+      'kills': 0,
+      'defeats': 0,
+      'level': 1,
+      'gold': 0,
+      'state': 'a36d2a44'
+    }
+  },
+  '1234': {
+    'done': {
+      'tutorial': 0,
+      'vermin': 887,
+      'floor1': 1921,
+      'floor2': 3726,
+      'gate3': 6380,
+      'descent': 7169,
+      'floor3': 7682,
+      'floor4': 13070,
+      'gate5': 13103,
+      'floor5': 13498,
+      'gate6': 15319,
+      'floor6': 15514
+    },
+    'knockouts': {
+      'tutorial': 0,
+      'vermin': 1,
+      'floor1': 0,
+      'floor2': 1,
+      'gate3': 0,
+      'descent': 0,
+      'floor3': 1,
+      'floor4': 17,
+      'gate5': 0,
       'floor5': 0,
-      'gate6': 7,
-      'floor6': 5
+      'gate6': 4,
+      'floor6': 0
     },
     'levels': {
       'tutorial': 1,
@@ -224,126 +314,42 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
     'gold': {
       'tutorial': 0,
       'vermin': 14,
-      'floor1': 180,
-      'floor2': 475,
-      'gate3': 612,
-      'descent': 699,
-      'floor3': 877,
-      'floor4': 3727,
-      'gate5': 3727,
-      'floor5': 5178,
-      'gate6': 7273,
-      'floor6': 12228
+      'floor1': 206,
+      'floor2': 440,
+      'gate3': 609,
+      'descent': 718,
+      'floor3': 875,
+      'floor4': 4472,
+      'gate5': 4472,
+      'floor5': 5999,
+      'gate6': 7798,
+      'floor6': 13628
     },
     'bossTries': {
-      'tutorial': 0,
-      'vermin': 0,
-      'floor1': 2,
-      'floor2': 0,
-      'gate3': 0,
-      'descent': 0,
-      'floor3': 3,
-      'floor4': 2,
-      'gate5': 0,
-      'floor5': 1,
-      'gate6': 0,
-      'floor6': 6
-    },
-    'fights': 85,
-    'goldEarned': 12228,
-    'harvest': 11,
-    'end': {
-      'tick': 16124,
-      'rng': 1505387553,
-      'kills': 0,
-      'defeats': 0,
-      'level': 1,
-      'gold': 0,
-      'state': '56b1f14a'
-    }
-  },
-  '1234': {
-    'done': {
-      'tutorial': 0,
-      'vermin': 651,
-      'floor1': 2283,
-      'floor2': 3962,
-      'gate3': 6846,
-      'descent': 7656,
-      'floor3': 8161,
-      'floor4': 11455,
-      'gate5': 11493,
-      'floor5': 12439,
-      'gate6': 14836,
-      'floor6': 15042
-    },
-    'knockouts': {
       'tutorial': 0,
       'vermin': 0,
       'floor1': 1,
-      'floor2': 1,
-      'gate3': 0,
-      'descent': 0,
-      'floor3': 1,
-      'floor4': 11,
-      'gate5': 0,
-      'floor5': 2,
-      'gate6': 6,
-      'floor6': 1
-    },
-    'levels': {
-      'tutorial': 1,
-      'vermin': 1,
-      'floor1': 2,
-      'floor2': 3,
-      'gate3': 3,
-      'descent': 3,
-      'floor3': 5,
-      'floor4': 6,
-      'gate5': 6,
-      'floor5': 7,
-      'gate6': 8,
-      'floor6': 9
-    },
-    'gold': {
-      'tutorial': 0,
-      'vermin': 13,
-      'floor1': 187,
-      'floor2': 427,
-      'gate3': 613,
-      'descent': 716,
-      'floor3': 841,
-      'floor4': 3034,
-      'gate5': 3034,
-      'floor5': 5050,
-      'gate6': 7217,
-      'floor6': 13476
-    },
-    'bossTries': {
-      'tutorial': 0,
-      'vermin': 0,
-      'floor1': 2,
       'floor2': 0,
       'gate3': 0,
       'descent': 0,
       'floor3': 2,
       'floor4': 1,
       'gate5': 0,
-      'floor5': 3,
+      'floor5': 1,
       'gate6': 0,
       'floor6': 1
     },
-    'fights': 73,
-    'goldEarned': 13476,
-    'harvest': 11,
+    'fights': 82,
+    'goldEarned': 13628,
+    'harvest': 17,
     'end': {
-      'tick': 15053,
-      'rng': 4060620534,
+      'tick': 15563,
+      'rng': 245962908,
       'kills': 0,
       'defeats': 0,
       'level': 1,
       'gold': 0,
-      'state': '5cd25c02'
+      'state': 'd8559bc6'
     }
-  },
+  }
 };
