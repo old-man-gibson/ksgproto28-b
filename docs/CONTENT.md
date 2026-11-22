@@ -991,3 +991,284 @@ game page saves on `pagehide`); the dev save was put back after (backup
 No horizontal overflow at 375 px on Location and Quests; no console errors.
 Not checked in a browser: the wave on the wall and the automatic prestige
 (tested headless, and by John on three seeds).
+
+## 10. Port C3: the harbor and the sea (done)
+
+Done 2026-11-21 on branch `step4-C3`, from `main` at `a72b168`. Not merged,
+not pushed. The full account: `src/systems/sea/README.md` and the "Step 4
+port C3" sections of the `world`, `combat`, `ladder`, `quests`, `npcs`,
+`counters` and `crafting` READMEs.
+
+What was ported:
+
+- Content, appended from the old registry: areas `ascent_f12_area`,
+  `ascent_f13_area` and `ascent_f14_area` (open sky); the six harbor spots
+  of floor 11 (the quay, four berths, the roadstead), 8 spots on floor 12,
+  3 on floor 13, 9 on floor 14; the road from `f11_road` to the quay
+  (shown and open with `legacy:stronghold`); floors 12 to 14; the six
+  people (four recruiters, the pilot, the harbor master, with the shops
+  Passage and Papers); the eight quests (four joins, four preparations); the
+  battery's three recipes at the quay. 151 spots, 26 areas, 15 floors. The
+  materials, monsters and cargo were here already.
+- `sea` (new system): old `sea.ts`, `sea.data.ts`, `seaValidation.ts`,
+  `sea.text.ts`, `SeaPanel.svelte`. Registries `sea_sides` (4) and `convoys`
+  (9 waters); `rules.ts` holds the schedule, the leg roll, the four
+  formulas, the battery and the port price; `validation.ts` holds
+  `seaContentIssues`. No slice of its own (decision Q6): the side is the
+  join quest's accept stamp, the running cargo is in run counters
+  `sea:<water>:*`. Tick order 17, after combat: the clock is read on the
+  kernel tick where the next leg can end (a cache of that tick), the leg's
+  work on the four ticks an hour that end a leg. Hears `combat/kill` (the leg's kills; the mission boss stamps
+  `flag:sea:14:done`) and `combat/fight-won` (`fights:<water>`).
+- Kernel K1: the sea reads `ctx.catchingUp`. A leg resolved while catching
+  up fires the battery with no kills and pays one cargo per 4 crates to
+  `sea:crates:offline`, never to `sea:crates:won`. `tests/runner.test.ts`
+  names `sea` beside `wards`, with a case.
+- The road approach (old `ApproachSpec`, `pendingApproach`): roads carry
+  `approach`; the world stamps it on arrival with the request
+  `combat/approach` (or clears it); the combat slice (version 3, migration
+  step 2, fixture `v3.json`) holds it; the first fight at its spot spends it
+  before the tempo check. Floor 13's picket road leaves the player
+  Flat-Footed, the pilot's channel leaves the blockaders Surprised, and each
+  floor 14 wing lays its condition once the side's preparation is turned in.
+- `ladder`: floors 12 to 14, `SPINE_EXEMPT` (floor 14), and
+  `registerTermText`: floor 11's rung reads "8 crates won" and "1 wins at
+  The Roadstead" (C2 left the raw keys), floors 12 and 13 the same with 40
+  and 160 crates, floor 14 "Your side's mission boss slain". `HARBOR_PENDING` is gone from `tests/worldContent.test.ts`: the
+  clear, spine and band size lints run on floors 11 to 14.
+- `counters`: the request `counters/set-now`, so two kills of one tick
+  both count against the leg (the kernel delivers both `combat/kill` events
+  before either handler's writes).
+- Panel: `sea/SeaReadout.svelte` (props only) and `sea/SeaPanel.svelte`,
+  mounted in the Location panel under the activities, the old placement.
+  Two controls the old readout did not have, each sending an existing
+  command: the water's hunt when not sailing (shown, disabled, while
+  sailing) and "Sign with <side>" at a berth before a side is picked
+  (`quests/accept`). `tests/harbor.test.ts` renders the readout on the
+  server (`svelte/server`), checks each control is drawn, and dispatches
+  the command it carries.
+- Spec ported: `harbor.test.ts` (31 of the 32 old cases; the 32nd, "catch-up
+  marks its ticks as offline", is the kernel's case in `runner.test.ts`
+  with the new sea case there; 6 new: two kills in one drain, the floor 12
+  map's two world rules from the old `mapplan.test.ts`, the readout and its
+  controls), `approach.test.ts` (the 9 old cases and one new: an arrival
+  with no approach wipes the stamp),
+  the sea cases of `content.test.ts` (`seaContentIssues`, the water's fight
+  count, accept stamps and `shop:buys:<npc>` as counters, `SPINE_EXEMPT`),
+  the todo at `worldContent.test.ts` (the sea lint), the stronghold todo
+  (the road on to the quay), floors 11 to 14 of `exposure.test.ts` (open
+  sky, from `openSky.test.ts`), the old John smoke case at floor 14.
+
+Old bugs and rules kept:
+
+- A night away pays crates as cargo at 1 in 4 and never moves a clear:
+  floors 11 to 13 need play at the water.
+- Merchants are paid gold only in play; caught up, their crates pay cargo
+  like every other side's (old `credit`).
+- Legs sailed while the player was away are folded in with battery 0 and
+  no kills, so arriving mid-convoy loses crates to the legs missed.
+- The battery's three items are worth no more than their inputs at any
+  counter (the no-arbitrage case passes at Charisma 1, 30 and 60).
+- The privateers pay no fifth; named ships do not remove floor 14's
+  escorts (old `HARBOR.md` section 5, not built there).
+
+Changed while porting (no rule):
+
+- The kill handler reads the fight's site from `combat/kill`, where the old
+  listener read `state.spot`; a kill happens at the site the player stands
+  on.
+- The approach's feed lines are sent after the fight's transcript opens,
+  so they are in it.
+- Two panel controls (above). The readout lines are "Label: fact" lines at
+  fixed heights.
+
+Noticed, older than this port (not changed):
+
+- The old advance ticked no fight on a tick of travel; here combat ticks
+  after the world in the same kernel tick, so a forced fight's first
+  combat tick is the arrival tick, one tick earlier than in the old build.
+  The old approach case "before anyone swings" reads the opening from the
+  fight's transcript instead.
+- `conditionReader` holds the counters slice it was made on; a new run
+  replaces the slices. John held one reader from run 2 into run 3 and saw
+  run 2's ward clears; John now makes it per read. No system keeps a reader
+  across a handler.
+
+Left out:
+
+- The forge validator calls no sea lint (as for the ward and floor lints);
+  `seaContentIssues` runs in `tests/worldContent.test.ts`.
+- The surveyed map plan of `mapplan.test.ts` (roads drawn, rings, route
+  summaries) is the UI step; its two world rules are ported.
+- `ladderView.test.ts` has no harbor case.
+
+### 10.1 John
+
+`tests/john.ts` gains run 3 (section 3.1): the siege's prestige starts it;
+`reclimb3` climbs floors 1 to 6 again and replays the wards (old `replay`:
+no record, a wall of run 2 skipped); then `floor11` to `floor14` in the
+old order of moves: sign with the side at its berth by way of the quay and
+work the roadstead; the far water by the strait and the isle; the blockade
+by the picket line; the side's wing, the approach water as the den and the
+mission boss as the keeper. John buys and crafts nothing, so he fires the
+ship's battery of 1. Option `side` (default merchants); `through` 11 to 14
+plays run 3 to that floor, as the old `through` did. `npm run pacing --
+--through 14 [--side navy]`. No wall on any seed or side. The John smoke
+case of `tests/john.test.ts` runs at 14.
+
+Merchants (the default), seeds 42 / 7 / 1234, old at `7c1267b` (section
+3.3):
+
+| Segment | Old | New | Old mean | New mean | Change | KO old | KO new |
+|---|---|---|---|---|---|---|---|
+| f1-10 again | 0:46:42 / 0:39:36 / 0:46:00 | 0:52:33 / 0:47:13 / 0:49:22 | 0:44:06 | 0:49:43 | +12.7% | 47/36/35 | 42/46/48 |
+| f11 | 0:12:18 / 0:07:24 / 0:07:00 | 0:06:27 / 0:05:47 / 0:03:38 | 0:08:54 | 0:05:17 | -40.6% | 6/4/3 | 1/2/3 |
+| f12 | 0:30:00 / 0:36:00 / 0:30:00 | 0:30:00 / 0:30:00 / 0:24:00 | 0:32:00 | 0:28:00 | -12.5% | 8/10/7 | 8/5/12 |
+| f13 | 1:30:00 / 1:42:00 / 1:30:00 | 1:42:00 / 1:54:00 / 1:42:00 | 1:34:00 | 1:46:00 | +12.8% | 6/9/12 | 10/14/14 |
+| f14 (keeper) | 0:00:13 / 0:00:14 / 0:00:12 | 0:00:13 / 0:00:12 / 0:00:17 | 0:00:13 | 0:00:14 | | 0/0/0 | 0/0/0 |
+| Run 3 to f14 | 2:59:13 / 3:05:14 / 2:53:12 | 3:11:13 / 3:17:12 / 2:59:17 | 2:59:13 | 3:09:14 | +5.6% | | |
+| Floor 0 to f14 | 4:19:09 / 4:29:15 / 4:11:16 | 4:30:45 / 4:30:41 / 4:25:02 | 4:19:53 | 4:28:49 | +3.4% | | |
+
+`--side navy`, old run on `D:\ksgproto28` at `7c1267b`, nothing edited,
+the same day (runs 1 and 2 and `f1-10 again` are the merchants' rows):
+
+| Segment | Old | New | Old mean | New mean | Change | KO old | KO new |
+|---|---|---|---|---|---|---|---|
+| f11 | 0:06:18 / 0:07:24 / 0:07:00 | 0:06:27 / 0:05:47 / 0:03:38 | 0:06:54 | 0:05:17 | -23.4% | 3/6/6 | 4/4/3 |
+| f12 | 0:30:00 / 0:30:00 / 0:30:00 | 0:36:00 / 0:24:00 / 0:36:00 | 0:30:00 | 0:32:00 | +6.7% | 13/16/12 | 11/9/19 |
+| f13 | 1:36:00 / 1:30:00 / 1:36:00 | 1:42:00 / 1:36:00 / 1:30:00 | 1:34:00 | 1:36:00 | +2.1% | 14/15/11 | 16/20/15 |
+| f14 (keeper) | 0:00:15 / 0:00:13 / 0:00:13 | 0:00:14 / 0:00:13 / 0:00:13 | 0:00:14 | 0:00:13 | | 0/0/0 | 0/0/0 |
+| Run 3 to f14 | 2:59:15 / 2:47:13 / 2:59:13 | 3:17:14 / 2:53:13 / 2:59:13 | 2:55:14 | 3:03:13 | +4.6% | | |
+
+Against section 3.4:
+
+- Run 3 is within 15% of the old mean on both sides (+5.6%, +4.6%).
+  `f1-10 again` (+12.7%) is within 35%.
+- Floor 12 is within one convoy of the old time on every seed and side
+  (0, -6, -6 minutes; navy +6, -6, +6).
+- Floor 13: the navy is within one convoy on every seed (+6, +6, -6
+  minutes). The merchants are two convoys over on every seed (+12, +12,
+  +12 minutes): outside the tolerance. Measured per leg at the blockade
+  (scratch scripts, the old build's modules imported read-only): old kills
+  per leg 13.4 to 13.8, every payment 8 crates, 15 payments of 120 crates;
+  new 12.1 to 12.6 kills per leg, 15 to 17 payments of 120 to 123 crates,
+  and more knockouts (10/14/14 against 6/9/12). The crates a convoy loses
+  are lost on the legs John misses while knocked out or walking back. The
+  sea's rules give the same leg for the same kills (`tests/harbor.test.ts`);
+  the gap is the fight against the blockade's pirates at levels 32 to 40, a
+  combat parity question older than this port. Reported, not tuned.
+- Floor 11 is schedule-bound too (8 crates is one convoy): its mean is
+  41% under the old one (35% held), each seed within one convoy of the old
+  (-5:51, -1:37, -3:22). The old seed 42 lost crates on its first convoy
+  and needed two.
+- Floor 14 is a keeper segment, reported: one try, won, on every seed and
+  side, at level 40 against the port warden (L33) or the sea beast.
+
+Run 1 and run 2 are unchanged from section 9.1 (the same segment times and
+knockouts on every seed). Gold earned on the merchants' floor 13 is of the
+old order (1.70 million against 1.97 million on seed 42).
+
+### 10.2 Offline budgets
+
+The port adds one tick hook, `sea`, one `combat/kill` and one
+`combat/fight-won` handler (a table lookup off the harbor), and on arrival
+the request `combat/approach` only when a road has an approach or one is
+stamped. The sea's tick reads the clock only on the kernel tick where the
+next leg can end (every 300 ticks): it keeps that tick for the sea's slice
+object, a cache never saved, read again after a load or a new run (both
+replace the slice object). The clock's tick is the only writer of the clock
+and adds 1 per kernel tick, so the outcome is that of reading the clock on
+every tick: every outcome digest and both John tables (merchants and navy,
+three seeds) came out identical with and without the cache.
+
+The idle run of 8 hours in one process, 15 alternating rounds, ms (minimum
+/ median):
+
+| Variant | Minimum | Median |
+|---|---|---|
+| Sea tick reading the clock every tick | 1,714 | - |
+| Sea tick with the cache (kept) | 1,674 | 1,785 |
+| An empty sea tick | 1,658 | 1,723 |
+| No sea tick | 1,654 | 1,735 |
+| No sea system | 1,647 | 1,731 |
+
+(the first row from an earlier session of the same A/B, against 1,659 with
+no tick in that session, whose medians are not comparable: the machine ran
+the same run at either about 1,700 or about 2,200 ms then). The read every
+tick cost about 55 ms per 8 hours (3%); with the cache the tick costs about
+20 ms (1%) over no tick, the price of a hook that looks at its own slice.
+
+Against `main` in one process (both builds' modules imported, alternating,
+15 rounds, ms, minimum / median): before the cache `main` 1,668 / 1,688,
+branch 1,697 / 1,724 (+36 ms median, +2.1%); with the cache, two sessions:
+`main` 1,621 / 1,643 against 1,655 / 1,690, and `main` 1,670 / 1,698
+against 1,717 / 1,735, with the branch less the sea system at 1,677 /
+1,710. The gap to `main` moves by about 15 ms between sessions, more than
+the cache saves, so this A/B does not resolve the cache's gain; the
+in-process rows above do.
+
+`scripts/budget-runs.ts`, alternating `main` (`a72b168`, the worktree
+`D:\ksgproto28-b-main`) and this branch before the cache, the same hour,
+CPU 4% at the start, ms:
+
+| Run of 8 hours | `main` | `step4-C3` |
+|---|---|---|
+| No fight, no condition | 1,939 / 1,982 | 1,823 / 1,806 |
+| Poison held | 5,358 / 6,721 | 5,229 / 5,634 |
+| Floor 1 table | 5,224 / 5,275 | 5,974 / 5,380 |
+| Floor 6 Tunnels | 11,379 / 9,174 | 10,707 / 9,511 |
+| World: hunt, floor 4 | 10,144 / 10,925 | 9,077 / 11,220 |
+| World: hunt, floor 6 | 9,602 / 11,507 | 11,143 / 10,109 |
+
+Within the spread of `main` in both directions. The new run, 8 hours of
+the hunt at floor 11's roadstead through `catchUp` (`worldSea`, the
+probe's harbor character, a merchant with four cannons, 400 shot and 400
+powder): 8,285 ms alone, 10,970 kills, no defeat, all 320 legs resolved on
+the offline path (640 crates to `sea:crates:offline`, none won). Budget
+14,300 ms, as the other world runs.
+
+The idle budget, raised to 2,420 ms (user decision, 2026-11-21; docs/KERNEL.md
+section 8). Before the cache, `npm run verify` failed it three times
+(2,336, 2,347 and 2,275 ms of 2,200): run right after the unit project,
+every budget case took about 30% longer than alone on this machine that
+day, and `main` in the same sequence took 2,175 ms (99% of the limit;
+poison 7,522, floor 1 7,145, floor 6 11,347). The budget project alone on
+this branch: idle 1,791, poison 5,290, floor 1 5,393, floor 6 9,236.
+
+`npm run verify` on this branch with the cache and the raised budget:
+svelte-check 0 errors; unit 3,114 passed, 4 skipped, 147 todo; budget 4
+(idle 1,874 ms of 2,420, poison 5,837 of 8,250, floor 1 5,508 of 7,700,
+floor 6 9,761 of 14,850); budget-world 3 (floor 4 10,246, floor 6 10,047,
+the roadstead 10,690, each of 14,300); john 14; build.
+
+Outcome digests recorded again in their own commit: every state hash (the
+new slice `sea`, empty; `combat` version 3 with its field `approach`),
+nothing else; the digest of the new run `worldSea` recorded for the first
+time. No other run reaches the harbor, and the John digest stops at the
+first prestige.
+
+### 10.3 Browser check
+
+Dev server 5600, desktop (1009 px) and 375 px. Two saves made by the John
+driver (seed 7, run 3) loaded into the dev slot through the forge page; the
+dev save was put back after (backup
+`ksgb:development:save.before-step4C3-check`, the roadstead save kept as
+`ksgb:development:save.step4C3-roadstead`).
+
+- At the navy berth with no side picked: the harbor readout under the
+  activities ("Side: none.", crates, battery, hold) and the control "Sign
+  with The Navy"; pressed, the side is The Navy and the control is gone.
+  The ladder card's floor 11 rung reads "Clear: 8 crates won" and "Clear: 1
+  wins at The Roadstead".
+- On the roadstead with the merchants, hunting: the convoy block (convoy,
+  leg, threat, kills, cargo, "Sailing: yes."), the sail control shown and
+  disabled, the battery (volleys 3 x hit 2 = 6) and the port price. Leg 3
+  and the fourth leg resolved in play: a cannonball spent, 8 crates sold,
+  the block's height unchanged (every line 24 px). The hunt stopped from
+  the Activities card: "Sailing: no.", the control enabled; pressed, the
+  hunt runs again.
+
+No horizontal overflow at 375 px (the hold's notes take their own line);
+no console errors. Not checked in a browser: floors 12 to 14, the
+approach's feed lines and a floor 14 boss (tested headless, and by John on
+three seeds and two sides).
