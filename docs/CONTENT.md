@@ -319,9 +319,11 @@ segments under two minutes reported, not held.
 - **K2. A hold of play** (only with port F): old `Game.ts` stops the clock
   and banks bonus time while a Facet evolution waits. A kernel or clock
   hold that the tick reads.
-- **K3. A catch-up hold** (asked in port C4, not decided): the old festival
-  clock does not read the flag K1 names; the old catch-up loop stops while
-  the festival holds the player and banks the rest. Section 11.4.
+- **K3. A catch-up hold** (added during port C4, kernel decision 35): the
+  old festival clock does not read the flag K1 names; the old catch-up loop
+  stops while the festival holds the player and banks the rest. A system
+  may declare `catchUpHold`; `catchUp` asks it before each tick. Section
+  11.4.
 - None else. The automatic prestige uses `endRun()` (decision 30) from the
   prestige tick; staged fights, fight-won and kill events, quest accept
   stamps, `shop:buys:` counters, `once`, `fightLimit`, `statMax`, `levelRise`
@@ -1317,6 +1319,10 @@ What was ported:
   tick against the world clock. The festival sets it at the loss and
   clears it on the tick the clock reaches the end; the tick reads the
   clock only on that kernel tick (a cache per slice object, as the sea's).
+- Kernel K3, decision 35 (approved during the port): a system may declare
+  `catchUpHold: { holds, held }`; `catchUp` asks `holds` before each tick,
+  stops on the first true and runs `held` with the ticks left. The festival
+  declares it (11.4).
 - `knockout`: a festival floor is never a target (why `festival`).
 - The ladder card (the Location panel), as the old `ladderView` marked it: a
   floor the lockout shuts reads "Shut" with no ride; inside an attempt
@@ -1333,10 +1339,12 @@ What was ported:
   technique offered, the regalia, each kept item's take-out) carry their
   commands in the view; `tests/festivalPanels.test.ts` renders both
   readouts on the server, finds each control and sends its command.
-- Spec ported: `festival.test.ts` (41 of 71 cases run, 19 `it.todo` for
-  port C5 or the catch-up decision below, one left out, one new: a
-  sheathed blade held and given back; the first case of "the time jump"
-  and two ladder cases run on the pure reads), `festivalHub.test.ts` (19 of
+- Spec ported: `festival.test.ts` (51 cases run, 13 `it.todo` for port
+  C5, one old case left out; five new: a sheathed blade held and given
+  back, two of the ladder card, two of the catch-up hold; the first case of
+  "the time jump" and two ladder cases run on the pure reads; the old
+  `prestigeNow` and `Game.prestige` lockout cases are one command here),
+  three kernel cases of the catch-up hold in `runner.test.ts`, `festivalHub.test.ts` (19 of
   19), `monsterKit.test.ts` (19 of 19; the kit code came with step 2 and had
   no test here), the todos `worldContent.test.ts` (the festival lint, the
   dark room's part) and `knockoutReturn.test.ts` (a festival floor is never
@@ -1399,7 +1407,6 @@ Left out:
   lent gear of the caches: port C5. `winFestival` is ported and reached by
   the debug command `festival/debug-win` (refused in a production build)
   until then.
-- The catch-up hold (11.4).
 - The forge validator calls no festival lint (as for the ward and sea
   lints).
 
@@ -1504,27 +1511,55 @@ the festival together, 25 ms (`weaponFamilyInHand` 7.6, `tickFestival`
 rest of the gap is the kernel's share of one more system (its tick hook and
 three more subscribers), within the spread of the measurement.
 
-The new run, `worldFestival` (`tests/budgetRuns.ts`, project
-`budget-world`): the save is taken on the ladder from floor 14 to floor 15,
-the probe's festival character (`FESTIVAL_CHARACTER`, +20,000 HP, +1,500
-damage, +200 armour); 8 hours through `catchUp`: the ride lands, the door
-takes the gear, the four waves fall (9 kills, no defeat), the clock runs
-past the ten days. 3,750 to 3,974 ms alone; budget 6,600 ms (about 1.7
-times, the margin of the other world runs). Its profile: the festival's tick
-66 ms; the rest is the character's conditions and regeneration. A harbor
-character loses the room at the first wave.
+No new budget run: the festival's catch-up path is the hold, which stops
+the catch-up at once (11.4); `tests/festival.test.ts` checks it. A run of 8
+hours built while the hold was undecided (the ride into the dark room, the
+four waves and the ten days run in catch-up) took 3,750 to 3,974 ms and was
+removed with the hold.
 
-`npm run verify` on the branch: svelte-check 0 errors; unit 3,213 passed,
-4 skipped, 163 todo; budget 4 (idle 1,736 ms of 2,420, poison 4,499 of
-8,250, floor 1 5,250 of 7,700, floor 6 8,608 of 14,850); budget-world 4
-(floor 4 8,568, floor 6 8,546, the roadstead 7,814, each of 14,300; the
-festival 3,976 of 6,600); speed (floor 1 58%, floor 6 78%, town 63%,
-floor 7 56% of the limit, machine load 9 to 11%; kills 10,634, 11,536, 0,
-12,959); john 14; build.
+The hold's cost, the branch alone in one process, `runHeadless` with and
+without `hold`, alternating, ms (minimum / median). First version, 5 rounds
+(idle 15): idle 1,735 / 1,753 without, 1,764 / 1,783 with (+30 ms, 1.7%);
+the speed project's states: floor 1 +26 ms (0.5%), floor 6 +274 ms median
+with the minimum 26 ms lower (noise), town +32 ms, floor 7 +25 ms. The ask
+then went through a map lookup per tick; with each holder's context kept
+in a flat list, idle, 24 rounds: 1,753 / 1,768 without, 1,769 / 1,786 with:
++16 ms minimum, +18 ms median (1.0%), about 60 ns per catch-up tick.
+
+With the hold, against `main` in one process, ms (minimum / median). The
+idle run, 15 rounds, the same script as the first table: `main` 1,637 /
+1,649, branch 1,680 / 1,699 (+50 median, +3.0%; before the hold +18, so
+the hold adds about 20 to 30 ms, as measured alone). The speed project's
+four states (built by John in each build, then 8 hours of catch-up asking
+the hold as `catchUp` does) and the idle run, 5 rounds (idle 15), in one
+process after both builds' climbs:
+
+| State | `main` | `step4-C4` | Median |
+|---|---|---|---|
+| Floor 1 hunting | 5,464 / 5,524 | 5,584 / 5,692 | +168 (+3.0%) |
+| Floor 6 hunting | 10,297 / 10,460 | 10,687 / 10,711 | +251 (+2.4%) |
+| Idle in town | 1,924 / 1,930 | 1,987 / 2,003 | +73 (+3.8%) |
+| Floor 7 hunting | 7,151 / 7,314 | 7,285 / 7,423 | +109 (+1.5%) |
+| Idle (budget run) | 1,744 / 1,764 | 1,812 / 1,846 | +82 (+4.6%) |
+
+The idle run reads +82 here and +50 alone: in this process both builds'
+climbs ran first. The whole port costs the catch-up runs 1.5 to 4.6% against
+`main` in these sessions: the festival's tick hook, its handlers, three more
+event subscribers, and the hold's ask (about 60 ns a tick). The speed test
+in `npm run verify` (which does not ask the hold) stays at 78% of its limit
+on floor 6.
+
+`npm run verify` on the branch with the hold: svelte-check 0 errors; unit
+3,224 passed, 4 skipped, 157 todo; budget 4 (idle 1,739 ms of 2,420,
+poison 4,509 of 8,250, floor 1 5,132 of 7,700, floor 6 8,558 of 14,850);
+budget-world 3 (floor 4 8,500, floor 6 8,447, the roadstead 7,818, each of
+14,300); speed (floor 1 57%, floor 6 78%, town 63%, floor 7 53% of the
+limit, machine load 9 to 10%; kills as the old build's within 10%); john
+14; build.
 
 Outcome digests recorded again in their own commit: every state hash (the
-new slice `festival`), nothing else; the digest of `worldFestival`
-recorded for the first time.
+new slice `festival`), nothing else. The catch-up hold changes no digest:
+no budget run and no John climb reaches the festival.
 
 ### 11.3 Browser check
 
@@ -1559,7 +1594,7 @@ No console errors. Not checked in a browser: a knockout in the dark room
 during a wave, day ten (port C5), the issued weapon on a character that
 wields one (tested headless).
 
-### 11.4 The catch-up hold (open)
+### 11.4 The catch-up hold (K3, kernel decision 35)
 
 The plan's K1 says the old festival clock reads the catch-up flag. It does
 not: old `festival.ts` reads nothing of it. The old `catchUpTicks`
@@ -1567,9 +1602,30 @@ not: old `festival.ts` reads nothing of it. The old `catchUpTicks`
 `festivalHolds` is true and banks the rest of the absence as bonus time,
 1:1 up to the cap; a ride that lands in the dark room mid-catch-up stops
 there. With `ctx.catchingUp` alone the world clock, the conditions, the
-activities and a fight would keep running. Porting it needs the catch-up
-to stop, a kernel change section 4 does not list. Asked of the parent
-session as K3 (an optional system field `catchUpHold: { holds, held }`,
-read by `catchUp` before each tick); not decided when this port closed.
-Until then the festival catches up as it runs in place, and the six old
-offline cases are `it.todo`.
+activities and a fight would keep running, so this needed a kernel change
+section 4 did not list. Asked of the parent session as K3 and approved
+during the port, with a condition on cost: `holds` must not read the
+slices.
+
+- Kernel: the system field `catchUpHold: { holds(ctx), held(ctx, ticksLeft)
+  }`; `kernel.catchUpHeld(ticksLeft)` asks the declaring systems in system
+  order; `runHeadless` asks before each tick with the option `hold`, which
+  `catchUp` sets, and reports the ticks run and `heldBy`. A live kernel and
+  `runHeadless` without `hold` never ask.
+- Festival: `holds` answers a boolean kept per festival slice object
+  (memory, never saved), written at an attempt's start and end and on every
+  arrival; a load and a new run replace the slice object, and the first ask
+  after either reads the state once. `held` sends `bonus/bank` with the
+  ticks left.
+- Tests: the six old offline cases (nothing simulated and the time banked
+  1:1; the cap; what the bank took; a ride that lands in the dark room
+  stops there; a short gap; the world outside catches up), and new: a
+  catch-up that starts inside an attempt runs no tick (kernel tick, clock
+  and generator unchanged), and the kept flag after a load, after a new run
+  and after an attempt ends in play; three kernel cases with a toy system in
+  `tests/runner.test.ts`. The offline summary's festival fields are the UI
+  step.
+- `tests/speed.test.ts` (`catchUpRun`) copies the body of `catchUp` and calls
+  `runHeadless` without `hold`, so the speed project does not ask the hook;
+  that file belongs to another session, and it was not changed here. The
+  measurement above asks it.
