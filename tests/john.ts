@@ -138,6 +138,8 @@ export interface ClimbOptions {
   prestige?: boolean;
   /** Called after every tick; the climb ends when it answers true. For tools that need a state mid-climb. */
   stopWhen?: (k: Kernel) => boolean;
+  /** Called when a segment closes, before it is recorded: the segment, the tick, the climb's kernel. For tools that need the state at a floor clear (`tests/speedStates.ts`). */
+  onRecord?: (seg: ClimbSegment, t: number, k: Kernel) => void;
 }
 
 export interface ClimbReport {
@@ -199,6 +201,7 @@ export function runJohn(options: ClimbOptions): ClimbReport {
     skipWalls: true,
     wards: [7, 8, 9, 10],
     stopWhen: () => false,
+    onRecord: () => {},
     ...options,
     through,
   };
@@ -343,6 +346,7 @@ export function runJohn(options: ClimbOptions): ClimbReport {
   };
   /** Close a segment. */
   const record = (seg: ClimbSegment) => {
+    opts.onRecord(seg, t, k);
     const at = seg === 'siege' && ended ? ended : { level: level(), gold: purse(), run: runNo };
     report.done[seg] = t;
     report.levels[seg] = at.level;

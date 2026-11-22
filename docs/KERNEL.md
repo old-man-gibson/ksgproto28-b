@@ -431,6 +431,28 @@ An answer returns copies, never a reference into its slice.
   command between ticks). The machine's spread is wide: world floor 6 on
   `main` ran 13,187 to 15,082 ms within one hour.
 
+- Speed test against the old build (2026-11-21; factor 0.5, user decision
+  of the same day). `tests/speed.test.ts`, the vitest project `speed`, run
+  alone after `budget-world` by `npm test` and `npm run verify`.
+  - Held: 8 hours of catch-up (288,000 ticks) in four states built from
+    John inside the test (seed 42, Skip tutorial, through floor 7;
+    `tests/speedStates.ts`): hunting floor 1, hunting floor 6, idle in town,
+    hunting floor 7. Each run is divided by a yardstick (`tests/reference.ts`:
+    a fixed workload with no game code, about 200 ms) measured in the same
+    worker right before it. The case fails when
+    `run ms / yardstick ms >= 0.5 x old ms / old yardstick ms`, with the old
+    build's medians of `docs/PERFORMANCE.md` section 1.1. A failing state is
+    measured once more; the case passes if that attempt passes. The
+    rebuild's kills must be within 10% of the old build's.
+  - Reported, not held (printed, never fails): live play, `kernel.tick()`
+    plus `kernel.view()` per tick against the old `game.tick()`; the floor 6
+    save size against the old build's. Both fail the factor today.
+  - The absolute budgets above stay. They cover other runs (a new
+    character, a poison held, the world system) in this machine's
+    milliseconds and say nothing about the old build.
+  - Margins per state, run time, the spread idle and under load, and how to
+    update the old-build constants: `docs/PERFORMANCE.md` section 5.
+
 ## 9. Content
 
 - A registry is one JSON file: a list of records, each with an `id`.

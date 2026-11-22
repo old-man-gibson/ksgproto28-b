@@ -11,8 +11,8 @@
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "pacing": "vite-node scripts/pacing.ts",
     "facet:install": "node scripts/install-facet-core.mjs",
-    "test": "vitest run --project unit && vitest run --project budget && vitest run --project budget-world && vitest run --project john",
-    "verify": "svelte-check --tsconfig ./tsconfig.json && vitest run --project unit && vitest run --project budget && vitest run --project budget-world && vitest run --project john && vite build"
+    "test": "vitest run --project unit && vitest run --project budget && vitest run --project budget-world && vitest run --project speed && vitest run --project john",
+    "verify": "svelte-check --tsconfig ./tsconfig.json && vitest run --project unit && vitest run --project budget && vitest run --project budget-world && vitest run --project speed && vitest run --project john && vite build"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^5.0.3",
