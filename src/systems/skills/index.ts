@@ -195,26 +195,60 @@ export function skillTrainedBy(def: SkillDef, tags: readonly string[]): boolean 
   return own.length > 0;
 }
 
-const TRAINED_BY = new Map<string, { tags: readonly string[]; skills: readonly SkillDef[] }>();
+interface Trained {
+  skills: readonly SkillDef[];
+  /** The ids of `skills`. */
+  ids: ReadonlySet<string>;
+}
+
+const TRAINED_BY = new Map<string, Trained & { tags: readonly string[] }>();
+/**
+ * Lists of one and of two tags, by tag: the most frequent lists (the hunt
+ * activity asks for `combat` and `hunt` on every tick, a hit for one
+ * resistance), found with no key built.
+ */
+const TRAINED_BY_ONE = new Map<string, Trained>();
+const TRAINED_BY_TWO = new Map<string, Map<string, Trained>>();
+
+function trainedOf(tags: readonly string[]): Trained {
+  const skills = SKILL_LIST.filter((def) => skillTrainedBy(def, tags));
+  return { skills, ids: new Set(skills.map((def) => def.id)) };
+}
 
 /**
- * Every skill an action carrying `tags` trains, in `SKILL_LIST` order. The
- * answer depends on the skill registry alone, which is fixed once loaded, so
- * it is kept per tag list: the handlers below run on every tick of an
- * activity and visit only these skills.
+ * The skills an action carrying `tags` trains. The answer depends on the
+ * skill registry alone, which is fixed once loaded, so it is kept per tag
+ * list: the handlers below run on every tick of an activity.
  */
-export function skillsTrainedBy(tags: readonly string[]): readonly SkillDef[] {
+function trainedBy(tags: readonly string[]): Trained {
+  if (tags.length === 1) {
+    let found = TRAINED_BY_ONE.get(tags[0]);
+    if (!found) TRAINED_BY_ONE.set(tags[0], (found = trainedOf(tags)));
+    return found;
+  }
+  if (tags.length === 2) {
+    let inner = TRAINED_BY_TWO.get(tags[0]);
+    if (!inner) TRAINED_BY_TWO.set(tags[0], (inner = new Map()));
+    let found = inner.get(tags[1]);
+    if (!found) inner.set(tags[1], (found = trainedOf(tags)));
+    return found;
+  }
   const key = tags.join('|');
   const known = TRAINED_BY.get(key);
   if (known) {
     // A tag holding the separator could share a key with another list:
     // the stored list must equal this one.
-    if (known.tags.length === tags.length && known.tags.every((t, i) => t === tags[i])) return known.skills;
-    return SKILL_LIST.filter((def) => skillTrainedBy(def, tags));
+    if (known.tags.length === tags.length && known.tags.every((t, i) => t === tags[i])) return known;
+    return trainedOf(tags);
   }
-  const skills = SKILL_LIST.filter((def) => skillTrainedBy(def, tags));
-  TRAINED_BY.set(key, { tags: [...tags], skills });
-  return skills;
+  const found = trainedOf(tags);
+  TRAINED_BY.set(key, { ...found, tags: [...tags] });
+  return found;
+}
+
+/** Every skill an action carrying `tags` trains, in `SKILL_LIST` order. Shared: do not change it. */
+export function skillsTrainedBy(tags: readonly string[]): readonly SkillDef[] {
+  return trainedBy(tags).skills;
 }
 
 /**
@@ -563,9 +597,11 @@ const system: SystemDef<SkillsState, SkillsView> = defineSystem<SkillsState, Ski
       const { tags, amount, sourceKey, scale = 1 } = event.payload;
       if (amount <= 0) return ctx.skip('skills/grant-xp', `amount ${amount} is not above 0`);
       const mult = statOf(ctx, 'skillXp');
+      // The ids `skillTrainedBy` answers true for, kept per tag list.
+      const trained = trainedBy(tags).ids;
       for (const id of Object.keys(ctx.state.skills)) {
         const def = SKILLS[id];
-        if (!def || !skillTrainedBy(def, tags)) continue;
+        if (!def || !trained.has(id)) continue;
         addSkillXp(ctx, id, amount * mult * consumeNovelty(ctx.state, def, sourceKey) * scale);
       }
       // After the held skills, so one that manifests here is not paid twice.
