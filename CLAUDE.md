@@ -24,7 +24,9 @@ before changing anything.
 - `npm run verify`: svelte-check, vitest, build. Must pass before a commit.
 - `npm run dev`: dev server on port 5600 (strict). `npm run forge` opens the
   forge at `/forge/` on the same server.
-- `npm test`: vitest only (projects `unit`, `budget`, `budget-world`, `john`).
+- `npm test`: vitest only (projects `unit`, `budget`, `budget-world`,
+  `speed`, `john`). `speed` holds catch-up to half the old build's time
+  (`docs/PERFORMANCE.md` section 5).
 - `npm run pacing`: John's climb of floors 0 to 6, a per-floor table.
 - `.claude/launch.json` holds the dev server entry `ksgb-dev` and the build
   preview entry `ksgb-preview` (port 5601, needs `npm run build` first) for

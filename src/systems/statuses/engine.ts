@@ -586,6 +586,38 @@ export function sourceSignature(list: HeldList): string {
   return out;
 }
 
+/** Equal as the signature's text would be: NaN equals NaN, 0 equals -0. */
+const sameRead = (a: unknown, b: unknown): boolean => a === b || (a !== a && b !== b);
+
+/**
+ * `sourceSignature` without building the text: the values it is made of, in
+ * order, in `snap`. With `write`, `snap` is filled with the list's values and
+ * true is returned. Without, the list is compared with `snap` and nothing is
+ * allocated: true when every value is equal. Where the text would differ, a
+ * value differs; the status operations run this two times on every tick.
+ */
+export function sourceSnapshot(list: HeldList, snap: unknown[], write: boolean): boolean {
+  let i = 0;
+  const visit = (value: unknown): boolean => {
+    if (write) snap[i++] = value;
+    else if (i >= snap.length || !sameRead(snap[i++], value)) return false;
+    return true;
+  };
+  for (const held of list) {
+    const def = STATUSES[held.id];
+    // A debt is read whatever the definition says: a successor inherits it.
+    if (!held.data?.debt && !(def && sourceReads(def))) continue;
+    if (!visit(held.id) || !visit(held.stacks) || !visit(held.intensity)) return false;
+    if (def?.decayWithDuration && sourceReadsDecay(def) && !visit(effectiveIntensity(held))) return false;
+    if (held.data?.debt && (!visit(held.data.debt) || !visit(held.debtPool ?? ''))) return false;
+    if (def?.healCap !== undefined && (!visit(held.data?.dealt ?? 0) || !visit(held.data?.healed ?? 0))) return false;
+    // The entry's end, as the text's `|`.
+    if (!visit('|')) return false;
+  }
+  if (write) snap.length = i;
+  return write || i === snap.length;
+}
+
 /** Stat modifiers from every held condition, scaled by effective intensity. */
 export function statusMods(list: HeldList): StatMod[] {
   const out: StatMod[] = [];

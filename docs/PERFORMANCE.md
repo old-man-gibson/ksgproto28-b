@@ -342,52 +342,327 @@ slice changed or not.
   5 s figure is not reproduced by the old build at `7c1267b` for any state
   measured here; the old ENGINEERING.md figures are.
 
-## 5. Proposal: budgets tied to the old build (not applied)
+## 5. Budgets tied to the old build
 
-The existing budgets (`tests/budgets.test.ts`, `tests/budgetsWorld.test.ts`)
-are absolute milliseconds from this machine. They were raised 10% on
-2026-11-18 after failing with no code change (`docs/KERNEL.md` section 8),
-and they say nothing about the old build. The old build cannot run in this
-repository's tests. Proposal: compare against numbers recorded here, divided
-by a yardstick measured in the same process, so a slower or a loaded machine
-slows both sides.
+Proposed with this measurement on 2026-11-20. On 2026-11-21 the user set
+the factor to 0.5: catch-up takes at most half the old build's time.
+Built the same day:
 
-1. **A yardstick.** `tests/reference.ts`: a fixed workload with no game code
-   (seeded integer arithmetic, Map traffic, small objects, a JSON round trip,
-   a sort; about 200 ms here). Each budget case times it, median of 5, in
-   the same worker just before its run. Measured here in three processes
-   after the batches: medians 199.3, 200.7 and 203.5 ms.
-2. **John's states as fixtures.** A test helper builds the four states of
-   section 2.2 from John (seed 42) with a hook on `record` in `tests/john.ts`
-   (an `onRecord` option). No stored save files: a save format change cannot
-   break them. John to floor 7 costs about 1.2 s.
-3. **Catch-up, faster than the old build.** For each state, assert
-   `runMs / referenceMs < factor × OLD_MS[state] / OLD_REFERENCE_MS` with the
-   old medians of section 1.1 and the yardstick measured on this machine
-   (`OLD_REFERENCE_MS` = 200). Current ratios: 0.27, 0.40, 0.27, 0.27. With factor
-   1.0 the test says "faster than the old build"; with 0.5 it says "at most
-   half", which passes today with room (worst 0.40, floor 6). The user picks
-   the factor. The absolute budgets stay as the tighter tripwire for
-   regressions.
-4. **Live play.** Assert, per state, rebuild `tick + view` per tick against
-   the old `game.tick()` per tick, the same way. This fails today by 15 to 53
-   times (section 1.2) because of `kernel.view()` (section 3.4). Either the
-   view is made incremental (a view rebuilt only when its slice or its reads
-   changed; a kernel change and a design decision) or the bar is the browser
-   measurement of section 1.3, which includes the old page's Svelte updates
-   and passes today (36 against 224 ms of script per second). A headless
-   check of `kernel.view()` alone, against its own recorded median, would
-   still catch a view that grows.
-5. **Sizes, with no machine in them.** A check after `vite build` in
-   `npm run verify`: JavaScript loaded at start, gzip, at most the old
-   build's 626,223 bytes (passes, 435,948; the UI is not finished); the
-   floor 6 save at most the old 17,559 bytes (fails, 33,330: the log slice).
-   Bytes are exact, so these never flake.
-6. **Startup.** A browser driver does not fit `npm run verify`. Keep the
-   DevTools-protocol script as a manual check before a release, with the old
-   build's 451 ms (empty cache) and 257 ms (cached) from section 1.4 as the
-   bar on this machine.
+| Item | State | Where |
+|---|---|---|
+| 1. A yardstick | built | `tests/reference.ts` |
+| 2. John's states, built inside the test | built | `tests/speedStates.ts`; the `onRecord` option of `tests/john.ts` |
+| 3. Catch-up at most 0.5 of the old build's time | held | `tests/speed.test.ts`, the vitest project `speed` |
+| 4. Live play, headless | reported, not held | `tests/speed.test.ts` |
+| 5. Sizes | the floor 6 save reported, not held; the bundle check is not built | `tests/speed.test.ts` |
+| 6. Startup | not built: a manual check before a release | - |
 
-What a yardstick does not remove: processors differ in how they run
-different code, so a ratio moves between machines by an unknown amount (to
-be measured on a second machine before the factor is set below about 0.6).
+`npm test` and `npm run verify` run the project `speed` alone, after
+`budget-world`. The absolute budgets (`tests/budgets.test.ts`,
+`tests/budgetsWorld.test.ts`, `docs/KERNEL.md` section 8) stay: they cover
+other runs (a new character, a poison held, the world system) and say
+nothing about the old build.
+
+### 5.1 The yardstick
+
+`tests/reference.ts`: seeded integer arithmetic, Map traffic, small
+objects, a JSON round trip, a sort. No game code. The same code as the
+baseline's `reference.mjs`. `measureYardstick()` runs one pass to warm up
+and five timed passes, and returns the median, every pass and the spread
+(slowest minus fastest, over the median). The test prints all three for
+every yardstick it takes.
+
+The old build's yardstick time is 200.7 ms: the median of three plain Node
+processes on the measurement machine right after the batches of section 1
+(medians 199.3, 200.7 and 203.5 ms).
+
+The same workload in three environments, same machine, 2026-11-21, the
+five low-load rounds of 5.3: plain Node (`reference.mjs`) 199.7 to 210.4
+ms, median 208.7; vite-node 190.5 to 200.9 ms, median 197.0; the test's
+worker, the yardsticks before floor 6, town and floor 7, 193.7 to 227.9 ms,
+median 206.0. The worker reads about as plain Node does, so the plain Node
+value of the old build applies. The first yardstick in a worker (before
+floor 1) read 5 to 15% above the later ones in 4 of 5 rounds, also with the
+garbage collection; the cause is not found. It loosens floor 1's bar by as
+much; floor 1 is at about 60% of it.
+
+Spread of the yardstick's own five passes: 3 to 14% at low load and under
+load. Before the garbage collection step (5.2) the first yardstick after
+John's climb had a spread of 27 to 46%: its passes alternated about 200 and
+260 ms.
+
+### 5.2 Catch-up: held
+
+For each state of section 2.2, in `tests/speed.test.ts`:
+
+    run ms / yardstick ms  <  0.5 x OLD_CATCHUP_MS / OLD_YARDSTICK_MS
+
+| State | Old median | Old ratio | Limit | The limit at a 200 ms yardstick |
+|---|---|---|---|---|
+| Floor 1 hunting | 20,702 ms | 103.15 | 51.57 | 10,315 ms |
+| Floor 6 hunting | 29,043 ms | 144.71 | 72.35 | 14,471 ms |
+| Idle in town | 6,545 ms | 32.61 | 16.31 | 3,261 ms |
+| Floor 7 hunting | 28,482 ms | 141.91 | 70.96 | 14,191 ms |
+
+- The states are built inside the test (`tests/speedStates.ts`): John,
+  seed 42, Skip tutorial, `through: 7`, keeps the state at the close of
+  `floor1`, `floor6` and `floor7` (the `onRecord` option of `runJohn`);
+  the set-up of section 2.2 follows. No stored saves: a save format change
+  cannot break them. John's climb takes 1.3 to 1.6 s.
+- The timed span is `runHeadless` for 288,000 ticks on a kernel created as
+  `catchUp` creates it (section 2.3).
+- The yardstick runs in the same worker right before the run. A full
+  garbage collection runs before the yardstick and before the timed run
+  (`v8.setFlagsFromString('--expose-gc')`, then `gc` from a new context;
+  vitest 3 takes `execArgv` only for all projects at once). The baseline
+  ran each state in a fresh process.
+- Kills must be within 10% of the old build's (town: none), so a run that
+  stopped hunting cannot pass on speed. At `a72b168` they equal the
+  baseline's rebuild column: 10,634, 11,536, 0 and 12,959.
+- A state whose first attempt fails is measured again (garbage collection,
+  yardstick, run). The case passes if the second attempt passes. The
+  second attempt costs time only when the first fails.
+- Each attempt prints the run, the yardstick with its passes, a yardstick
+  of three passes taken after the run, and the processor load of the whole
+  machine over the attempt (all logical processors; this process alone is
+  about 6%).
+- The runs share one worker; the baseline ran each state in a fresh
+  process. John's climb and the floor 1 state run in the worker before
+  floor 6, which costs floor 6 about 6% against a fresh process (6.2).
+
+### 5.3 Margins
+
+`a72b168` plus this test. The ratio as a share of its limit (below 100%
+passes), first attempts; in brackets the rebuild ratio over the old ratio.
+"Low load": the machine at 10% or less before the round; during the
+attempts it was 9 to 22%, because the session porting C3 ran its timing
+script (`scripts/budget-runs.ts`, one process) throughout. No round with
+the machine idle was available. "Loaded": rounds started while that session
+held the machine at 93 to 100%; during the attempts it was 9 to 32%.
+
+| State | Low load, 5 runs | Loaded, 3 runs |
+|---|---|---|
+| Floor 1 hunting | 55 to 62%, median 60% (0.28 to 0.31) | 57 to 61% (0.29 to 0.31) |
+| Floor 6 hunting | 82 to 100%, median 87% (0.41 to 0.50) | 99, 104, 109% (0.50 to 0.55); attempt 2: 90, 85% |
+| Idle in town | 60 to 68%, median 62% (0.30 to 0.34) | 63 to 75% (0.31 to 0.37) |
+| Floor 7 hunting | 57 to 65%, median 58% (0.28 to 0.33) | 50 to 59% (0.25 to 0.30) |
+
+Every case passed in all 8 runs. Floor 6 failed its first attempt in 2 of
+the 3 loaded runs; the second attempt passed both times. Its highest low-load
+first attempt was 99.7% (72.11 against 72.35), with the yardstick at 202 ms
+before and after the run.
+
+The `npm run verify` of this change ran at the lowest load of the day (13
+to 15% during the attempts, yardstick 193 to 195 ms): 57, 82, 62 and 55%
+(0.29, 0.41, 0.31, 0.28).
+
+From the section 1 medians (idle, fresh processes, `edbe69b`) the shares
+would be 54, 79, 54 and 53%. The earlier version of this test (no garbage
+collection, no second attempt), 5 runs at low load: floor 6 78 to 86%; 5
+runs under load: floor 6 77 to 93%.
+
+What moves floor 6: a second process running game code. At 9 to 11%
+machine load the floor 6 run took 12.3 s; with the C3 session's catch-up
+script running (17 to 21%) 13.0 to 16.5 s, while the yardstick read 194 to
+231 ms. The yardstick's working set is small (a Map of 5,000 entries, an
+array of 200,000 numbers) and is not slowed the same way by a neighbour
+that competes for the processor's caches.
+
+Cross-check of the method, the same evening and load: the old build (the
+export of `7c1267b` of section 2.1) and the rebuild, each state in a fresh
+process: a garbage collection, the yardstick, a collection, the run of 8
+hours. The builds alternate; 3 rounds.
+
+| State | Old ratio, constant | Old ratio, 3 rounds | Rebuild ratio, 3 rounds | Rebuild over old, same round |
+|---|---|---|---|---|
+| Floor 1 hunting | 103.15 | 95.2, 130.1, 102.5 | 27.8, 29.3, 28.2 | 0.29, 0.23, 0.28 |
+| Floor 6 hunting | 144.71 | 156.5, 148.0, 150.2 | 66.2, 66.1, 64.8 | 0.42, 0.45, 0.43 |
+| Idle in town | 32.61 | 36.0, 42.9, 37.7 | 9.7, 9.6, 10.2 | 0.27, 0.22, 0.27 |
+| Floor 7 hunting | 141.91 | 155.3, 140.4, 149.1 | 43.3, 69.7, 39.1 | 0.28, 0.50, 0.26 |
+
+- The old build's medians that evening (102.5, 150.2, 37.7, 149.1) are at or
+  above the constants. Load slows the old build's game code against the
+  yardstick as it slows the rebuild's. The constants, from an idle night,
+  are the stricter choice.
+- Floor 6 against the old build directly, same round: 0.42 to 0.45. Its
+  margin under the factor is that thin in fact, not through the yardstick.
+- A single run moves by up to a third when load arrives during it (floor
+  7, round 2: 0.50).
+
+### 5.4 Reported, not held
+
+Printed in every run, never failing. Both fail the factor today; a later
+speed pass is to fix them, and then they are held the same way.
+
+- Live play, headless. Per state, 100 ticks of warm-up, then 300 ticks of
+  `kernel.tick()` followed by `kernel.view()`, against the old
+  `game.tick()` of section 1.2, through the yardstick. Tick plus view: 37
+  to 161 times the 0.5 bar (`kernel.view()`, section 3.4). The tick alone:
+  0.6 to 3.4 times the bar; 300 ticks are few, so the tick figure moves
+  with the fight in progress.
+- Save size. The floor 6 state saved (`JSON.stringify(kernel.save(now))`)
+  against the old 17,559 bytes: 33,391 bytes, 1.90 times the old. The log
+  slice is 13,663 bytes of it.
+
+### 5.5 Run time
+
+`vitest run --project speed` on this machine at low load: 43 to 52 s (the
+tests 40 to 48 s), 48 to 55 s with the start of npx. John's climb and the
+set-up 1.5 s; the four runs of 8 hours 28 to 33 s; nine yardsticks about
+8 s; live play about 4 s. A second attempt adds its yardsticks and its run
+(floor 6: 17 to 19 s). In the `npm run verify` of this change: `budget`
+23.7 s, `budget-world` 20.8 s, `speed` 43.1 s (the tests 39.9 s), `john`
+18.2 s. On the CI runner
+(ubuntu-latest, Node 22) the budget runs took 0.6 to 0.8 times the times
+recorded on this machine on 2026-11-18 (`docs/KERNEL.md` section 8); the
+speed test's ratios there are not measured yet.
+
+### 5.6 Updating the old-build constants
+
+The constants are at the top of `tests/speed.test.ts`: `OLD_CATCHUP_MS`,
+`OLD_KILLS`, `OLD_YARDSTICK_MS`, `OLD_TICK_US`, `OLD_FLOOR_SIX_SAVE_BYTES`.
+Each comment names its source. Update them together, from one session on
+one machine:
+
+1. Export the old build: `git archive <commit>` of the old repository into
+   a folder outside both repositories, then `npm ci` there. No worktree of
+   the old repository, no file written into it.
+2. Build the four saves in both builds (each build's John with a hook on
+   `record`, then the set-up of section 2.2) and measure as in section 2:
+   one fresh process per run, five rounds, the builds alternating, the
+   processor below 30% at each round start. The scripts of the 2026-11-20
+   measurement are kept with the session notes of that work.
+3. In the same session, idle: the yardstick (`workload` of
+   `tests/reference.ts`), one warm-up and five timed passes, in three
+   processes. The median of the three medians is `OLD_YARDSTICK_MS`.
+4. Write the medians, the kills, the commit, the date and the machine into
+   the constants and into section 1 of this file.
+
+When `workload` in `tests/reference.ts` changes, only step 3 is needed, but
+it must run on the machine and in the state the old medians came from;
+otherwise repeat steps 1 to 4. The factor (`FACTOR`) is the user's
+decision.
+
+### 5.7 Not settled
+
+- Floor 6 is near its bar: 0.41 to 0.50 of the old build's time at low
+  load against 0.28 to 0.34 for the other states, and a process running
+  game code next to it fails a first attempt. Speed pass 1 (section 6)
+  took it to 0.39 to 0.40 in the speed test at low load. Proposed, in
+  order:
+  1. A speed pass on floor 6's catch-up: the combat tick and event
+     delivery (section 3.1) are two thirds of its time. At the other
+     states' 0.3 the bar has about 40% headroom.
+  2. Before a second attempt, wait while other processes keep the machine
+     busy, as the baseline batches did: up to a few minutes, until the
+     machine's load without this process is below about 10%.
+  3. A yardstick that also competes for the caches the way the game does
+     (a working set of game size). It changes `OLD_YARDSTICK_MS` (5.6).
+  A median of several attempts does not help: under a steady neighbour
+  every attempt reads the same.
+- A second machine: the ratio moves between processors by an unknown
+  amount. The first CI run of this test measures it on the CI runner.
+- Live play and save size (5.4).
+- Bundle size (item 5) and startup (item 6) are not built.
+
+## 6. Speed pass 1: floor 6 catch-up
+
+2026-11-21, branch `claude/speed-test-f62037`, after the speed test
+(`6322669`). The user's choice: speed up floor 6's catch-up before the
+speed test merges; the factor stays 0.5. Strict port: the outcomes stay
+identical and no rule or save format changes. Checked for each fix: the
+outcome digests (`tests/outcome.test.ts`, the six budget digests), John's
+pacing table for seeds 42, 7 and 1234 (`npm run pacing`, diffed with the
+table before the pass), the speed test's kills, `npm run verify`.
+
+### 6.1 The fixes
+
+Gain: floor 6 catch-up in a fresh process, the yardstick then the run
+(the method of the cross-check in 5.3), 4 alternating pairs against the
+commit before; the median ratio after over the median ratio before. Another
+session ran game code during most pairs: one pair moves by up to 10%.
+
+| Commit | Fix | Floor 6, after / before |
+|---|---|---|
+| `0f67eae` | Combat rotation. `pickActive` asks for the rotation on every tick of a fight. The sorted player action kinds and the rotation id to kind lookup are kept until the registry changes; the dedupe uses a Set; martial keeps one `technique:<id>` string per technique. | 0.92 |
+| `2c4df14` | Status operations. Each operation built `sourceSignature` text twice; `sourceSnapshot` compares the same fields in place in a reused array. | 0.98 |
+| `087be42` | Stat reads, about 14 per tick. The player's record in a field as well as in the entity map, the plain table in the record, the last resolver prefix remembered, the clean-record check apart from the rescan so it inlines; `statBlockOf` compares with the last output before its weak map. | 0.97 |
+| `92aa8fd` | Skills. Tag lists of one and two tags (the hunt tick asks for `combat`, `hunt` on every tick) found by tag with no joined key; the XP grant tests held skills against a set of ids. | 0.976 |
+| `8816692` | Stat cache rescan. A record's per-source counters and collections in arrays by source position, not maps by id. | 0.986 |
+| `822e9e2` | Statuses. No operation for `resources/damaged` (211,000 per 8 hours) when no held condition has a rule on damage taken, as the heal handler already did. | 0.992 |
+
+Tried and dropped: the tick loop and requests holding each system's
+context instead of looking it up in a map (`kernel.ts`): 1.007, no gain.
+Lazy reach in martial's technique check: at most 1.3% of floor 6, not
+built.
+
+The product of the per-fix medians, 0.84, overstates the whole; 6.2
+measures the whole.
+
+### 6.2 Before and after
+
+All four states in fresh processes, 6 alternating pairs, `6322669` against
+`822e9e2`, the machine at about 5% at the start. Median ratios:
+
+| State | Before | After | After / before | Run, ms |
+|---|---|---|---|---|
+| Floor 1 hunting | 27.46 | 26.33 | 0.959 | 5,585 to 5,163 |
+| Floor 6 hunting | 59.16 | 52.32 | 0.884 | 11,602 to 10,774 |
+| Idle in town | 9.35 | 9.29 | 0.994 | 1,913 to 1,845 |
+| Floor 7 hunting | 39.51 | 35.24 | 0.892 | 8,082 to 7,428 |
+
+The speed test, the share of each limit (below 100% passes), first
+attempts, `6322669` and `822e9e2` alternating. Low load: no other process
+ran game code; the machine was at 10 to 23% during the attempts.
+Neighbour: a second process ran floor 6 catch-up in a loop; 16 to 30%.
+
+| State | Low load, before, 4 runs | Low load, after, 4 runs | Neighbour, before, 3 runs | Neighbour, after, 3 runs |
+|---|---|---|---|---|
+| Floor 1 hunting | 56 to 61% | 54 to 56% | 55, 70, 70% | 49, 53, 64% |
+| Floor 6 hunting | 83 to 90%, median 86% | 79 to 80% | 81, 90, 93% | 76, 82, 90% |
+| Idle in town | 61 to 64% | 57 to 61% | 61, 66, 68% | 56, 63, 67% |
+| Floor 7 hunting | 57 to 59% | 53 to 55% | 56, 60, 61% | 48, 52, 56% |
+
+No first attempt failed in these 14 runs. Floor 6 over the old build in the
+speed test: 0.42 to 0.45 before, 0.39 to 0.40 after (low load).
+
+The same code reads lower in fresh processes: floor 6 at 70 to 74% of its
+limit after the pass (78 to 89% before), against 79 to 80% (83 to 90%) in
+the speed test. In the test, floor 6 runs in the worker that ran John's
+climb and the floor 1 state first; that costs both builds about 6% on
+floor 6. The old build's medians were taken in fresh processes.
+
+### 6.3 The budget runs
+
+`scripts/budget-runs.ts`, all six runs in one process per side, 3
+alternating rounds, `6322669` against `822e9e2`. Every digest equal.
+
+| Run of 8 hours | Before, ms | After, ms | After / before |
+|---|---|---|---|
+| No fight, no condition | 1,633 to 1,672 | 1,614 to 1,647 | 1.000 |
+| A poison held | 4,899 to 4,963 | 4,029 to 4,326 | 0.856 |
+| Floor 1 table sent to combat | 4,999 to 5,045 | 4,750 to 5,062 | 0.948 |
+| Floor 6 Tunnels sent to combat | 8,578 to 8,885 | 8,056 to 8,339 | 0.935 |
+| World: hunt, floor 4 Woods Edge | 8,940 to 9,236 | 8,053 to 8,449 | 0.898 |
+| World: hunt, floor 6 Tunnels | 8,767 to 8,858 | 7,908 to 8,137 | 0.923 |
+
+The absolute budgets are unchanged.
+
+### 6.4 What is left
+
+After the pass no function has more than 4% of floor 6's time as its own;
+what is left is spread. Further steps need structure, each proven equal by
+the digests:
+
+- The damage of a condition goes `statuses/damage`, `resources/damage`,
+  `resources/damaged` (206,000 times per 8 hours on floor 6), each event
+  with its subscribers and the log's floating run. A request path where the
+  event order allows it.
+- Monster stat blocks: about 11,800 per 8 hours, each collecting about 45
+  modifier sources, most of which return nothing for a monster, then the
+  stats resolver. A source that declares it reads the player only would
+  skip those collections.
+- The buff slot's pick on every tick of a fight.
+- The speed test's method: each state in a fresh worker, as the old build
+  was measured, gives floor 6 about 6% (6.2). A change of method, not of
+  speed: the user's decision.

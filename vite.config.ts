@@ -14,10 +14,12 @@ export default defineConfig({
   preview: { port: 5601, strictPort: true },
   worker: { format: 'es' },
   test: {
-    // Four projects. `unit` is every test file but the offline budgets and
-    // the John climbs, in parallel workers. `budget` and `budget-world` are one
-    // budget file each: their cases measure wall-clock time, so they do not
-    // share the processor with other test files. `john` runs the headless
+    // Five projects. `unit` is every test file but the offline budgets, the
+    // speed test and the John climbs, in parallel workers. `budget`,
+    // `budget-world` and `speed` are one file each: their cases measure
+    // wall-clock time, so they do not share the processor with other test
+    // files. `speed` holds catch-up to a share of the old build's time
+    // (docs/PERFORMANCE.md section 5). `john` runs the headless
     // climbs, whose load made timed unit cases time out when they ran in
     // parallel, and the outcome digests of John's climbs. `npm test` runs one
     // project after the other.
@@ -27,7 +29,13 @@ export default defineConfig({
         test: {
           name: 'unit',
           include: ['tests/**/*.test.ts'],
-          exclude: ['tests/budgets.test.ts', 'tests/budgetsWorld.test.ts', 'tests/john.test.ts', 'tests/outcome.test.ts'],
+          exclude: [
+            'tests/budgets.test.ts',
+            'tests/budgetsWorld.test.ts',
+            'tests/speed.test.ts',
+            'tests/john.test.ts',
+            'tests/outcome.test.ts',
+          ],
           environment: 'node',
         },
       },
@@ -44,6 +52,14 @@ export default defineConfig({
         test: {
           name: 'budget-world',
           include: ['tests/budgetsWorld.test.ts'],
+          environment: 'node',
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: 'speed',
+          include: ['tests/speed.test.ts'],
           environment: 'node',
         },
       },

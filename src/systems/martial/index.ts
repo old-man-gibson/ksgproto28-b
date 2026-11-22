@@ -159,6 +159,17 @@ type CState = DeepReadonly<CombatState>;
 
 const PREFIX = 'technique:';
 
+/** A technique's rotation id, `technique:<id>`. Kept per id: the rotation asks for every known one on every tick of a fight. */
+const ROTATION_IDS = new Map<string, string>();
+function rotationId(def: TechniqueDef): string {
+  let id = ROTATION_IDS.get(def.id);
+  if (id === undefined) {
+    id = `${PREFIX}${def.id}`;
+    ROTATION_IDS.set(def.id, id);
+  }
+  return id;
+}
+
 // ---- the ways in ----
 
 /** The ways a technique declares, with no ledger read. A monster and the content tests read these. The old `declaredEntries`. */
@@ -695,7 +706,7 @@ const practise = (ctx: ActionCtx, def: TechniqueDef): void => {
 
 registerPlayerAction(PREFIX, {
   rank: 30,
-  known: (ctx) => knownTechniques(ctx.read(martial)).map((t) => `${PREFIX}${t.id}`),
+  known: (ctx) => knownTechniques(ctx.read(martial)).map(rotationId),
   pick(ctx, id, slot, fight) {
     const def = TECHNIQUES[id.slice(PREFIX.length)];
     if (!def) return `no technique has the id "${id.slice(PREFIX.length)}"`;

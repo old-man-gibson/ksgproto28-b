@@ -71,7 +71,7 @@ import {
   escalationChance,
   heldModifiers,
   resistBlock,
-  sourceSignature,
+  sourceSnapshot,
   visibleStatuses,
   type BarDamage,
   type BearerEnv,
@@ -372,7 +372,8 @@ export function conditionReadout(
  * landed earlier in the same operation already counts.
  */
 class Operation implements BearerEnv {
-  private signature: string;
+  /** What the modifier source reads of the list when last checked (`sourceSnapshot`). */
+  private readonly snap: unknown[] = [];
   private readonly frozen: ReadonlyMap<string, number> | undefined;
   /** The `stats/` resolver output of the frozen table, read on first use. */
   private frozenStats: Readonly<Record<string, number>> | undefined;
@@ -383,15 +384,14 @@ class Operation implements BearerEnv {
     private readonly resist: boolean,
     private readonly list: StatusInstance[],
   ) {
-    this.signature = sourceSignature(list);
+    sourceSnapshot(list, this.snap, true);
     this.frozen = entity === PLAYER ? ctx.stats(PLAYER) : undefined;
   }
 
   /** Touch the source when what it reads of the list changed since the last check. */
   sync(): void {
-    const now = sourceSignature(this.list);
-    if (now === this.signature) return;
-    this.signature = now;
+    if (sourceSnapshot(this.list, this.snap, false)) return;
+    sourceSnapshot(this.list, this.snap, true);
     this.ctx.touch(HELD_SOURCE, this.entity);
   }
 
@@ -467,6 +467,16 @@ function hearsHeal(held: StatusInstance, kind: string): boolean {
   for (const rule of rules) {
     if (rule.on === 'heal' && (!rule.healKinds || rule.healKinds.includes(kind))) return true;
   }
+  return false;
+}
+
+/** Whether a held condition has a rule on damage taken: what `fireStatusEvent` reads for `damageTaken`. */
+function hearsDamage(held: StatusInstance): boolean {
+  const def = STATUSES[held.id];
+  if (!def) return false;
+  const rules = held.removal ?? def.removal;
+  if (!rules) return false;
+  for (const rule of rules) if (rule.on === 'damageTaken') return true;
   return false;
 }
 
@@ -719,7 +729,12 @@ export default defineSystem<StatusesState, StatusesView>({
       });
     }),
     on(playerDamaged, (ctx, { payload }) => {
-      if (!ctx.state.held[PLAYER]) return;
+      const now = ctx.state.held[PLAYER];
+      if (!now) return;
+      // A condition's damage arrives here on every tick it bites: nothing is
+      // built when no held condition has a rule on damage taken. An empty
+      // list still goes through the operation, which deletes it.
+      if (now.length > 0 && !now.some(hearsDamage)) return;
       mutate(ctx, PLAYER, false, (list, env) =>
         engine.fireStatusEvent(
           env,

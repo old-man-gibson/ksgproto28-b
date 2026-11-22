@@ -41,6 +41,8 @@ export type Resolved = Readonly<Record<string, number>>;
 
 interface Source {
   id: string;
+  /** Position in registration order: the index of this source in a record's `counters` and `collected`. */
+  index: number;
   /** Bumped by a touch with no entity. */
   counter: number;
   collect: (entity: string) => Modifier[];
@@ -65,9 +67,13 @@ interface Collected {
 }
 
 interface EntityRecord {
-  /** Bumped by a touch that names this entity, per source id. */
-  counters: Map<string, number>;
-  collected: Map<string, Collected>;
+  /**
+   * Per source, by its index: bumped by a touch that names this entity, and
+   * what was collected. Arrays, not maps: a record that is new or dirty
+   * checks every source.
+   */
+  counters: number[];
+  collected: (Collected | undefined)[];
   /** A source may have been touched since the last collection. */
   dirty: boolean;
   /** Every group has been computed once. */
@@ -83,12 +89,14 @@ interface EntityRecord {
   plain: Map<string, number> | null;
   /** Variant to the whole table. */
   tables: Map<string, Table>;
+  /** The table of the plain variant `''`, the most read: no map lookup. Cleared with `tables`. */
+  plainTable: Table | null;
 }
 
 function newRecord(): EntityRecord {
   return {
-    counters: new Map(),
-    collected: new Map(),
+    counters: [],
+    collected: [],
     dirty: true,
     ready: false,
     mods: [],
@@ -97,6 +105,7 @@ function newRecord(): EntityRecord {
     plainOutputs: [],
     plain: null,
     tables: new Map(),
+    plainTable: null,
   };
 }
 
@@ -221,7 +230,17 @@ export class Derived {
   private readonly prefixIndex = new Map<string, number>();
   /** The split of an empty list. Never written to: `fresh` copies group lists. */
   private emptySplit: Modifier[][] = [[]];
-  private readonly entities = new Map<string, EntityRecord>([[PLAYER, newRecord()]]);
+  /**
+   * The player's record, also under `PLAYER` in `entities`. Most reads are
+   * the player's: this skips the map. The player is never dropped, and
+   * `touchAll` keeps the record, so the object is the same for the cache's
+   * life.
+   */
+  private readonly player: EntityRecord = newRecord();
+  private readonly entities = new Map<string, EntityRecord>([[PLAYER, this.player]]);
+  /** The prefix `resolved` looked up last and its resolver index: nearly every read asks for `stats/`. */
+  private lastPrefix = '';
+  private lastPrefixIndex = -1;
   /** Target to group index, filled on first sight of a target. */
   private readonly groupOf = new Map<string, number>();
 
@@ -236,7 +255,7 @@ export class Derived {
 
   register(id: string, collect: (entity: string) => Modifier[]): void {
     if (this.byId.has(id)) throw new Error(`modifier source "${id}" is registered twice`);
-    const source: Source = { id, counter: 0, collect, dependents: [] };
+    const source: Source = { id, index: this.sources.length, counter: 0, collect, dependents: [] };
     this.sources.push(source);
     this.byId.set(id, source);
     this.invalidateAll();
@@ -279,7 +298,7 @@ export class Derived {
       for (const record of this.entities.values()) record.dirty = true;
     } else {
       const record = this.record(entity);
-      record.counters.set(source.id, (record.counters.get(source.id) ?? 0) + 1);
+      record.counters[source.index] = (record.counters[source.index] ?? 0) + 1;
       record.dirty = true;
     }
     for (const dependent of source.dependents) this.bump(dependent, entity);
@@ -308,7 +327,7 @@ export class Derived {
   /** The change stamps of every registered source for an entity, as one string. For tests. */
   cacheKeyNow(entity: string = PLAYER): string {
     const record = this.record(entity);
-    return this.sources.map((source) => `${source.id}:${source.counter}.${record.counters.get(source.id) ?? 0}`).join('|');
+    return this.sources.map((source) => `${source.id}:${source.counter}.${record.counters[source.index] ?? 0}`).join('|');
   }
 
   get(stat: string, entity: string = PLAYER, variant = ''): number {
@@ -320,6 +339,7 @@ export class Derived {
   /** Every stat of an entity. Shared with the cache: do not change it. */
   table(entity: string = PLAYER, variant = ''): ReadonlyMap<string, number> {
     const record = this.fresh(entity);
+    if (variant === '' && record.plainTable) return record.plainTable;
     let table = record.tables.get(variant);
     if (!table) {
       const outs: Resolved[] = [];
@@ -327,6 +347,7 @@ export class Derived {
       table = new Table(this.plainOf(record), this.prefixes, outs);
       record.tables.set(variant, table);
     }
+    if (variant === '') record.plainTable = table;
     return table;
   }
 
@@ -336,9 +357,21 @@ export class Derived {
    * so a reader may key its own cache on it.
    */
   resolved(prefix: string, entity: string = PLAYER, variant = ''): Resolved {
-    const r = this.prefixIndex.get(prefix);
-    if (r === undefined) throw new Error(`no resolver for "${prefix}"`);
-    return this.output(this.fresh(entity), entity, r, variant);
+    let r = this.lastPrefixIndex;
+    if (prefix !== this.lastPrefix) {
+      const found = this.prefixIndex.get(prefix);
+      if (found === undefined) throw new Error(`no resolver for "${prefix}"`);
+      r = found;
+      this.lastPrefix = prefix;
+      this.lastPrefixIndex = found;
+    }
+    const record = this.fresh(entity);
+    // The plain variant once computed: the most frequent read.
+    if (variant === '') {
+      const plain = record.plainOutputs[r];
+      if (plain !== undefined) return plain;
+    }
+    return this.output(record, entity, r, variant);
   }
 
   /** Every modifier collected for an entity. Shared with the cache: do not change it. */
@@ -384,7 +417,7 @@ export class Derived {
     for (const record of this.entities.values()) {
       record.dirty = true;
       record.ready = false;
-      record.collected.clear();
+      record.collected.length = 0;
     }
   }
 
@@ -414,36 +447,45 @@ export class Derived {
 
   /** The record of an entity with every touched source collected again and changed groups cleared. */
   private fresh(entity: string): EntityRecord {
-    // The common case: nothing was touched since the last read.
-    const known = this.entities.get(entity);
-    if (known && !known.dirty) return known;
+    // The common case: nothing was touched since the last read. Kept small,
+    // apart from the collection, so the engine inlines it into every read.
+    const known = entity === PLAYER ? this.player : this.entities.get(entity);
+    if (known !== undefined && !known.dirty) return known;
+    return this.recollect(entity, known);
+  }
+
+  /** `fresh` for a record that is new or dirty. */
+  private recollect(entity: string, known: EntityRecord | undefined): EntityRecord {
     const record = known ?? this.record(entity);
     const groups = this.resolvers.length + 1;
     const changed: boolean[] = new Array(groups).fill(!record.ready);
     let recollected = !record.ready;
-    for (const source of this.sources) {
-      const local = record.counters.get(source.id) ?? 0;
-      const old = record.collected.get(source.id);
+    const sources = this.sources;
+    const collected = record.collected;
+    for (let s = 0; s < sources.length; s++) {
+      const source = sources[s];
+      const local = record.counters[s] ?? 0;
+      const old = collected[s];
       if (old && old.global === source.counter && old.local === local) continue;
       const mods = source.collect(entity);
       const byGroup = this.split(mods);
       for (let g = 0; g < groups; g++) {
         if (!changed[g] && (!old || !sameList(old.byGroup[g], byGroup[g]))) changed[g] = true;
       }
-      record.collected.set(source.id, { global: source.counter, local, mods, byGroup });
+      collected[s] = { global: source.counter, local, mods, byGroup };
       recollected = true;
     }
     record.dirty = false;
     if (!recollected) return record;
     const all: Modifier[] = [];
-    for (const source of this.sources) for (const mod of record.collected.get(source.id)!.mods) all.push(mod);
+    for (let s = 0; s < sources.length; s++) for (const mod of collected[s]!.mods) all.push(mod);
     record.mods = all;
     let any = false;
     for (let g = 0; g < groups; g++) {
       if (!changed[g]) continue;
       any = true;
       const list: Modifier[] = [];
-      for (const source of this.sources) for (const mod of record.collected.get(source.id)!.byGroup[g]) list.push(mod);
+      for (let s = 0; s < sources.length; s++) for (const mod of collected[s]!.byGroup[g]) list.push(mod);
       record.groupMods[g] = list;
       if (g < this.resolvers.length) {
         record.outputs[g] = new Map();
@@ -451,7 +493,10 @@ export class Derived {
       }
       else record.plain = null;
     }
-    if (any) record.tables = new Map();
+    if (any) {
+      record.tables = new Map();
+      record.plainTable = null;
+    }
     record.ready = true;
     return record;
   }

@@ -444,6 +444,48 @@ An answer returns copies, never a reference into its slice.
   |---|---|---|
   | No fight, no condition | 2,200 ms | 2,420 ms |
 
+- Speed test against the old build (2026-11-21; factor 0.5, user decision
+  of the same day). `tests/speed.test.ts`, the vitest project `speed`, run
+  alone after `budget-world` by `npm test` and `npm run verify`.
+  - Held: 8 hours of catch-up (288,000 ticks) in four states built from
+    John inside the test (seed 42, Skip tutorial, through floor 7;
+    `tests/speedStates.ts`): hunting floor 1, hunting floor 6, idle in town,
+    hunting floor 7. Each run is divided by a yardstick (`tests/reference.ts`:
+    a fixed workload with no game code, about 200 ms) measured in the same
+    worker right before it. The case fails when
+    `run ms / yardstick ms >= 0.5 x old ms / old yardstick ms`, with the old
+    build's medians of `docs/PERFORMANCE.md` section 1.1. A failing state is
+    measured once more; the case passes if that attempt passes. The
+    rebuild's kills must be within 10% of the old build's.
+  - Reported, not held (printed, never fails): live play, `kernel.tick()`
+    plus `kernel.view()` per tick against the old `game.tick()`; the floor 6
+    save size against the old build's. Both fail the factor today.
+  - The absolute budgets above stay. They cover other runs (a new
+    character, a poison held, the world system) in this machine's
+    milliseconds and say nothing about the old build.
+  - Margins per state, run time, the spread idle and under load, and how to
+    update the old-build constants: `docs/PERFORMANCE.md` section 5.
+
+- Speed pass 1 (2026-11-21, `docs/PERFORMANCE.md` section 6): six fixes,
+  each with every outcome digest unchanged. In the kernel: the derived
+  cache keeps the player's record and its plain table in fields, remembers
+  the last resolver prefix, splits the clean-record check from the rescan,
+  and indexes a record's per-source counters and collections by source
+  position. Floor 6 catch-up: 0.88 of its time before the pass (fresh
+  processes). The budget runs, 3 alternating rounds, medians in ms:
+
+  | Run of 8 hours | Before | After | Budget |
+  |---|---|---|---|
+  | No fight, no condition | 1,646 | 1,646 | 2,420 (port C3) |
+  | A poison held | 4,907 | 4,202 | 8,250 |
+  | Floor 1 table sent to combat | 5,012 | 4,750 | 7,700 |
+  | Floor 6 Tunnels sent to combat | 8,746 | 8,178 | 14,850 |
+  | World: hunt, floor 4 Woods Edge | 9,022 | 8,101 | 14,300 |
+  | World: hunt, floor 6 Tunnels | 8,808 | 8,126 | 14,300 |
+
+  The speed pass changed no budget; the idle raise to 2,420 ms is port
+  C3's (above). The speed pass was measured on a72b168, before port C3.
+
 ## 9. Content
 
 - A registry is one JSON file: a list of records, each with an `id`.

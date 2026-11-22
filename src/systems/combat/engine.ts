@@ -141,6 +141,7 @@ import {
   type BodyBlow,
   type MonsterShape,
   type PickedActive,
+  type PlayerActionKind,
 } from './actions';
 import { evaluateTrigger } from './triggers';
 import {
@@ -1352,11 +1353,17 @@ export function addBuff(ctx: C, buff: CombatBuff): void {
  */
 export function activeRotation(ctx: C, order: readonly string[]): string[] {
   const out: string[] = [];
+  // Asked on every tick of a fight: a set for the ids already placed, and
+  // each kind's known list asked once.
+  const placed = new Set<string>();
   const add = (id: string) => {
-    if (!out.includes(id)) out.push(id);
+    if (placed.has(id)) return;
+    placed.add(id);
+    out.push(id);
   };
   const kinds = playerActionKinds();
-  const known = new Map(kinds.map(([, kind]) => [kind, kind.known(ctx as ActionCtx)]));
+  const known = new Map<PlayerActionKind, string[]>();
+  for (const [, kind] of kinds) known.set(kind, kind.known(ctx as ActionCtx));
   for (const id of order) {
     // A stale id of a registered kind (a spell stood down, a technique not
     // known) is inert. An id of no registered kind stays, so the pick reports it.

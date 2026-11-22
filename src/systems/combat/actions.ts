@@ -190,6 +190,18 @@ export interface PlayerActionKind {
 }
 
 const PLAYER_KINDS = new Map<string, PlayerActionKind>();
+/**
+ * Read on every pick of every tick in a fight, so both are kept and cleared
+ * whenever the registry changes: the kinds in rank order, and the handler
+ * found for each rotation id (null: no kind).
+ */
+let kindsByRank: readonly (readonly [string, PlayerActionKind])[] | null = null;
+const handlerOfId = new Map<string, PlayerActionKind | null>();
+
+function playerKindsChanged(): void {
+  kindsByRank = null;
+  handlerOfId.clear();
+}
 
 /**
  * Register a kind of player active by the prefix of its rotation id:
@@ -199,25 +211,36 @@ const PLAYER_KINDS = new Map<string, PlayerActionKind>();
 export function registerPlayerAction(prefix: string, handler: PlayerActionKind): void {
   if (PLAYER_KINDS.has(prefix)) throw new Error(`combat: player action kind "${prefix}" is registered twice`);
   PLAYER_KINDS.set(prefix, handler);
+  playerKindsChanged();
 }
 
 /** The handler of a rotation id, by the longest registered prefix. */
 export function playerActionHandler(id: string): PlayerActionKind | undefined {
-  let best: string | undefined;
-  for (const prefix of PLAYER_KINDS.keys()) {
-    if (id.startsWith(prefix) && (best === undefined || prefix.length > best.length)) best = prefix;
+  let found = handlerOfId.get(id);
+  if (found === undefined) {
+    let best: string | undefined;
+    for (const prefix of PLAYER_KINDS.keys()) {
+      if (id.startsWith(prefix) && (best === undefined || prefix.length > best.length)) best = prefix;
+    }
+    found = best === undefined ? null : PLAYER_KINDS.get(best)!;
+    handlerOfId.set(id, found);
   }
-  return best === undefined ? undefined : PLAYER_KINDS.get(best);
+  return found ?? undefined;
 }
 
-/** Every registered player kind, by rank, then in registration order. */
-export function playerActionKinds(): [string, PlayerActionKind][] {
-  return [...PLAYER_KINDS.entries()].sort((a, b) => (a[1].rank ?? 100) - (b[1].rank ?? 100));
+/** Every registered player kind, by rank, then in registration order. Shared: do not change it. */
+export function playerActionKinds(): readonly (readonly [string, PlayerActionKind])[] {
+  kindsByRank ??= [...PLAYER_KINDS.entries()].sort((a, b) => (a[1].rank ?? 100) - (b[1].rank ?? 100));
+  return kindsByRank;
 }
 
 /** Tests only: drop a registered kind. */
 export function unregisterAction(side: 'monster' | 'player', key: string): void {
-  (side === 'monster' ? MONSTER_KINDS : PLAYER_KINDS).delete(key);
+  if (side === 'monster') MONSTER_KINDS.delete(key);
+  else {
+    PLAYER_KINDS.delete(key);
+    playerKindsChanged();
+  }
 }
 
 // ---- inside the enemy's blow ----
