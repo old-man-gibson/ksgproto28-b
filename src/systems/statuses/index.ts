@@ -470,6 +470,16 @@ function hearsHeal(held: StatusInstance, kind: string): boolean {
   return false;
 }
 
+/** Whether a held condition has a rule on damage taken: what `fireStatusEvent` reads for `damageTaken`. */
+function hearsDamage(held: StatusInstance): boolean {
+  const def = STATUSES[held.id];
+  if (!def) return false;
+  const rules = held.removal ?? def.removal;
+  if (!rules) return false;
+  for (const rule of rules) if (rule.on === 'damageTaken') return true;
+  return false;
+}
+
 const copy = <T>(value: T): T => cloneJson(value as Json) as T;
 
 function unknownIds(ctx: Ctx<StatusesState>, action: string, apps: readonly StatusApplication[]): void {
@@ -719,7 +729,12 @@ export default defineSystem<StatusesState, StatusesView>({
       });
     }),
     on(playerDamaged, (ctx, { payload }) => {
-      if (!ctx.state.held[PLAYER]) return;
+      const now = ctx.state.held[PLAYER];
+      if (!now) return;
+      // A condition's damage arrives here on every tick it bites: nothing is
+      // built when no held condition has a rule on damage taken. An empty
+      // list still goes through the operation, which deletes it.
+      if (now.length > 0 && !now.some(hearsDamage)) return;
       mutate(ctx, PLAYER, false, (list, env) =>
         engine.fireStatusEvent(
           env,
