@@ -458,11 +458,13 @@ An answer returns copies, never a reference into its slice.
     `tests/speedStates.ts`): hunting floor 1, hunting floor 6, idle in town,
     hunting floor 7. Each run is divided by a yardstick (`tests/reference.ts`:
     a fixed workload with no game code, about 200 ms) measured in the same
-    worker right before it. The case fails when
+    process right before it. Each attempt runs in a fresh Node process
+    under vite-node (`tests/speedRun.ts`), as the old build's medians were
+    measured (since 2026-11-22; before, in the worker). The case fails when
     `run ms / yardstick ms >= 0.5 x old ms / old yardstick ms`, with the old
     build's medians of `docs/PERFORMANCE.md` section 1.1. A failing state is
-    measured once more; the case passes if that attempt passes. The
-    rebuild's kills must be within 10% of the old build's.
+    measured once more, in a new process; the case passes if that attempt
+    passes. The rebuild's kills must be within 10% of the old build's.
   - Reported, not held (printed, never fails): live play, `kernel.tick()`
     plus `kernel.view()` per tick against the old `game.tick()`; the floor 6
     save size against the old build's. Both fail the factor today.
