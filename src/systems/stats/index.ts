@@ -44,14 +44,23 @@ export function statBlockOf(ctx: Pick<DerivedReads, 'resolved'>, entity?: string
   // Keyed on the resolver's output, which the kernel keeps while the
   // modifiers under `stats/` are unchanged (kernel decision 32).
   const out = ctx.resolved(STATS_PREFIX, entity, variant);
+  // The last output read and its block, before the weak map: most reads are
+  // of the same output as the read before.
+  if (out === lastOut) return lastBlock!;
   let block = BLOCKS.get(out);
   if (!block) {
     block = {} as DerivedStats;
     for (let i = 0; i < STAT_KEYS.length; i++) block[STAT_KEYS[i]] = out[STAT_IDS[i]];
     BLOCKS.set(out, block);
   }
+  lastOut = out;
+  lastBlock = block;
   return block;
 }
+
+/** `statBlockOf`'s last output and block. A block is a function of its output alone, so any kernel may share these. */
+let lastOut: Readonly<Record<string, number>> | undefined;
+let lastBlock: DerivedStats | undefined;
 
 /**
  * An attribute as every check reads it: trained base plus every bonus, with
