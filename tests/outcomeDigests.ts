@@ -40,7 +40,12 @@
  * branch `step4-C2` after port C2 (the new slice `bonus`, whose bank fills
  * in every idle tick, and the field `stronghold` of `prestige` version 2:
  * every state hash, nothing else; no run reaches floor 11 and the John
- * digest stops at the first prestige).
+ * digest stops at the first prestige), and on branch `step4-C3` after port
+ * C3 (the new slice `sea`, empty, and the field `approach` of `combat`
+ * version 3: every state hash, nothing else; no old run reaches the
+ * harbor and the John digest stops at the first prestige; a seventh run,
+ * `worldSea`, 8 hours at floor 11's roadstead, recorded for the first
+ * time).
  * A change that only makes the simulation faster leaves every one
  * of them equal. A change to a rule, a formula or content changes them;
  * record them again then, and say why in the commit.
@@ -56,7 +61,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 1,
     'gold': 0,
-    'state': '84c258b0'
+    'state': 'e2761346'
   },
   'poison': {
     'tick': 288000,
@@ -65,7 +70,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 1,
     'gold': 0,
-    'state': '21df3e34'
+    'state': 'f0692f8a'
   },
   'floor1': {
     'tick': 288000,
@@ -74,7 +79,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 9,
     'gold': 33649,
-    'state': '06fc268e'
+    'state': '93887db8'
   },
   'floor6': {
     'tick': 288000,
@@ -83,7 +88,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 26,
     'gold': 1627909,
-    'state': '875743ae'
+    'state': '7a889346'
   },
   'world4': {
     'tick': 288000,
@@ -92,7 +97,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 4,
     'level': 18,
     'gold': 362564,
-    'state': '26b0137c'
+    'state': '87a556ba'
   },
   'world6': {
     'tick': 288000,
@@ -101,7 +106,16 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 26,
     'gold': 1627911,
-    'state': '60d4bc8a'
+    'state': 'f3aedcda'
+  },
+  'worldSea': {
+    'tick': 288000,
+    'rng': 4068044825,
+    'kills': 10970,
+    'defeats': 0,
+    'level': 43,
+    'gold': 3688288,
+    'state': '11ec28a9'
   }
 };
 
@@ -187,7 +201,7 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'defeats': 0,
       'level': 1,
       'gold': 0,
-      'state': '71834a75'
+      'state': '7484b6fb'
     }
   },
   '42': {
@@ -271,7 +285,7 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'defeats': 0,
       'level': 1,
       'gold': 0,
-      'state': '0cd2af51'
+      'state': '2dc679c7'
     }
   },
   '1234': {
@@ -355,7 +369,7 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'defeats': 0,
       'level': 1,
       'gold': 0,
-      'state': 'f8950b95'
+      'state': 'aca62677'
     }
   }
 };
