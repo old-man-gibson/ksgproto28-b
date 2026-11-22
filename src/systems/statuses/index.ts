@@ -71,7 +71,7 @@ import {
   escalationChance,
   heldModifiers,
   resistBlock,
-  sourceSignature,
+  sourceSnapshot,
   visibleStatuses,
   type BarDamage,
   type BearerEnv,
@@ -372,7 +372,8 @@ export function conditionReadout(
  * landed earlier in the same operation already counts.
  */
 class Operation implements BearerEnv {
-  private signature: string;
+  /** What the modifier source reads of the list when last checked (`sourceSnapshot`). */
+  private readonly snap: unknown[] = [];
   private readonly frozen: ReadonlyMap<string, number> | undefined;
   /** The `stats/` resolver output of the frozen table, read on first use. */
   private frozenStats: Readonly<Record<string, number>> | undefined;
@@ -383,15 +384,14 @@ class Operation implements BearerEnv {
     private readonly resist: boolean,
     private readonly list: StatusInstance[],
   ) {
-    this.signature = sourceSignature(list);
+    sourceSnapshot(list, this.snap, true);
     this.frozen = entity === PLAYER ? ctx.stats(PLAYER) : undefined;
   }
 
   /** Touch the source when what it reads of the list changed since the last check. */
   sync(): void {
-    const now = sourceSignature(this.list);
-    if (now === this.signature) return;
-    this.signature = now;
+    if (sourceSnapshot(this.list, this.snap, false)) return;
+    sourceSnapshot(this.list, this.snap, true);
     this.ctx.touch(HELD_SOURCE, this.entity);
   }
 
