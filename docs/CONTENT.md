@@ -319,6 +319,9 @@ segments under two minutes reported, not held.
 - **K2. A hold of play** (only with port F): old `Game.ts` stops the clock
   and banks bonus time while a Facet evolution waits. A kernel or clock
   hold that the tick reads.
+- **K3. A catch-up hold** (asked in port C4, not decided): the old festival
+  clock does not read the flag K1 names; the old catch-up loop stops while
+  the festival holds the player and banks the rest. Section 11.4.
 - None else. The automatic prestige uses `endRun()` (decision 30) from the
   prestige tick; staged fights, fight-won and kill events, quest accept
   stamps, `shop:buys:` counters, `once`, `fightLimit`, `statMax`, `levelRise`
@@ -1272,3 +1275,301 @@ No horizontal overflow at 375 px (the hold's notes take their own line);
 no console errors. Not checked in a browser: floors 12 to 14, the
 approach's feed lines and a floor 14 boss (tested headless, and by John on
 three seeds and two sides).
+
+## 11. Port C4: the festival run and floor 15 (done)
+
+Done 2026-11-22 on branch `step4-C4`, from `main` at `d75aaee`. Not merged,
+not pushed. The full account: `src/systems/festival/README.md` and the "Step
+4 port C4" sections of the `world`, `ladder`, `items`, `martial`,
+`alchemy`, `materials`, `knockout`, `prestige` and `titles` READMEs.
+
+What was ported:
+
+- Content, appended from the old registry: band 5 (`ascent_festival`, two
+  clears to advance), floor 15 (`ascent_f15`, clear `boss:f15_dark_room`),
+  area `ascent_f15_area` (roofed) and its seven spots: the dark room, the
+  hall and the five hub spots (stores, survey, herb yard, workshop,
+  gallery). 158 spots, 27 areas, 16 floors. The monsters and the
+  `festival_*` items were here already.
+- `festival` (new system): the run part of old `festival.data.ts`, old
+  `festival.ts`, `festivalRules.ts`, the dark room's part of
+  `festivalValidation.ts`, the token half of `stash.ts`. Registries
+  `dark_room_waves` (four waves) and `issued_weapons` (eight families);
+  `rules.ts` holds the dials and the pure reads. Slice version 1: the
+  attempt (`run`), the lockout's end tick, and the legacy (tokens, bonus
+  stacks, techniques bought), which its own `newRun` carries. Tick order
+  18, after the sea. The door holds the gear through one request per owner
+  (`items/hold` and `items/return`, `martial/hold-sheathed` and
+  `martial/return-sheathed`, `alchemy/hold` and `alchemy/return`,
+  `materials/hold` and `materials/return`). The modifier source
+  `festival/player` states `festivalHolds` (the stash's take-out is shut),
+  `festivalLent:<uid>` (the issued weapon is not sold) and the permanent
+  bonus. Hears `combat/kill` (the kill by weapon family, on every kill),
+  `combat/fight-won` (the dark room's next wave) and `world/arrived` (the
+  door; the loss).
+- `world`: a `FloorRule` the festival registers at module load: the
+  ejection to the tower's hub on a festival floor (`retreatSpot`, and no
+  festival spot is a haven), no routing to a festival floor and none
+  inside an attempt, and the ladder's verdicts on a climb (`shut`,
+  `closed`, `forfeit`, `royale`), which `climbTo` and `climbToHub` act on.
+- `ladder`: `registerFloorShut`. The lockout is the counter
+  `festival:shut`: the ladder reads counters, the old one read the end
+  tick against the world clock. The festival sets it at the loss and
+  clears it on the tick the clock reaches the end; the tick reads the
+  clock only on that kernel tick (a cache per slice object, as the sea's).
+- `knockout`: a festival floor is never a target (why `festival`).
+- The ladder card (the Location panel), as the old `ladderView` marked it: a
+  floor the lockout shuts reads "Shut" with no ride; inside an attempt
+  every ride out reads "Forfeit: ride to ..." (the ladder view's `shut`, the
+  world view's `rideVerdicts`). Found in the browser check: before it, the
+  card offered a ride to the shut floor that the ladder refused.
+- `items`: `items/grant` takes `plain` (the issued weapon: slots rolled and
+  dropped) and `stash` (the regalia minted into the stash); `items/sell`
+  refuses a lent item, with the old log line.
+- Panels: `festival/FestivalReadout.svelte` (props only) and
+  `FestivalPanel.svelte`, mounted in the Location panel under the harbor's;
+  `festival/StashReadout.svelte` and `StashPanel.svelte`, mounted at the
+  end of the Prestige panel. The stash's controls (the bonus, each
+  technique offered, the regalia, each kept item's take-out) carry their
+  commands in the view; `tests/festivalPanels.test.ts` renders both
+  readouts on the server, finds each control and sends its command.
+- Spec ported: `festival.test.ts` (41 of 71 cases run, 19 `it.todo` for
+  port C5 or the catch-up decision below, one left out, one new: a
+  sheathed blade held and given back; the first case of "the time jump"
+  and two ladder cases run on the pure reads), `festivalHub.test.ts` (19 of
+  19), `monsterKit.test.ts` (19 of 19; the kit code came with step 2 and had
+  no test here), the todos `worldContent.test.ts` (the festival lint, the
+  dark room's part) and `knockoutReturn.test.ts` (a festival floor is never
+  a target), the festival bonus case of `derivedcache.test.ts`, the floor
+  15 sky case of `openSky.test.ts` in `exposure.test.ts`, the John smoke
+  case at 15.
+
+Old bugs and rules kept:
+
+- A festival attempt keeps the old door: the issued weapon is a starter
+  with no rune slots, picked by the highest weapon skill; John fights the
+  room bare-handed, as in the old build, since he never wields a weapon.
+- The lockout runs on the world clock, three days; a prestige ends it.
+- A kill anywhere counts toward its weapon family, in every run, festival
+  or not (the old listener did).
+- The regalia and every keep-marked piece held at the door go back to the
+  stash at a prestige; the sheathed and fight-held pieces of the old
+  `carriedStash` are not carried by the items system (older than this
+  port).
+
+Changed while porting (no rule):
+
+- The lockout as the counter `festival:shut` (above).
+- The kills by weapon family (old run counters `kills:weapon:<family>`)
+  are the festival slice's `weaponKills`, run state: only the door reads
+  them, and as counters each kill sent two events (the fight runs 1 to 2%
+  slower, 11.2).
+- `festivalHolds` as the stash reads it is "an attempt is live"; the old read
+  also required the player on the festival's floors, and the attempt ends
+  on the arrival that takes them off.
+- The stash's controls are in the view (`StashAction`), as the sea's.
+- The festival's view of the attempt has no control: the old "Enter the
+  royale now" climbs to floor 16 (port C5); the ladder card does the same
+  climb.
+
+Noticed, older than this port (not changed):
+
+- The save holds a fight (combat README): a save mid-wave reloads with the
+  wave still fighting; the old build dropped the fight and fought the wave
+  again. The old case's name is kept, its fight assertion changed.
+- `combat/start-staged` hands the members to the slice by reference: a kit
+  object from a caller's slice is shared until the next load (found by the
+  `monsterKit.test.ts` port; the old build did the same; the festival
+  passes copies).
+- A floor whose clear is met by the kill that ends a fight pays its clear
+  XP twice: the ladder checks the clears on `combat/kill` and again on
+  `combat/fight-won`, and its stamp (`counters/set`) is delivered after
+  both. Seen in the browser on floor 15 (+800 twice) and in John's log on
+  floor 3 (+200 twice); floor 6's warchief is not the fight's last kill and
+  pays once. The old build set the stamp at once and paid once. In every
+  John digest and table since the spine; not changed here.
+- Super-attribute fusion (old `systems/superattrs.ts`,
+  `data/superattrs.data.ts`) is not ported: `fuseFact` exists in `stats`,
+  but no system states it. See 11.1: it is the cause of C3's open floor 13
+  gap and of floor 15's knockouts.
+
+Left out:
+
+- The royale, floor 16, the field preview, the royale's lint checks, the
+  lent gear of the caches: port C5. `winFestival` is ported and reached by
+  the debug command `festival/debug-win` (refused in a production build)
+  until then.
+- The catch-up hold (11.4).
+- The forge validator calls no festival lint (as for the ward and sea
+  lints).
+
+### 11.1 John
+
+`tests/john.ts` gains `floor15` (section 3.1): after floor 14, John waits
+out a lockout if one runs, rides to floor 15 (the climb is his: `ride:
+false`, the old option) and lets the dark room's four waves come; the room
+emptied clears the floor. No preparation in the hall, no hub activity, as
+the old John. The try at the boss is a fight with `ph_room_last` in it.
+`through: 15` plays run 3 to floor 15; `npm run pacing -- --through 15
+[--side navy]`. No wall on any seed or side. The John smoke case of
+`tests/john.test.ts` runs at 15. Runs 1 to 3 to floor 14 are unchanged from
+section 10.1 (the same segment times and knockouts on every seed and side).
+
+Merchants (the default), seeds 42 / 7 / 1234, old at `7c1267b` (section
+3.3):
+
+| Segment | Old | New | Old mean | New mean | KO old | KO new | Kills old | Kills new |
+|---|---|---|---|---|---|---|---|---|
+| f15 | 0:00:21 / 0:00:25 / 0:00:23 | 0:00:27 / 0:00:27 / 1:13:32 | 0:00:23 | 0:24:49 | 0/0/0 | 0/0/1 | 9/9/9 | 9/9/16 |
+| Run 3 to f15 | 2:59:34 / 3:05:39 / 2:53:35 | 3:11:40 / 3:17:39 / 4:12:48 | 2:59:36 | 3:34:02 | | | | |
+| Floor 0 to f15 | 4:19:30 / 4:29:40 / 4:11:40 | 4:31:12 / 4:31:08 / 5:38:34 | 4:20:17 | 4:53:38 | | | | |
+
+`--side navy`, old run on `D:\ksgproto28` at `7c1267b`, nothing edited,
+the same day (runs 1 and 2 and `f1-10 again` are the merchants' rows):
+
+| Segment | Old | New | Old mean | New mean | KO old | KO new | Kills old | Kills new |
+|---|---|---|---|---|---|---|---|---|
+| f15 | 0:00:23 / 0:00:23 / 0:00:22 | 1:13:33 / 0:00:26 / 0:00:29 | 0:00:23 | 0:24:49 | 0/0/0 | 1/0/0 | 9/9/9 | 17/9/9 |
+| Run 3 to f15 | 2:59:37 / 2:47:35 / 2:59:36 | 4:30:46 / 2:53:39 / 2:59:42 | 2:55:36 | 3:28:02 | | | | |
+
+Kills on floor 15: the old runs won one attempt with no knockout on every
+seed and side, the room's nine; new, a lost attempt adds the kills before
+the knockout (7 at the third wave, 8 at the boss) to the nine of the next
+one. Boss tries: old 1, won, every run; new 1, won, except navy seed 42
+(2 tries, 1 lost: the knockout was at the boss).
+
+Against section 3.4:
+
+- Floor 15 is a boss segment, reported, not held. A clean attempt takes 26
+  to 29 s against the old 21 to 25 s. Two runs of six lose the dark room
+  once (merchants seed 1234, navy seed 42): the loss shuts floors 15 and
+  16 for three world days, 72 minutes of play, which John waits out.
+- Run 3 is outside 15% on both sides: +19.2% (merchants) and +18.5%
+  (navy). Without the two lockouts it is +5.6% and +4.6%, the run 3 of
+  section 10.1 plus floor 15's seconds.
+
+The same pattern as C3's floor 13, with its cause found. Measured from the
+state John leaves at floor 14 (scratch scripts, the old build's modules
+imported read-only; seed 1234, merchants), both builds fighting the room
+bare-handed (John never wields the rusty sword, so the door issues bare
+hands in both): the waves take the new build 28, 48 and 53 ticks against 14,
+21 and 28; the third costs the new John 314 HP against 28, and he arrives
+with 324 of 831 HP against 643 of 810. The new John's damage is 333 against
+624 at floor 14, before the festival takes anything: the same skills
+(unarmed combat 55, fighting 53) and attributes within 2 points, but a base
+damage of 93.9 against 168.0. The old John's formula Strength is 138.3,
+his Strength and Charisma fused: on all three seeds he holds the
+super-attribute Dominion (old `systems/superattrs.ts`, fused at Strength
+60, Charisma 60, 500 kills and 25,000 gold earned) and the title
+`titan_incarnate` (Strength 100, which the fused value reaches; +10
+damage). Super-attribute fusion is not ported: `stats` has `fuseFact`, no
+system states it. That is older than this port and outside its scope; not
+tuned.
+
+### 11.2 Offline budgets
+
+The port adds one tick hook, `festival` (order 18): on a tick with no
+attempt and no lockout it reads its own slice and returns. With a lockout
+it reads the clock only on the kernel tick where the lockout can end (a
+cache per slice object, as the sea's leg end). Handlers: `combat/kill` (the
+kill by weapon family, one write to its own slice), `combat/fight-won` and
+`world/arrived` (a read of its own slice off the festival). The kills by
+weapon family started as run counters, as in the old build: two events per
+kill. Moved into the slice; one process A/B of the fight runs moved by less
+than its spread between sessions either way, so the gain is not resolved.
+
+Against `main` (`d75aaee`, the worktree `D:\ksgproto28-b-main`), both
+builds' modules imported in one process, alternating, ms (minimum /
+median). The idle run, 15 rounds:
+
+| Run of 8 hours | `main` | `step4-C4` | Median |
+|---|---|---|---|
+| No fight, no condition | 1,638 / 1,669 | 1,662 / 1,687 | +18 (+1.1%) |
+
+The other runs, 3 rounds, in two sessions (first with the kills as
+counters, second as the slice):
+
+| Run of 8 hours | `main` | `step4-C4` | Median | Second session: `main` | `step4-C4` | Median |
+|---|---|---|---|---|---|---|
+| Poison held | 3,925 / 4,088 | 4,045 / 4,048 | -40 (-1.0%) | | | |
+| Floor 1 table | 5,077 / 5,113 | 5,083 / 5,171 | +58 (+1.1%) | 5,083 / 5,090 | 5,237 / 5,247 | +157 (+3.1%) |
+| Floor 6 Tunnels | 8,354 / 8,421 | 8,507 / 8,591 | +170 (+2.0%) | 8,341 / 8,456 | 8,406 / 8,584 | +128 (+1.5%) |
+| World: hunt, floor 4 | 8,356 / 8,450 | 8,478 / 8,516 | +66 (+0.8%) | 8,375 / 8,413 | 8,601 / 8,735 | +322 (+3.8%) |
+| World: hunt, floor 6 | 8,404 / 8,496 | 8,634 / 8,671 | +175 (+2.1%) | 8,481 / 8,513 | 8,674 / 8,736 | +223 (+2.6%) |
+| World: the roadstead | 7,654 / 7,722 | 7,885 / 7,899 | +177 (+2.3%) | 7,754 / 7,775 | 8,048 / 8,122 | +347 (+4.5%) |
+
+A CPU profile of the floor 1 run on the branch (5.26 s): every function of
+the festival together, 25 ms (`weaponFamilyInHand` 7.6, `tickFestival`
+6.1, `liftLockout` 4.7, the kill handler 4.6, `festivalFightWon` 1.5). The
+rest of the gap is the kernel's share of one more system (its tick hook and
+three more subscribers), within the spread of the measurement.
+
+The new run, `worldFestival` (`tests/budgetRuns.ts`, project
+`budget-world`): the save is taken on the ladder from floor 14 to floor 15,
+the probe's festival character (`FESTIVAL_CHARACTER`, +20,000 HP, +1,500
+damage, +200 armour); 8 hours through `catchUp`: the ride lands, the door
+takes the gear, the four waves fall (9 kills, no defeat), the clock runs
+past the ten days. 3,750 to 3,974 ms alone; budget 6,600 ms (about 1.7
+times, the margin of the other world runs). Its profile: the festival's tick
+66 ms; the rest is the character's conditions and regeneration. A harbor
+character loses the room at the first wave.
+
+`npm run verify` on the branch: svelte-check 0 errors; unit 3,213 passed,
+4 skipped, 163 todo; budget 4 (idle 1,736 ms of 2,420, poison 4,499 of
+8,250, floor 1 5,250 of 7,700, floor 6 8,608 of 14,850); budget-world 4
+(floor 4 8,568, floor 6 8,546, the roadstead 7,814, each of 14,300; the
+festival 3,976 of 6,600); speed (floor 1 58%, floor 6 78%, town 63%,
+floor 7 56% of the limit, machine load 9 to 11%; kills 10,634, 11,536, 0,
+12,959); john 14; build.
+
+Outcome digests recorded again in their own commit: every state hash (the
+new slice `festival`), nothing else; the digest of `worldFestival`
+recorded for the first time.
+
+### 11.3 Browser check
+
+Dev server 5600, desktop (1024 px) and 375 px. Saves made by the John
+driver (seed 7, run 3, floor 15) loaded into the dev slot from the forge
+page, with `savedAt` an hour ahead so no catch-up ran; the dev save was put
+back after (backup `ksgb:development:save.before-step4C4-check`, the hub
+save kept as `ksgb:development:save.step4C4-hall`).
+
+- The dark room, live: the festival block under the activities ("Still
+  standing", "Waves left", "Held at the door"), at 225 px while the waves
+  fell; the door opened and the block turned to the hub's lines at 249
+  px. The John character brings four bleed stacks from floor 14: in the
+  hub they became Lacerated, knocked him out, and the attempt was lost
+  (the Foot, gear back, floors 15 and 16 shut): the rules as ported.
+- The hub at 375 px, the bleed removed from the save: the block at 322 px
+  while the clock ran, no line cut, no overflow.
+- The stash at the end of the Prestige panel: two tokens, three choices
+  each, the kept regalia with take-out disabled and its reason during the
+  attempt. Pressed: the permanent bonus (1 of 5 stacks, token gone), a
+  technique at 375 px (Riposte, token gone), take-out after the attempt
+  (the regalia in the pack). Every button 44 px high at 375 px. Two lines
+  were cut at 375 px (the token's heading, the kept item's long facts):
+  the heading shortened, the facts wrap (they never change in place).
+- The ladder card: the forfeit from the hall by "Ride to floor 14" (the
+  Foot, "Festival lost", floors shut, gear back). After it the card offered
+  a ride to floor 15 that the ladder refused; the card now reads "Shut" and
+  offers none, and inside an attempt every ride out reads "Forfeit: ride
+  to ...", as the old card did.
+
+No console errors. Not checked in a browser: a knockout in the dark room
+during a wave, day ten (port C5), the issued weapon on a character that
+wields one (tested headless).
+
+### 11.4 The catch-up hold (open)
+
+The plan's K1 says the old festival clock reads the catch-up flag. It does
+not: old `festival.ts` reads nothing of it. The old `catchUpTicks`
+(`save/offline.ts` 67-83) stops the whole catch-up loop on the first tick
+`festivalHolds` is true and banks the rest of the absence as bonus time,
+1:1 up to the cap; a ride that lands in the dark room mid-catch-up stops
+there. With `ctx.catchingUp` alone the world clock, the conditions, the
+activities and a fight would keep running. Porting it needs the catch-up
+to stop, a kernel change section 4 does not list. Asked of the parent
+session as K3 (an optional system field `catchUpHold: { holds, held }`,
+read by `catchUp` before each tick); not decided when this port closed.
+Until then the festival catches up as it runs in place, and the six old
+offline cases are `it.todo`.
