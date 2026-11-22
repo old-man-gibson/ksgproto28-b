@@ -453,6 +453,25 @@ An answer returns copies, never a reference into its slice.
   - Margins per state, run time, the spread idle and under load, and how to
     update the old-build constants: `docs/PERFORMANCE.md` section 5.
 
+- Speed pass 1 (2026-11-21, `docs/PERFORMANCE.md` section 6): six fixes,
+  each with every outcome digest unchanged. In the kernel: the derived
+  cache keeps the player's record and its plain table in fields, remembers
+  the last resolver prefix, splits the clean-record check from the rescan,
+  and indexes a record's per-source counters and collections by source
+  position. Floor 6 catch-up: 0.88 of its time before the pass (fresh
+  processes). The budget runs, 3 alternating rounds, medians in ms:
+
+  | Run of 8 hours | Before | After | Budget |
+  |---|---|---|---|
+  | No fight, no condition | 1,646 | 1,646 | 2,200 |
+  | A poison held | 4,907 | 4,202 | 8,250 |
+  | Floor 1 table sent to combat | 5,012 | 4,750 | 7,700 |
+  | Floor 6 Tunnels sent to combat | 8,746 | 8,178 | 14,850 |
+  | World: hunt, floor 4 Woods Edge | 9,022 | 8,101 | 14,300 |
+  | World: hunt, floor 6 Tunnels | 8,808 | 8,126 | 14,300 |
+
+  The budgets are unchanged.
+
 ## 9. Content
 
 - A registry is one JSON file: a list of records, each with an `id`.

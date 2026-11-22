@@ -426,8 +426,9 @@ For each state of section 2.2, in `tests/speed.test.ts`:
   of three passes taken after the run, and the processor load of the whole
   machine over the attempt (all logical processors; this process alone is
   about 6%).
-- The runs share one worker: John's climb and the earlier states warm the
-  compiler, which the baseline's fresh processes did not have.
+- The runs share one worker; the baseline ran each state in a fresh
+  process. John's climb and the floor 1 state run in the worker before
+  floor 6, which costs floor 6 about 6% against a fresh process (6.2).
 
 ### 5.3 Margins
 
@@ -546,7 +547,9 @@ decision.
 
 - Floor 6 is near its bar: 0.41 to 0.50 of the old build's time at low
   load against 0.28 to 0.34 for the other states, and a process running
-  game code next to it fails a first attempt. Proposed, in order:
+  game code next to it fails a first attempt. Speed pass 1 (section 6)
+  took it to 0.39 to 0.40 in the speed test at low load. Proposed, in
+  order:
   1. A speed pass on floor 6's catch-up: the combat tick and event
      delivery (section 3.1) are two thirds of its time. At the other
      states' 0.3 the bar has about 40% headroom.
@@ -561,3 +564,105 @@ decision.
   amount. The first CI run of this test measures it on the CI runner.
 - Live play and save size (5.4).
 - Bundle size (item 5) and startup (item 6) are not built.
+
+## 6. Speed pass 1: floor 6 catch-up
+
+2026-11-21, branch `claude/speed-test-f62037`, after the speed test
+(`6322669`). The user's choice: speed up floor 6's catch-up before the
+speed test merges; the factor stays 0.5. Strict port: the outcomes stay
+identical and no rule or save format changes. Checked for each fix: the
+outcome digests (`tests/outcome.test.ts`, the six budget digests), John's
+pacing table for seeds 42, 7 and 1234 (`npm run pacing`, diffed with the
+table before the pass), the speed test's kills, `npm run verify`.
+
+### 6.1 The fixes
+
+Gain: floor 6 catch-up in a fresh process, the yardstick then the run
+(the method of the cross-check in 5.3), 4 alternating pairs against the
+commit before; the median ratio after over the median ratio before. Another
+session ran game code during most pairs: one pair moves by up to 10%.
+
+| Commit | Fix | Floor 6, after / before |
+|---|---|---|
+| `0f67eae` | Combat rotation. `pickActive` asks for the rotation on every tick of a fight. The sorted player action kinds and the rotation id to kind lookup are kept until the registry changes; the dedupe uses a Set; martial keeps one `technique:<id>` string per technique. | 0.92 |
+| `2c4df14` | Status operations. Each operation built `sourceSignature` text twice; `sourceSnapshot` compares the same fields in place in a reused array. | 0.98 |
+| `087be42` | Stat reads, about 14 per tick. The player's record in a field as well as in the entity map, the plain table in the record, the last resolver prefix remembered, the clean-record check apart from the rescan so it inlines; `statBlockOf` compares with the last output before its weak map. | 0.97 |
+| `92aa8fd` | Skills. Tag lists of one and two tags (the hunt tick asks for `combat`, `hunt` on every tick) found by tag with no joined key; the XP grant tests held skills against a set of ids. | 0.976 |
+| `8816692` | Stat cache rescan. A record's per-source counters and collections in arrays by source position, not maps by id. | 0.986 |
+| `822e9e2` | Statuses. No operation for `resources/damaged` (211,000 per 8 hours) when no held condition has a rule on damage taken, as the heal handler already did. | 0.992 |
+
+Tried and dropped: the tick loop and requests holding each system's
+context instead of looking it up in a map (`kernel.ts`): 1.007, no gain.
+Lazy reach in martial's technique check: at most 1.3% of floor 6, not
+built.
+
+The product of the per-fix medians, 0.84, overstates the whole; 6.2
+measures the whole.
+
+### 6.2 Before and after
+
+All four states in fresh processes, 6 alternating pairs, `6322669` against
+`822e9e2`, the machine at about 5% at the start. Median ratios:
+
+| State | Before | After | After / before | Run, ms |
+|---|---|---|---|---|
+| Floor 1 hunting | 27.46 | 26.33 | 0.959 | 5,585 to 5,163 |
+| Floor 6 hunting | 59.16 | 52.32 | 0.884 | 11,602 to 10,774 |
+| Idle in town | 9.35 | 9.29 | 0.994 | 1,913 to 1,845 |
+| Floor 7 hunting | 39.51 | 35.24 | 0.892 | 8,082 to 7,428 |
+
+The speed test, the share of each limit (below 100% passes), first
+attempts, `6322669` and `822e9e2` alternating. Low load: no other process
+ran game code; the machine was at 10 to 23% during the attempts.
+Neighbour: a second process ran floor 6 catch-up in a loop; 16 to 30%.
+
+| State | Low load, before, 4 runs | Low load, after, 4 runs | Neighbour, before, 3 runs | Neighbour, after, 3 runs |
+|---|---|---|---|---|
+| Floor 1 hunting | 56 to 61% | 54 to 56% | 55, 70, 70% | 49, 53, 64% |
+| Floor 6 hunting | 83 to 90%, median 86% | 79 to 80% | 81, 90, 93% | 76, 82, 90% |
+| Idle in town | 61 to 64% | 57 to 61% | 61, 66, 68% | 56, 63, 67% |
+| Floor 7 hunting | 57 to 59% | 53 to 55% | 56, 60, 61% | 48, 52, 56% |
+
+No first attempt failed in these 14 runs. Floor 6 over the old build in the
+speed test: 0.42 to 0.45 before, 0.39 to 0.40 after (low load).
+
+The same code reads lower in fresh processes: floor 6 at 70 to 74% of its
+limit after the pass (78 to 89% before), against 79 to 80% (83 to 90%) in
+the speed test. In the test, floor 6 runs in the worker that ran John's
+climb and the floor 1 state first; that costs both builds about 6% on
+floor 6. The old build's medians were taken in fresh processes.
+
+### 6.3 The budget runs
+
+`scripts/budget-runs.ts`, all six runs in one process per side, 3
+alternating rounds, `6322669` against `822e9e2`. Every digest equal.
+
+| Run of 8 hours | Before, ms | After, ms | After / before |
+|---|---|---|---|
+| No fight, no condition | 1,633 to 1,672 | 1,614 to 1,647 | 1.000 |
+| A poison held | 4,899 to 4,963 | 4,029 to 4,326 | 0.856 |
+| Floor 1 table sent to combat | 4,999 to 5,045 | 4,750 to 5,062 | 0.948 |
+| Floor 6 Tunnels sent to combat | 8,578 to 8,885 | 8,056 to 8,339 | 0.935 |
+| World: hunt, floor 4 Woods Edge | 8,940 to 9,236 | 8,053 to 8,449 | 0.898 |
+| World: hunt, floor 6 Tunnels | 8,767 to 8,858 | 7,908 to 8,137 | 0.923 |
+
+The absolute budgets are unchanged.
+
+### 6.4 What is left
+
+After the pass no function has more than 4% of floor 6's time as its own;
+what is left is spread. Further steps need structure, each proven equal by
+the digests:
+
+- The damage of a condition goes `statuses/damage`, `resources/damage`,
+  `resources/damaged` (206,000 times per 8 hours on floor 6), each event
+  with its subscribers and the log's floating run. A request path where the
+  event order allows it.
+- Monster stat blocks: about 11,800 per 8 hours, each collecting about 45
+  modifier sources, most of which return nothing for a monster, then the
+  stats resolver. A source that declares it reads the player only would
+  skip those collections.
+- The buff slot's pick on every tick of a fight.
+- The speed test's method: each state in a fresh worker, as the old build
+  was measured, gives floor 6 about 6% (6.2). A change of method, not of
+  speed: the user's decision.
