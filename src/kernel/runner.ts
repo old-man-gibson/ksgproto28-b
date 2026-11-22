@@ -19,11 +19,19 @@ export interface RunOptions {
   onProgress?: (done: number) => void;
   /** Default 6000 ticks, which is 10 minutes of game time. */
   progressEvery?: number;
+  /**
+   * Ask the systems' catch-up holds before each tick and stop on the first
+   * that holds (decision 35). Set by `catchUp` only.
+   */
+  hold?: boolean;
 }
 
 export interface RunResult {
+  /** Ticks run. Fewer than asked when a catch-up hold stopped the run. */
   ticks: number;
   results: { at: number; type: string; result: CommandResult }[];
+  /** The system whose catch-up hold stopped the run, if one did. */
+  heldBy?: string;
 }
 
 export function runHeadless(kernel: Kernel, options: RunOptions): RunResult {
@@ -39,8 +47,14 @@ export function runHeadless(kernel: Kernel, options: RunOptions): RunResult {
       results.push({ at, type: command.type, result: kernel.dispatch(command) });
     }
   };
+  const hold = options.hold === true;
   for (let done = 0; done < ticks; done++) {
     runDue(done);
+    if (hold) {
+      // The rest is the holding system's to account for; later commands do not run.
+      const heldBy = kernel.catchUpHeld(ticks - done);
+      if (heldBy !== null) return { ticks: done, results, heldBy };
+    }
     kernel.tick();
     if (options.onProgress && (done + 1) % progressEvery === 0) options.onProgress(done + 1);
   }
@@ -69,6 +83,6 @@ export function catchUp(input: CatchUpInput): SaveEnvelope {
   const kernel = createKernel({ systems: input.systems, validateContent: false, catchingUp: true });
   const loaded = kernel.load(input.envelope);
   if (!loaded.ok) throw new Error(`catch-up could not load the state: ${loaded.error}`);
-  runHeadless(kernel, { ticks: input.ticks, commands: input.commands, onProgress: input.onProgress });
+  runHeadless(kernel, { ticks: input.ticks, commands: input.commands, onProgress: input.onProgress, hold: true });
   return kernel.save(input.now);
 }

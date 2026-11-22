@@ -47,9 +47,8 @@
  * `worldSea`, 8 hours at floor 11's roadstead, recorded for the first
  * time), and on branch `step4-C4` after port C4 (the new slice `festival`,
  * whose kills by weapon family count on every kill: every state hash,
- * nothing else; no old run reaches floor 15 and the John digest stops at
- * the first prestige; an eighth run, `worldFestival`, 8 hours of the
- * festival from the ride to the dark room, recorded for the first time).
+ * nothing else; no run reaches floor 15 and the John digest stops at the
+ * first prestige).
  * A change that only makes the simulation faster leaves every one
  * of them equal. A change to a rule, a formula or content changes them;
  * record them again then, and say why in the commit.
@@ -120,15 +119,6 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'level': 43,
     'gold': 3688288,
     'state': '2e773f9d'
-  },
-  'worldFestival': {
-    'tick': 288000,
-    'rng': 795884046,
-    'kills': 9,
-    'defeats': 0,
-    'level': 10,
-    'gold': 0,
-    'state': 'b3278dfb'
   }
 };
 

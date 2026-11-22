@@ -25,18 +25,23 @@
  * rewards, the tokens and the hidden title run now; the old cases climbed
  * the ladder into the royale and played it.
  *
- * The festival clock's offline cases ("pauses offline", "banks at most the
- * cap", "the summary reports", "a catch-up whose climb lands in the dark
- * room", "the quiet short-gap path") wait for a kernel decision: the old
- * catch-up loop stopped at the first tick the festival held the player and
- * banked the rest. They are `it.todo`.
+ * The festival clock's offline cases: `runOfflineProgress(game, ms)` and
+ * `catchUpTicks(game, n)` are `catchUp` over the save, loaded back (`away`).
+ * The old catch-up stopped at the first tick the festival held the player
+ * and banked the rest: the festival's `catchUpHold` here (kernel decision
+ * 35). A gap longer than one frame's 30 ticks goes to `catchUp`, so the old
+ * quiet path of short gaps is the same call. The offline summary's fields
+ * (`festivalSkipped`, `festivalBanked`) are the UI step: the cases read the
+ * bank.
  *
  * Left out: "an attempt started before the door took flasks returns its gear
  * all the same" was a save from before the door held flasks; this save
  * starts at version 1 with the field.
  */
 import { describe, expect, it } from 'vitest';
-import type { Kernel } from '../src/kernel';
+import { catchUp, OFFLINE_CAP_MS, offlineTicks, type Kernel } from '../src/kernel';
+import { systems } from '../src/systems';
+import { BONUS_CAP_TICKS, type BonusState } from '../src/systems/bonus';
 import type { AlchemyState } from '../src/systems/alchemy';
 import type { AttributesState } from '../src/systems/attributes';
 import type { ClockState } from '../src/systems/clock';
@@ -78,7 +83,7 @@ import { ATTRIBUTE_IDS } from '../src/systems/stats';
 import { TITLES, type TitlesState } from '../src/systems/titles';
 import { climb as climbCommand, SPOTS, travelTo, type WorldView } from '../src/systems/world';
 import { playerStats, setHp } from './combatHelpers';
-import { equip, giveItem, makeGame, patch, reads, slice, unequip } from './helpers';
+import { equip, giveItem, makeGame, patch, probe, reads, slice, unequip } from './helpers';
 import { counterOf, setCounters, worldOf } from './worldHelpers';
 
 const FOOT = TOWERS.the_ascent.hubSpot;
@@ -94,6 +99,20 @@ const nowOf = (k: Kernel): number => totalTicksOf(slice<ClockState>(k, 'clock'))
 const lockLeft = (k: Kernel): number => lockoutLeft(festivalOf(k), nowOf(k));
 const reader = (k: Kernel) => conditionReader(reads(k));
 const fightOf = (k: Kernel) => slice<CombatState>(k, 'combat').fight;
+const bankOf = (k: Kernel): number => slice<BonusState>(k, 'bonus').banked;
+const TWO_HOURS = offlineTicks(2 * 60 * 60 * 1000);
+
+/**
+ * Offline catch-up of `ticks` over the kernel's save, loaded back into the
+ * kernel. The old `catchUpTicks`: the ticks simulated and what the bank took.
+ */
+function away(k: Kernel, ticks: number): { simulated: number; banked: number } {
+  const tick = k.tickCount;
+  const bank = bankOf(k);
+  const after = catchUp({ systems: [...systems, probe], envelope: k.save(0), ticks, now: 0 });
+  expect(k.load(after).ok).toBe(true);
+  return { simulated: k.tickCount - tick, banked: bankOf(k) - bank };
+}
 
 /** Set the counters each floor's `clear` reads, as if the player had cleared it. The old `clearFloors`. */
 function clearFloors(k: Kernel, floorIds: string[]): void {
@@ -420,12 +439,124 @@ describe('the festival clock', () => {
     expect(runOf(k)!.clock).toBe(at + 100);
   });
 
-  it.todo('pauses offline: nothing is simulated, and the time away is banked 1:1 (kernel: the catch-up hold)');
-  it.todo('banks at most the cap, and a short gap banks too (kernel: the catch-up hold)');
-  it.todo('the summary reports what the bank took, not the time skipped (kernel: the catch-up hold; the summary is the UI step)');
-  it.todo('a catch-up whose climb lands in the dark room stops at the door and banks the rest (kernel: the catch-up hold)');
-  it.todo('the quiet short-gap path stops at the door too (kernel: the catch-up hold)');
-  it.todo('runs no catch-up for the world outside either (kernel: the catch-up hold)');
+  it('pauses offline: nothing is simulated, and the time away is banked 1:1', () => {
+    const k = inHall();
+    const clock = runOf(k)!.clock;
+    const now = nowOf(k);
+    const kills = counterOf(k, 'kills');
+    const r = away(k, TWO_HOURS);
+    expect(r.simulated).toBe(0);
+    expect(nowOf(k)).toBe(now);
+    expect(runOf(k)!.clock).toBe(clock);
+    expect(counterOf(k, 'kills')).toBe(kills);
+    expect(r.banked).toBe(TWO_HOURS);
+  });
+
+  it('banks at most the cap, and a short gap banks too (the quiet path, catchUpTicks)', () => {
+    const k = inHall();
+    patch(k, (s) => {
+      (s.bonus as BonusState).banked = 0;
+    });
+    // A gap past one frame's ticks goes to catch-up here, a short one too.
+    expect(away(k, 300)).toEqual({ simulated: 0, banked: 300 });
+    expect(bankOf(k)).toBe(300);
+    away(k, offlineTicks(24 * 60 * 60 * 1000));
+    expect(bankOf(k)).toBe(BONUS_CAP_TICKS);
+  });
+
+  it('the summary reports what the bank took, not the time skipped', () => {
+    // The offline summary is the UI step: what the bank took is read off the bank.
+    const k = inHall();
+    patch(k, (s) => {
+      (s.bonus as BonusState).banked = BONUS_CAP_TICKS - 100;
+    });
+    const r = away(k, TWO_HOURS);
+    expect(r.simulated).toBe(0);
+    expect(r.banked).toBe(100);
+    expect(bankOf(k)).toBe(BONUS_CAP_TICKS);
+    // A full bank takes nothing.
+    expect(away(k, TWO_HOURS).banked).toBe(0);
+  });
+
+  it('a catch-up whose climb lands in the dark room stops at the door and banks the rest', () => {
+    const k = strong(geared(atFourteen()));
+    expect(k.dispatch(climbCommand({ floor: DARK_FLOOR })).ok).toBe(true); // the tab closes mid-ride
+    patch(k, (s) => {
+      (s.bonus as BonusState).banked = 0;
+    });
+    const kills = counterOf(k, 'kills');
+    const all = offlineTicks(OFFLINE_CAP_MS);
+    const r = away(k, all);
+    // The ride landed and the attempt began, and nothing after it was simulated.
+    expect(worldOf(k).spot).toBe(DARK_ROOM);
+    expect(runOf(k)?.phase).toBe('dark');
+    expect(runOf(k)?.wave).toBe(0);
+    expect(fightOf(k)).toBeNull();
+    expect(counterOf(k, 'kills')).toBe(kills);
+    expect(counterOf(k, FESTIVAL_WINS_KEY)).toBe(0);
+    expect(lockLeft(k)).toBe(0);
+    expect(r.simulated).toBeGreaterThan(0);
+    expect(r.simulated).toBeLessThan(200);
+    expect(r.banked).toBe(all - r.simulated);
+  });
+
+  it('the quiet short-gap path stops at the door too', () => {
+    const k = strong(atFourteen());
+    expect(k.dispatch(climbCommand({ floor: DARK_FLOOR })).ok).toBe(true);
+    patch(k, (s) => {
+      (s.bonus as BonusState).banked = 0;
+    });
+    const r = away(k, 550); // a 55-second gap, longer than the ride
+    expect(r.simulated).toBeGreaterThan(0);
+    expect(r.simulated).toBeLessThan(550);
+    expect(r.banked).toBe(550 - r.simulated);
+    expect(worldOf(k).spot).toBe(DARK_ROOM);
+    expect(runOf(k)?.wave).toBe(0);
+    expect(fightOf(k)).toBeNull();
+    expect(counterOf(k, FESTIVAL_WINS_KEY)).toBe(0);
+  });
+
+  it('runs no catch-up for the world outside either', () => {
+    // Outside the festival, offline time is simulated as before.
+    const k = atFourteen();
+    const now = nowOf(k);
+    const r = away(k, 3000);
+    expect(r.simulated).toBe(3000);
+    expect(nowOf(k)).toBe(now + 3000);
+  });
+
+  // New here (kernel decision 35): the hold before the first tick, and the kept flag.
+  it('a catch-up that starts inside an attempt runs no tick: the kernel tick, the clock and the generator stand', () => {
+    const k = inHall();
+    const before = k.save(0);
+    const after = catchUp({ systems: [...systems, probe], envelope: before, ticks: TWO_HOURS, now: 0 });
+    expect(after.kernel).toEqual(before.kernel);
+    expect(after.slices.clock).toEqual(before.slices.clock);
+    expect(after.slices.festival).toEqual(before.slices.festival);
+  });
+
+  it('the hold is read again after a load and after a new run', () => {
+    // `catchUpHeld(0)` asks the holds as catch-up does; with 0 ticks left the bank takes nothing.
+    const hall = inHall();
+    const outside = atFourteen();
+    expect(outside.catchUpHeld(0)).toBeNull();
+    // The same kernel, loaded with a save inside an attempt: held at once.
+    expect(outside.load(hall.save(0)).ok).toBe(true);
+    expect(outside.catchUpHeld(0)).toBe('festival');
+    // And loaded back outside: not held.
+    expect(outside.load(atFourteen().save(0)).ok).toBe(true);
+    expect(outside.catchUpHeld(0)).toBeNull();
+    // A new run inside an attempt: the run's attempt is gone, and so is the hold.
+    expect(hall.catchUpHeld(0)).toBe('festival');
+    prestige(hall);
+    expect(runOf(hall)).toBeNull();
+    expect(hall.catchUpHeld(0)).toBeNull();
+    // An attempt ended in play: the kept flag follows it.
+    const k = inHall();
+    expect(k.catchUpHeld(0)).toBe('festival');
+    climb(k, null); // the forfeit
+    expect(k.catchUpHeld(0)).toBeNull();
+  });
 });
 
 describe('the time jump', () => {

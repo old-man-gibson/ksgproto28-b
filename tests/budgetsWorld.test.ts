@@ -1,7 +1,7 @@
 /**
- * The offline budgets of the world system (spine port 6, and step 4 ports
- * C3 and C4): four runs of 8 hours (288,000 ticks), three through the hunt
- * activity at a real spot, with
+ * The offline budgets of the world system (spine port 6, and step 4 port
+ * C3): three runs of 8 hours (288,000 ticks) through the hunt activity at a
+ * real spot, with
  * travel, weather, the knockout and its return live. No command is sent
  * after the first two. The vitest project `budget-world`, run after
  * `budget`. The runs are in `tests/budgetRuns.ts`.
@@ -11,19 +11,16 @@
  * - The Tunnels of floor 6, the probe character of the floor 6 budget.
  * - The roadstead of floor 11, a convoy water, through `catchUp` (step 4
  *   port C3): the sea resolves every leg on its offline path.
- * - The festival, through `catchUp` (step 4 port C4): the save is taken on
- *   the ladder to floor 15; the ride lands in the dark room, the door takes
- *   the gear, the four staged waves fall and the festival's clock runs the
- *   ten days out.
+ *
+ * The festival (step 4 port C4) has no run: catch-up stops while it holds
+ * the player (kernel decision 35), and tests/festival.test.ts checks that.
  *
  * Each run also compares its outcome digest with the one recorded on `main`
  * before the catch-up work (`tests/outcomeDigests.ts`).
  */
 import { describe, expect, it } from 'vitest';
-import { DARK_FLOOR, FESTIVAL_DOOR_KEY, type FestivalState } from '../src/systems/festival';
 import { SEA_CRATES_OFFLINE, SEA_CRATES_WON } from '../src/systems/sea';
 import type { WorldState } from '../src/systems/world';
-import { FLOORS } from '../src/systems/ladder';
 import { digestOf, RUNS } from './budgetRuns';
 import { counterOf } from './combatHelpers';
 import { makeGame, slice } from './helpers';
@@ -44,15 +41,6 @@ const WORLD_FLOOR_SIX_BUDGET_MS = 14300;
  * world runs, which it costs about as much as.
  */
 const WORLD_SEA_BUDGET_MS = 14300;
-/**
- * Step 4 port C4: 8 hours of the festival through `catchUp`, measured
- * 3,750 to 3,940 ms alone on 2026-11-22 (the probe's festival character: its
- * conditions and its regeneration are most of it; the festival's tick 66 ms
- * in a profile). Budget about 1.7 times that, the margin of the other world
- * runs.
- */
-const WORLD_FESTIVAL_BUDGET_MS = 6600;
-const FLOORS_LANDING_15 = FLOORS[DARK_FLOOR].landing;
 
 describe('offline catch-up through the world system', () => {
   it(`simulates 8 hours of the hunt activity at the Woods Edge of floor 4 within ${WORLD_FLOOR_FOUR_BUDGET_MS} ms`, () => {
@@ -106,26 +94,4 @@ describe('offline catch-up through the world system', () => {
     expect(digestOf(envelope)).toEqual(RUN_DIGESTS.worldSea);
     expect(ms, `8 hours took ${ms.toFixed(0)} ms`).toBeLessThan(WORLD_SEA_BUDGET_MS);
   }, WORLD_SEA_BUDGET_MS * 3);
-
-  it(`simulates 8 hours of the festival from the ride to the dark room within ${WORLD_FESTIVAL_BUDGET_MS} ms of catch-up`, () => {
-    const { ms, envelope } = RUNS.worldFestival();
-    const g = makeGame();
-    expect(g.load(envelope).ok).toBe(true);
-    const run = slice<FestivalState>(g, 'festival').run;
-    const w = slice<WorldState>(g, 'world');
-    console.log(
-      `8 hours, the festival (catch-up): ${ms.toFixed(0)} ms, ${counterOf(g, 'kills')} kills, ${counterOf(g, 'defeats')} defeats, ` +
-        `phase ${run?.phase ?? 'none'}, festival clock ${run?.clock ?? 0}, at ${w.spot}`,
-    );
-    // The room's nine fell, the door opened, and the clock ran past the ten days.
-    expect(counterOf(g, 'kills')).toBe(9);
-    expect(counterOf(g, `boss:${w.spot}`)).toBe(1);
-    expect(counterOf(g, FESTIVAL_DOOR_KEY)).toBe(1);
-    expect(run?.phase).toBe('prep');
-    expect(run!.clock).toBeGreaterThan(0);
-    expect(w.spot).toBe(FLOORS_LANDING_15);
-    expect(g.staleStats()).toEqual([]);
-    expect(digestOf(envelope)).toEqual(RUN_DIGESTS.worldFestival);
-    expect(ms, `8 hours took ${ms.toFixed(0)} ms`).toBeLessThan(WORLD_FESTIVAL_BUDGET_MS);
-  }, WORLD_FESTIVAL_BUDGET_MS * 3);
 });

@@ -264,6 +264,19 @@ export interface SystemDef<S, V = unknown> {
    * here what it carries across a run.
    */
   newRun?(ctx: Ctx<S>, previous: PreviousRead): void;
+  /**
+   * Stops offline catch-up while it holds (decision 35). `catchUp` asks
+   * `holds` before every tick, so it answers from memory the system keeps,
+   * never from the slices. On the first true the catch-up stops and `held`
+   * runs with the ticks left; its events are delivered.
+   */
+  catchUpHold?: CatchUpHold<S>;
+}
+
+/** A system's hold on offline catch-up (decision 35). */
+export interface CatchUpHold<S> {
+  holds(ctx: Ctx<S>): boolean;
+  held(ctx: Ctx<S>, ticksLeft: number): void;
 }
 
 const SYSTEM_ID = /^[a-z][a-z0-9-]*$/;

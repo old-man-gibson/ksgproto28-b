@@ -27,8 +27,7 @@ import { acceptedKey } from '../src/systems/quests';
 import { SEA, SEA_SIDES } from '../src/systems/sea';
 import { applyStatus } from '../src/systems/statuses';
 import { spellCast } from '../src/systems/spellcraft';
-import { FLOORS } from '../src/systems/ladder';
-import { climb, selectActivity, type WorldState } from '../src/systems/world';
+import { selectActivity, type WorldState } from '../src/systems/world';
 import { SITES } from './combatHelpers';
 import { ask, equip, makeGame, patch, probe, setMods } from './helpers';
 
@@ -51,16 +50,6 @@ export const HARBOR_CHARACTER: Modifier[] = [
   { stat: 'stats/armor', kind: 'add', value: 30 },
 ];
 
-/**
- * A character that holds floor 15's dark room (levels 32 to 35) from its
- * first tick: the probe stands in for a climb to level 40 and its gear.
- */
-export const FESTIVAL_CHARACTER: Modifier[] = [
-  { stat: 'stats/maxHp', kind: 'add', value: 20000 },
-  { stat: 'stats/damage', kind: 'add', value: 1500 },
-  { stat: 'stats/armor', kind: 'add', value: 200 },
-];
-
 export interface RunResult {
   ms: number;
   envelope: SaveEnvelope;
@@ -69,9 +58,9 @@ export interface RunResult {
   casts: number;
 }
 
-export type RunName = 'idle' | 'poison' | 'floor1' | 'floor6' | 'world4' | 'world6' | 'worldSea' | 'worldFestival';
+export type RunName = 'idle' | 'poison' | 'floor1' | 'floor6' | 'world4' | 'world6' | 'worldSea';
 
-export const RUN_NAMES: RunName[] = ['idle', 'poison', 'floor1', 'floor6', 'world4', 'world6', 'worldSea', 'worldFestival'];
+export const RUN_NAMES: RunName[] = ['idle', 'poison', 'floor1', 'floor6', 'world4', 'world6', 'worldSea'];
 
 function timed(kernel: Kernel, body: () => void, casts: () => number = () => 0): RunResult {
   const started = performance.now();
@@ -180,33 +169,6 @@ export const RUNS: Record<RunName, () => RunResult> = {
     standAt(g, 'f11_roadstead', ['f11_quay', 'f11_roadstead']);
     if (!g.dispatch(setHuntRest({ at: 0.5, toFull: true })).ok) throw new Error('hunt rest refused');
     if (!g.dispatch(selectActivity({ activity: 'hunt' })).ok) throw new Error('hunt activity refused');
-    const envelope = g.save(0);
-    const started = performance.now();
-    const result = catchUp({ systems: [...systems, probe], envelope, ticks: TICKS, now: 0 });
-    return { ms: performance.now() - started, envelope: result, kernel: null, casts: 0 };
-  },
-  /**
-   * The festival (step 4 port C4), as offline catch-up: the save is taken
-   * on the ladder from floor 14 to floor 15, the probe character. The ride
-   * lands in the dark room, the door takes the gear, the four staged waves
-   * fall, and the festival's clock runs the ten days out (day ten asks for
-   * floor 16, which comes with port C5). The old catch-up stopped at the
-   * door and banked the rest: docs/CONTENT.md section 11.4.
-   */
-  worldFestival() {
-    const g = makeGame({ seed: 9 });
-    equip(g, 1);
-    setMods(g, FESTIVAL_CHARACTER);
-    patch(g, (slices) => {
-      slices.resources.values.hp = 20000;
-      const counts = slices.counters.counts as Record<string, number>;
-      for (const floor of Object.values(FLOORS)) {
-        if (floor.bandId === undefined || floor.index >= 15) continue;
-        for (const c of floor.clear ?? []) if (c.type === 'stat') counts[c.key] = c.value;
-      }
-    });
-    standAt(g, FLOORS.ascent_f14.landing!, [FLOORS.ascent_f14.landing!]);
-    if (!g.dispatch(climb({ floor: 'ascent_f15' })).ok) throw new Error('climb to floor 15 refused');
     const envelope = g.save(0);
     const started = performance.now();
     const result = catchUp({ systems: [...systems, probe], envelope, ticks: TICKS, now: 0 });

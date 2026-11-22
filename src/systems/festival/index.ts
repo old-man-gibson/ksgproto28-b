@@ -40,6 +40,7 @@ import {
   type SystemDef,
 } from '../../kernel';
 import { holdAlchemy, returnAlchemy, type HeldAlchemy } from '../alchemy';
+import { bankTicks } from '../bonus';
 import clock, { MINUTES_PER_HOUR, TICKS_PER_DAY, TICKS_PER_GAME_MINUTE, totalTicksOf } from '../clock';
 import combat, { enemyKilled, fightWon, startStaged } from '../combat';
 import { isCard } from '../consumables';
@@ -208,6 +209,33 @@ type ReadCtx = DerivedReads & { read<T>(system: SystemDef<T, any>): DeepReadonly
 
 /** The modifier source of the festival: the attempt's facts and the legacy bonus. */
 export const FESTIVAL_SOURCE = 'festival/player';
+
+// ---- the catch-up hold (kernel decision 35) ----
+
+/**
+ * Whether the festival holds the player, for one festival slice object:
+ * memory, never saved, as the sea's leg end. `catchUp` asks it before every
+ * tick, so it does not read the slices. Written when it can change: an
+ * attempt starting or ending, and every arrival (`noteHold`). A load and a
+ * new run replace the slice object; the first ask after either is a miss and
+ * reads the state once.
+ */
+let holdFor: object | null = null;
+let holdNow = false;
+
+type HoldCtx = ReadCtx & { state: DeepReadonly<FestivalState> };
+
+/** Read the hold from the state and keep it for this slice object. */
+function noteHold(ctx: HoldCtx): boolean {
+  holdFor = ctx.state;
+  holdNow = ctx.state.run !== null && onFestivalFloor(ctx);
+  return holdNow;
+}
+
+/** The kept hold; a miss (another slice object) reads the state once. */
+function holdsNow(ctx: HoldCtx): boolean {
+  return ctx.state === holdFor ? holdNow : noteHold(ctx);
+}
 
 // ---- reads ----
 
@@ -417,6 +445,7 @@ function startFestival(ctx: F): void {
     fieldSeed: Math.floor(ctx.rng.next() * 0x100000000),
   };
   ctx.touch(FESTIVAL_SOURCE);
+  noteHold(ctx);
   const pieces = held.inventory.length + Object.values(held.equipment).filter(Boolean).length + (held.sheathed ? 1 : 0);
   say(
     ctx,
@@ -444,6 +473,7 @@ function loseFestival(ctx: F): void {
   state.run = null;
   state.lockedUntil = nowOf(ctx) + LOCKOUT_TICKS;
   ctx.touch(FESTIVAL_SOURCE);
+  noteHold(ctx);
   ctx.emit(setCounter, { key: FESTIVAL_SHUT_KEY, value: 1 });
   // The door shuts with the attempt, not with the next one.
   ctx.emit(setCounter, { key: FESTIVAL_DOOR_KEY, value: 0 });
@@ -467,6 +497,7 @@ export function winFestival(ctx: F): void {
   const bumped = returnGear(ctx, run);
   state.run = null;
   ctx.touch(FESTIVAL_SOURCE);
+  noteHold(ctx);
   ctx.emit(setCounter, { key: FESTIVAL_DOOR_KEY, value: 0 });
   const before = counterValue(ctx.read(counters), FESTIVAL_WINS_KEY);
   const wins = before + 1;
@@ -772,6 +803,14 @@ const system = defineSystem<FestivalState, FestivalView>({
 
   tick: tickFestival,
 
+  // The old offline catch-up stopped the moment the festival held the player
+  // (an attempt live, the player on its floors) and banked the rest of the
+  // absence as bonus time, 1:1 up to its cap. Kernel decision 35.
+  catchUpHold: {
+    holds: holdsNow,
+    held: (ctx, ticksLeft) => ctx.emit(bankTicks, { ticks: ticksLeft }),
+  },
+
   commands: [
     handle(spendToken, (ctx, { index, choice }) => {
       const legacy = ctx.state.legacy;
@@ -829,6 +868,8 @@ const system = defineSystem<FestivalState, FestivalView>({
     on(arrived, (ctx, { payload }) => {
       if (payload.spot === DARK_ROOM && !ctx.state.run) startFestival(ctx);
       settleExit(ctx);
+      // The floor stood on may have changed: the hold follows it.
+      noteHold(ctx);
     }),
   ],
 

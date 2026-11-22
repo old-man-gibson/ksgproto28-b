@@ -42,6 +42,7 @@ slice type.
 | `view(ctx)` | What the UI reads. Returns new objects, never the slice. |
 | `order` | Tick order, lower first. Ties run in id order. Default 0. |
 | `newRun(ctx, previous)` | Optional. Runs after a new run replaced every slice (decision 30). `previous(system)` reads a slice as the old run left it. |
+| `catchUpHold` | Optional. `{ holds(ctx), held(ctx, ticksLeft) }`: stops offline catch-up while it holds (decision 35). |
 
 `defineSystem` throws on a bad id, a missing or extra migration step, and a
 stat, source, command or request outside the system's namespace.
@@ -249,6 +250,11 @@ An answer returns copies, never a reference into its slice.
 - `catchUp` creates its kernel with `catchingUp: true`: `ctx.catchingUp`
   is true in every handler of that run and false in every other kernel
   (decision 34).
+- `catchUp` asks every system that declares `catchUpHold` before each tick
+  (`kernel.catchUpHeld(ticksLeft)`); on the first `holds` that is true it
+  stops, the holder's `held` runs with the ticks left, and its events are
+  delivered (decision 35). `runHeadless` asks only with the option `hold`,
+  which `catchUp` sets; a run that stopped reports `ticks` run and `heldBy`.
 - `src/worker/catchup.worker.ts` calls `catchUp` and nothing else. The page
   sends `kernel.save(now)` and loads the reply with `kernel.load`. If a worker
   cannot be created, `src/ui/catchup.ts` calls `catchUp` on the main thread.
@@ -749,8 +755,7 @@ point. Each took the simpler option.
     clocks that run in play only: the ward window counts live ticks (old
     `tickWards(state, catchingUp)`), the sea pays offline convoys by a
     share. (The festival clock does not read it: the old catch-up stopped
-    while the festival held the player; docs/CONTENT.md section 11.4,
-    step 4 port C4.) The context of every
+    while the festival held the player; decision 35.) The context of every
     handler carries `catchingUp`, read-only. `catchUp` creates its kernel
     with `catchingUp: true`; every other kernel, including one run by
     `runHeadless`, has it false. `tests/runner.test.ts` keeps the
@@ -759,3 +764,27 @@ point. Each took the simpler option.
     the difference. Alternative: a mode argument on `tick()`; rejected,
     because a command or event handler inside a catch-up tick must see the
     same value.
+
+35. **Catch-up holds (step 4 port C4, request K3).** The old offline
+    catch-up (`save/offline.ts` `catchUpTicks`) stopped the loop on the first
+    tick the Vermin Festival held the player (an attempt live, the player on
+    floors 15 and 16) and banked the rest of the absence as bonus time; a
+    ride that landed in the dark room mid-catch-up stopped there. The old
+    festival clock read no catch-up flag, so decision 34 cannot port it: the
+    clock, the conditions, the activities and a fight would run on. A system
+    may declare `catchUpHold: { holds(ctx), held(ctx, ticksLeft) }`;
+    `catchUp` asks `holds` of the systems that declare it before each tick,
+    stops on the first true, and runs that system's `held` with the ticks
+    left (the festival sends `bonus/bank`). Cost rule (the parent session's
+    condition): `holds` runs 288,000 times per 8 hours, so it answers from
+    memory the system keeps and never saves, not from the slices; the
+    festival keeps one boolean per festival slice object, written at an
+    attempt's start and end and on every arrival, and read from the state
+    once after a load or a new run replaces the slice object. Measured
+    against `main` in one process (docs/CONTENT.md section 11.2): within
+    noise. `tests/runner.test.ts` tests the kernel with a toy system;
+    `tests/festival.test.ts` the festival's cases. Alternatives: (a) a
+    tick-level hold that every system's tick reads (port F's K2, the hold of
+    play, is that, for live play); here only catch-up stops; (b) the
+    festival skipping its own work under `ctx.catchingUp` (decision 34),
+    which leaves every other system running.

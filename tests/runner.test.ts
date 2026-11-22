@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { catchUp, runHeadless, type Kernel, type ScheduledCommand } from '../src/kernel';
+import { catchUp, defineCommand, defineSystem, handle, OK, runHeadless, type Kernel, type ScheduledCommand } from '../src/kernel';
 import { systems } from '../src/systems';
 import { buyStep } from '../src/systems/counter';
 import type { CountersState } from '../src/systems/counters';
@@ -74,10 +74,76 @@ describe('offline catch-up', () => {
  * - `wards`: a ward window's clock counts live ticks only.
  * - `sea`: a convoy leg sailed while catching up pays a share of its crates
  *   as cargo and none to `sea:crates:won` (step 4 port C3).
- * The festival (step 4 port C4) does not read the flag: the old festival
- * clock read nothing either; the old catch-up loop stopped while the festival
- * held the player, which the kernel does not do (docs/CONTENT.md section 11).
+ * The festival (step 4 port C4) does not read the flag: it stops the
+ * catch-up while it holds the player (decision 35, below; its cases are in
+ * tests/festival.test.ts).
  */
+/**
+ * Kernel decision 35 (step 4 port C4): a system's `catchUpHold`. `catchUp`
+ * asks every system that declares it before each tick; on the first true it
+ * stops and the holder's `held` gets the ticks left. `runHeadless` asks only
+ * with `hold`, which `catchUp` sets.
+ */
+describe('a catch-up hold', () => {
+  interface Gate {
+    shut: boolean;
+    ticks: number;
+    left: number;
+  }
+  /** Counts its ticks; shuts itself at tick 5; its hold reads the kept flag. */
+  let kept: { slice: object | null; shut: boolean } = { slice: null, shut: false };
+  const shutAt = defineCommand<void>('gate/shut');
+  const gate = defineSystem<Gate>({
+    id: 'gate',
+    version: 1,
+    initial: () => ({ shut: false, ticks: 0, left: -1 }),
+    tick: (ctx) => {
+      ctx.state.ticks += 1;
+      if (ctx.state.ticks === 5) {
+        ctx.state.shut = true;
+        kept = { slice: ctx.state, shut: true };
+      }
+    },
+    commands: [
+      handle(shutAt, (ctx) => {
+        ctx.state.shut = true;
+        kept = { slice: ctx.state, shut: true };
+        return OK;
+      }),
+    ],
+    catchUpHold: {
+      holds: (ctx) => (ctx.state === kept.slice ? kept.shut : (kept = { slice: ctx.state, shut: ctx.state.shut }).shut),
+      held: (ctx, left) => {
+        ctx.state.left = left;
+      },
+    },
+  });
+  const gateOf = (envelope: ReturnType<Kernel['save']>) => envelope.slices.gate.data as unknown as Gate;
+
+  it('stops on the first tick it holds and hands the holder the ticks left', () => {
+    const k = makeKernel([gate]);
+    const after = catchUp({ systems: [...systems, gate], envelope: k.save(0), ticks: 100, now: 0 });
+    expect(gateOf(after)).toEqual({ shut: true, ticks: 5, left: 95 });
+    const tickOf = (e: ReturnType<Kernel['save']>) => (e.kernel.data as { tick: number }).tick;
+    expect(tickOf(after)).toBe(tickOf(k.save(0)) + 5);
+  });
+
+  it('runs no tick when it holds from the start', () => {
+    const k = makeKernel([gate]);
+    expect(k.dispatch(shutAt()).ok).toBe(true);
+    const before = k.save(0);
+    const after = catchUp({ systems: [...systems, gate], envelope: before, ticks: 100, now: 0 });
+    expect(gateOf(after)).toEqual({ shut: true, ticks: 0, left: 100 });
+    expect(after.kernel).toEqual(before.kernel);
+  });
+
+  it('is not asked by runHeadless on a live kernel', () => {
+    const k = makeKernel([gate]);
+    expect(runHeadless(k, { ticks: 20 }).ticks).toBe(20);
+    expect(k.snapshot().slices.gate).toEqual({ shut: true, ticks: 20, left: -1 });
+  });
+});
+
 describe('systems that behave differently in catch-up', () => {
   const W = WARD_WINDOWS[0];
   const clockKey = wardClockKey(W);

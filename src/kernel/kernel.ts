@@ -101,6 +101,13 @@ export interface Kernel {
   load(envelope: unknown): LoadResult;
   /** Start a new game with the given seed. */
   reset(seed: number): void;
+  /**
+   * Offline catch-up asks before each tick (decision 35): the first system
+   * whose `catchUpHold.holds` is true stops it; its `held` runs with
+   * `ticksLeft` and its events drain. Answers that system's id, or null when
+   * nothing holds. Asks only the systems that declare the field.
+   */
+  catchUpHeld(ticksLeft: number): string | null;
 }
 
 /** Events delivered in one drain before the kernel assumes a loop. */
@@ -272,6 +279,12 @@ export function createKernel(options: KernelOptions): Kernel {
     }
   }
 
+  // The catch-up holds (decision 35), each with its context, in system order:
+  // asked before every catch-up tick, so the ask is a flat loop.
+  const holders = systems
+    .filter((system) => system.catchUpHold)
+    .map((system) => ({ id: system.id, ctx: contexts.get(system.id)!, hold: system.catchUpHold! }));
+
   // After every source is registered, so a dependency may name a source of a
   // system that comes later in the order.
   for (const system of systems) {
@@ -422,6 +435,18 @@ export function createKernel(options: KernelOptions): Kernel {
 
     reset(seed) {
       replaceState(freshState(normalizeSeed(seed)));
+    },
+
+    catchUpHeld(ticksLeft) {
+      for (let i = 0; i < holders.length; i++) {
+        const h = holders[i];
+        if (!h.hold.holds(h.ctx)) continue;
+        h.hold.held(h.ctx, ticksLeft);
+        drain();
+        if (runEnding) settleRun();
+        return h.id;
+      }
+      return null;
     },
   };
 }

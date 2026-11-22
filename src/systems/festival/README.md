@@ -135,6 +135,7 @@ and when a stack is bought.
 | `festival/spend-token` `{ index, choice }` | `choice`: `{ kind: 'bonus' }`, `{ kind: 'technique', id }` or `{ kind: 'regalia' }`. |
 | `festival/debug-win` | DEBUG, refused in a production build. Ends the attempt as a royale won. Until port C5 brings the royale, the only way to a win; the tests use it. |
 | `festival/begin-royale` (request) | The climb into the royale begins: the time jump. The world's ride asks it on the `royale` verdict. |
+| `catchUpHold` (declaration) | Stops offline catch-up while the festival holds the player and banks the rest (above). |
 
 Requests it makes of other systems for the door: `items/hold`,
 `items/return`, `items/grant` (`plain`, `stash`), `items/equip-now`,
@@ -143,18 +144,23 @@ Requests it makes of other systems for the door: `items/hold`,
 `materials/return`, `combat/start-staged`, `world/ride`.
 
 Events: hears `combat/kill` (the weapon count), `combat/fight-won` (the
-dark room's next wave), `world/arrived` (the door; the loss). Emits
-`counters/*`, `log/line`, `titles/check`.
+dark room's next wave), `world/arrived` (the door; the loss; the hold).
+Emits `counters/*`, `log/line`, `titles/check`, `bonus/bank`.
 
 ## Catch-up
 
-The old offline catch-up stopped at the first tick the festival held the
-player (an attempt live, the player on its floors) and banked the rest of
-the absence as bonus time, 1:1 up to the cap. The old `festival.ts` did not
-read the catch-up flag: the whole loop stopped. Porting it needs the
-catch-up to stop, which the kernel cannot do; the decision is open
-(docs/CONTENT.md section 11). Until then catch-up runs the festival as it
-runs in place.
+The festival is not simulated offline (kernel decision 35, request K3):
+the system declares `catchUpHold`. `catchUp` asks `holds` before every
+tick; the moment an attempt is live and the player stands on floor 15 or
+16, from the first tick or from the tick a ride lands in the dark room,
+the catch-up stops and `held` banks the ticks left with `bonus/bank`, 1:1
+up to the bank's cap. The old `catchUpTicks` (`save/offline.ts` 67-83).
+The old festival clock read no catch-up flag, and neither does this one.
+
+`holds` answers from memory: one boolean per festival slice object, never
+saved, written by `noteHold` when an attempt starts or ends and on every
+`world/arrived` (the floor stood on may have changed). A load and a new run
+replace the slice object; the first ask after either reads the state once.
 
 ## View
 
@@ -195,4 +201,5 @@ the offers, the regalia open), the regalia, `holds` (take-out shut).
   plan and the arena (port C5). `winFestival` waits for it.
 - The royale's lint checks (strategies, plans, species, champion, dens,
   caches).
-- The offline summary's festival lines (the UI step).
+- The offline summary's festival lines, the ticks skipped and banked (the
+  UI step).
