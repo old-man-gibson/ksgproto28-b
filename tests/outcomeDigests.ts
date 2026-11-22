@@ -45,7 +45,11 @@
  * version 3: every state hash, nothing else; no old run reaches the
  * harbor and the John digest stops at the first prestige; a seventh run,
  * `worldSea`, 8 hours at floor 11's roadstead, recorded for the first
- * time).
+ * time), and on branch `step4-C4` after port C4 (the new slice `festival`,
+ * whose kills by weapon family count on every kill: every state hash,
+ * nothing else; no old run reaches floor 15 and the John digest stops at
+ * the first prestige; an eighth run, `worldFestival`, 8 hours of the
+ * festival from the ride to the dark room, recorded for the first time).
  * A change that only makes the simulation faster leaves every one
  * of them equal. A change to a rule, a formula or content changes them;
  * record them again then, and say why in the commit.
@@ -61,7 +65,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 1,
     'gold': 0,
-    'state': 'e2761346'
+    'state': '1c0f16d8'
   },
   'poison': {
     'tick': 288000,
@@ -70,7 +74,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 1,
     'gold': 0,
-    'state': 'f0692f8a'
+    'state': '1d9dc254'
   },
   'floor1': {
     'tick': 288000,
@@ -79,7 +83,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 9,
     'gold': 33649,
-    'state': '93887db8'
+    'state': 'ed5d7188'
   },
   'floor6': {
     'tick': 288000,
@@ -88,7 +92,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 26,
     'gold': 1627909,
-    'state': '7a889346'
+    'state': 'ab38e952'
   },
   'world4': {
     'tick': 288000,
@@ -97,7 +101,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 4,
     'level': 18,
     'gold': 362564,
-    'state': '87a556ba'
+    'state': '065f1bae'
   },
   'world6': {
     'tick': 288000,
@@ -106,7 +110,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 26,
     'gold': 1627911,
-    'state': 'f3aedcda'
+    'state': '4ac5958e'
   },
   'worldSea': {
     'tick': 288000,
@@ -115,7 +119,16 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 43,
     'gold': 3688288,
-    'state': '11ec28a9'
+    'state': '2e773f9d'
+  },
+  'worldFestival': {
+    'tick': 288000,
+    'rng': 795884046,
+    'kills': 9,
+    'defeats': 0,
+    'level': 10,
+    'gold': 0,
+    'state': 'b3278dfb'
   }
 };
 
@@ -201,7 +214,7 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'defeats': 0,
       'level': 1,
       'gold': 0,
-      'state': '7484b6fb'
+      'state': 'c0aa63bd'
     }
   },
   '42': {
@@ -285,7 +298,7 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'defeats': 0,
       'level': 1,
       'gold': 0,
-      'state': '2dc679c7'
+      'state': 'd51d3075'
     }
   },
   '1234': {
@@ -369,7 +382,7 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'defeats': 0,
       'level': 1,
       'gold': 0,
-      'state': 'aca62677'
+      'state': '72010cc1'
     }
   }
 };
