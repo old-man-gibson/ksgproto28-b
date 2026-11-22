@@ -56,7 +56,7 @@ function catchUpRun(json: string): { ms: number; kills: number; level: number } 
   const { kernel, envelope } = loadState(json, true);
   collect();
   const started = performance.now();
-  runHeadless(kernel, { ticks, onProgress: () => {} });
+  runHeadless(kernel, { ticks, onProgress: () => {}, hold: true });
   const ms = performance.now() - started;
   const after = kernel.save(0);
   return { ms, kills: kills(after) - kills(envelope), level: level(after) };
