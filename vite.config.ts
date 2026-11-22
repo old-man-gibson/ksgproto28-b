@@ -19,7 +19,8 @@ export default defineConfig({
     // `budget-world` and `speed` are one file each: their cases measure
     // wall-clock time, so they do not share the processor with other test
     // files. `speed` holds catch-up to a share of the old build's time
-    // (docs/PERFORMANCE.md section 5). `john` runs the headless
+    // (docs/PERFORMANCE.md section 5); it starts one Node process per
+    // attempt, one after the other. `john` runs the headless
     // climbs, whose load made timed unit cases time out when they ran in
     // parallel, and the outcome digests of John's climbs. `npm test` runs one
     // project after the other.

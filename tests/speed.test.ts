@@ -4,13 +4,12 @@
  * project `speed`, run alone after `budget-world`.
  *
  * Each figure is a ratio: a run's wall-clock time divided by the time of a
- * fixed workload with no game code (`tests/reference.ts`), measured in this
- * process right before the run. The old build's ratio is its median from
+ * fixed workload with no game code (`tests/reference.ts`), measured in the
+ * same process right before the run. The old build's ratio is its median from
  * docs/PERFORMANCE.md section 1.1 divided by the same workload's time on the
  * same machine. A slower machine slows both sides of each ratio. A second
  * process running game code slows the run more than the yardstick
- * (docs/PERFORMANCE.md section 5.3): floor 6, the state nearest its limit,
- * can fail a first attempt then.
+ * (docs/PERFORMANCE.md section 5.3).
  *
  * Held (fails the run):
  * - 8 hours of catch-up (288,000 ticks) in four states built from John
@@ -18,25 +17,29 @@
  *   0.5 (user decision, 2026-11-21): catch-up takes at most half the old
  *   build's time. The rebuild's kills must be within 10% of the old build's,
  *   so a run that stopped hunting cannot pass on speed.
- * - A state whose first attempt fails is measured once more (yardstick and
- *   run) and passes if the second attempt passes. Each attempt prints the
- *   machine's load during it and a yardstick taken after the run.
+ * - Each attempt (yardstick, run) runs in a fresh Node process under
+ *   vite-node (`tests/speedRun.ts`), as the old build's medians were
+ *   measured. The worker builds the states and starts the processes one
+ *   after the other.
+ * - A state whose first attempt fails is measured once more, in a new
+ *   process, and passes if the second attempt passes. Each attempt prints
+ *   the machine's load during it and a yardstick taken after the run.
  *
  * Reported, not held (printed, never fails; both fail today, a later speed
- * pass fixes them):
+ * pass fixes them), measured in the worker:
  * - Live play, headless: `kernel.tick()` plus `kernel.view()` per tick
  *   against the old `game.tick()` per tick.
  * - Save size of the floor 6 state against the old build's.
  */
-import os from 'node:os';
+import { spawn } from 'node:child_process';
+import { createRequire } from 'node:module';
+import { dirname, join } from 'node:path';
 import { performance } from 'node:perf_hooks';
-import v8 from 'node:v8';
-import vm from 'node:vm';
+import { fileURLToPath } from 'node:url';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { createKernel, OFFLINE_CAP_MS, offlineTicks, parseEnvelope, runHeadless, type Kernel, type SaveEnvelope } from '../src/kernel';
-import { systems } from '../src/systems';
 import { measureYardstick, yardstickSink, type Yardstick } from './reference';
-import { buildSpeedStates, liftFloorOneLimit, SPEED_STATES, type SpeedState, type SpeedStates } from './speedStates';
+import { ATTEMPT_MARK, collect, loadState, type Attempt } from './speedCatchUp';
+import { buildSpeedStates, SPEED_STATES, type SpeedState, type SpeedStates } from './speedStates';
 
 /** Catch-up must take at most this share of the old build's time (user decision, 2026-11-21). */
 const FACTOR = 0.5;
@@ -87,52 +90,69 @@ const yardText = (y: Yardstick) => `${fmt(y.ms, 1)} ms (passes ${y.runs.map((r) 
 /** Let the worker answer vitest between long synchronous cases. */
 const yieldToEventLoop = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
 
-/**
- * A full garbage collection before each yardstick and each timed run: the
- * baseline ran each in a fresh process, with no garbage from John's climb or
- * an earlier state. Vitest 3 takes `execArgv` only for every project at
- * once, so the flag is set here and `gc` taken from a new context created
- * after it.
+/*
+ * The measuring process. vite-node is the loader the old build's medians
+ * were measured with (docs/PERFORMANCE.md section 2.1) and the one
+ * `npm run pacing` uses; it comes with vitest. Its config has no plugins
+ * (`tests/speedRun.config.ts`). Its environment is the worker's without
+ * vitest's variables, as a process started from a shell.
  */
-function exposeGc(): (() => void) | undefined {
-  try {
-    v8.setFlagsFromString('--expose-gc');
-    const gc: unknown = vm.runInNewContext('gc');
-    return typeof gc === 'function' ? (gc as () => void) : undefined;
-  } catch {
-    return undefined;
+const ROOT = fileURLToPath(new URL('..', import.meta.url));
+const VITE_NODE = join(dirname(dirname(createRequire(import.meta.url).resolve('vite-node'))), 'vite-node.mjs');
+const RUN_SCRIPT = fileURLToPath(new URL('./speedRun.ts', import.meta.url));
+const RUN_CONFIG = fileURLToPath(new URL('./speedRun.config.ts', import.meta.url));
+/** A measuring process still running after this long is stopped and the attempt fails. */
+const PROCESS_TIMEOUT_MS = 150_000;
+
+function processEnv(): NodeJS.ProcessEnv {
+  const env: NodeJS.ProcessEnv = {};
+  for (const [key, value] of Object.entries(process.env)) {
+    if (/^VITEST/.test(key) || key === 'TEST' || key === 'NODE_ENV') continue;
+    env[key] = value;
   }
-}
-const exposedGc = exposeGc();
-const collect = () => exposedGc?.();
-
-function loadState(json: string, catchingUp: boolean): { kernel: Kernel; envelope: SaveEnvelope } {
-  const parsed = parseEnvelope(json);
-  if (!parsed.ok) throw new Error(parsed.error);
-  // As `catchUp` (src/kernel/runner.ts) and the built page create a kernel: no content validation, no view freezing.
-  const kernel = createKernel({ systems, validateContent: false, catchingUp });
-  const loaded = kernel.load(parsed.value);
-  if (!loaded.ok) throw new Error(loaded.error);
-  return { kernel, envelope: parsed.value };
+  return env;
 }
 
-const kills = (envelope: SaveEnvelope) => (envelope.slices.counters.data as { counts: Record<string, number> }).counts.kills ?? 0;
-const level = (envelope: SaveEnvelope) => (envelope.slices.levels.data as { level: number }).level;
+const tail = (text: string) => text.trim().split(/\r?\n/).slice(-12).join('\n');
 
-/** The body of `catchUp`; the time is the `runHeadless` part, as in the baseline. */
-function catchUpRun(json: string): { ms: number; kills: number; level: number } {
-  const ticks = offlineTicks(OFFLINE_CAP_MS);
-  const { kernel, envelope } = loadState(json, true);
-  collect();
-  const started = performance.now();
-  runHeadless(kernel, { ticks, onProgress: () => {} });
-  const ms = performance.now() - started;
-  const after = kernel.save(0);
-  return { ms, kills: kills(after) - kills(envelope), level: level(after) };
+/** One attempt in a fresh process: start to exit, ms, and the attempt it printed. */
+function attemptInProcess(name: SpeedState, json: string): Promise<{ attempt: Attempt; processMs: number }> {
+  return new Promise((resolve, reject) => {
+    const started = performance.now();
+    const child = spawn(process.execPath, ['--expose-gc', VITE_NODE, '--config', RUN_CONFIG, RUN_SCRIPT, '--', name], {
+      cwd: ROOT,
+      env: processEnv(),
+      stdio: ['pipe', 'pipe', 'pipe'],
+      windowsHide: true,
+    });
+    let out = '';
+    let err = '';
+    child.stdout.setEncoding('utf8').on('data', (d: string) => (out += d));
+    child.stderr.setEncoding('utf8').on('data', (d: string) => (err += d));
+    const timer = setTimeout(() => child.kill(), PROCESS_TIMEOUT_MS);
+    child.on('error', (error) => {
+      clearTimeout(timer);
+      reject(error);
+    });
+    child.on('close', (code, signal) => {
+      clearTimeout(timer);
+      const processMs = performance.now() - started;
+      const line = out.split(/\r?\n/).find((l) => l.startsWith(ATTEMPT_MARK));
+      if (code !== 0 || line === undefined) {
+        const why = signal ? `stopped by ${signal} after ${fmt(processMs)} ms` : `exit code ${code}`;
+        reject(new Error(`${name}: the measuring process gave no attempt (${why}):\n${tail(err) || tail(out)}`));
+        return;
+      }
+      resolve({ attempt: JSON.parse(line.slice(ATTEMPT_MARK.length)) as Attempt, processMs });
+    });
+    child.stdin.end(json);
+  });
 }
 
 let states: SpeedStates;
 const lines: string[] = [];
+let processesCollected = true;
+const sinks: number[] = [];
 
 beforeAll(() => {
   states = buildSpeedStates();
@@ -141,42 +161,15 @@ beforeAll(() => {
 }, 120_000);
 
 afterAll(() => {
-  const gcText = exposedGc ? 'garbage collected before each timed span' : 'gc() not available: no collection before timed spans';
-  console.log([`Speed test (factor ${FACTOR}, old yardstick ${OLD_YARDSTICK_MS} ms, ${gcText}):`, ...lines, `(sink ${yardstickSink() % 10})`].join('\n'));
+  const gcText = processesCollected ? 'garbage collected before each timed span' : 'gc() not available in a measuring process: no collection before its timed spans';
+  console.log(
+    [
+      `Speed test (factor ${FACTOR}, old yardstick ${OLD_YARDSTICK_MS} ms, one process per attempt, ${gcText}):`,
+      ...lines,
+      `(sinks ${[...sinks, yardstickSink() % 10].join(' ')})`,
+    ].join('\n'),
+  );
 });
-
-/** Busy and total processor time of the whole machine, summed over all logical processors. */
-function cpuTimes(): { busy: number; total: number } {
-  let busy = 0;
-  let total = 0;
-  for (const { times } of os.cpus()) {
-    const all = times.user + times.nice + times.sys + times.idle + times.irq;
-    total += all;
-    busy += all - times.idle;
-  }
-  return { busy, total };
-}
-
-interface Attempt {
-  yard: Yardstick;
-  /** A yardstick right after the run, reported only: it shows whether the machine's load changed during the run. */
-  after: Yardstick;
-  run: { ms: number; kills: number; level: number };
-  ratio: number;
-  /** Share of all logical processors busy from the first yardstick pass to the last, this process included. */
-  load: number;
-}
-
-function attempt(name: SpeedState): Attempt {
-  const cpu = cpuTimes();
-  collect();
-  const yard = measureYardstick();
-  const run = catchUpRun(states.json[name]);
-  collect();
-  const after = measureYardstick(3, false);
-  const end = cpuTimes();
-  return { yard, after, run, ratio: run.ms / yard.ms, load: (end.busy - cpu.busy) / (end.total - cpu.total) };
-}
 
 /** Attempts per state: a second runs only when the first fails, so a burst of load on the machine during one run does not fail the case. */
 const ATTEMPTS = 2;
@@ -185,23 +178,19 @@ describe('speed against the old build: held', () => {
   for (const name of SPEED_STATES) {
     it(`8 hours of catch-up ${LABEL[name]} take at most ${FACTOR} of the old build's time, over the yardstick`, async () => {
       const limit = FACTOR * oldRatio(name);
-      const restore = name === 'floor1' ? liftFloorOneLimit() : () => {};
       const tries: Attempt[] = [];
-      try {
-        do {
-          await yieldToEventLoop();
-          const a = attempt(name);
-          tries.push(a);
-          lines.push(
-            `${name}${tries.length > 1 ? ` (attempt ${tries.length})` : ''}: ${fmt(a.run.ms)} ms, yardstick ${yardText(a.yard)}, ` +
-              `after the run ${yardText(a.after)}, machine load ${fmt(a.load * 100)}%; ratio ${fmt(a.ratio, 2)}, limit ${fmt(limit, 2)} ` +
-              `(${fmt((a.ratio / limit) * 100)}% of it; old ${fmt(oldRatio(name), 2)}, rebuild/old ${fmt(a.ratio / oldRatio(name), 3)}); ` +
-              `${a.run.kills} kills (old ${OLD_KILLS[name]}), level ${a.run.level}`,
-          );
-        } while (tries[tries.length - 1].ratio >= limit && tries.length < ATTEMPTS);
-      } finally {
-        restore();
-      }
+      do {
+        const { attempt: a, processMs } = await attemptInProcess(name, states.json[name]);
+        tries.push(a);
+        sinks.push(a.sink);
+        if (!a.collected) processesCollected = false;
+        lines.push(
+          `${name}${tries.length > 1 ? ` (attempt ${tries.length})` : ''}: ${fmt(a.run.ms)} ms, yardstick ${yardText(a.yard)}, ` +
+            `after the run ${yardText(a.after)}, machine load ${fmt(a.load * 100)}%; ratio ${fmt(a.ratio, 2)}, limit ${fmt(limit, 2)} ` +
+            `(${fmt((a.ratio / limit) * 100)}% of it; old ${fmt(oldRatio(name), 2)}, rebuild/old ${fmt(a.ratio / oldRatio(name), 3)}); ` +
+            `${a.run.kills} kills (old ${OLD_KILLS[name]}), level ${a.run.level}; process ${fmt(processMs / 1000, 1)} s`,
+        );
+      } while (tries[tries.length - 1].ratio >= limit && tries.length < ATTEMPTS);
       const { run } = tries[0];
       const killsOff = OLD_KILLS[name] === 0 ? run.kills : Math.abs(run.kills - OLD_KILLS[name]) / OLD_KILLS[name];
       expect(killsOff, `${name}: ${run.kills} kills against the old build's ${OLD_KILLS[name]}`).toBeLessThanOrEqual(
@@ -214,7 +203,7 @@ describe('speed against the old build: held', () => {
           tries.map((a) => `${fmt(a.run.ms)} ms over a yardstick of ${fmt(a.yard.ms, 1)} ms is ${fmt(a.ratio, 2)}`).join('; ') +
           `; ${FACTOR} x the old build's ${fmt(oldRatio(name), 2)} is ${fmt(limit, 2)}`,
       ).toBeLessThan(limit);
-    }, 180_000);
+    }, ATTEMPTS * PROCESS_TIMEOUT_MS + 30_000);
   }
 });
 

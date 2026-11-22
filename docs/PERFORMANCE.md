@@ -352,7 +352,7 @@ Built the same day:
 |---|---|---|
 | 1. A yardstick | built | `tests/reference.ts` |
 | 2. John's states, built inside the test | built | `tests/speedStates.ts`; the `onRecord` option of `tests/john.ts` |
-| 3. Catch-up at most 0.5 of the old build's time | held | `tests/speed.test.ts`, the vitest project `speed` |
+| 3. Catch-up at most 0.5 of the old build's time | held | `tests/speed.test.ts`, the vitest project `speed`; each attempt in its own process (`tests/speedRun.ts`, `tests/speedCatchUp.ts`) |
 | 4. Live play, headless | reported, not held | `tests/speed.test.ts` |
 | 5. Sizes | the floor 6 save reported, not held; the bundle check is not built | `tests/speed.test.ts` |
 | 6. Startup | not built: a manual check before a release | - |
@@ -380,11 +380,12 @@ The same workload in three environments, same machine, 2026-11-21, the
 five low-load rounds of 5.3: plain Node (`reference.mjs`) 199.7 to 210.4
 ms, median 208.7; vite-node 190.5 to 200.9 ms, median 197.0; the test's
 worker, the yardsticks before floor 6, town and floor 7, 193.7 to 227.9 ms,
-median 206.0. The worker reads about as plain Node does, so the plain Node
-value of the old build applies. The first yardstick in a worker (before
-floor 1) read 5 to 15% above the later ones in 4 of 5 rounds, also with the
-garbage collection; the cause is not found. It loosens floor 1's bar by as
-much; floor 1 is at about 60% of it.
+median 206.0. Since 2026-11-22 the yardstick runs in the measuring process
+of each attempt, under vite-node (5.2). A yardstick lower than plain Node's
+makes the rebuild's ratio higher against the old build's plain Node value:
+the bar is at least as strict as with plain Node. While the attempts ran in
+the worker, the first yardstick in it (before floor 1) read 5 to 15% above
+the later ones in 4 of 5 rounds; the cause was not found.
 
 Spread of the yardstick's own five passes: 3 to 14% at low load and under
 load. Before the garbage collection step (5.2) the first yardstick after
@@ -411,30 +412,69 @@ For each state of section 2.2, in `tests/speed.test.ts`:
   cannot break them. John's climb takes 1.3 to 1.6 s.
 - The timed span is `runHeadless` for 288,000 ticks on a kernel created as
   `catchUp` creates it (section 2.3).
-- The yardstick runs in the same worker right before the run. A full
-  garbage collection runs before the yardstick and before the timed run
-  (`v8.setFlagsFromString('--expose-gc')`, then `gc` from a new context;
-  vitest 3 takes `execArgv` only for all projects at once). The baseline
-  ran each state in a fresh process.
+- Each attempt runs in a fresh Node process, as the baseline measured the
+  old build (vite-node, one fresh process per run):
+  `node --expose-gc node_modules/vite-node/vite-node.mjs --config
+  tests/speedRun.config.ts tests/speedRun.ts -- <state>`, with the state's
+  save envelope on standard input. In the process (`tests/speedCatchUp.ts`):
+  a full garbage collection, the yardstick, a collection, the timed run, a
+  collection, a yardstick of three passes. It prints the attempt as one
+  line of JSON and exits. The worker builds the states, starts the
+  processes one after the other and is idle while one runs.
+- The measuring process's config has no plugins
+  (`tests/speedRun.config.ts`). Its 305 modules transform to the same code
+  as under `vite.config.ts`: the two module dumps (`VITE_NODE_DEBUG_DUMP`)
+  compared equal on 2026-11-22. The Svelte and forge plugins cost about
+  1.5 s of start-up per process. Its environment is the worker's without
+  vitest's variables (`VITEST*`, `TEST`, `NODE_ENV`). A process still
+  running after 150 s is stopped and the case fails.
 - Kills must be within 10% of the old build's (town: none), so a run that
   stopped hunting cannot pass on speed. At `a72b168` they equal the
   baseline's rebuild column: 10,634, 11,536, 0 and 12,959.
-- A state whose first attempt fails is measured again (garbage collection,
-  yardstick, run). The case passes if the second attempt passes. The
-  second attempt costs time only when the first fails.
+- A state whose first attempt fails is measured again, in a new process.
+  The case passes if the second attempt passes. The second attempt costs
+  time only when the first fails.
 - Each attempt prints the run, the yardstick with its passes, a yardstick
-  of three passes taken after the run, and the processor load of the whole
-  machine over the attempt (all logical processors; this process alone is
-  about 6%).
-- The runs share one worker; the baseline ran each state in a fresh
-  process. John's climb and the floor 1 state run in the worker before
-  floor 6, which costs floor 6 about 6% against a fresh process (6.2).
+  of three passes taken after the run, the processor load of the whole
+  machine over the attempt (all logical processors; the measuring process
+  alone is about 6%) and the process's time from start to exit.
+- Until 2026-11-22 the attempts ran in the worker, after John's climb and
+  the states before them. That cost floor 6 about 4% of its ratio in the
+  alternating rounds of 5.3 (about 6% by the fresh-process runs of 6.2).
 
 ### 5.3 Margins
 
-`a72b168` plus this test. The ratio as a share of its limit (below 100%
-passes), first attempts; in brackets the rebuild ratio over the old ratio.
-"Low load": the machine at 10% or less before the round; during the
+The ratio as a share of its limit (below 100% passes), first attempts; in
+brackets the rebuild ratio over the old ratio.
+
+Now: one process per attempt, 2026-11-22, main `d75aaee` (speed pass 1
+and port C3 merged) plus that change. Each round ran the speed test of
+`d75aaee` (attempts in the worker) and of the change, alternating.
+"Low load": the machine at 5% or less at the round start, 9 to 13% during
+most attempts (the measuring process alone is about 6%); load arrived in
+round 1 of `d75aaee` (12 to 29%) and in round 5 of the change (21 to 23%).
+"Neighbour": a second process ran floor 6's catch-up in a loop
+(`tests/speedRun.ts`) for the whole batch; 17 to 31% during the attempts.
+
+| State | Own process, low load, 5 runs | In the worker, low load, 5 runs | Own process, neighbour, 3 runs | In the worker, neighbour, 3 runs |
+|---|---|---|---|---|
+| Floor 1 hunting | 51 to 57%, median 54% (0.26 to 0.29) | 55 to 60%, median 58% | 60, 61, 65% | 57, 61, 62% |
+| Floor 6 hunting | 75 to 83%, median 77% (0.37 to 0.41) | 78 to 83%, median 80% (0.39 to 0.42) | 79, 85, 89% (0.40 to 0.45) | 80, 87, 93% (0.40 to 0.47) |
+| Idle in town | 58 to 64%, median 59% (0.29 to 0.32) | 59 to 63%, median 61% | 58, 60, 75% | 59, 66, 71% |
+| Floor 7 hunting | 50 to 53%, median 52% (0.25 to 0.26) | 51 to 55%, median 54% | 52, 60, 61% | 50, 58, 60% |
+
+- No first attempt failed in the 16 runs. Floor 6's 83% at low load is
+  round 5, where load arrived; the other four rounds read 75 to 77%.
+- In its own process floor 6 reads about 3 points of its limit lower than
+  in the worker at low load. Under the neighbour the two methods read
+  alike: the neighbour slows the run more than the yardstick, in either.
+- The kills equal those at `a72b168`: 10,634, 11,536, 0 and 12,959.
+- The yardstick in the measuring process at low load (rounds 1 to 4): 195.8
+  to 205.6 ms, median 196.5. The first yardstick, before floor 1, reads as
+  the others.
+
+Before speed pass 1, the attempts in the worker, 2026-11-21: `a72b168` plus
+this test. "Low load": the machine at 10% or less before the round; during the
 attempts it was 9 to 22%, because the session porting C3 ran its timing
 script (`scripts/budget-runs.ts`, one process) throughout. No round with
 the machine idle was available. "Loaded": rounds started while that session
@@ -492,7 +532,8 @@ hours. The builds alternate; 3 rounds.
 ### 5.4 Reported, not held
 
 Printed in every run, never failing. Both fail the factor today; a later
-speed pass is to fix them, and then they are held the same way.
+speed pass is to fix them, and then they are held the same way. Both are
+measured in the worker, after the held cases.
 
 - Live play, headless. Per state, 100 ticks of warm-up, then 300 ticks of
   `kernel.tick()` followed by `kernel.view()`, against the old
@@ -501,18 +542,30 @@ speed pass is to fix them, and then they are held the same way.
   0.6 to 3.4 times the bar; 300 ticks are few, so the tick figure moves
   with the fight in progress.
 - Save size. The floor 6 state saved (`JSON.stringify(kernel.save(now))`)
-  against the old 17,559 bytes: 33,391 bytes, 1.90 times the old. The log
-  slice is 13,663 bytes of it.
+  against the old 17,559 bytes: 33,437 bytes since port C3 (33,391
+  before), 1.90 times the old. The log slice is 13,663 bytes of it.
 
 ### 5.5 Run time
 
-`vitest run --project speed` on this machine at low load: 43 to 52 s (the
-tests 40 to 48 s), 48 to 55 s with the start of npx. John's climb and the
-set-up 1.5 s; the four runs of 8 hours 28 to 33 s; nine yardsticks about
-8 s; live play about 4 s. A second attempt adds its yardsticks and its run
-(floor 6: 17 to 19 s). In the `npm run verify` of this change: `budget`
-23.7 s, `budget-world` 20.8 s, `speed` 43.1 s (the tests 39.9 s), `john`
-18.2 s. On the CI runner
+`npx vitest run --project speed` on this machine at low load, one process
+per attempt (the five low-load rounds of 5.3): 54.0 to 59.0 s, median 54.6
+(the tests 48.3 to 52.9 s, median 48.6). The same rounds with the attempts
+in the worker (`d75aaee`): 45.6 to 49.9 s, median 46.2 (the tests 39.6 to
+43.7 s). One process per attempt adds about 8.5 s: each process takes
+about 2.3 s to start (vite-node, the config, 305 modules transformed)
+before its first yardstick. A process from start to exit: floor 1 9.6 to
+9.7 s, floor 6 14.7 to 15.1 s, town 6.0 s, floor 7 11.3 to 11.5 s. John's
+climb and the set-up in the worker 1.2 to 1.5 s; live play about 5 s. A
+second attempt adds its process (floor 6: about 15 s). With the neighbour:
+61.7 to 62.1 s.
+
+In the `npm run verify` of the first version (attempts in the worker,
+2026-11-21): `budget` 23.7 s, `budget-world` 20.8 s, `speed` 43.1 s (the
+tests 39.9 s), `john` 18.2 s. In the `npm run verify` of one process per
+attempt (2026-11-22, 202 s in all): `budget` 24.4 s, `budget-world` 29.4
+s, `speed` 54.1 s (the tests 51.1 s), `john` 23.9 s; the speed test read
+59, 71, 59 and 60% (0.30, 0.35, 0.29, 0.30) at 12 to 23% load. On the CI
+runner
 (ubuntu-latest, Node 22) the budget runs took 0.6 to 0.8 times the times
 recorded on this machine on 2026-11-18 (`docs/KERNEL.md` section 8); the
 speed test's ratios there are not measured yet.
@@ -545,19 +598,19 @@ decision.
 
 ### 5.7 Not settled
 
-- Floor 6 is near its bar: 0.41 to 0.50 of the old build's time at low
-  load against 0.28 to 0.34 for the other states, and a process running
-  game code next to it fails a first attempt. Speed pass 1 (section 6)
-  took it to 0.39 to 0.40 in the speed test at low load. Proposed, in
-  order:
-  1. A speed pass on floor 6's catch-up: the combat tick and event
-     delivery (section 3.1) are two thirds of its time. At the other
-     states' 0.3 the bar has about 40% headroom.
-  2. Before a second attempt, wait while other processes keep the machine
+- Floor 6 is the state nearest its bar. At `a72b168` it read 0.41 to 0.50
+  of the old build's time at low load against 0.28 to 0.34 for the other
+  states, and a process running game code next to it failed a first
+  attempt. Speed pass 1 (section 6) took it to 0.39 to 0.40 in the worker;
+  one process per attempt reads 0.37 to 0.39 at low load and up to 0.45
+  with a neighbour (5.3), no first attempt failing in 16 runs. Proposed,
+  not built:
+  1. Before a second attempt, wait while other processes keep the machine
      busy, as the baseline batches did: up to a few minutes, until the
      machine's load without this process is below about 10%.
-  3. A yardstick that also competes for the caches the way the game does
+  2. A yardstick that also competes for the caches the way the game does
      (a working set of game size). It changes `OLD_YARDSTICK_MS` (5.6).
+  3. Further speed work on floor 6 (6.4).
   A median of several attempts does not help: under a steady neighbour
   every attempt reads the same.
 - A second machine: the ratio moves between processors by an unknown
@@ -630,7 +683,9 @@ The same code reads lower in fresh processes: floor 6 at 70 to 74% of its
 limit after the pass (78 to 89% before), against 79 to 80% (83 to 90%) in
 the speed test. In the test, floor 6 runs in the worker that ran John's
 climb and the floor 1 state first; that costs both builds about 6% on
-floor 6. The old build's medians were taken in fresh processes.
+floor 6. The old build's medians were taken in fresh processes. Since
+2026-11-22 the test runs each attempt in its own process (5.2); in its
+alternating rounds the worker cost floor 6 about 4% (5.3).
 
 ### 6.3 The budget runs
 
@@ -663,6 +718,6 @@ the digests:
   stats resolver. A source that declares it reads the player only would
   skip those collections.
 - The buff slot's pick on every tick of a fight.
-- The speed test's method: each state in a fresh worker, as the old build
-  was measured, gives floor 6 about 6% (6.2). A change of method, not of
-  speed: the user's decision.
+- The speed test's method: each state in a fresh process, as the old
+  build was measured. A change of method, not of speed; the user chose
+  it, and it is built since 2026-11-22 (5.2, 5.3).
