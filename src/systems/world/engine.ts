@@ -452,12 +452,23 @@ export function floorOfSpot(spotId: string): FloorDef | null {
   return FLOOR_BY_AREA.get(areaOf(spotId)) ?? null;
 }
 
-/** The stops the router may send the player to: discovered, and the gate open. */
+/**
+ * The stops the router may send the player to: discovered, the gate open, and
+ * not a floor a registered rule keeps off the router (a festival floor). None
+ * while the rule holds the routes (inside a festival attempt).
+ */
 export function routableStops(ctx: Reads, state: State): RideStop[] {
+  if (floorRule?.routesHeld(ctx)) return [];
   const r = reader(ctx);
   return Object.values(TOWERS)
     .flatMap(rideStops)
-    .filter((stop) => state.discovered.includes(stop.spot) && stopOpen(r, stop));
+    .filter(
+      (stop) =>
+        state.discovered.includes(stop.spot) &&
+        !(stop.floor && floorRule?.unrouted(stop.floor)) &&
+        stopOpen(r, stop) &&
+        !floorRule?.ride(ctx, stop.floor?.id ?? null),
+    );
 }
 
 const RIDE_LABEL = { Climbing: 'Ladder: climb', Descending: 'Ladder: descend', Crossing: 'Ladder: cross' } as const;
@@ -701,6 +712,51 @@ function logMapped(ctx: W): void {
   }
 }
 
+// ---- floor rules another system lays on the ladder and the retreat ----
+
+/**
+ * What the ladder says to a ride, past the ladder's own terms: refuse it
+ * with a log line, turn it into a forfeit (the retreat, with `reason`), or let
+ * it go after `enter` runs. The festival's verdicts (old `FestivalLadder`).
+ */
+export type RideVerdict =
+  | { kind: 'refuse'; msg: string }
+  | { kind: 'forfeit'; reason: string }
+  | { kind: 'enter'; enter: (ctx: Ctx<WorldState>) => void };
+
+/**
+ * Rules a system lays on the ladder and the retreat, registered at module
+ * load (the festival, step 4 port C4). This system cannot import the one
+ * that registers them, which imports this one.
+ */
+export interface FloorRule {
+  /** Where a knockout at the spot lands instead of the last haven, or null. A spot with an ejection is never a haven. */
+  ejection(spotId: string): string | null;
+  /** The router never sends the player to this floor's landing. */
+  unrouted(floor: FloorDef): boolean;
+  /** While this holds the router sends the player to no stop. */
+  routesHeld(reads: Reads): boolean;
+  /** The verdict on a ride from where the player stands to a floor (null: a hub), or null for none. */
+  ride(reads: Reads, toFloorId: string | null): RideVerdict | null;
+}
+
+let floorRule: FloorRule | null = null;
+
+/** Called at module load by the system that owns the rule. */
+export function registerFloorRule(rule: FloorRule): void {
+  floorRule = rule;
+}
+
+/** The registered rule's verdict on a ride from where the player stands, or null. */
+export function rideVerdict(reads: Reads, toFloorId: string | null): RideVerdict | null {
+  return floorRule?.ride(reads, toFloorId) ?? null;
+}
+
+/** Where a knockout at this spot lands instead of the last haven, or null. The old `ejectionSpot`. */
+export function ejectionSpot(spotId: string): string | null {
+  return floorRule?.ejection(spotId) ?? null;
+}
+
 // ---- havens and the retreat (old `safety.ts`) ----
 
 /** A spot with a rest this character may use. */
@@ -709,15 +765,21 @@ export function canRestAt(ctx: Reads, spot: SpotDef): boolean {
   return restActivities(spot).some((a) => !a.requires || conditionsMet(r, a.requires));
 }
 
+/** Never a spot with an ejection (a festival floor): a knockout elsewhere must not land inside it. */
 function noteSafeSpot(ctx: W, spotId: string): void {
   const spot = SPOTS[spotId];
-  if (!spot) return;
+  if (!spot || ejectionSpot(spotId) !== null) return;
   if (canRestAt(ctx, spot)) ctx.state.safeSpots.nearest = spotId;
   if (isUnconditionalHaven(spot)) ctx.state.safeSpots.unconditional = spotId;
 }
 
-/** The spot to retreat to. Never nowhere. The old `retreatSpot`. */
+/**
+ * The spot to retreat to. Never nowhere. The old `retreatSpot`. A spot with
+ * an ejection (floors 15 and 16) lands at it, outside the tower.
+ */
 export function retreatSpot(ctx: Reads, state: State): string {
+  const ejected = ejectionSpot(state.spot);
+  if (ejected && SPOTS[ejected]) return ejected;
   const nearest = state.safeSpots.nearest;
   if (nearest && SPOTS[nearest] && canRestAt(ctx, SPOTS[nearest])) return nearest;
   const fallback = state.safeSpots.unconditional;
@@ -935,8 +997,32 @@ export function startTravel(ctx: W, to: string, opts: TravelOpts = {}): boolean 
 }
 
 /**
+ * The registered rule's verdict on a ride, acted on: a refusal logs its line
+ * and answers false, a forfeit throws the player clear (a fight in progress
+ * is abandoned first) and answers true, an entry runs and answers null so the
+ * ride goes on. Null with no verdict. The old `climbTo` gate and
+ * `forfeitFestival`.
+ */
+function actOnVerdict(ctx: W, floorId: string | null): boolean | null {
+  const verdict = floorRule?.ride(ctx, floorId) ?? null;
+  if (!verdict) return null;
+  if (verdict.kind === 'refuse') {
+    ctx.emit(logLine, { msg: verdict.msg, kind: 'danger' });
+    return false;
+  }
+  if (verdict.kind === 'forfeit') {
+    if (combatOf(ctx).fight) ctx.request(abandon, undefined);
+    retreatToSafety(ctx, verdict.reason, false);
+    return true;
+  }
+  verdict.enter(ctx);
+  return null;
+}
+
+/**
  * Ride the stack to the landing of a floor, or with null to the hub. The old
- * `climbTo`, without the festival verdicts.
+ * `climbTo`. Where the ride goes is checked before the registered rule's
+ * verdict, so a refused climb is never taken for a forfeit.
  */
 export function climbTo(ctx: W, floorId: string | null, opts: TravelOpts = {}): boolean {
   const state = ctx.state;
@@ -951,6 +1037,8 @@ export function climbTo(ctx: W, floorId: string | null, opts: TravelOpts = {}): 
   if (floor === undefined) return false;
   const stop = floor ? floorStop(floor) : hubStop(tower);
   if (!stop || stop.tower !== tower.id || !stopOpen(reader(ctx), stop)) return false;
+  const verdict = actOnVerdict(ctx, floor?.id ?? null);
+  if (verdict !== null) return verdict;
   if (!floor) return ride(ctx, tower, stop.spot, 0, undefined, opts);
   const here = floorOfSpot(state.spot);
   const seam = here && stop.index === spotIndex(state.spot, areaOf(state.spot)) + 1 ? here.seam?.verb : undefined;
@@ -971,6 +1059,9 @@ export function climbToHub(ctx: W, bandId: string, opts: TravelOpts = {}): boole
   if (!band?.hub || band.towerId !== tower.id) return false;
   const stop = bandStop(band);
   if (!stopOpen(reader(ctx), stop)) return false;
+  // Every band hub is outside the festival: from inside an attempt, a forfeit.
+  const verdict = actOnVerdict(ctx, null);
+  if (verdict !== null) return verdict;
   return ride(ctx, tower, stop.spot, stop.index, undefined, opts);
 }
 

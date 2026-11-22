@@ -111,6 +111,23 @@ export interface CoatingBite {
 /** Spend one blow of the coating on the blade in hand. Null when there is none. The old `spendCoating`. */
 export const spendCoatingRequest = defineRequest<void, CoatingBite | null>('alchemy/spend-coating');
 
+/** What a festival door holds of alchemy: the flasks and the oil on a blade. */
+export interface HeldAlchemy {
+  flasks: BrewedFlask[];
+  coating: WeaponCoating | null;
+}
+
+/** Take the flasks and the coating off the player (the festival's door, old `holdGear`). Answers copies. */
+export const holdAlchemy = defineRequest<void, HeldAlchemy>('alchemy/hold');
+
+/**
+ * Give held flasks and oil back (old `returnGear`): the held flasks go before
+ * the ones the attempt left. The oil stays on a blade the attempt left in
+ * hand (`weaponUid`); otherwise the held oil comes back, live again whenever
+ * its own weapon is.
+ */
+export const returnAlchemy = defineRequest<{ held: HeldAlchemy; weaponUid: number | null }, void>('alchemy/return');
+
 registerBench('alchemy', {
   preview: (ctx, placement) => checkBrew(benchReadsOf(ctx), placement),
   craft: brewRequest,
@@ -371,6 +388,18 @@ const alchemy = defineSystem<AlchemyState, AlchemyView>({
   content: { reagents, brew_forms: brewForms, brew_formulas: brewFormulas, alchemy_text: alchemyText },
 
   requests: [
+    answer(holdAlchemy, (ctx) => {
+      const held = JSON.parse(JSON.stringify({ flasks: ctx.state.flasks, coating: ctx.state.coating })) as HeldAlchemy;
+      ctx.state.flasks = [];
+      ctx.state.coating = null;
+      return held;
+    }),
+    answer(returnAlchemy, (ctx, { held, weaponUid }) => {
+      const back = JSON.parse(JSON.stringify(held)) as HeldAlchemy;
+      const state = ctx.state;
+      if (!state.coating || state.coating.weaponUid !== weaponUid) state.coating = back.coating;
+      state.flasks = [...back.flasks, ...state.flasks];
+    }),
     answer(brewRequest, (ctx, { placement }) => brewOnce(ctx, placement)),
     answer(spendCoatingRequest, (ctx) => {
       const held = activeCoating(ctx.state, ctx.read(items).equipment.weapon?.uid);

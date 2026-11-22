@@ -38,8 +38,8 @@
  * - floor 10 (the Row and the Mine): the Tunnels and the Drop of floor 6.
  * - the harbor waters and the roadstead: `kr_pit` and `kr_roadstead`.
  * - the Door of floor 19: a test spot with a boss line behind a forced road.
- * - the festival, performances and prestige are `it.todo`. The bench run
- *   case runs since the alchemy port (step 3).
+ * - performances and prestige are `it.todo`. The bench run case runs
+ *   since the alchemy port (step 3); the festival case since step 4 port C4.
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { defineSystem, PLAYER, TPS, type Ctx, type DeepReadonly, type Kernel } from '../src/kernel';
@@ -47,6 +47,7 @@ import { startBench } from '../src/systems/benches';
 import type { ClockState } from '../src/systems/clock';
 import combat, { abandon, fightWon, playerDefeated, setHuntRest, startForced, type CombatState } from '../src/systems/combat';
 import { setCounter, type CountersState } from '../src/systems/counters';
+import { festivalFloorOf } from '../src/systems/festival';
 import type { GoldState } from '../src/systems/gold';
 import { FLOORS, floorUnlocked, ladderReader } from '../src/systems/ladder';
 import type { LogState } from '../src/systems/log';
@@ -560,7 +561,20 @@ describe('what the return never walks back into', () => {
     expect(blockOf(g, { spot: 'f11_wall', activity: 'hunt' })).toBe('wall');
   });
 
-  it.todo('a festival floor is never a target (step 4: the festival floors and `festivalFloorOf` are not here)');
+  it('a festival floor is never a target', () => {
+    const g = pocketGame(12);
+    const festival = Object.values(SPOTS).find((s) => festivalFloorOf(s.id) && s.activities.length > 0);
+    expect(festival, 'a festival spot with an activity to test with').toBeDefined();
+    const act = festival!.activities[0];
+    expect(blockOf(g, { spot: festival!.id, activity: act.id })).toBe('festival');
+    // The fall on a festival floor ejects to the tower's hub and earns no return.
+    patchWorld(g, (x) => {
+      x.discovered.push(festival!.id);
+    });
+    fallAt(g, festival!.id, act.id);
+    expect(ko(g).pendingReturn).toBeNull();
+    expect(lines(g).some((m) => m.includes('festival floor, not re-entered'))).toBe(true);
+  });
 
   it('an idle character is sent nowhere: no return, no fallback, no hold, no line', () => {
     const g = pocketGame(13);

@@ -37,6 +37,7 @@ import {
 import clock, { totalTicksOf } from '../clock';
 import combat, { fightWon, inForcedFight, playerDefeated, restTarget } from '../combat';
 import counters, { bumpCounter, clearCounter, counterValue, raiseCounter, setCounter } from '../counters';
+import { festivalFloorOf } from '../festival';
 import { floorUnlocked, ladderReader, rungIndex, type FloorDef } from '../ladder';
 import { fillText, logLine, textSchema, type TextRecord } from '../log';
 import resources, { availableMax, defeatPlayer, isAlive, poolHooks, resourceValue } from '../resources';
@@ -210,6 +211,7 @@ export function returnBlock(ctx: K, goal: ReturnSpot, viaRoad = false): Why | nu
   if (!spot) return 'route';
   if (NEVER_TARGET.has(goal.spot)) return 'wall';
   if (spot.forced) return 'forced_spot';
+  if (festivalFloorOf(goal.spot)) return 'festival';
   if (!canStartActivity(ctx, goal.spot, goal.activity)) return 'start';
   if (goal.spot === w.spot) return null;
   const hops = hopsTo(ctx, w, goal.spot);
@@ -226,6 +228,7 @@ export function returnBlock(ctx: K, goal: ReturnSpot, viaRoad = false): Why | nu
 function ambushWhy(spotId: string): Why {
   if (NEVER_TARGET.has(spotId)) return 'wall';
   if (SPOTS[spotId]?.forced) return 'forced_spot';
+  if (festivalFloorOf(spotId)) return 'festival';
   return 'forced_road';
 }
 
@@ -257,7 +260,7 @@ const whyText = (why: Why): string => TEXT[`why_${why}`];
 function huntUsable(ctx: K, cand: ReturnSpot | null | undefined, fallSpot: string): ReturnSpot | null {
   if (!cand || cand.spot === fallSpot) return null;
   const spot = SPOTS[cand.spot];
-  if (!spot || spot.forced || NEVER_TARGET.has(cand.spot)) return null;
+  if (!spot || spot.forced || NEVER_TARGET.has(cand.spot) || festivalFloorOf(cand.spot)) return null;
   const act = spotActivities(spot).find((a) => a.id === cand.activity);
   if (act?.kind !== 'hunt') return null;
   if (spotCleared(ctx, spot) || eligibleAt(ctx, spot).length === 0) return null;
@@ -529,7 +532,7 @@ function onWin(ctx: K, spotId: string, forced: boolean): void {
   const spot = SPOTS[spotId];
   // The activity where the character stands, as the old `currentActivity` read it.
   const act = w.activity ? spotActivities(SPOTS[w.spot] ?? ({ activities: [] } as unknown as SpotDef)).find((a) => a.id === w.activity) : undefined;
-  if (!forced && act?.kind === 'hunt' && spot && !spot.forced && !NEVER_TARGET.has(spotId)) {
+  if (!forced && act?.kind === 'hunt' && spot && !spot.forced && !NEVER_TARGET.has(spotId) && !festivalFloorOf(spotId)) {
     const n = Math.min(PROVEN_STREAK, count(ctx, winKey(spotId)) + 1);
     ctx.emit(raiseCounter, { key: winKey(spotId), value: n });
     if (spot.fightLimit) {

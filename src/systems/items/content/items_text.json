@@ -38,5 +38,9 @@
   {
     "id": "sold_mixed",
     "text": "Sold {count} items for {total} gold."
+  },
+  {
+    "id": "issued_unsold",
+    "text": "🚪 The festival’s issued weapon and the gear found on the royale field are lent for the attempt and taken back at its end; they cannot be sold."
   }
 ]

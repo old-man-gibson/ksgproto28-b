@@ -291,6 +291,22 @@ export const takeStack = defineRequest<{ id: string; quality: QualityTier; qty: 
   'materials/take-stack',
 );
 
+/** Held materials: plain counts and graded stock, by id. */
+export interface HeldMaterials {
+  materials: Record<string, number>;
+  stock: Record<string, Partial<Record<QualityTier, number>>>;
+}
+
+/**
+ * Take every unit of the listed materials, plain counts and graded stock
+ * both (the festival's door holding the provisions, old `holdProvisions`).
+ * Answers what was taken; an id held at no grade is left out of `stock`.
+ */
+export const holdMaterials = defineRequest<{ ids: string[] }, HeldMaterials>('materials/hold');
+
+/** Add held materials back on top of what is held now (old `returnGear`). */
+export const returnMaterials = defineRequest<HeldMaterials, void>('materials/return');
+
 // ---- commands ----
 
 /** Throw away up to `qty` of a held stack. */
@@ -366,6 +382,28 @@ export default defineSystem<MaterialsState, MaterialsView>({
       return { quality: qty === 1 ? last : undefined };
     }),
     answer(grantGraded, (ctx, { id, quality, qty = 1 }) => addGraded(ctx.state, id, quality, qty)),
+    answer(holdMaterials, (ctx, { ids }) => {
+      const state = ctx.state;
+      const held: HeldMaterials = { materials: {}, stock: {} };
+      for (const id of ids) {
+        const count = state.counts[id];
+        if (count) held.materials[id] = count;
+        delete state.counts[id];
+        const grades = state.stock[id];
+        if (grades && Object.values(grades).some((n) => (n ?? 0) > 0)) held.stock[id] = { ...grades };
+        delete state.stock[id];
+      }
+      return held;
+    }),
+    answer(returnMaterials, (ctx, { materials, stock }) => {
+      const state = ctx.state;
+      for (const [id, count] of Object.entries(materials)) state.counts[id] = (state.counts[id] ?? 0) + count;
+      for (const [id, grades] of Object.entries(stock)) {
+        for (const [quality, count] of Object.entries(grades) as [QualityTier, number | undefined][]) {
+          if (count) addGraded(state, id, quality, count);
+        }
+      }
+    }),
     answer(takeGraded, (ctx, { id, quality, qty = 1 }) => removeGraded(ctx.state, id, quality, qty)),
     answer(takeStack, (ctx, { id, quality, qty }) => removeStack(ctx.state, id, quality, qty)),
     answer(takeMaterial, (ctx, { id, qty }) => {

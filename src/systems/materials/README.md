@@ -111,3 +111,11 @@ carries the price of one unit per row and per grade. `materials` now imports
   `state.materials` directly).
 - `smith` is read by `smithing` (the anvil kernel) and `craftTags` by its
   parts.
+
+
+## Step 4 port C4
+
+- `materials/hold { ids }`: takes every unit of the listed materials,
+  plain counts and graded stock (the festival's door holding the
+  provisions). `materials/return { materials, stock }`: adds them back on
+  top of what is held.

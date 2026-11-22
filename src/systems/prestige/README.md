@@ -30,7 +30,8 @@ Version 1: the legacy block. `count`, `points`, `purchases`, `peakLevels`,
   with only it discovered (`world/place` with `newRun`); pays starting gold
   (not earned) and the starting level (`levels/raise-start`).
 - Carried by other systems' own `newRun`: the stash (`items`), the world seed
-  and the first-calm flag (`weather`).
+  and the first-calm flag (`weather`), the festival legacy: tokens, the
+  bonus stacks and the techniques bought (`festival`, since step 4 port C4).
 
 ## Commands
 
@@ -50,8 +51,10 @@ Source `prestige/legacy`: `boon:<id>` rank, `foresight`, `scale:talent:<skill>`
 
 - Readers of grimoire pages (step 3, arcane), Cook's Notes (cooking, step 3), Foresight in the skill
   view, Wayfinding go links (UI step; `wayfinding` is in the view).
-- The festival legacy (step 4). The stronghold and its automatic prestige:
-  step 4 port C2, below.
+- The stronghold and its automatic prestige: step 4 port C2, below. The
+  festival legacy (old `prestige.stash.tokens`, `festivalBonus`,
+  `festivalTechniques`) is the `festival` system's slice since port C4, carried
+  by its own `newRun`, with its modifier source `festival/player`.
 
 ## Step 4 port L
 

@@ -48,5 +48,13 @@
     "index": 4,
     "clearsToAdvance": 4,
     "desc": "Floors 11 to 14, the harbor band. Pick a side at the harbor on floor 11 (merchants, pirates, privateers or the navy; one per run), sail its convoys on floors 11 to 13 for crates, and finish its mission on floor 14."
+  },
+  {
+    "id": "ascent_festival",
+    "name": "The Vermin Festival",
+    "towerId": "the_ascent",
+    "index": 5,
+    "clearsToAdvance": 2,
+    "desc": "Floors 15 and 16, the Vermin Festival: ten rooms of ten, one survivor from each, then one of a hundred. The festival keeps its own clock, which runs only while the game does; time away inside it goes to banked bonus time."
   }
 ]

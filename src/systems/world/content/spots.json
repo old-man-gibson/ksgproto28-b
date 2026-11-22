@@ -9300,5 +9300,535 @@
     ],
     "connections": [],
     "desc": "The navy’s mission: the Sea Beast and four Brood Matrons, level 33. One fight, started when you choose. Winning it clears floor 14."
+  },
+  {
+    "id": "f15_dark_room",
+    "name": "The Dark Room",
+    "icon": "🌑",
+    "areaId": "ascent_f15_area",
+    "map": {
+      "x": 25,
+      "y": 45
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [],
+    "encounters": [
+      {
+        "monsterId": "ph_room_brawler",
+        "weight": 50,
+        "level": [
+          32,
+          33
+        ]
+      },
+      {
+        "monsterId": "ph_room_bruiser",
+        "weight": 50,
+        "level": [
+          32,
+          33
+        ]
+      },
+      {
+        "monsterId": "ph_room_last",
+        "weight": 1,
+        "level": [
+          35,
+          35
+        ],
+        "boss": true
+      }
+    ],
+    "connections": [
+      {
+        "to": "f15_hall",
+        "ticks": 20,
+        "label": "Through the Door",
+        "returnLabel": "Back to the Dark Room",
+        "revealWhen": [
+          {
+            "type": "stat",
+            "key": "festival:door",
+            "value": 1
+          }
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "festival:door",
+            "value": 1
+          }
+        ]
+      }
+    ],
+    "desc": "A sealed room on floor 15 with nine other people in it. Arriving here starts a festival attempt: the door holds all your gear until it ends and issues one plain weapon of your family. The nine come at you in waves, the last alone, and none of it can be fled. The door to the hall opens when you are the only one standing. A knockout, or the ladder out, loses the attempt."
+  },
+  {
+    "id": "f15_hall",
+    "name": "The Survivors’ Hall",
+    "icon": "🏮",
+    "areaId": "ascent_f15_area",
+    "map": {
+      "x": 55,
+      "y": 45
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [
+      {
+        "id": "rest_f15_hall",
+        "kind": "rest",
+        "name": "Sleep on the Benches",
+        "icon": "🛏️"
+      },
+      {
+        "id": "train_f15_drill",
+        "kind": "train",
+        "attr": "str",
+        "name": "Drill With the Others",
+        "icon": "🤺"
+      },
+      {
+        "id": "train_f15_spar",
+        "kind": "train",
+        "attr": "dex",
+        "name": "Spar Between the Benches",
+        "icon": "🥊"
+      }
+    ],
+    "benches": [
+      "cooking"
+    ],
+    "connections": [
+      {
+        "to": "f15_stores",
+        "ticks": 15,
+        "label": "To the Stores",
+        "returnLabel": "Back to the Hall"
+      },
+      {
+        "to": "f15_herb_yard",
+        "ticks": 15,
+        "label": "To the Herb Yard",
+        "returnLabel": "Back to the Hall"
+      },
+      {
+        "to": "f15_workshop",
+        "ticks": 15,
+        "label": "To the Workshop",
+        "returnLabel": "Back to the Hall"
+      },
+      {
+        "to": "f15_survey",
+        "ticks": 15,
+        "label": "To the Survey Table",
+        "returnLabel": "Back to the Hall"
+      },
+      {
+        "to": "f15_gallery",
+        "ticks": 15,
+        "label": "To the Gallery",
+        "returnLabel": "Back to the Hall"
+      }
+    ],
+    "desc": "The hall behind the dark room’s door, where the survivors of ten rooms wait out ten festival days. No one fights here. Sleep on the Benches is a rest activity, Drill With the Others trains Strength, Spar Between the Benches trains Dexterity, and the hall holds a cooking bench. Doors lead to the stores, the herb yard, the workshop, the survey table and the gallery, each with a fixed stock that restocks when the next attempt starts. The festival’s clock runs only while the game does."
+  },
+  {
+    "id": "f15_stores",
+    "name": "The Ration Stores",
+    "icon": "📦",
+    "areaId": "ascent_f15_area",
+    "map": {
+      "x": 78,
+      "y": 35
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [
+      {
+        "id": "search_f15_stores",
+        "kind": "search",
+        "name": "Search the Stores",
+        "icon": "🔍",
+        "ticksPer": 2400,
+        "staticTime": true,
+        "rewards": [
+          {
+            "id": "rations",
+            "weight": 3,
+            "limit": 3,
+            "material": {
+              "id": "travelers_ration",
+              "qty": 2
+            }
+          },
+          {
+            "id": "meat",
+            "weight": 2,
+            "limit": 2,
+            "material": {
+              "id": "raw_meat",
+              "qty": 3
+            }
+          },
+          {
+            "id": "salve",
+            "weight": 2,
+            "limit": 2,
+            "material": {
+              "id": "healing_salve",
+              "qty": 1
+            }
+          },
+          {
+            "id": "onions",
+            "weight": 2,
+            "limit": 2,
+            "material": {
+              "id": "wild_onion",
+              "qty": 2
+            }
+          },
+          {
+            "id": "salt",
+            "weight": 1,
+            "limit": 1,
+            "material": {
+              "id": "rock_salt",
+              "qty": 2
+            }
+          },
+          {
+            "id": "mushrooms",
+            "weight": 1,
+            "limit": 1,
+            "material": {
+              "id": "cave_mushroom",
+              "qty": 2
+            }
+          },
+          {
+            "id": "honey",
+            "weight": 1,
+            "limit": 1,
+            "material": {
+              "id": "wild_honey",
+              "qty": 1
+            }
+          }
+        ]
+      }
+    ],
+    "connections": [],
+    "desc": "The festival’s stores. Search the Stores finds rations, meat, salves and cooking ingredients (onions, mushrooms, rock salt, honey), 12 finds per attempt, 4 festival hours each. The meat, vegetables and seasoning go on the cooking bench in the hall. The stock restocks when the next attempt starts, and what you take stays yours after the attempt."
+  },
+  {
+    "id": "f15_survey",
+    "name": "The Surveyor’s Table",
+    "icon": "🗺️",
+    "areaId": "ascent_f15_area",
+    "map": {
+      "x": 55,
+      "y": 18
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [
+      {
+        "id": "search_f15_survey",
+        "kind": "search",
+        "name": "Survey the Field",
+        "icon": "🧭",
+        "ticksPer": 7200,
+        "staticTime": true,
+        "rewards": [
+          {
+            "id": "cliff",
+            "weight": 1,
+            "limit": 1,
+            "stat": {
+              "key": "flag:festival:scouted:cliff",
+              "set": 1
+            },
+            "desc": "⛰️ The Cliff is scouted: its caches and dens, if any, show on this attempt’s royale map."
+          },
+          {
+            "id": "waterfall",
+            "weight": 1,
+            "limit": 1,
+            "stat": {
+              "key": "flag:festival:scouted:waterfall",
+              "set": 1
+            },
+            "desc": "💦 The Waterfall is scouted: its caches and dens, if any, show on this attempt’s royale map."
+          },
+          {
+            "id": "river",
+            "weight": 1,
+            "limit": 1,
+            "stat": {
+              "key": "flag:festival:scouted:river",
+              "set": 1
+            },
+            "desc": "🌊 The River is scouted: its caches and dens, if any, show on this attempt’s royale map."
+          },
+          {
+            "id": "bank",
+            "weight": 1,
+            "limit": 1,
+            "stat": {
+              "key": "flag:festival:scouted:bank",
+              "set": 1
+            },
+            "desc": "🪨 The Riverbank is scouted: its caches and dens, if any, show on this attempt’s royale map."
+          },
+          {
+            "id": "cave",
+            "weight": 1,
+            "limit": 1,
+            "stat": {
+              "key": "flag:festival:scouted:cave",
+              "set": 1
+            },
+            "desc": "🕳️ The Cave is scouted: its caches and dens, if any, show on this attempt’s royale map."
+          },
+          {
+            "id": "glade",
+            "weight": 1,
+            "limit": 1,
+            "stat": {
+              "key": "flag:festival:scouted:glade",
+              "set": 1
+            },
+            "desc": "🌼 The Glade is scouted: its caches and dens, if any, show on this attempt’s royale map."
+          },
+          {
+            "id": "forest",
+            "weight": 1,
+            "limit": 1,
+            "stat": {
+              "key": "flag:festival:scouted:forest",
+              "set": 1
+            },
+            "desc": "🌲 The Forest is scouted: its caches and dens, if any, show on this attempt’s royale map."
+          },
+          {
+            "id": "village",
+            "weight": 1,
+            "limit": 1,
+            "stat": {
+              "key": "flag:festival:scouted:village",
+              "set": 1
+            },
+            "desc": "🏚️ The Deserted Village is scouted: its caches and dens, if any, show on this attempt’s royale map."
+          }
+        ]
+      }
+    ],
+    "connections": [],
+    "desc": "A table under glass, with the royale’s field drawn on it. Survey the Field scouts one of the field’s eight sections per search, in an order you do not pick: 12 festival hours each, 4 days for all eight. A scouted section shows its caches and dens, if any, on this attempt’s royale map before you walk into it. Every attempt generates its own field, so the table resets when the next attempt starts."
+  },
+  {
+    "id": "f15_herb_yard",
+    "name": "The Herb Yard",
+    "icon": "🌿",
+    "areaId": "ascent_f15_area",
+    "map": {
+      "x": 80,
+      "y": 58
+    },
+    "activities": [
+      {
+        "id": "search_f15_herb_yard",
+        "kind": "search",
+        "name": "Work the Beds",
+        "icon": "🌿",
+        "ticksPer": 2400,
+        "staticTime": true,
+        "rewards": [
+          {
+            "id": "water",
+            "weight": 2,
+            "limit": 2,
+            "material": {
+              "id": "spring_water",
+              "qty": 3
+            }
+          },
+          {
+            "id": "mendroot",
+            "weight": 2,
+            "limit": 2,
+            "material": {
+              "id": "mendroot",
+              "qty": 2
+            }
+          },
+          {
+            "id": "emberbloom",
+            "weight": 1,
+            "limit": 1,
+            "material": {
+              "id": "emberbloom",
+              "qty": 2
+            }
+          },
+          {
+            "id": "frostmoss",
+            "weight": 1,
+            "limit": 1,
+            "material": {
+              "id": "frostmoss",
+              "qty": 2
+            }
+          },
+          {
+            "id": "bloodwort",
+            "weight": 1,
+            "limit": 1,
+            "material": {
+              "id": "bloodwort",
+              "qty": 2
+            }
+          },
+          {
+            "id": "nightcap",
+            "weight": 1,
+            "limit": 1,
+            "material": {
+              "id": "nightcap",
+              "qty": 2
+            }
+          }
+        ]
+      }
+    ],
+    "connections": [],
+    "desc": "A walled yard of herb beds with a well. Work the Beds finds spring water and the alembic’s herbs (mendroot, emberbloom, frostmoss, bloodwort, nightcap), 8 finds per attempt, 4 festival hours each. The alembic in the workshop brews them into flasks. The beds restock when the next attempt starts, and what you take stays yours after the attempt."
+  },
+  {
+    "id": "f15_workshop",
+    "name": "The Workshop",
+    "icon": "⚒️",
+    "areaId": "ascent_f15_area",
+    "map": {
+      "x": 58,
+      "y": 66
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [
+      {
+        "id": "search_f15_workshop",
+        "kind": "search",
+        "name": "Sort the Scrap",
+        "icon": "🔩",
+        "ticksPer": 2400,
+        "staticTime": true,
+        "rewards": [
+          {
+            "id": "scrap",
+            "weight": 3,
+            "limit": 3,
+            "material": {
+              "id": "iron_scrap",
+              "qty": 5
+            }
+          },
+          {
+            "id": "timber",
+            "weight": 1,
+            "limit": 1,
+            "material": {
+              "id": "hardwood",
+              "qty": 3
+            }
+          },
+          {
+            "id": "hide",
+            "weight": 1,
+            "limit": 1,
+            "material": {
+              "id": "leather",
+              "qty": 2
+            }
+          },
+          {
+            "id": "spirit",
+            "weight": 1,
+            "limit": 1,
+            "material": {
+              "id": "grain_spirit",
+              "qty": 3
+            }
+          }
+        ]
+      }
+    ],
+    "recipes": [
+      "iron_ingot"
+    ],
+    "benches": [
+      "alchemy",
+      "forging"
+    ],
+    "connections": [],
+    "desc": "A smithy and a still room under one roof, with an anvil and an alembic. Sort the Scrap finds iron scrap, hardwood, leather and grain spirit, 6 finds per attempt, 4 festival hours each. Smelt scrap into ingots three to one; the anvil forges ingots, hardwood and leather into plain pieces, and the alembic brews the spirit and the herb yard’s herbs into flasks for the fights. The stock restocks when the next attempt starts, and what you make stays yours after the attempt."
+  },
+  {
+    "id": "f15_gallery",
+    "name": "The Gallery",
+    "icon": "🏛️",
+    "areaId": "ascent_f15_area",
+    "map": {
+      "x": 32,
+      "y": 66
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [
+      {
+        "id": "rest_f15_gallery",
+        "kind": "rest",
+        "name": "Rest in the Gallery",
+        "icon": "🛋️"
+      },
+      {
+        "id": "train_f15_gallery",
+        "kind": "train",
+        "name": "Train With the Rows",
+        "icon": "🏋️",
+        "attrXp": [
+          {
+            "attr": "con",
+            "weight": 0.5
+          },
+          {
+            "attr": "int",
+            "weight": 0.5
+          },
+          {
+            "attr": "wis",
+            "weight": 0.5
+          }
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "to": "f15_dark_room",
+        "ticks": 25,
+        "oneWay": true,
+        "label": "Down to the Dark Room"
+      }
+    ],
+    "desc": "A raised gallery over the hall, where survivors of the other rooms drill in rows. Train With the Rows trains Constitution, Intelligence and Wisdom together, each at half the rate of a single-attribute drill. There is a rest here too. A stair at the far end goes down to the dark room. Nothing is found here."
   }
 ]

@@ -245,3 +245,23 @@ Converted with `node scripts/convert-content.mjs items affixes runes`.
 - `items/sell`: a sold item's carvings go out in the event
   `items/carvings-freed`; `runecarving` puts them on its pile.
 - No slice shape change of version 1: `runes` entries may now be objects.
+
+## Step 4 port C4
+
+- `items/grant` takes `plain` (the rune slots are rolled, one draw, and
+  dropped: the festival's issued weapon, old `{ ...createItem(), slots: 0,
+  runes: [] }`) and `stash` (minted into the stronghold stash, a
+  keep-marked piece only: a festival token's regalia).
+- `items/hold`: takes the worn gear and the pack off the player (the
+  festival's door). `items/return { held, lent, extra }`: the lent uids
+  are taken back from the slots and the pack; each held piece goes back
+  into its slot when it is empty and the piece fits (`wearIfFree`, the
+  same rule as the request), else into the pack; the pack becomes the held
+  pack, the pieces with no slot, `extra` (a held sheathed blade with its
+  sheath taken), then what the attempt put in it. Answers the pieces sent
+  to the pack and the weapon in hand.
+- `items/sell` refuses a lent item: the named fact `festivalLent:<uid>`
+  (`festivalLentFact`), which the festival states for the issued weapon.
+  A log line per refused uid, as the old `sellItems`; a sale of lent items
+  only is skipped with `the festival lends those items for the attempt:
+  they cannot be sold`.

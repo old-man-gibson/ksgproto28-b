@@ -48,8 +48,13 @@
  * what the hold has (nothing: he crafts and buys nothing) and fights what the
  * water sends.
  *
+ * Floor 15 (step 4 port C4, `through` 15): the festival's dark room. John
+ * waits out a lockout, rides to floor 15 (the climb is his: the festival's
+ * ladder rules are its own) and lets the dark room's four waves come; the
+ * room emptied clears the floor. No preparation in the hall.
+ *
  * Differences from the old driver, each from a port not done yet:
- * - Floors 15 to 20 are ports C4 to C7. `through` stops at 14.
+ * - Floors 16 to 20 are ports C5 to C7. `through` stops at 15.
  * - The prestige takes no seed: the old `Game.prestige(seed)` reseeded the
  *   generator; the kernel's generator runs on.
  *
@@ -58,7 +63,9 @@
  */
 import { TPS, type Command, type Ctx, type Kernel } from '../src/kernel';
 import combat, { type CombatState } from '../src/systems/combat';
+import clockSystem, { totalTicksOf } from '../src/systems/clock';
 import counters, { counterValue } from '../src/systems/counters';
+import festival, { DARK_FLOOR, DARK_ROOM, lockoutLeft } from '../src/systems/festival';
 import gold from '../src/systems/gold';
 import materials, { heldOf } from '../src/systems/materials';
 import { NPCS } from '../src/systems/npcs';
@@ -107,8 +114,9 @@ export const SEGMENTS = [
   'reclimb2', 'floor7', 'floor8', 'floor9', 'floor10',
   // Floor 11 on the first climb: the stronghold (`through` 11).
   'siege',
-  // Run 3: floors 1 to 10 again, then the harbor (`through` 11 to 14).
-  'reclimb3', 'floor11', 'floor12', 'floor13', 'floor14',
+  // Run 3: floors 1 to 10 again, then the harbor (`through` 11 to 14) and
+  // the festival's floor 15.
+  'reclimb3', 'floor11', 'floor12', 'floor13', 'floor14', 'floor15',
 ] as const;
 export type ClimbSegment = (typeof SEGMENTS)[number];
 
@@ -125,10 +133,11 @@ const BOSSES: Partial<Record<ClimbSegment, string[]>> = {
   floor10: ['f10_foundry'],
   siege: ['f11_wall'],
   floor14: SEA_SIDE_LIST.map((x) => x.mission.spot),
+  floor15: [DARK_ROOM],
 };
 
 /** A try at a boss counts only when this foe is in the fight (the wall's eighth fight, its captain). */
-const BOSS_FOE: Partial<Record<ClimbSegment, string>> = { siege: 'ph_siege_captain' };
+const BOSS_FOE: Partial<Record<ClimbSegment, string>> = { siege: 'ph_siege_captain', floor15: 'ph_room_last' };
 
 /** After a knockout at a keeper, John hunts the den this long before the next try. */
 const GRIND = 6 * 60 * TPS;
@@ -145,7 +154,7 @@ export interface ClimbOptions {
   /**
    * The last floor: 3 (band 1, the default) to 6 (band 2), 7 to 10 (band 3,
    * run 2), 11 to 14 (the siege, which ends run 2, and run 3 to that floor of
-   * the harbor).
+   * the harbor), 15 (run 3 to the festival's dark room).
    */
   through?: number;
   /** Ticks of play one floor past 6 may take before it is a wall. Default four hours. */
@@ -565,13 +574,14 @@ export function runJohn(options: ClimbOptions): ClimbReport {
    * close the segment when its clear holds. A floor still open at the cap is
    * a wall: record it, send the debug skip and report whether the climb goes
    * on. `replay` is a floor John already played in run 2: no record, and a
-   * floor that was a wall then is skipped without playing.
+   * floor that was a wall then is skipped without playing. `ride: false`
+   * leaves the climb to `work` (the festival's ladder rules are its own).
    */
   const attempt = (
     seg: ClimbSegment,
     floorId: string,
     work: () => void,
-    o: { goal?: () => boolean; skip?: () => void; replay?: boolean } = {},
+    o: { goal?: () => boolean; skip?: () => void; replay?: boolean; ride?: boolean } = {},
   ): boolean => {
     const goal = o.goal ?? (() => clears(floorId));
     // DEBUG SKIP, not a player action: the floor's gate and clear counters
@@ -592,7 +602,7 @@ export function runJohn(options: ClimbOptions): ClimbReport {
     // nothing. Each pass settles first and climbs if he is not on the floor.
     repeat(goal, () => {
       settle();
-      entered = onFloor() || climbTo(floorId);
+      entered = o.ride === false || onFloor() || climbTo(floorId);
       if (entered) work();
     });
     const capped = t >= capEnd;
@@ -770,6 +780,25 @@ export function runJohn(options: ClimbOptions): ClimbReport {
   for (let n = 11; n <= 14 && n <= opts.through; n++) {
     if (!attempt(`floor${n}` as ClimbSegment, `ascent_f${n}`, harbor[n])) return finish();
   }
+  if (opts.through <= 14) return finish();
+
+  // ---- The festival (floor 15). One attempt runs from the dark room to the
+  // end of the royale; a lost one shuts floors 15 and 16 for three world
+  // days. John's rules: no preparation in the hall, no hub activity. The
+  // royale (floor 16) is step 4 port C5. ----
+  const festivalRun = () => eye.read(festival).run;
+  const lockLeft = () => lockoutLeft(eye.read(festival), totalTicksOf(eye.read(clockSystem)));
+  const attemptFestival = () => {
+    if (lockLeft() > 0) {
+      settle();
+      until(() => lockLeft() === 0);
+    }
+    if (!send(climb({ floor: DARK_FLOOR }))) return;
+    until(() => !W().travel, 60 * TPS);
+    until(() => !festivalRun() || festivalRun()!.phase !== 'dark');
+  };
+  const festivalWork = () => repeat(() => clears(DARK_FLOOR), attemptFestival);
+  if (!attempt('floor15', DARK_FLOOR, festivalWork, { ride: false })) return finish();
   return finish();
 }
 
@@ -791,6 +820,7 @@ export const FLOOR_OF: Record<ClimbSegment, string> = {
   reclimb2: 'f1-6 again', floor7: 'f7', floor8: 'f8', floor9: 'f9', floor10: 'f10',
   siege: 'f11 siege',
   reclimb3: 'f1-10 again', floor11: 'f11', floor12: 'f12', floor13: 'f13', floor14: 'f14',
+  floor15: 'f15',
 };
 
 /** The per-floor table of one climb, in the old pacing script's columns. */

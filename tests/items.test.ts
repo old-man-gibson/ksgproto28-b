@@ -54,7 +54,8 @@ import { ask, emit, equip, giveItem, makeGame, patch, reads, setMods, slice, une
  * Changed: the call shape. `g.equip(uid)` is the `items/equip` command.
  *
  * Left behind, as `it.todo`: spare marks (`beats`, `findSpares`: they sell,
- * port 7), forged items (modular smithing), festival tokens (festival).
+ * port 7), forged items (modular smithing). Festival tokens are in
+ * tests/festival.test.ts (step 4 port C4).
  */
 
 const items = (kernel: Kernel) => slice<ItemsState>(kernel, 'items');
@@ -610,8 +611,8 @@ describe('the stronghold stash', () => {
     expect(carried.map((i) => i.uid)).toEqual([5, 6, 7, 8]);
   });
 
-  it.todo('the hundredth win of a run puts a token in the stash, which survives prestige (festival, port 7 prestige)');
-  it.todo('a token is spent on the bonus, a technique or the regalia (festival)');
+  // The token cases (the hundredth win, a token spent on the bonus, a
+  // technique or the regalia) run in tests/festival.test.ts since step 4 port C4.
 });
 
 describe('the items view', () => {

@@ -150,5 +150,11 @@
     "name": "The Final Mission",
     "regionId": "the_ascent",
     "sheltered": false
+  },
+  {
+    "id": "ascent_f15_area",
+    "name": "The Dark Room and the Hall",
+    "regionId": "the_ascent",
+    "scene": "hall"
   }
 ]

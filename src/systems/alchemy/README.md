@@ -306,3 +306,11 @@ case), `tests/benches.test.ts` (the bench run, the clock, the old
 `benchLayouts` cases), `tests/consumables.test.ts` (the old rarefinds
 consumable cases, the study card, the salve, food), the bench case of
 `tests/knockoutReturn.test.ts`.
+
+
+## Step 4 port C4
+
+- `alchemy/hold`: takes the flasks and the coating off the player (the
+  festival's door). `alchemy/return { held, weaponUid }`: the held flasks
+  go before the ones the attempt left; the held coating comes back unless
+  the blade in hand (`weaponUid`) carries the attempt's own.

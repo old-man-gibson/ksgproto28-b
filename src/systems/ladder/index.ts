@@ -186,6 +186,18 @@ export function registerLapse(read: (r: R, floorId: string) => boolean): void {
 }
 
 /**
+ * Whether a floor is shut whatever else holds: a lost festival attempt shuts
+ * floors 15 and 16 (old `festivalLocked`). The `festival` system states it
+ * (`registerFloorShut`); until then no floor is shut.
+ */
+let floorShut: (r: R, floor: FloorDef) => boolean = () => false;
+
+/** The festival system registers the read of its lockout. */
+export function registerFloorShut(read: (r: R, floor: FloorDef) => boolean): void {
+  floorShut = read;
+}
+
+/**
  * Words for a counter the ladder card cannot name from its key, by key: the
  * system that owns the counter registers them at module load (`sea`: crates
  * won, the side's mission). The function gets the term's value.
@@ -256,10 +268,13 @@ export function floorsBelow(floor: FloorDef): FloorDef[] {
 
 /**
  * Every rung below cleared, and the gate of the band and of the floor met. A
- * floor off the ladder is never unlocked. A passed band waives its gates.
+ * floor off the ladder is never unlocked. A passed band waives its gates. A
+ * shut floor (a lost festival attempt) is not unlocked, whatever else holds;
+ * the floors above stay as they were.
  */
 export function floorUnlocked(r: R, floor: FloorDef): boolean {
   if (floor.bandId === undefined) return false;
+  if (floorShut(r, floor)) return false;
   if (!floorsBelow(floor).every((f) => floorCleared(r, f))) return false;
   if (bandPassed(r, floor.bandId)) return true;
   const band = BANDS[floor.bandId];
@@ -432,7 +447,10 @@ export function rideStops(tower: TowerDef): RideStop[] {
   return stops;
 }
 
-/** The terms of the stop itself: its floor unlocked, its band open. The festival verdicts of the old gate are step 4. */
+/**
+ * The terms of the stop itself: its floor unlocked, its band open. The
+ * festival's verdicts on a ride are the world's to act on (`FloorRule`).
+ */
 export function stopOpen(r: R, stop: RideStop): boolean {
   if (stop.floor && !floorUnlocked(r, stop.floor)) return false;
   if (stop.band && !bandOpen(r, stop.band)) return false;
@@ -555,6 +573,8 @@ export interface RungView {
   index: number;
   band: string;
   status: RungStatus;
+  /** Shut whatever its status: a lost festival attempt (`registerFloorShut`). No ride goes there. */
+  shut: boolean;
   landing: string | null;
   /** The gate of the band and of the floor. Empty for a floor with none. */
   gate: TermView[];
@@ -693,6 +713,7 @@ const ladder = defineSystem<LadderState, LadderView>({
             index: floor.index,
             band: BANDS[floor.bandId!]?.name ?? '',
             status: rungStatus(r, floor),
+            shut: floorShut(r, floor),
             landing: floor.landing ?? null,
             gate: [...(BANDS[floor.bandId!]?.gate ?? []), ...(floor.gate ?? [])].map(term),
             clear: (floor.clear ?? []).map(term),

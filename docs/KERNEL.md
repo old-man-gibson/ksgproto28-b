@@ -748,7 +748,9 @@ point. Each took the simpler option.
 34. **`ctx.catchingUp` (step 4 port C1, request K1).** Old content keeps
     clocks that run in play only: the ward window counts live ticks (old
     `tickWards(state, catchingUp)`), the sea pays offline convoys by a
-    share, the festival clock reads the same flag. The context of every
+    share. (The festival clock does not read it: the old catch-up stopped
+    while the festival held the player; docs/CONTENT.md section 11.4,
+    step 4 port C4.) The context of every
     handler carries `catchingUp`, read-only. `catchUp` creates its kernel
     with `catchingUp: true`; every other kernel, including one run by
     `runHeadless`, has it false. `tests/runner.test.ts` keeps the

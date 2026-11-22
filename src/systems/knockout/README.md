@@ -94,9 +94,9 @@ Sent: `resources/defeat`, `counters/bump`, `raise`, `set`, `clear`,
 
 ## Left behind
 
-- The festival floors are never targets: the check arrives with the
-  festival. `f11_wall` (in `NEVER_TARGET_SPOTS`) is a real spot since step 4
-  port C2; `tests/knockoutReturn.test.ts` reads it instead of a test spot.
+- `f11_wall` (in `NEVER_TARGET_SPOTS`) is a real spot since step 4 port
+  C2; `tests/knockoutReturn.test.ts` reads it instead of a test spot. The
+  festival floors are never targets since port C4.
 - A bench run or a performance ends the return: with those systems.
 - Spine port 7: a prestige ends the return, because the new run starts
   this slice new (kernel decision 30). The defeat summary is the overlay
@@ -118,3 +118,12 @@ Sent: `resources/defeat`, `counters/bump`, `raise`, `set`, `clear`,
   target.
 - A hold after a spent fallback waits where the character stands, not at the
   haven.
+
+
+## Step 4 port C4
+
+- A festival floor is never a target (old `festivalFloorOf` in
+  `returnBlock`, `ambushWhy`, `huntUsable` and the win's proven hunt): why
+  `festival`, "festival floor, not re-entered". A knockout there lands at
+  the tower's hub (the world's `retreatSpot`), and the festival loses the
+  attempt.

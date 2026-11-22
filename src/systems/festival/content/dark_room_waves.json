@@ -1,0 +1,29 @@
+[
+  {
+    "id": "wave_1",
+    "foes": [
+      { "monsterId": "ph_room_brawler", "level": 32 },
+      { "monsterId": "ph_room_bruiser", "level": 32 }
+    ]
+  },
+  {
+    "id": "wave_2",
+    "foes": [
+      { "monsterId": "ph_room_brawler", "level": 32 },
+      { "monsterId": "ph_room_brawler", "level": 33 },
+      { "monsterId": "ph_room_bruiser", "level": 33 }
+    ]
+  },
+  {
+    "id": "wave_3",
+    "foes": [
+      { "monsterId": "ph_room_bruiser", "level": 33 },
+      { "monsterId": "ph_room_brawler", "level": 33 },
+      { "monsterId": "ph_room_bruiser", "level": 33 }
+    ]
+  },
+  {
+    "id": "wave_4",
+    "foes": [{ "monsterId": "ph_room_last", "level": 35 }]
+  }
+]

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { PLAYER, type Kernel, type Modifier } from '../src/kernel';
 import { attrXpNeeded, grantAttrXp, grantAttrXpSplit } from '../src/systems/attributes';
+import { spendToken, type FestivalState } from '../src/systems/festival';
 import { grantItem, setBearer, unequipSlot, equipItem, type ItemsState } from '../src/systems/items';
 import { grantLevelXp } from '../src/systems/levels';
 import { drawPool, exertPool, hurtPlayer, setExerting, setPace, spendPool } from '../src/systems/resources';
@@ -33,8 +34,7 @@ import { ask, emit, equip, makeGame, patch, setMods, slice, unequip } from './he
  * `items` system since spine port 3: uid 1 is the starting rusty sword.
  *
  * Left behind, for the ports of the systems they need:
- * - the festival bonus (prestige), Cooking's food
- *   milestones over a cooked dish (cooking);
+ * - Cooking's food milestones over a cooked dish (cooking);
  * - the rebuild count under a gale on the open ridge: in `tests/exposure.test.ts` since spine port 6;
  * - the long fight of the sweep. The sweep here runs every request these
  *   systems accept instead.
@@ -110,6 +110,20 @@ describe('derived-stats cache', () => {
     // The toggle touches the lock source, so every source that depends on it
     // is collected again.
     expect(kernel.modifiers()).not.toBe(before);
+    sound(kernel);
+  });
+
+  it('invalidates when a festival token buys a stack of the permanent bonus', () => {
+    // The festival's legacy bonus: a modifier source that moves mid-run, when a token is spent.
+    const kernel = makeGame();
+    const before = statBlockOf(kernel);
+    patch(kernel, (slices) => (slices.festival as FestivalState).legacy.tokens.push({ seed: 1 }));
+    expect(kernel.dispatch(spendToken({ index: 0, choice: { kind: 'bonus' } })).ok).toBe(true);
+    const after = statBlockOf(kernel);
+    expect(after).not.toBe(before);
+    matchesFresh(kernel);
+    expect(after.damage).toBeGreaterThan(before.damage);
+    expect(after.maxHp).toBeGreaterThan(before.maxHp);
     sound(kernel);
   });
 

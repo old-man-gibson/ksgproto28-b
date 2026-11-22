@@ -4,6 +4,7 @@
   import { send, viewOf } from '../../ui/game.svelte';
   import knockout, { stayHere } from '../knockout';
   import ladder from '../ladder';
+  import FestivalPanel from '../festival/FestivalPanel.svelte';
   import SeaPanel from '../sea/SeaPanel.svelte';
   import world, { cancelPlan, climb, climbHub, goAndDoCommand, selectActivity, setIntent, travelTo, type MapSpotView as SpotView } from './index';
 
@@ -106,6 +107,7 @@
   </div>
 
   <SeaPanel />
+  <FestivalPanel />
 
   <h2>Map: {view.map.region}</h2>
   <div class="card picked" data-testid="location-picked">
@@ -208,20 +210,25 @@
                   <li>Gate: {t.text} ({t.current.toLocaleString('en-US')} of {t.needed.toLocaleString('en-US')}){t.met ? ', met' : ''}</li>
                 {/each}
               </ul>
+              <!-- Every band hub is outside the festival: the hub's verdict, as for the tower's hub. -->
               <Button
                 disabled={view.tower !== tower.id || r.hub.status !== 'open' || view.recovering || r.hub.spot === view.spot.id}
+                title={view.rideVerdicts['']?.msg || undefined}
                 onclick={() => run(send(climbHub({ band: r.hub!.band })))}
               >
-                Ride to the hub of {r.band}
+                {view.rideVerdicts['']?.kind === 'forfeit' ? 'Forfeit: ride' : 'Ride'} to the hub of {r.band}
               </Button>
             </li>
           {/if}
           <li class="rung">
             <div class="runghead">
               <span><strong>Floor {r.index}: {r.status === 'sealed' ? 'not reached' : r.name}</strong></span>
-              <span class={`state ${r.status}`}>{statusWord[r.status]}</span>
+              <span class={`state ${r.shut ? 'sealed' : r.status}`}>{r.shut ? 'Shut' : statusWord[r.status]}</span>
             </div>
             <ul class="terms">
+              {#if r.shut}
+                <li>Shut: a festival attempt was lost; three days or the next prestige</li>
+              {/if}
               {#each r.gate as t (t.text)}
                 <li>Gate: {t.text} ({t.current.toLocaleString('en-US')} of {t.needed.toLocaleString('en-US')}){t.met ? ', met' : ''}</li>
               {/each}
@@ -232,16 +239,26 @@
               {/if}
             </ul>
             <Button
-              disabled={view.tower !== tower.id || (r.status !== 'open' && r.status !== 'cleared') || view.recovering || r.landing === view.spot.id}
+              disabled={view.tower !== tower.id ||
+                r.shut ||
+                (r.status !== 'open' && r.status !== 'cleared') ||
+                view.rideVerdicts[r.id]?.kind === 'refuse' ||
+                view.recovering ||
+                r.landing === view.spot.id}
+              title={view.rideVerdicts[r.id]?.msg || undefined}
               onclick={() => run(send(climb({ floor: r.id })))}
             >
-              Ride to floor {r.index}
+              {view.rideVerdicts[r.id]?.kind === 'forfeit' ? 'Forfeit: ride' : 'Ride'} to floor {r.index}
             </Button>
           </li>
         {/each}
       </ol>
-      <Button disabled={view.tower !== tower.id || view.spot.id === tower.hub || view.recovering} onclick={() => run(send(climb({ floor: null })))}>
-        Ride to the hub
+      <Button
+        disabled={view.tower !== tower.id || view.spot.id === tower.hub || view.recovering}
+        title={view.rideVerdicts['']?.msg || undefined}
+        onclick={() => run(send(climb({ floor: null })))}
+      >
+        {view.rideVerdicts['']?.kind === 'forfeit' ? 'Forfeit: ride' : 'Ride'} to the hub
       </Button>
     </div>
   {/each}

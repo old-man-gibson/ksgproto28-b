@@ -1,0 +1,10 @@
+[
+  { "id": "sword", "skill": "swordsmanship", "item": "rusty_sword" },
+  { "id": "spear", "skill": "spear_combat", "item": "old_spear" },
+  { "id": "dagger", "skill": "dagger_combat", "item": "iron_dagger" },
+  { "id": "blunt", "skill": "club_combat", "item": "old_hammer" },
+  { "id": "greatsword", "skill": "greatsword_combat", "item": "steel_greatsword" },
+  { "id": "staff", "skill": "staff_combat", "item": "oak_staff" },
+  { "id": "bow", "skill": "bow_combat", "item": "hunting_bow" },
+  { "id": "unarmed", "skill": "unarmed_combat" }
+]

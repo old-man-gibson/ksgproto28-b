@@ -31,7 +31,8 @@ and `world/arrived`, so the check reads the counters the same handler
 bumped (combat bumps `kills` after it emits the kill). Since step 4 port
 L it also runs after `achievements/claimed` (the old `achievement`). The
 old build also checked on `craft` and `superattr:unlock`, and by direct
-call from consumables and the festival: those ports emit `titles/check`.
+call from consumables and the festival: those ports emit `titles/check`
+(the festival since step 4 port C4, on a win that earns the hidden title).
 
 ## Modifiers
 

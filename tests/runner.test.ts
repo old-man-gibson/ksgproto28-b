@@ -74,7 +74,9 @@ describe('offline catch-up', () => {
  * - `wards`: a ward window's clock counts live ticks only.
  * - `sea`: a convoy leg sailed while catching up pays a share of its crates
  *   as cargo and none to `sea:crates:won` (step 4 port C3).
- * Later: the festival clock.
+ * The festival (step 4 port C4) does not read the flag: the old festival
+ * clock read nothing either; the old catch-up loop stopped while the festival
+ * held the player, which the kernel does not do (docs/CONTENT.md section 11).
  */
 describe('systems that behave differently in catch-up', () => {
   const W = WARD_WINDOWS[0];

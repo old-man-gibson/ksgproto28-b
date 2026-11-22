@@ -131,6 +131,12 @@ export const RUNECARVING_FLAG = 'unlock_runecarving';
 /** The named fact a festival attempt states while its door holds the gear. The stash is shut then. */
 export const FESTIVAL_HOLDS_FACT = 'festivalHolds';
 
+/**
+ * The named fact a festival attempt states for each item it lends (the issued
+ * weapon; the royale's finds): `festivalLent:<uid>`. A lent item is not sold.
+ */
+export const festivalLentFact = (uid: number): string => `festivalLent:${uid}`;
+
 export function grantsOf(state: State): ReadonlySet<string> {
   return new Set(state.bearer.grants);
 }
@@ -302,6 +308,26 @@ function nextUid(state: ItemsState): number {
   return state.uidCounter;
 }
 
+/**
+ * Place an item in a slot when the slot is empty, the requirements hold, the
+ * body has the hand and the arms budget has room. The old `wearIfFree`. The
+ * caller touches the worn source.
+ */
+function wearHeld(ctx: Ctx<ItemsState>, slot: SlotId, item: ItemInstance): boolean {
+  const state = ctx.state;
+  const def = itemDefOf(item);
+  if (!def || state.equipment[slot] || !canEquip(ctx, item) || wieldScale(def, slot) <= 0) return false;
+  const hand = HAND_SLOTS.indexOf(slot);
+  if (hand >= 0) {
+    const grants = grantsOf(state);
+    const arms = armsFrom(grants);
+    if (hand >= Math.max(BASE_ARMS, arms)) return false;
+    if (armsUsed(state.equipment, grants) + armCost(grants, def, slot) > arms) return false;
+  }
+  state.equipment[slot] = item;
+  return true;
+}
+
 function logOf(ctx: Ctx<ItemsState>, id: string, params: Record<string, unknown>, kind: string): void {
   ctx.emit(logLine, { msg: fillText(TEXT[id], params), kind });
 }
@@ -413,11 +439,43 @@ function equipFromPack(ctx: Ctx<ItemsState>, uid: number, slot: SlotId | undefin
  * Mint an item into the pack: a new uid and rolled rune slots. `size` is the
  * size of what carried it (left absent at medium). `affixChance` rolls an
  * affix. Draws: one for the slots, one for the affix chance when given, one
- * for the affix when it lands. Answers a copy of the instance.
+ * for the affix when it lands. `plain`: the rolled slots are dropped (the
+ * festival's issued weapon). `stash`: minted into the stronghold stash, a
+ * keep-marked piece only. Answers a copy of the instance.
  */
-export const grantItem = defineRequest<{ defId: string; size?: SizeTag; affixChance?: number }, ItemInstance>(
+export const grantItem = defineRequest<
+  { defId: string; size?: SizeTag; affixChance?: number; plain?: boolean; stash?: boolean },
+  ItemInstance
+>(
   'items/grant',
 );
+
+/** What a festival door holds of the items: the worn gear and the pack. */
+export interface HeldItems {
+  equipment: Equipment;
+  inventory: ItemInstance[];
+}
+
+/**
+ * Take everything worn and carried off the player (the festival's door, old
+ * `holdGear`). Answers copies of what was taken; the pack and the slots are
+ * left empty.
+ */
+export const holdItems = defineRequest<void, HeldItems>('items/hold');
+
+/**
+ * Give a held set back (old `returnGear`, ruling 2026-10-30). The `lent`
+ * uids are taken back wherever they are. Each held piece goes back into its
+ * slot when the slot is empty and the piece fits (`wearIfFree`), otherwise
+ * into the pack. The pack becomes the held pack, then the pieces that found
+ * no slot, then `extra` (a held sheathed blade with its sheath taken), then
+ * what the attempt put in it. Answers how many held pieces went to the pack
+ * for want of a slot (with `extra`) and the uid of the weapon in hand after.
+ */
+export const returnItems = defineRequest<
+  { held: HeldItems; lent: number[]; extra: ItemInstance[] },
+  { bumped: number; weaponUid: number | null }
+>('items/return');
 
 /**
  * Put a forged piece in the pack: a new uid, the class stub as `defId`, no
@@ -685,7 +743,15 @@ const system: SystemDef<ItemsState, ItemsView> = defineSystem<ItemsState, ItemsV
       const sold: ItemInstance[] = [];
       const freed: CarvedRune[] = [];
       let total = 0;
+      let lent = 0;
       for (const uid of uids) {
+        // The Vermin Festival lends its weapon, and the royale's finds, for the
+        // attempt and takes them back.
+        if (factValue(ctx, festivalLentFact(uid)) > 0) {
+          lent += 1;
+          logOf(ctx, 'issued_unsold', {}, 'danger');
+          continue;
+        }
         const idx = state.inventory.findIndex((i) => i.uid === uid);
         if (idx < 0) continue;
         const item = state.inventory[idx];
@@ -699,7 +765,9 @@ const system: SystemDef<ItemsState, ItemsView> = defineSystem<ItemsState, ItemsV
         }
         sold.push(item);
       }
-      if (sold.length === 0) return skipped('none of the listed items is in the pack');
+      if (sold.length === 0) {
+        return skipped(lent > 0 ? 'the festival lends those items for the attempt: they cannot be sold' : 'none of the listed items is in the pack');
+      }
       if (freed.length) ctx.emit(carvingsFreed, { carvings: freed });
       ctx.request(addGold, { amount: total, earned: true });
       ctx.emit(logLine, { msg: saleMessage(sold, total), kind: 'item' });
@@ -708,7 +776,7 @@ const system: SystemDef<ItemsState, ItemsView> = defineSystem<ItemsState, ItemsV
   ],
 
   requests: [
-    answer(grantItem, (ctx, { defId, size, affixChance }) => {
+    answer(grantItem, (ctx, { defId, size, affixChance, plain = false, stash = false }) => {
       // A `forged:<class>` id is a class stub with no numbers of its own:
       // minted, it becomes the class's exemplar at Fair grade, with no rune
       // slots (old `createItem`).
@@ -729,8 +797,43 @@ const system: SystemDef<ItemsState, ItemsView> = defineSystem<ItemsState, ItemsV
       if (affixChance !== undefined && ctx.rng.chance(affixChance)) {
         item.affix = affixOfId(AFFIX_LIST[ctx.rng.int(AFFIX_LIST.length)].id);
       }
-      ctx.state.inventory.push(item);
+      // A plain issue (the festival's weapon): the slots are rolled as for any
+      // grant, then dropped, as the old `{ ...createItem(), slots: 0, runes: [] }`.
+      if (plain) item.slots = 0;
+      // Minted into the stronghold stash (a festival token's regalia, old
+      // `stashItem(createItem())`): a keep-marked piece only.
+      if (stash) {
+        if (keepMarked(item)) ctx.state.stash.push(item);
+      } else {
+        ctx.state.inventory.push(item);
+      }
       return cloneJson(item) as ItemInstance;
+    }),
+
+    answer(holdItems, (ctx) => {
+      const state = ctx.state;
+      const held: HeldItems = { equipment: cloneJson(state.equipment) as Equipment, inventory: cloneJson(state.inventory) as ItemInstance[] };
+      state.equipment = {};
+      state.inventory = [];
+      ctx.touch(WORN_SOURCE);
+      return held;
+    }),
+
+    answer(returnItems, (ctx, { held, lent, extra }) => {
+      const state = ctx.state;
+      const lentSet = new Set(lent);
+      for (const [slot, item] of Object.entries(state.equipment) as [SlotId, ItemInstance | undefined][]) {
+        if (item && lentSet.has(item.uid)) delete state.equipment[slot];
+      }
+      const gained = state.inventory.filter((i) => !lentSet.has(i.uid));
+      const back = cloneJson(held) as HeldItems;
+      const bumped: ItemInstance[] = [];
+      for (const [slot, item] of Object.entries(back.equipment) as [SlotId, ItemInstance | undefined][]) {
+        if (item && !wearHeld(ctx, slot, item)) bumped.push(item);
+      }
+      state.inventory = [...back.inventory, ...bumped, ...(cloneJson(extra) as ItemInstance[]), ...gained];
+      ctx.touch(WORN_SOURCE);
+      return { bumped: bumped.length + extra.length, weaponUid: state.equipment.weapon?.uid ?? null };
     }),
 
     answer(grantForged, (ctx, { defId, spec }) => {
@@ -747,17 +850,7 @@ const system: SystemDef<ItemsState, ItemsView> = defineSystem<ItemsState, ItemsV
     }),
 
     answer(wearIfFree, (ctx, { slot, item }) => {
-      const state = ctx.state;
-      const def = itemDefOf(item);
-      if (!def || state.equipment[slot] || !canEquip(ctx, item) || wieldScale(def, slot) <= 0) return false;
-      const hand = HAND_SLOTS.indexOf(slot);
-      if (hand >= 0) {
-        const grants = grantsOf(state);
-        const arms = armsFrom(grants);
-        if (hand >= Math.max(BASE_ARMS, arms)) return false;
-        if (armsUsed(state.equipment, grants) + armCost(grants, def, slot) > arms) return false;
-      }
-      state.equipment[slot] = cloneJson(item) as ItemInstance;
+      if (!wearHeld(ctx, slot, cloneJson(item) as ItemInstance)) return false;
       ctx.touch(WORN_SOURCE);
       return true;
     }),

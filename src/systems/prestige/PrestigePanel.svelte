@@ -1,5 +1,6 @@
 <script lang="ts">
   import Button from '../../ui/components/Button.svelte';
+  import StashPanel from '../festival/StashPanel.svelte';
   import { send, viewOf } from '../../ui/game.svelte';
   import Boons from './Boons.svelte';
   import prestige, { prestigeNow } from './index';
@@ -50,6 +51,8 @@
     <h2>Boons</h2>
     <Boons />
   {/if}
+
+  <StashPanel />
 </section>
 
 <style>

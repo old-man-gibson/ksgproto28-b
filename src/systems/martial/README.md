@@ -443,3 +443,11 @@ Spine port 5:
   `reachablePositions`); `cardSpent` reads the canonical form.
 - The study-card case of the old martial tests runs in
   `tests/consumables.test.ts`.
+
+
+## Step 4 port C4
+
+- `martial/hold-sheathed`: takes the sheathed blade off the player (the
+  festival's door). `martial/return-sheathed { held, lent }`: a sheathed
+  blade among `lent` is taken back; the held blade goes into the sheath
+  when it is empty, and is answered (for the pack) when it is not.

@@ -248,3 +248,34 @@ cold and lightning are set in `spellcraft` (`cast.ts`).
   caravan and `placeAt` clear it. Combat spends it (see the combat README).
 - The harbor readout of the `sea` system is mounted in the Location
   panel, under the activities (old placement, docs/KERNEL.md decision 29).
+
+## Step 4 port C4
+
+- Content, appended from the old registry: area `ascent_f15_area` (roofed,
+  scene `hall`) and floor 15's seven spots: `f15_dark_room` (the landing;
+  its road to the hall opens on `festival:door`), `f15_hall` (rest, two
+  drills, the stove), `f15_stores`, `f15_survey`, `f15_herb_yard`,
+  `f15_workshop` (the smelt, the alembic and the anvil) and `f15_gallery`
+  (rest, a three-attribute drill, a one-way stair to the dark room). The
+  hub's searches are finite and run on the clock (`staticTime`). 158 spots,
+  27 areas.
+- `FloorRule` (`registerFloorRule`, at module load; the `festival` system
+  registers it, since it imports this one):
+  - `ejection(spot)`: a knockout at a festival spot lands at the tower's
+    hub (`retreatSpot`, old `ejectionSpot`), and such a spot is never
+    noted as a haven (`noteSafeSpot`).
+  - `unrouted(floor)`, `routesHeld()`: the router never sends the player to
+    a festival floor, and to no stop at all inside an attempt
+    (`routableStops`).
+  - `ride(toFloorId)`: the verdict on a climb, after the ladder's own
+    terms (old `rideGate` and `climbTo`). `refuse` logs its line and
+    refuses; `forfeit` abandons a fight in progress, throws the player
+    clear (`retreatToSafety`) and answers true; `enter` runs before the
+    ride (the royale's time jump). `climbToHub` asks it with a null floor.
+- `ejectionSpot(spotId)` and `rideVerdict(reads, toFloorId)`, exported.
+- The view's `rideVerdicts`: the rule's verdict on each ride from here, by
+  floor id (`''` for a hub). The ladder card words a forfeit ride
+  "Forfeit: ride to floor N" with the forfeit line as its title, and
+  disables a refused one (old `ladderView` `rideAction`).
+- The festival's readout is mounted in the Location panel under the
+  harbor's (old placement).

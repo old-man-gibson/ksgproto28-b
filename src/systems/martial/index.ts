@@ -640,6 +640,16 @@ export const recordRequest = defineRequest<{ technique: string }, { tier: number
 export const techniqueEquipment = defineRequest<{ technique: string; phase: 'pre' | 'post' }, void>('martial/equipment');
 /** Hold a prepared working in the spell-ready seat, or let it go (`uid: null`). The mana is never refunded. */
 export const holdSpell = defineRequest<{ uid: number | null }, void>('martial/hold-spell');
+/** Take the sheathed blade off the player (the festival's door, old `holdGear`). Answers a copy, or null. */
+export const holdSheathed = defineRequest<void, ItemInstance | null>('martial/hold-sheathed');
+/**
+ * Give a held sheathed blade back (old `returnGear`): a sheathed blade among
+ * `lent` is taken back first; then the held one goes into the sheath when it
+ * is empty. Answers the held blade when the sheath was taken, for the pack.
+ */
+export const returnSheathed = defineRequest<{ held: ItemInstance | null; lent: number[] }, ItemInstance | null>(
+  'martial/return-sheathed',
+);
 
 export const learnFromTeacher = defineCommand<{ npc: string; technique: string }>('martial/learn-technique');
 export const learnSchool = defineCommand<{ npc: string; school: string }>('martial/learn-school');
@@ -1166,6 +1176,19 @@ const martial: SystemDef<MartialState, MartialView> = defineSystem<MartialState,
     answer(fitSlots, (ctx) => fitTechniqueSlots(ctx)),
     answer(holdSpell, (ctx, { uid }) => {
       ctx.state.readiedSpell = uid;
+    }),
+    answer(holdSheathed, (ctx) => {
+      const item = ctx.state.sheathed;
+      ctx.state.sheathed = null;
+      return item ? (JSON.parse(JSON.stringify(item)) as ItemInstance) : null;
+    }),
+    answer(returnSheathed, (ctx, { held, lent }) => {
+      const m = ctx.state;
+      if (m.sheathed && lent.includes(m.sheathed.uid)) m.sheathed = null;
+      if (!held) return null;
+      if (m.sheathed) return JSON.parse(JSON.stringify(held)) as ItemInstance;
+      m.sheathed = JSON.parse(JSON.stringify(held)) as ItemInstance;
+      return null;
     }),
     answer(recordRequest, (ctx, { technique }) => {
       const def = TECHNIQUES[technique];

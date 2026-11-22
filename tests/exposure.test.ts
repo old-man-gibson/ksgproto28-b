@@ -626,7 +626,16 @@ describe('open sky in the tower', () => {
     }
   });
 
-  it.todo('floors 15 to 20 and the festival: open and roofed areas, night and sun (step 4: floors above 14)');
+  it('a floor 12 spot has a sky; a festival spot and a floor 1 spot have none', () => {
+    // The old case read `f16_arena` too: floor 16 is step 4 port C5.
+    const kind = skyAt('f12_landing');
+    expect(kind).not.toBeNull();
+    expect(WEATHER_KINDS).toContain(kind);
+    expect(skyAt('f15_herb_yard')).toBeNull();
+    expect(skyAt('f1_landing')).toBeNull();
+  });
+
+  it.todo('floors 16 to 20: open and roofed areas, night and sun (step 4: floors above 15)');
   it.todo('the header weather chip shows `still` at a roofed spot (the UI step: `headerSky` of the old shell)');
 });
 

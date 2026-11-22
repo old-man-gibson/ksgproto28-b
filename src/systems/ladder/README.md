@@ -130,3 +130,19 @@ None: this system has no command and no request.
   `flag:sea:14:done` ("Your side's mission boss slain"). The old card
   printed both keys raw. The roadstead's fight count reads "1 wins at The
   Roadstead" now that the spot is here.
+
+## Step 4 port C4
+
+- Band 5 (`ascent_festival`, The Vermin Festival, two clears to advance)
+  and floor 15 (`ascent_f15`, The Dark Room: clear `boss:f15_dark_room`,
+  800 XP), old records. Floor 16 is port C5: the band size lint names the
+  band as holding floor 15 only until then.
+- `registerFloorShut(read)`: a floor shut whatever else holds (old
+  `festivalLocked` in `floorUnlocked`). The `festival` system registers
+  `festival:shut` >= 1 for the floors of band 5. A shut floor is not
+  unlocked; the floors above keep their state. The view's rung carries
+  `shut`: the ladder card reads "Shut", with the reason, and offers no ride
+  there (old `ladderView` mark `locked`).
+- The festival's verdicts on a ride (`shut`, `closed`, `forfeit`,
+  `royale`) are the world's to act on (`FloorRule`); `stopOpen` keeps the
+  ladder's own terms.

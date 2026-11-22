@@ -159,21 +159,22 @@ describe('John through band 2', () => {
 
 describe('John: the road past band 2 (smoke test, no bounds)', () => {
   /**
-   * The driver's own health, not the game's pacing: `through: 14` plays three
+   * The driver's own health, not the game's pacing: `through: 15` plays three
    * runs (one prestige by choice, the siege's automatic one) and reports a
    * time for every floor. A floor that stays shut for the cap is a finding
    * (`stuck`, then a debug skip), so this does not fail on one; it fails when
    * John stops for want of a rule, or when a segment never closes. The
-   * numbers are `npm run pacing -- --through 14`. The old case climbs to 20
-   * (ports C4 to C7).
+   * numbers are `npm run pacing -- --through 15`. The old case climbs to 20
+   * (ports C5 to C7).
    */
-  it('plays every floor to 14 and never stops for want of a rule', () => {
-    const r = runJohn({ seed: 42, weapon: 'skip', through: 14 });
+  it('plays every floor to 15 and never stops for want of a rule', () => {
+    const r = runJohn({ seed: 42, weapon: 'skip', through: 15 });
     for (const k of SEGMENTS) expect(r.done[k], `${k} never closed`).not.toBeNull();
     for (const [k, st] of Object.entries(r.stuck)) expect(st.wall, `${k}: ${st.why}`).toBe(true);
     expect(r.runs.floor10, 'floor 10 is played in the second run').toBe(2);
     expect(r.runs.siege, 'the siege ends the second run').toBe(2);
     expect(r.runs.floor14, 'floor 14 is played in the third run').toBe(3);
+    expect(r.runs.floor15, 'floor 15 is played in the third run').toBe(3);
     const p = r.kernel.snapshot().slices.prestige as { count: number; stronghold: boolean };
     expect(p.count, 'the stronghold prestiged a second time').toBe(2);
     expect(p.stronghold).toBe(true);

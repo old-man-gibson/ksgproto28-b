@@ -17,7 +17,7 @@ import {
 } from '../../kernel';
 import combat, { enemyKilled, inForcedFight, TOLL_GOLEM } from '../combat';
 import counters, { conditionsMet, counterValue, setCounter } from '../counters';
-import { floorClearedEvent } from '../ladder';
+import { floorClearedEvent, FLOORS } from '../ladder';
 import { textSchema } from '../log';
 import { conditionReader } from '../skills';
 import { statBlockOf } from '../stats';
@@ -74,6 +74,7 @@ import {
   visibleEdges,
   type Reads,
   type WorldState,
+  rideVerdict,
 } from './engine';
 import { migrations } from './migrations';
 
@@ -203,7 +204,24 @@ export interface WorldView {
   rides: { to: string; ticks: number; label: string }[];
   /** The tower whose ladder answers where the character stands, or null. */
   tower: string | null;
+  /**
+   * A registered rule's verdict on a ride from here, by floor id (`''`: the
+   * tower's hub): `forfeit` (the ride ends a festival attempt), `refuse`
+   * with its line, `enter`. A floor with no verdict is absent.
+   */
+  rideVerdicts: Record<string, { kind: 'forfeit' | 'refuse' | 'enter'; msg: string }>;
   discoveredCount: number;
+}
+
+/** The registered rule's verdicts on the rides from where the character stands (old `ladderView` `rideAction`). */
+function rideVerdictsOf(ctx: Reads): WorldView['rideVerdicts'] {
+  const out: WorldView['rideVerdicts'] = {};
+  for (const floorId of [null, ...Object.keys(FLOORS)]) {
+    const v = rideVerdict(ctx, floorId);
+    if (!v) continue;
+    out[floorId ?? ''] = { kind: v.kind, msg: v.kind === 'refuse' ? v.msg : v.kind === 'forfeit' ? v.reason : '' };
+  }
+  return out;
 }
 
 const UNKNOWN = 'Unknown place';
@@ -497,6 +515,7 @@ const world = defineSystem<WorldState, WorldView>({
         ? { progress: exploreProgress(state, here), gate: blockingGate(ctx, state, here)?.desc ?? (blockingGate(ctx, state, here) ? 'Requirement not met.' : null) }
         : null,
       inForcedFight: inForcedFight(ctx.read(combat)),
+      rideVerdicts: rideVerdictsOf(ctx),
       map: {
         region: region.name,
         areas: Object.values(AREAS)
