@@ -229,3 +229,22 @@ cold and lightning are set in `spellcraft` (`cast.ts`).
   them, so the hold's tables work as the old ones did. The Arcane Library
   is a third Spellcrafting Table in the psionic view.
 - The Training Area hunts `training_dummy` (passive, pays no level XP).
+
+## Step 4 port C3
+
+- Content, appended from the old registry: areas `ascent_f12_area`,
+  `ascent_f13_area` and `ascent_f14_area` (open sky), the six harbor
+  spots of floor 11 (`f11_quay` with the three battery recipes, four
+  berths, `f11_roadstead`), 8 spots on floor 12, 3 on floor 13, 9 on
+  floor 14, and the road `f11_road` to `f11_quay`, shown and open with
+  `legacy:stronghold`. 151 spots, 26 areas. A find's gold is
+  `{ min, max }` (`f12_port_purse`).
+- The road approach (old `ApproachSpec`): a road may carry `approach`
+  (`requires`, `enemies`, `self`, each a list of status applications).
+  The mirror never carries it. On every arrival the world sends
+  `combat/approach` with the road's approach when its `requires` hold,
+  or with `null` when something is stamped and this road has none (old
+  `tickTravel`: an arrival without an approach wipes the stamp). The
+  caravan and `placeAt` clear it. Combat spends it (see the combat README).
+- The harbor readout of the `sea` system is mounted in the Location
+  panel, under the activities (old placement, docs/KERNEL.md decision 29).

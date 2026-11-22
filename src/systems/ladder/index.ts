@@ -186,6 +186,28 @@ export function registerLapse(read: (r: R, floorId: string) => boolean): void {
 }
 
 /**
+ * Words for a counter the ladder card cannot name from its key, by key: the
+ * system that owns the counter registers them at module load (`sea`: crates
+ * won, the side's mission). The function gets the term's value.
+ */
+const TERM_TEXTS = new Map<string, (value: number) => string>();
+
+export function registerTermText(key: string, text: (value: number) => string): void {
+  TERM_TEXTS.set(key, text);
+}
+
+/**
+ * Floors whose clear names no spot, so the floor standard's spine rules
+ * (`floorRules.ts`) cannot run on them. Each entry is a decision with its
+ * reason. Old `SPINE_EXEMPT` (`towers.data.ts`); `tests/worldContent.test.ts`
+ * pins the list.
+ */
+export const SPINE_EXEMPT: Readonly<Record<string, string>> = {
+  ascent_f14:
+    'cleared by any one of four side wings, stamped as flag:sea:14:done by the side’s boss kill (sea); an AND-only clear cannot name four spots of which one is enough',
+};
+
+/**
  * The floor was cleared by a ward window running out (old `clearLapsed`,
  * bands-2-3.md Q24): the way up opens, but it pays no clear XP and no
  * harvest floor.
@@ -615,6 +637,8 @@ const ladder = defineSystem<LadderState, LadderView>({
       const met = conditionsMet(r, [cond]);
       if (cond.type === 'stat') {
         const current = Math.min(cond.value, r.counter(cond.key));
+        const named = TERM_TEXTS.get(cond.key);
+        if (named) return { text: named(cond.value), current, needed: cond.value, met };
         const stamp = stampText(cond.key);
         if (stamp) return { text: stamp, current, needed: cond.value, met };
         if (cond.key.startsWith('band:pos:'))

@@ -1,6 +1,7 @@
 /**
- * The offline budgets of the world system (spine port 6): two runs of 8
- * hours (288,000 ticks) through the hunt activity at a real spot, with
+ * The offline budgets of the world system (spine port 6, and step 4 port
+ * C3): three runs of 8 hours (288,000 ticks) through the hunt activity at a
+ * real spot, with
  * travel, weather, the knockout and its return live. No command is sent
  * after the first two. The vitest project `budget-world`, run after
  * `budget`. The runs are in `tests/budgetRuns.ts`.
@@ -8,15 +9,18 @@
  * - The Woods Edge of floor 4 (open sky, dynamic levels), a new character
  *   with the rusty sword.
  * - The Tunnels of floor 6, the probe character of the floor 6 budget.
+ * - The roadstead of floor 11, a convoy water, through `catchUp` (step 4
+ *   port C3): the sea resolves every leg on its offline path.
  *
  * Each run also compares its outcome digest with the one recorded on `main`
  * before the catch-up work (`tests/outcomeDigests.ts`).
  */
 import { describe, expect, it } from 'vitest';
+import { SEA_CRATES_OFFLINE, SEA_CRATES_WON } from '../src/systems/sea';
 import type { WorldState } from '../src/systems/world';
 import { digestOf, RUNS } from './budgetRuns';
 import { counterOf } from './combatHelpers';
-import { slice } from './helpers';
+import { makeGame, slice } from './helpers';
 import { RUN_DIGESTS } from './outcomeDigests';
 
 /**
@@ -28,6 +32,12 @@ import { RUN_DIGESTS } from './outcomeDigests';
  */
 const WORLD_FLOOR_FOUR_BUDGET_MS = 14300;
 const WORLD_FLOOR_SIX_BUDGET_MS = 14300;
+/**
+ * Step 4 port C3: 8 hours at floor 11's roadstead through `catchUp`, the
+ * probe's harbor character, about 11,000 kills. The budget of the other two
+ * world runs, which it costs about as much as.
+ */
+const WORLD_SEA_BUDGET_MS = 14300;
 
 describe('offline catch-up through the world system', () => {
   it(`simulates 8 hours of the hunt activity at the Woods Edge of floor 4 within ${WORLD_FLOOR_FOUR_BUDGET_MS} ms`, () => {
@@ -60,4 +70,25 @@ describe('offline catch-up through the world system', () => {
     expect(digestOf(envelope)).toEqual(RUN_DIGESTS.world6);
     expect(ms, `8 hours took ${ms.toFixed(0)} ms`).toBeLessThan(WORLD_FLOOR_SIX_BUDGET_MS);
   }, WORLD_FLOOR_SIX_BUDGET_MS * 3);
+
+  it(`simulates 8 hours of the hunt activity at floor 11's roadstead, a convoy water, within ${WORLD_SEA_BUDGET_MS} ms of catch-up`, () => {
+    const { ms, envelope } = RUNS.worldSea();
+    const g = makeGame();
+    expect(g.load(envelope).ok).toBe(true);
+    const kills = counterOf(g, 'kills');
+    const w = slice<WorldState>(g, 'world');
+    const offline = counterOf(g, SEA_CRATES_OFFLINE);
+    console.log(
+      `8 hours, world, floor 11 roadstead (catch-up): ${ms.toFixed(0)} ms, ${kills} kills, ${counterOf(g, 'defeats')} defeats, ` +
+        `${offline} crates offline, at ${w.spot}, activity ${w.activity}`,
+    );
+    expect(kills).toBeGreaterThan(1000);
+    expect(w.activity === 'hunt' || w.travel !== null || w.recovering).toBe(true);
+    // Catch-up: every leg the player was present for paid offline, none to crates won.
+    expect(offline).toBeGreaterThan(0);
+    expect(counterOf(g, SEA_CRATES_WON)).toBe(0);
+    expect(g.staleStats()).toEqual([]);
+    expect(digestOf(envelope)).toEqual(RUN_DIGESTS.worldSea);
+    expect(ms, `8 hours took ${ms.toFixed(0)} ms`).toBeLessThan(WORLD_SEA_BUDGET_MS);
+  }, WORLD_SEA_BUDGET_MS * 3);
 });

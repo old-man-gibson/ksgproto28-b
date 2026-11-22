@@ -1,0 +1,194 @@
+[
+  {
+    "id": "f11_roadstead",
+    "raiders": [
+      1,
+      2
+    ],
+    "monsters": [
+      1,
+      2
+    ],
+    "guard": [
+      1,
+      2
+    ],
+    "cargo": [
+      "rock_salt",
+      "rough_flour",
+      "iron_ingot",
+      "grain_spirit"
+    ]
+  },
+  {
+    "id": "f12_trade_lane",
+    "raiders": [
+      1,
+      2
+    ],
+    "monsters": [
+      0,
+      2
+    ],
+    "guard": [
+      1,
+      2
+    ],
+    "cargo": [
+      "rock_salt",
+      "wild_honey",
+      "copper_ingot",
+      "pressed_oil"
+    ]
+  },
+  {
+    "id": "f12_patrol_lane",
+    "raiders": [
+      0,
+      2
+    ],
+    "monsters": [
+      1,
+      2
+    ],
+    "guard": [
+      1,
+      2
+    ],
+    "cargo": [
+      "rough_flour",
+      "iron_ingot",
+      "tin_ingot",
+      "brimstone"
+    ]
+  },
+  {
+    "id": "f12_hidden_cove",
+    "raiders": [
+      0,
+      1
+    ],
+    "monsters": [
+      0,
+      1
+    ],
+    "guard": [
+      0,
+      1
+    ],
+    "cargo": [
+      "wild_honey",
+      "copper_ingot",
+      "grain_spirit"
+    ]
+  },
+  {
+    "id": "f12_hunting_ground",
+    "raiders": [
+      1,
+      2
+    ],
+    "monsters": [
+      0,
+      1
+    ],
+    "guard": [
+      1,
+      2
+    ],
+    "cargo": [
+      "rock_salt",
+      "bronze_ingot",
+      "tin_ingot",
+      "grain_spirit"
+    ]
+  },
+  {
+    "id": "f12_strait",
+    "raiders": [
+      2,
+      3
+    ],
+    "monsters": [
+      2,
+      3
+    ],
+    "guard": [
+      2,
+      3
+    ],
+    "cargo": [
+      "iron_ingot",
+      "copper_ingot",
+      "tin_ingot",
+      "bronze_ingot",
+      "brimstone"
+    ]
+  },
+  {
+    "id": "f12_far_water",
+    "raiders": [
+      2,
+      3
+    ],
+    "monsters": [
+      1,
+      3
+    ],
+    "guard": [
+      2,
+      3
+    ],
+    "cargo": [
+      "wild_honey",
+      "bronze_ingot",
+      "pressed_oil",
+      "brimstone"
+    ]
+  },
+  {
+    "id": "f13_picket",
+    "raiders": [
+      2,
+      3
+    ],
+    "monsters": [
+      2,
+      3
+    ],
+    "guard": [
+      2,
+      3
+    ],
+    "cargo": [
+      "rough_flour",
+      "iron_ingot",
+      "tin_ingot",
+      "grain_spirit",
+      "brimstone"
+    ]
+  },
+  {
+    "id": "f13_blockade",
+    "raiders": [
+      3,
+      4
+    ],
+    "monsters": [
+      2,
+      4
+    ],
+    "guard": [
+      3,
+      4
+    ],
+    "cargo": [
+      "rock_salt",
+      "wild_honey",
+      "copper_ingot",
+      "bronze_ingot",
+      "pressed_oil",
+      "brimstone"
+    ]
+  }
+]

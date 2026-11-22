@@ -64,3 +64,11 @@ schema has no union type, so every field but `type` is optional in it;
   `defeats`): `combat` emits them (spine port 4). The bump on arrival
   (`travel:trips`): `world` emits it (spine port 6).
 - Achievement tiers (`checkAchievements`): the achievements port.
+
+## Step 4 port C3
+
+Request `counters/set-now` (`setCounterNow`): overwrite a counter inside
+the caller's handler and send `counters/changed`. For a caller that reads
+the counter again before its own events are delivered: two kills of one
+tick are two deliveries of `combat/kill` before either handler's events,
+and `sea` counts the leg's kills from the counter it wrote.

@@ -31,8 +31,12 @@ import { digestOf, RUNS } from './budgetRuns';
 import { combatOf, counterOf, skipsOf } from './combatHelpers';
 import { RUN_DIGESTS } from './outcomeDigests';
 
-/** No fight, no condition. Port 6: 1,231 to 1,242 ms alone. Catch-up work: 1,293 to 1,331 ms. */
-const EIGHT_HOUR_BUDGET_MS = 2200;
+/**
+ * No fight, no condition. Port 6: 1,231 to 1,242 ms alone. Catch-up work: 1,293 to 1,331 ms.
+ * Raised to 2,420 ms (user decision, 2026-11-21, step 4 port C3): run right after the
+ * unit project, `main` at a72b168 took 2,175 ms of 2,200 (docs/KERNEL.md section 8).
+ */
+const EIGHT_HOUR_BUDGET_MS = 2420;
 /** A timerless poison held. Port 6: 4,952 to 5,003 ms alone. Catch-up work: 4,857 ms. */
 const HELD_EIGHT_HOUR_BUDGET_MS = 8250;
 /** Floor 1 table sent to combat. Port 6: 5,237 to 5,368 ms alone, 9,673 kills. Catch-up work: 4,554 to 4,621 ms. */

@@ -9,6 +9,7 @@ import type { EncounterLine } from '../combat';
 import { conditionSchema, type Condition } from '../counters';
 import type { ModifierTierId } from '../monsters';
 import type { AttributeId, DerivedStats } from '../stats';
+import { applicationSchema, type ContentApplication } from '../statuses';
 import areasData from './content/areas.json';
 import keyItemsData from './content/key_items.json';
 import regionsData from './content/regions.json';
@@ -110,6 +111,15 @@ const activity = s.object({
   ),
 });
 
+const approach = s.object(
+  {
+    requires: s.optional(s.array(conditionSchema, { help: 'The approach tells only when these hold on arrival.' })),
+    enemies: s.optional(s.array(applicationSchema, { help: 'Laid on every enemy of the first fight here.' })),
+    self: s.optional(s.array(applicationSchema, { help: 'Laid on the player at the start of that fight.' })),
+  },
+  { help: 'The opening this road buys or costs, spent by the first fight at its end. Never mirrored.' },
+);
+
 const connection = s.object({
   to: s.ref('spots'),
   ticks: s.number({ min: 1 }),
@@ -117,6 +127,7 @@ const connection = s.object({
   oneWay: s.optional(s.boolean()),
   forced: s.optional(s.boolean({ help: 'Arriving along this road starts a fight that cannot be fled.' })),
   requires: conditions,
+  approach: s.optional(approach),
   hidden: s.optional(s.boolean({ help: 'Hidden until the source spot is fully explored.' })),
   label: s.optional(s.string()),
   returnLabel: s.optional(s.string()),
@@ -274,6 +285,20 @@ export interface ActivityDef {
   recipe?: string;
 }
 
+/**
+ * The opening a road into a fight buys or costs (old `ApproachSpec`): laid on
+ * the first fight at the road's end, before anyone swings. Directional like
+ * `forced`; the mirror never carries it.
+ */
+export interface ApproachSpec {
+  /** The approach tells only when these hold on arrival. */
+  requires?: Condition[];
+  /** Conditions laid on every enemy of that fight. */
+  enemies?: ContentApplication[];
+  /** What the way in lays on the player. */
+  self?: ContentApplication[];
+}
+
 export interface Connection {
   to: string;
   ticks: number;
@@ -281,6 +306,7 @@ export interface Connection {
   oneWay?: boolean;
   forced?: boolean;
   requires?: Condition[];
+  approach?: ApproachSpec;
   hidden?: boolean;
   label?: string;
   returnLabel?: string;

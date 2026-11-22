@@ -9,6 +9,7 @@ import type { FeedEntry } from '../log';
 import type { ModifierTierId, MonsterKit, MonsterRange, MonsterRarityId, TierId } from '../monsters';
 import type { ExertionSpec } from '../resources';
 import type { AttributeId, ContentMod, DamageType } from '../stats';
+import type { StatusApplication } from '../statuses';
 import type { SkillTrigger } from './triggers';
 
 // ---- the site ----
@@ -206,4 +207,18 @@ export interface CombatState {
   /** The player's own trigger per rotation id. The old `state.skillTriggers`. */
   triggers: Record<string, SkillTrigger>;
   nextEntity: number;
+  /**
+   * The opening the road just walked bought or charged (old
+   * `state.pendingApproach`): stamped by the world on every arrival, spent
+   * by the first fight at `spot`. Saved: closing the game at the road's end
+   * keeps it.
+   */
+  approach: PendingApproach | null;
+}
+
+/** An approach waiting for the first fight at its spot. */
+export interface PendingApproach {
+  spot: string;
+  enemies: StatusApplication[];
+  self: StatusApplication[];
 }

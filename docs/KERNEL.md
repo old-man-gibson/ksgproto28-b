@@ -431,6 +431,19 @@ An answer returns copies, never a reference into its slice.
   command between ticks). The machine's spread is wide: world floor 6 on
   `main` ran 13,187 to 15,082 ms within one hour.
 
+- Idle budget raised 10% (user decision, 2026-11-21, step 4 port C3): 2,200
+  to 2,420 ms. Run right after the unit project, as `npm run verify` runs
+  it, `main` at a72b168 took 2,175 ms of 2,200 (99%) on this machine that
+  day, every budget case about 30% over its figure alone; the C3 branch
+  took 2,275 to 2,347 ms in three runs, and 1,791 ms in the budget project
+  alone. The port's sea tick costs about 1% of the idle run with its cache
+  of the next leg end (3% when it read the clock every tick; docs/CONTENT.md
+  section 10.2). The other budgets are unchanged.
+
+  | Run of 8 hours | Before | Now |
+  |---|---|---|
+  | No fight, no condition | 2,200 ms | 2,420 ms |
+
 ## 9. Content
 
 - A registry is one JSON file: a list of records, each with an `id`.

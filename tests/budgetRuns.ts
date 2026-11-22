@@ -1,5 +1,5 @@
 /**
- * The six offline budget runs of 8 hours, as functions, and an outcome
+ * The seven offline budget runs of 8 hours, as functions, and an outcome
  * digest of a finished run. Shared by `tests/budgets.test.ts`,
  * `tests/budgetsWorld.test.ts`, `tests/outcome.test.ts` and
  * `scripts/budget-runs.ts` (profiling and digest recording).
@@ -23,6 +23,8 @@ import {
 import { systems } from '../src/systems';
 import { hunt, setHuntRest, type EncounterSite } from '../src/systems/combat';
 import { buyStep } from '../src/systems/counter';
+import { acceptedKey } from '../src/systems/quests';
+import { SEA, SEA_SIDES } from '../src/systems/sea';
 import { applyStatus } from '../src/systems/statuses';
 import { spellCast } from '../src/systems/spellcraft';
 import { selectActivity, type WorldState } from '../src/systems/world';
@@ -38,6 +40,16 @@ export const FLOOR_SIX_CHARACTER: Modifier[] = [
   { stat: 'stats/armor', kind: 'add', value: 12 },
 ];
 
+/**
+ * A character that holds floor 11's water (levels 24 to 26): the probe
+ * stands in for a harbor run's level, skills and gear.
+ */
+export const HARBOR_CHARACTER: Modifier[] = [
+  { stat: 'stats/maxHp', kind: 'add', value: 2400 },
+  { stat: 'stats/damage', kind: 'add', value: 120 },
+  { stat: 'stats/armor', kind: 'add', value: 30 },
+];
+
 export interface RunResult {
   ms: number;
   envelope: SaveEnvelope;
@@ -46,9 +58,9 @@ export interface RunResult {
   casts: number;
 }
 
-export type RunName = 'idle' | 'poison' | 'floor1' | 'floor6' | 'world4' | 'world6';
+export type RunName = 'idle' | 'poison' | 'floor1' | 'floor6' | 'world4' | 'world6' | 'worldSea';
 
-export const RUN_NAMES: RunName[] = ['idle', 'poison', 'floor1', 'floor6', 'world4', 'world6'];
+export const RUN_NAMES: RunName[] = ['idle', 'poison', 'floor1', 'floor6', 'world4', 'world6', 'worldSea'];
 
 function timed(kernel: Kernel, body: () => void, casts: () => number = () => 0): RunResult {
   const started = performance.now();
@@ -136,6 +148,31 @@ export const RUNS: Record<RunName, () => RunResult> = {
     if (!g.dispatch(setHuntRest({ at: 0.5, toFull: true })).ok) throw new Error('hunt rest refused');
     if (!g.dispatch(selectActivity({ activity: 'hunt' })).ok) throw new Error('hunt activity refused');
     return timed(g, () => runHeadless(g, { ticks: TICKS }));
+  },
+  /**
+   * The hunt activity at the roadstead of floor 11, a convoy water (step 4
+   * port C3), as offline catch-up: a merchant with four cannons and a hold of
+   * shot and powder, the probe character. Every leg ends with the player
+   * present and resolves on the sea's offline path (`ctx.catchingUp`).
+   */
+  worldSea() {
+    const g = makeGame({ seed: 9 });
+    equip(g, 1);
+    setMods(g, HARBOR_CHARACTER);
+    patch(g, (slices) => {
+      const counts = slices.counters.counts as Record<string, number>;
+      counts['legacy:stronghold'] = 1;
+      counts[acceptedKey(SEA_SIDES.merchants.joinQuest)] = 1;
+      slices.quests.quests[SEA_SIDES.merchants.joinQuest] = { status: 'active', progress: [0] };
+      Object.assign(slices.materials.counts, { [SEA.cannon]: 4, [SEA.shot]: 400, [SEA.powder]: 400 });
+    });
+    standAt(g, 'f11_roadstead', ['f11_quay', 'f11_roadstead']);
+    if (!g.dispatch(setHuntRest({ at: 0.5, toFull: true })).ok) throw new Error('hunt rest refused');
+    if (!g.dispatch(selectActivity({ activity: 'hunt' })).ok) throw new Error('hunt activity refused');
+    const envelope = g.save(0);
+    const started = performance.now();
+    const result = catchUp({ systems: [...systems, probe], envelope, ticks: TICKS, now: 0 });
+    return { ms: performance.now() - started, envelope: result, kernel: null, casts: 0 };
   },
 };
 

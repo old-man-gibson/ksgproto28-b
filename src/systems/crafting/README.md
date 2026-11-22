@@ -151,3 +151,11 @@ craft that.`
 - `tin_ingot` has `xp: 0`. It still pays `0.2 x 60 = 12` skill XP per craft.
 - A secret recipe is in `spotActivities`. Picking one by id before it is
   unlocked is refused as locked, which says it exists.
+
+## Step 4 port C3
+
+The battery's three recipes (old `recipes.data.ts` 170-202), listed at the
+quay of floor 11: `ship_cannon` (6 iron ingots, 600 ticks), `cannonball`
+(3 from 1 iron ingot, 90 ticks), `powder_charge` (2 from 3 biomatter and
+1 iron scrap, 120 ticks, alchemy). Worth no more than their inputs at any
+counter (`tests/harbor.test.ts`, the no-arbitrage case).

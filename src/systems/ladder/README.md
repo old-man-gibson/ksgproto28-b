@@ -116,4 +116,17 @@ None: this system has no command and no request.
 - `OFF_LADDER_DOORS` and `offLadderDoor(from, to)` (old `towers.data.ts`
   466-483): the two doors between the gatehouse and the hold, the only
   authored edges allowed across a banded floor's boundary.
-- `SPINE_EXEMPT` (floor 14) is port C3.
+- `SPINE_EXEMPT` (floor 14) came with port C3.
+
+## Step 4 port C3
+
+- Floors 12 to 14 (`ascent_f12` The Crossings, `ascent_f13` The
+  Blockade, `ascent_f14` The Final Mission), old records. Band 4 holds its
+  four floors; `HARBOR_PENDING` of `tests/worldContent.test.ts` is gone.
+- `SPINE_EXEMPT` (old `towers.data.ts` 485-496): floor 14, whose clear is
+  the stamp `flag:sea:14:done` and names no spot.
+- `registerTermText(key, text)`: a system names a counter for the ladder
+  card. `sea` names `sea:crates:won` ("8 crates won") and
+  `flag:sea:14:done` ("Your side's mission boss slain"). The old card
+  printed both keys raw. The roadstead's fight count reads "1 wins at The
+  Roadstead" now that the spot is here.

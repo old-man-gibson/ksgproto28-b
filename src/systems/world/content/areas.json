@@ -132,5 +132,23 @@
     "regionId": "the_ascent",
     "sheltered": false,
     "scene": "hall"
+  },
+  {
+    "id": "ascent_f12_area",
+    "name": "The Crossings",
+    "regionId": "the_ascent",
+    "sheltered": false
+  },
+  {
+    "id": "ascent_f13_area",
+    "name": "The Blockade",
+    "regionId": "the_ascent",
+    "sheltered": false
+  },
+  {
+    "id": "ascent_f14_area",
+    "name": "The Final Mission",
+    "regionId": "the_ascent",
+    "sheltered": false
   }
 ]

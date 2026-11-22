@@ -6728,6 +6728,26 @@
         "ticks": 30,
         "label": "Up to the Gatehouse",
         "returnLabel": "Down to the Road"
+      },
+      {
+        "to": "f11_quay",
+        "ticks": 40,
+        "label": "On to the Harbor",
+        "returnLabel": "Back to the Road",
+        "revealWhen": [
+          {
+            "type": "stat",
+            "key": "legacy:stronghold",
+            "value": 1
+          }
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "legacy:stronghold",
+            "value": 1
+          }
+        ]
       }
     ],
     "desc": "Landing of floor 11. Camp by the Road is a rest activity, and the landing is a haven. Endless hunt: raiders and brutes, level 22 to 23; they drop iron scrap. After the stronghold is yours, the road also leads on to the harbor."
@@ -6930,5 +6950,2355 @@
       }
     ],
     "desc": "The wave, opened by the steward’s second quest: eight fights in groups of two or three, level 24 to 25; the eighth is the Siege Captain and its escort, level 27. Winning the eighth ends the run in an automatic prestige. Shut on every run after the stronghold. The postern leads back to the road."
+  },
+  {
+    "id": "f11_quay",
+    "name": "The Quay",
+    "icon": "⚓",
+    "areaId": "ascent_f11_area",
+    "map": {
+      "x": 70,
+      "y": 58
+    },
+    "activities": [
+      {
+        "id": "camp_f11_quay",
+        "kind": "rest",
+        "name": "Rest at the Quay",
+        "icon": "🛏️"
+      }
+    ],
+    "recipes": [
+      "ship_cannon",
+      "cannonball",
+      "powder_charge"
+    ],
+    "connections": [
+      {
+        "to": "f11_merchant_berth",
+        "ticks": 20,
+        "label": "To the Merchant Berth",
+        "returnLabel": "Back to the Quay"
+      },
+      {
+        "to": "f11_smugglers_berth",
+        "ticks": 20,
+        "label": "To the Smugglers’ Berth",
+        "returnLabel": "Back to the Quay"
+      },
+      {
+        "to": "f11_privateer_berth",
+        "ticks": 20,
+        "label": "To the Privateer Berth",
+        "returnLabel": "Back to the Quay"
+      },
+      {
+        "to": "f11_navy_berth",
+        "ticks": 20,
+        "label": "To the Navy Berth",
+        "returnLabel": "Back to the Quay"
+      },
+      {
+        "to": "f11_roadstead",
+        "ticks": 30,
+        "label": "Row Out to the Roadstead",
+        "returnLabel": "Back to the Quay"
+      }
+    ],
+    "desc": "The harbor, on runs after the stronghold. Rest at the Quay is a rest activity, and the quay is a haven. Crafts the battery’s parts: Ship’s Cannons (6 iron ingots), Cannonballs (3 from 1 iron ingot) and Powder Charges (2 from 3 biomatter and 1 iron scrap). Four berths each hold one side’s recruiter; accepting a join quest picks your side for the run."
+  },
+  {
+    "id": "f11_merchant_berth",
+    "name": "The Merchant Berth",
+    "icon": "⚖️",
+    "areaId": "ascent_f11_area",
+    "map": {
+      "x": 92,
+      "y": 36
+    },
+    "activities": [],
+    "connections": [],
+    "desc": "The merchants’ berth. The factor recruits here: the merchants own the convoy, defend it from pirates and sea monsters both, and sell what survives for gold."
+  },
+  {
+    "id": "f11_smugglers_berth",
+    "name": "The Smugglers’ Berth",
+    "icon": "🏴‍☠️",
+    "areaId": "ascent_f11_area",
+    "map": {
+      "x": 92,
+      "y": 48
+    },
+    "activities": [],
+    "connections": [],
+    "desc": "The pirates’ berth. The bosun recruits here: the pirates seize crates from the convoy past its guard."
+  },
+  {
+    "id": "f11_privateer_berth",
+    "name": "The Privateer Berth",
+    "icon": "📜",
+    "areaId": "ascent_f11_area",
+    "map": {
+      "x": 92,
+      "y": 60
+    },
+    "activities": [],
+    "connections": [],
+    "desc": "The privateers’ berth. The letter agent recruits here: the privateers take the convoy’s crates back from the pirates."
+  },
+  {
+    "id": "f11_navy_berth",
+    "name": "The Navy Berth",
+    "icon": "🎖️",
+    "areaId": "ascent_f11_area",
+    "map": {
+      "x": 92,
+      "y": 72
+    },
+    "activities": [],
+    "connections": [],
+    "desc": "The navy’s berth. The lieutenant recruits here: the navy escorts the convoy against sea monsters."
+  },
+  {
+    "id": "f11_roadstead",
+    "name": "The Roadstead",
+    "icon": "⛵",
+    "areaId": "ascent_f11_area",
+    "map": {
+      "x": 82,
+      "y": 20
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Sail With the Convoy",
+        "icon": "⚔️"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 70
+      },
+      {
+        "size": 2,
+        "weight": 30
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "ph_pirate_cutthroat",
+        "weight": 35,
+        "level": [
+          24,
+          26
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_merchants:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_pirate_gunner",
+        "weight": 15,
+        "level": [
+          24,
+          26
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_merchants:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_reef_eel",
+        "weight": 35,
+        "level": [
+          24,
+          26
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_merchants:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_deep_serpent",
+        "weight": 15,
+        "level": [
+          24,
+          26
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_merchants:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_convoy_guard",
+        "weight": 60,
+        "level": [
+          24,
+          26
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_pirates:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_navy_marine",
+        "weight": 40,
+        "level": [
+          24,
+          26
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_pirates:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_pirate_cutthroat",
+        "weight": 60,
+        "level": [
+          24,
+          26
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_privateers:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_pirate_gunner",
+        "weight": 40,
+        "level": [
+          24,
+          26
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_privateers:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_reef_eel",
+        "weight": 60,
+        "level": [
+          24,
+          26
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_navy:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_deep_serpent",
+        "weight": 40,
+        "level": [
+          24,
+          26
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_navy:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_reef_eel",
+        "weight": 1,
+        "level": [
+          24,
+          25
+        ],
+        "requires": [
+          {
+            "type": "statMax",
+            "key": "flag:quest:f11_join_merchants:accepted",
+            "value": 0
+          },
+          {
+            "type": "statMax",
+            "key": "flag:quest:f11_join_pirates:accepted",
+            "value": 0
+          },
+          {
+            "type": "statMax",
+            "key": "flag:quest:f11_join_privateers:accepted",
+            "value": 0
+          },
+          {
+            "type": "statMax",
+            "key": "flag:quest:f11_join_navy:accepted",
+            "value": 0
+          }
+        ]
+      }
+    ],
+    "connections": [],
+    "desc": "Floor 11’s water. A convoy of 8 crates sails every 6 minutes in four 30-second legs. While you are here and doing something, each leg fires your battery and counts your side’s kills against it; crates your side wins add to Crates Won. Before you pick a side: sea monsters, level 24 to 25, and no convoy work. Clear: 8 crates won and one fight won here."
+  },
+  {
+    "id": "f12_landing",
+    "name": "The Outer Port",
+    "icon": "⚓",
+    "areaId": "ascent_f12_area",
+    "map": {
+      "x": 20,
+      "y": 60
+    },
+    "activities": [
+      {
+        "id": "camp_f12",
+        "kind": "rest",
+        "name": "Rest at the Outer Port",
+        "icon": "🛏️"
+      },
+      {
+        "id": "explore",
+        "kind": "explore",
+        "name": "Search the Port",
+        "icon": "🔍"
+      }
+    ],
+    "exploreTicks": 300,
+    "finds": [
+      {
+        "id": "f12_port_purse",
+        "at": 0.5,
+        "gold": {
+          "min": 40,
+          "max": 80
+        }
+      }
+    ],
+    "connections": [
+      {
+        "to": "f12_strait",
+        "ticks": 30,
+        "forced": true,
+        "label": "Through the Strait",
+        "returnLabel": "Back to the Outer Port"
+      },
+      {
+        "to": "f12_trade_lane",
+        "ticks": 90,
+        "forced": true,
+        "revealWhen": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_merchants:accepted",
+            "value": 1
+          }
+        ],
+        "label": "Out the Trade Lane",
+        "returnLabel": "Back to the Outer Port"
+      },
+      {
+        "to": "f12_hidden_cove",
+        "ticks": 45,
+        "forced": true,
+        "hidden": true,
+        "revealWhen": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_pirates:accepted",
+            "value": 1
+          }
+        ],
+        "label": "Into the Hidden Cove",
+        "returnLabel": "Back to the Outer Port"
+      },
+      {
+        "to": "f12_hunting_ground",
+        "ticks": 90,
+        "forced": true,
+        "revealWhen": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_privateers:accepted",
+            "value": 1
+          }
+        ],
+        "label": "Out to the Hunting Ground",
+        "returnLabel": "Back to the Outer Port"
+      },
+      {
+        "to": "f12_patrol_lane",
+        "ticks": 90,
+        "forced": true,
+        "revealWhen": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_navy:accepted",
+            "value": 1
+          }
+        ],
+        "label": "Out the Patrol Lane",
+        "returnLabel": "Back to the Outer Port"
+      }
+    ],
+    "desc": "Landing of floor 12, the Outer Port. Rest at the Outer Port is a rest activity, and the port is a haven. Sailing out is a boarding: arriving on the water starts a fight that cannot be fled. Your side’s lane is long and weak; the strait is short and strong. Searching the port turns up a hidden way out."
+  },
+  {
+    "id": "f12_strait",
+    "name": "The Strait",
+    "icon": "🌊",
+    "areaId": "ascent_f12_area",
+    "map": {
+      "x": 45,
+      "y": 50
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Sail With the Convoy",
+        "icon": "⚔️"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 50
+      },
+      {
+        "size": 2,
+        "weight": 50
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "ph_pirate_cutthroat",
+        "weight": 35,
+        "level": [
+          28,
+          29
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_merchants:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_pirate_gunner",
+        "weight": 15,
+        "level": [
+          28,
+          29
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_merchants:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_reef_eel",
+        "weight": 35,
+        "level": [
+          28,
+          29
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_merchants:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_deep_serpent",
+        "weight": 15,
+        "level": [
+          28,
+          29
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_merchants:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_pirate_captain",
+        "weight": 8,
+        "once": true,
+        "level": [
+          30,
+          30
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_merchants:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_convoy_guard",
+        "weight": 50,
+        "level": [
+          28,
+          29
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_pirates:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_navy_marine",
+        "weight": 50,
+        "level": [
+          28,
+          29
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_pirates:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_navy_frigate",
+        "weight": 8,
+        "once": true,
+        "level": [
+          30,
+          30
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_pirates:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_pirate_cutthroat",
+        "weight": 50,
+        "level": [
+          28,
+          29
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_privateers:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_pirate_gunner",
+        "weight": 50,
+        "level": [
+          28,
+          29
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_privateers:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_pirate_captain",
+        "weight": 8,
+        "once": true,
+        "level": [
+          30,
+          30
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_privateers:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_reef_eel",
+        "weight": 50,
+        "level": [
+          28,
+          29
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_navy:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_deep_serpent",
+        "weight": 50,
+        "level": [
+          28,
+          29
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_navy:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_brood_matron",
+        "weight": 8,
+        "once": true,
+        "level": [
+          30,
+          30
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_navy:accepted",
+            "value": 1
+          }
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "to": "f12_isle",
+        "ticks": 30,
+        "label": "On to the Isle Anchorage",
+        "returnLabel": "Back Through the Strait"
+      }
+    ],
+    "desc": "The short way to the Isle Anchorage, for every side: your side’s enemies, level 28 to 29, two at a time half the time, and the strongest convoy rolls on the floor. Your side’s named ship appears here once."
+  },
+  {
+    "id": "f12_trade_lane",
+    "name": "The Trade Lane",
+    "icon": "🌊",
+    "areaId": "ascent_f12_area",
+    "map": {
+      "x": 40,
+      "y": 72
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Sail With the Convoy",
+        "icon": "⚔️"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 80
+      },
+      {
+        "size": 2,
+        "weight": 20
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "ph_pirate_cutthroat",
+        "weight": 35,
+        "level": [
+          25,
+          27
+        ]
+      },
+      {
+        "monsterId": "ph_pirate_gunner",
+        "weight": 15,
+        "level": [
+          25,
+          27
+        ]
+      },
+      {
+        "monsterId": "ph_reef_eel",
+        "weight": 35,
+        "level": [
+          25,
+          27
+        ]
+      },
+      {
+        "monsterId": "ph_deep_serpent",
+        "weight": 15,
+        "level": [
+          25,
+          27
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "to": "f12_isle",
+        "ticks": 90,
+        "oneWay": true,
+        "label": "On to the Isle Anchorage"
+      }
+    ],
+    "desc": "The merchants’ lane: long and weak. Pirates and sea monsters, level 25 to 27."
+  },
+  {
+    "id": "f12_hidden_cove",
+    "name": "The Hidden Cove",
+    "icon": "🌊",
+    "areaId": "ascent_f12_area",
+    "map": {
+      "x": 25,
+      "y": 35
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Lie in Wait for the Convoy",
+        "icon": "⚔️"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 90
+      },
+      {
+        "size": 2,
+        "weight": 10
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "ph_convoy_guard",
+        "weight": 80,
+        "level": [
+          24,
+          26
+        ]
+      },
+      {
+        "monsterId": "ph_navy_marine",
+        "weight": 20,
+        "level": [
+          24,
+          26
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "to": "f12_isle",
+        "ticks": 60,
+        "oneWay": true,
+        "label": "On to the Isle Anchorage"
+      }
+    ],
+    "desc": "The pirates’ cove, found by searching the Outer Port: hidden and cheap. Convoy guards and marines, level 24 to 26; the guard rolls are the floor’s lowest."
+  },
+  {
+    "id": "f12_hunting_ground",
+    "name": "The Hunting Ground",
+    "icon": "🌊",
+    "areaId": "ascent_f12_area",
+    "map": {
+      "x": 55,
+      "y": 72
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Hunt the Pirates",
+        "icon": "⚔️"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 80
+      },
+      {
+        "size": 2,
+        "weight": 20
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "ph_pirate_cutthroat",
+        "weight": 60,
+        "level": [
+          25,
+          27
+        ]
+      },
+      {
+        "monsterId": "ph_pirate_gunner",
+        "weight": 40,
+        "level": [
+          25,
+          27
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "to": "f12_isle",
+        "ticks": 90,
+        "oneWay": true,
+        "label": "On to the Isle Anchorage"
+      }
+    ],
+    "desc": "The privateers’ lane: long and weak. Pirates, level 25 to 27."
+  },
+  {
+    "id": "f12_patrol_lane",
+    "name": "The Patrol Lane",
+    "icon": "🌊",
+    "areaId": "ascent_f12_area",
+    "map": {
+      "x": 40,
+      "y": 28
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Escort the Convoy",
+        "icon": "⚔️"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 80
+      },
+      {
+        "size": 2,
+        "weight": 20
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "ph_reef_eel",
+        "weight": 60,
+        "level": [
+          25,
+          27
+        ]
+      },
+      {
+        "monsterId": "ph_deep_serpent",
+        "weight": 40,
+        "level": [
+          25,
+          27
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "to": "f12_isle",
+        "ticks": 90,
+        "oneWay": true,
+        "label": "On to the Isle Anchorage"
+      }
+    ],
+    "desc": "The navy’s lane: long and weak. Sea monsters, level 25 to 27."
+  },
+  {
+    "id": "f12_isle",
+    "name": "The Isle Anchorage",
+    "icon": "⚓",
+    "areaId": "ascent_f12_area",
+    "map": {
+      "x": 70,
+      "y": 50
+    },
+    "activities": [
+      {
+        "id": "camp_f12_isle",
+        "kind": "rest",
+        "name": "Rest at the Anchorage",
+        "icon": "🛏️"
+      }
+    ],
+    "connections": [
+      {
+        "to": "f12_far_water",
+        "ticks": 60,
+        "forced": true,
+        "label": "Out to the Far Water",
+        "returnLabel": "Back to the Isle Anchorage"
+      },
+      {
+        "to": "f12_trade_lane",
+        "ticks": 90,
+        "oneWay": true,
+        "revealWhen": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_merchants:accepted",
+            "value": 1
+          }
+        ],
+        "label": "Back Out the Trade Lane"
+      },
+      {
+        "to": "f12_hidden_cove",
+        "ticks": 60,
+        "oneWay": true,
+        "revealWhen": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_pirates:accepted",
+            "value": 1
+          }
+        ],
+        "label": "Back to the Hidden Cove"
+      },
+      {
+        "to": "f12_hunting_ground",
+        "ticks": 90,
+        "oneWay": true,
+        "revealWhen": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_privateers:accepted",
+            "value": 1
+          }
+        ],
+        "label": "Back Out to the Hunting Ground"
+      },
+      {
+        "to": "f12_patrol_lane",
+        "ticks": 90,
+        "oneWay": true,
+        "revealWhen": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_navy:accepted",
+            "value": 1
+          }
+        ],
+        "label": "Back Out the Patrol Lane"
+      }
+    ],
+    "desc": "The Isle Anchorage, the second port. Rest at the Anchorage is a rest activity, and it is a haven. The far water lies beyond it."
+  },
+  {
+    "id": "f12_far_water",
+    "name": "The Far Water",
+    "icon": "🌊",
+    "areaId": "ascent_f12_area",
+    "map": {
+      "x": 90,
+      "y": 40
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Sail With the Convoy",
+        "icon": "⚔️"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 60
+      },
+      {
+        "size": 2,
+        "weight": 40
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "ph_pirate_cutthroat",
+        "weight": 35,
+        "level": [
+          27,
+          28
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_merchants:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_pirate_gunner",
+        "weight": 15,
+        "level": [
+          27,
+          28
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_merchants:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_reef_eel",
+        "weight": 35,
+        "level": [
+          27,
+          28
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_merchants:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_deep_serpent",
+        "weight": 15,
+        "level": [
+          27,
+          28
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_merchants:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_pirate_captain",
+        "weight": 8,
+        "once": true,
+        "level": [
+          29,
+          29
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_merchants:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_convoy_guard",
+        "weight": 50,
+        "level": [
+          27,
+          28
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_pirates:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_navy_marine",
+        "weight": 50,
+        "level": [
+          27,
+          28
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_pirates:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_navy_frigate",
+        "weight": 8,
+        "once": true,
+        "level": [
+          29,
+          29
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_pirates:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_pirate_cutthroat",
+        "weight": 50,
+        "level": [
+          27,
+          28
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_privateers:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_pirate_gunner",
+        "weight": 50,
+        "level": [
+          27,
+          28
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_privateers:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_pirate_captain",
+        "weight": 8,
+        "once": true,
+        "level": [
+          29,
+          29
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_privateers:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_reef_eel",
+        "weight": 50,
+        "level": [
+          27,
+          28
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_navy:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_deep_serpent",
+        "weight": 50,
+        "level": [
+          27,
+          28
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_navy:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_brood_matron",
+        "weight": 8,
+        "once": true,
+        "level": [
+          29,
+          29
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_navy:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_reef_eel",
+        "weight": 1,
+        "level": [
+          27,
+          28
+        ],
+        "requires": [
+          {
+            "type": "statMax",
+            "key": "flag:quest:f11_join_merchants:accepted",
+            "value": 0
+          },
+          {
+            "type": "statMax",
+            "key": "flag:quest:f11_join_pirates:accepted",
+            "value": 0
+          },
+          {
+            "type": "statMax",
+            "key": "flag:quest:f11_join_privateers:accepted",
+            "value": 0
+          },
+          {
+            "type": "statMax",
+            "key": "flag:quest:f11_join_navy:accepted",
+            "value": 0
+          }
+        ]
+      }
+    ],
+    "connections": [],
+    "desc": "Floor 12’s last water: your side’s enemies, level 27 to 28. Your side’s named ship appears here once. Clear: 40 crates won this run, on any water, and one fight won here."
+  },
+  {
+    "id": "f13_landing",
+    "name": "The Last Port",
+    "icon": "⚓",
+    "areaId": "ascent_f13_area",
+    "map": {
+      "x": 20,
+      "y": 55
+    },
+    "activities": [
+      {
+        "id": "camp_f13",
+        "kind": "rest",
+        "name": "Rest at the Last Port",
+        "icon": "🛏️"
+      }
+    ],
+    "connections": [
+      {
+        "to": "f13_picket",
+        "ticks": 40,
+        "forced": true,
+        "label": "Out to the Picket Line",
+        "returnLabel": "Back to the Last Port"
+      },
+      {
+        "to": "f13_blockade",
+        "ticks": 60,
+        "forced": true,
+        "requires": [
+          {
+            "type": "stat",
+            "key": "shop:buys:f13_pilot",
+            "value": 1
+          }
+        ],
+        "approach": {
+          "enemies": [
+            {
+              "id": "surprised"
+            }
+          ]
+        },
+        "label": "The Pilot’s Channel",
+        "returnLabel": "Back to the Last Port"
+      }
+    ],
+    "desc": "Landing of floor 13, the Last Port. Rest at the Last Port is a rest activity, and the port is a haven. The pilot sells passage through the Pilot’s Channel; the harbor master sells port clearance to merchants."
+  },
+  {
+    "id": "f13_picket",
+    "name": "The Picket Line",
+    "icon": "🌊",
+    "areaId": "ascent_f13_area",
+    "map": {
+      "x": 50,
+      "y": 38
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Sail With the Convoy",
+        "icon": "⚔️"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 60
+      },
+      {
+        "size": 2,
+        "weight": 40
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "ph_pirate_cutthroat",
+        "weight": 35,
+        "level": [
+          28,
+          29
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_merchants:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_pirate_gunner",
+        "weight": 15,
+        "level": [
+          28,
+          29
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_merchants:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_reef_eel",
+        "weight": 35,
+        "level": [
+          28,
+          29
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_merchants:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_deep_serpent",
+        "weight": 15,
+        "level": [
+          28,
+          29
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_merchants:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_pirate_captain",
+        "weight": 8,
+        "once": true,
+        "level": [
+          30,
+          30
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_merchants:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_convoy_guard",
+        "weight": 50,
+        "level": [
+          28,
+          29
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_pirates:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_navy_marine",
+        "weight": 50,
+        "level": [
+          28,
+          29
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_pirates:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_navy_frigate",
+        "weight": 8,
+        "once": true,
+        "level": [
+          30,
+          30
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_pirates:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_pirate_cutthroat",
+        "weight": 50,
+        "level": [
+          28,
+          29
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_privateers:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_pirate_gunner",
+        "weight": 50,
+        "level": [
+          28,
+          29
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_privateers:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_pirate_captain",
+        "weight": 8,
+        "once": true,
+        "level": [
+          30,
+          30
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_privateers:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_reef_eel",
+        "weight": 50,
+        "level": [
+          28,
+          29
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_navy:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_deep_serpent",
+        "weight": 50,
+        "level": [
+          28,
+          29
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_navy:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_brood_matron",
+        "weight": 8,
+        "once": true,
+        "level": [
+          30,
+          30
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_navy:accepted",
+            "value": 1
+          }
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "to": "f13_blockade",
+        "ticks": 40,
+        "forced": true,
+        "approach": {
+          "self": [
+            {
+              "id": "flat_footed"
+            }
+          ]
+        },
+        "label": "Run the Blockade",
+        "returnLabel": "Back to the Picket Line"
+      }
+    ],
+    "desc": "The picket line in front of the blockade: your side’s enemies, level 28 to 29. Your side’s named ship appears here once. Running the blockade from here leaves you Flat-Footed in the first fight."
+  },
+  {
+    "id": "f13_blockade",
+    "name": "The Blockade",
+    "icon": "🌊",
+    "areaId": "ascent_f13_area",
+    "map": {
+      "x": 80,
+      "y": 50
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Sail With the Convoy",
+        "icon": "⚔️"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 40
+      },
+      {
+        "size": 2,
+        "weight": 60
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "ph_pirate_cutthroat",
+        "weight": 35,
+        "level": [
+          30,
+          31
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_merchants:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_pirate_gunner",
+        "weight": 15,
+        "level": [
+          30,
+          31
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_merchants:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_reef_eel",
+        "weight": 35,
+        "level": [
+          30,
+          31
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_merchants:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_deep_serpent",
+        "weight": 15,
+        "level": [
+          30,
+          31
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_merchants:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_pirate_captain",
+        "weight": 8,
+        "once": true,
+        "level": [
+          32,
+          32
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_merchants:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_convoy_guard",
+        "weight": 50,
+        "level": [
+          30,
+          31
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_pirates:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_navy_marine",
+        "weight": 50,
+        "level": [
+          30,
+          31
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_pirates:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_navy_frigate",
+        "weight": 8,
+        "once": true,
+        "level": [
+          32,
+          32
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_pirates:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_pirate_cutthroat",
+        "weight": 50,
+        "level": [
+          30,
+          31
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_privateers:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_pirate_gunner",
+        "weight": 50,
+        "level": [
+          30,
+          31
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_privateers:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_pirate_captain",
+        "weight": 8,
+        "once": true,
+        "level": [
+          32,
+          32
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_privateers:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_reef_eel",
+        "weight": 50,
+        "level": [
+          30,
+          31
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_navy:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_deep_serpent",
+        "weight": 50,
+        "level": [
+          30,
+          31
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_navy:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_brood_matron",
+        "weight": 8,
+        "once": true,
+        "level": [
+          32,
+          32
+        ],
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_navy:accepted",
+            "value": 1
+          }
+        ]
+      },
+      {
+        "monsterId": "ph_reef_eel",
+        "weight": 1,
+        "level": [
+          30,
+          31
+        ],
+        "requires": [
+          {
+            "type": "statMax",
+            "key": "flag:quest:f11_join_merchants:accepted",
+            "value": 0
+          },
+          {
+            "type": "statMax",
+            "key": "flag:quest:f11_join_pirates:accepted",
+            "value": 0
+          },
+          {
+            "type": "statMax",
+            "key": "flag:quest:f11_join_privateers:accepted",
+            "value": 0
+          },
+          {
+            "type": "statMax",
+            "key": "flag:quest:f11_join_navy:accepted",
+            "value": 0
+          }
+        ]
+      }
+    ],
+    "connections": [],
+    "desc": "Floor 13’s last water: your side’s enemies, level 30 to 31, in pairs more often than not. Your side’s named ship appears here once. Clear: 160 crates won this run, on any water, and one fight won here."
+  },
+  {
+    "id": "f14_landing",
+    "name": "The Staging Anchorage",
+    "icon": "⚓",
+    "areaId": "ascent_f14_area",
+    "map": {
+      "x": 50,
+      "y": 62
+    },
+    "activities": [
+      {
+        "id": "camp_f14",
+        "kind": "rest",
+        "name": "Rest at the Anchorage",
+        "icon": "🛏️"
+      }
+    ],
+    "connections": [
+      {
+        "to": "f14_closed_port_roads",
+        "ticks": 60,
+        "forced": true,
+        "revealWhen": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_merchants:accepted",
+            "value": 1
+          }
+        ],
+        "label": "Make for the Closed Port",
+        "returnLabel": "Back to the Anchorage"
+      },
+      {
+        "to": "f14_galleon_track",
+        "ticks": 60,
+        "forced": true,
+        "revealWhen": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_pirates:accepted",
+            "value": 1
+          }
+        ],
+        "label": "Shadow the Treasure Galleon",
+        "returnLabel": "Back to the Anchorage"
+      },
+      {
+        "to": "f14_kings_reef",
+        "ticks": 60,
+        "forced": true,
+        "revealWhen": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_privateers:accepted",
+            "value": 1
+          }
+        ],
+        "label": "Make for the King’s Reef",
+        "returnLabel": "Back to the Anchorage"
+      },
+      {
+        "to": "f14_beast_grounds",
+        "ticks": 60,
+        "forced": true,
+        "revealWhen": [
+          {
+            "type": "stat",
+            "key": "flag:quest:f11_join_navy:accepted",
+            "value": 1
+          }
+        ],
+        "label": "Out to the Beast’s Grounds",
+        "returnLabel": "Back to the Anchorage"
+      }
+    ],
+    "desc": "Landing of floor 14, the Staging Anchorage. Rest at the Anchorage is a rest activity, and it is a haven. One way out exists, to your side’s mission. Killing the mission’s boss clears the floor."
+  },
+  {
+    "id": "f14_closed_port_roads",
+    "name": "The Closed Port’s Roads",
+    "icon": "🌊",
+    "areaId": "ascent_f14_area",
+    "map": {
+      "x": 20,
+      "y": 40
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Fight Off the Raiders",
+        "icon": "⚔️"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 50
+      },
+      {
+        "size": 2,
+        "weight": 50
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "ph_pirate_cutthroat",
+        "weight": 40,
+        "level": [
+          30,
+          32
+        ]
+      },
+      {
+        "monsterId": "ph_pirate_gunner",
+        "weight": 30,
+        "level": [
+          30,
+          32
+        ]
+      },
+      {
+        "monsterId": "ph_deep_serpent",
+        "weight": 30,
+        "level": [
+          30,
+          32
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "to": "f14_closed_port",
+        "ticks": 30,
+        "approach": {
+          "requires": [
+            {
+              "type": "quest",
+              "id": "f11_merchants_clearance"
+            }
+          ],
+          "enemies": [
+            {
+              "id": "flat_footed"
+            }
+          ]
+        },
+        "label": "Run In to the Closed Port",
+        "returnLabel": "Back to the Roads"
+      }
+    ],
+    "desc": "The merchants’ approach: pirates and sea monsters, level 30 to 32, endless. With Clear the Closed Port turned in, the warden’s fight starts with him and his escort Flat-Footed."
+  },
+  {
+    "id": "f14_closed_port",
+    "name": "The Closed Port",
+    "icon": "🚧",
+    "areaId": "ascent_f14_area",
+    "map": {
+      "x": 10,
+      "y": 20
+    },
+    "fightLimit": 1,
+    "modifierWeights": {
+      "normal": 100
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Land the Charter Cargo",
+        "icon": "⚔️"
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "ph_port_warden",
+        "weight": 1,
+        "once": true,
+        "level": [
+          33,
+          33
+        ]
+      }
+    ],
+    "connections": [],
+    "desc": "The merchants’ mission: the Warden of the Closed Port and four Pirate Captains, level 33. One fight, started when you choose. Winning it clears floor 14."
+  },
+  {
+    "id": "f14_galleon_track",
+    "name": "The Galleon’s Track",
+    "icon": "🌊",
+    "areaId": "ascent_f14_area",
+    "map": {
+      "x": 40,
+      "y": 30
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Pick Off the Escort",
+        "icon": "⚔️"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 50
+      },
+      {
+        "size": 2,
+        "weight": 50
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "ph_convoy_guard",
+        "weight": 40,
+        "level": [
+          30,
+          32
+        ]
+      },
+      {
+        "monsterId": "ph_navy_marine",
+        "weight": 60,
+        "level": [
+          30,
+          32
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "to": "f14_treasure_galleon",
+        "ticks": 30,
+        "approach": {
+          "requires": [
+            {
+              "type": "quest",
+              "id": "f11_pirates_signal"
+            }
+          ],
+          "enemies": [
+            {
+              "id": "surprised"
+            }
+          ]
+        },
+        "label": "Board the Treasure Galleon",
+        "returnLabel": "Back to the Galleon’s Track"
+      }
+    ],
+    "desc": "The pirates’ approach: the galleon’s escort, level 30 to 32, endless. With Forge a Signal turned in, the galleon’s crew starts the boarding Surprised."
+  },
+  {
+    "id": "f14_treasure_galleon",
+    "name": "The Treasure Galleon",
+    "icon": "💰",
+    "areaId": "ascent_f14_area",
+    "map": {
+      "x": 35,
+      "y": 10
+    },
+    "fightLimit": 1,
+    "modifierWeights": {
+      "normal": 100
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Take the Galleon",
+        "icon": "⚔️"
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "ph_galleon_master",
+        "weight": 1,
+        "once": true,
+        "level": [
+          33,
+          33
+        ]
+      }
+    ],
+    "connections": [],
+    "desc": "The pirates’ mission: the galleon’s master and four Frigate Captains, level 33. One fight, started when you choose. Winning it clears floor 14."
+  },
+  {
+    "id": "f14_kings_reef",
+    "name": "The King’s Reef",
+    "icon": "🌊",
+    "areaId": "ascent_f14_area",
+    "map": {
+      "x": 65,
+      "y": 30
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Hunt the King’s Crews",
+        "icon": "⚔️"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 50
+      },
+      {
+        "size": 2,
+        "weight": 50
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "ph_pirate_cutthroat",
+        "weight": 40,
+        "level": [
+          30,
+          32
+        ]
+      },
+      {
+        "monsterId": "ph_pirate_gunner",
+        "weight": 60,
+        "level": [
+          30,
+          32
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "to": "f14_flagship",
+        "ticks": 30,
+        "approach": {
+          "requires": [
+            {
+              "type": "quest",
+              "id": "f11_privateers_letter"
+            }
+          ],
+          "enemies": [
+            {
+              "id": "flat_footed"
+            }
+          ]
+        },
+        "label": "Board the Flagship",
+        "returnLabel": "Back to the King’s Reef"
+      }
+    ],
+    "desc": "The privateers’ approach: the pirate king’s crews, level 30 to 32, endless. With Renew the Letter turned in, the king’s crew starts the boarding Flat-Footed."
+  },
+  {
+    "id": "f14_flagship",
+    "name": "The Pirate King’s Flagship",
+    "icon": "👑",
+    "areaId": "ascent_f14_area",
+    "map": {
+      "x": 70,
+      "y": 10
+    },
+    "fightLimit": 1,
+    "modifierWeights": {
+      "normal": 100
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Take the Flagship",
+        "icon": "⚔️"
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "ph_pirate_king",
+        "weight": 1,
+        "once": true,
+        "level": [
+          33,
+          33
+        ]
+      }
+    ],
+    "connections": [],
+    "desc": "The privateers’ mission: the Pirate King and four Pirate Captains, level 33. One fight, started when you choose. Winning it clears floor 14."
+  },
+  {
+    "id": "f14_beast_grounds",
+    "name": "The Beast’s Grounds",
+    "icon": "🌊",
+    "areaId": "ascent_f14_area",
+    "map": {
+      "x": 85,
+      "y": 45
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Cull the Brood",
+        "icon": "⚔️"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 50
+      },
+      {
+        "size": 2,
+        "weight": 50
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "ph_reef_eel",
+        "weight": 40,
+        "level": [
+          30,
+          32
+        ]
+      },
+      {
+        "monsterId": "ph_deep_serpent",
+        "weight": 60,
+        "level": [
+          30,
+          32
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "to": "f14_beast_lair",
+        "ticks": 30,
+        "approach": {
+          "requires": [
+            {
+              "type": "quest",
+              "id": "f11_navy_lure"
+            }
+          ],
+          "enemies": [
+            {
+              "id": "surprised"
+            }
+          ]
+        },
+        "label": "Down to the Beast’s Lair",
+        "returnLabel": "Back to the Grounds"
+      }
+    ],
+    "desc": "The navy’s approach: the beast’s brood, level 30 to 32, endless. With Bait a Lure turned in, the beast and its brood start the fight Surprised."
+  },
+  {
+    "id": "f14_beast_lair",
+    "name": "The Beast’s Lair",
+    "icon": "🐋",
+    "areaId": "ascent_f14_area",
+    "map": {
+      "x": 92,
+      "y": 22
+    },
+    "fightLimit": 1,
+    "modifierWeights": {
+      "normal": 100
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Fight the Sea Beast",
+        "icon": "⚔️"
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "ph_sea_beast",
+        "weight": 1,
+        "once": true,
+        "level": [
+          33,
+          33
+        ]
+      }
+    ],
+    "connections": [],
+    "desc": "The navy’s mission: the Sea Beast and four Brood Matrons, level 33. One fight, started when you choose. Winning it clears floor 14."
   }
 ]

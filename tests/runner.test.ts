@@ -4,6 +4,8 @@ import { systems } from '../src/systems';
 import { buyStep } from '../src/systems/counter';
 import type { CountersState } from '../src/systems/counters';
 import { bandPosKey, FLOORS } from '../src/systems/ladder';
+import { acceptedKey } from '../src/systems/quests';
+import { SEA, SEA_CRATES_OFFLINE, SEA_CRATES_WON, SEA_SIDES } from '../src/systems/sea';
 import { WARD_WINDOWS, wardClockKey } from '../src/systems/wards';
 import { makeKernel, patch } from './helpers';
 
@@ -70,7 +72,9 @@ describe('offline catch-up', () => {
  * live kernel included. The equality case above holds for content with no
  * clock of live play. The systems that read the flag, each with a case:
  * - `wards`: a ward window's clock counts live ticks only.
- * Later: `sea` (offline convoys paid by a share), the festival clock.
+ * - `sea`: a convoy leg sailed while catching up pays a share of its crates
+ *   as cargo and none to `sea:crates:won` (step 4 port C3).
+ * Later: the festival clock.
  */
 describe('systems that behave differently in catch-up', () => {
   const W = WARD_WINDOWS[0];
@@ -106,5 +110,44 @@ describe('systems that behave differently in catch-up', () => {
 
     runHeadless(live, { ticks: 500 });
     expect(clockOf(live.snapshot())).toBe(before + 500);
+  });
+
+  /** A navy player on the roadstead, the fourth leg of a convoy 10 ticks off, no fight in the way. */
+  function atTheRoadstead(): Kernel {
+    const kernel = makeKernel();
+    patch(kernel, (slices) => {
+      const counts = (slices.counters as CountersState).counts;
+      counts['legacy:stronghold'] = 1;
+      counts[acceptedKey(SEA_SIDES.navy.joinQuest)] = 1;
+      slices.quests.quests[SEA_SIDES.navy.joinQuest] = { status: 'active', progress: [0] };
+      slices.world.spot = 'f11_roadstead';
+      slices.world.activity = 'hunt';
+      slices.world.discovered.push('f11_roadstead');
+      slices.combat.respawnTimer = 100_000;
+      slices.clock.totalTicks = 2 * SEA.convoyTicks + SEA.legs * SEA.legTicks - 10;
+    });
+    return kernel;
+  }
+
+  const crates = (snapshot: { slices: Record<string, unknown> }) => {
+    const counts = (snapshot.slices.counters as CountersState).counts;
+    return { won: counts[SEA_CRATES_WON] ?? 0, offline: counts[SEA_CRATES_OFFLINE] ?? 0, leg: counts['sea:f11_roadstead:leg'] ?? 0 };
+  };
+
+  it('sea: a leg ending under catchUp credits crates offline, and under runHeadless crates won', () => {
+    const live = atTheRoadstead();
+    const returned = catchUp({ systems, envelope: live.save(1000), ticks: 30, now: 2000 });
+    const viaCatchUp = makeKernel();
+    expect(viaCatchUp.load(returned).ok).toBe(true);
+    const away = crates(viaCatchUp.snapshot());
+    expect(away.leg).toBe(SEA.legs);
+    expect(away.won).toBe(0);
+    expect(away.offline).toBeGreaterThan(0);
+
+    runHeadless(live, { ticks: 30 });
+    const here = crates(live.snapshot());
+    expect(here.leg).toBe(SEA.legs);
+    expect(here.offline).toBe(0);
+    expect(here.won).toBe(away.offline);
   });
 });

@@ -559,3 +559,24 @@ skip.
   several flat and percent riders, one per damage type, and each lands as
   its own slice, flat riders of every rune first, then percent riders (old
   `weaponRuneBonuses`). The source name reads `resolveRune`.
+
+## Step 4 port C3
+
+- Slice version 3: `approach`, the opening a road bought, waiting for the
+  first fight at its spot (old `state.pendingApproach`). Saved. Migration
+  step 2 adds `approach: null`.
+- Request `combat/approach` (`stampApproach`): the world stamps it, or
+  clears it with `null`.
+- `startEncounter` spends it when the site is its spot, after the
+  monsters' `wears` and before the tempo check: every enemy gets the
+  enemy applications (`statuses/apply`, source "your approach", the
+  player's penetration), the player gets the self applications
+  (`statuses/apply-all`, source "the way in", resisted). The feed lines
+  ("Your approach applied conditions to the enemies.", "You arrive
+  flat-footed!") are sent after the fight's transcript opens. A surprised
+  formation then opens the tempo, as before.
+- Changed (no rule): the old advance ticked no fight on a tick of travel,
+  so a forced fight took its first swing one tick after the arrival. Here
+  combat ticks after the world in the same kernel tick, so a forced fight's
+  first combat tick is the arrival tick (older than this port;
+  `tests/approach.test.ts` reads the opening from the transcript).

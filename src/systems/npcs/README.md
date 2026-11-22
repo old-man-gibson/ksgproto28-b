@@ -63,3 +63,14 @@ the old build. The Warden's `quests` lists `the_first_ascent`,
 
 The steward `f11_steward` in the gatehouse of floor 11 (old `npcs.data.ts`
 249-262, text `npcs.text.ts` 107-112). Gives the two repair quests.
+
+## Step 4 port C3
+
+The harbor's six people (old `npcs.data.ts` 263-318, text
+`npcs.text.ts` 115-147): the four recruiters at the berths of floor 11
+(`f11_factor`, `f11_bosun`, `f11_letter_agent`, `f11_lieutenant`),
+each giving its side's join quest and preparation quest; at the Last Port
+of floor 13 the pilot (`f13_pilot`, shop Passage: the Pilot's Passage)
+and the harbor master (`f13_harbor_master`, shop Papers: Port Clearance,
+shown to merchants only). No new machinery: the shops' `requires` and the
+`shop:buys:<npc>` counter were there.

@@ -1,0 +1,203 @@
+{
+  "fight": {
+    "enemies": [
+      {
+        "entity": "m3",
+        "defId": "slime_base_basic",
+        "name": "Slime",
+        "icon": "🟢",
+        "level": 2,
+        "tier": "basic",
+        "modifier": "normal",
+        "rarity": "common",
+        "attrs": {
+          "str": 3.5491957789712205,
+          "dex": 3.569691655767124,
+          "con": 5.861653224502397,
+          "int": 1.1044841175188158,
+          "wis": 1.0657856643255945,
+          "cha": 1.119474321542328
+        },
+        "hp": 53,
+        "range": "melee",
+        "bar": 260.7090749673014,
+        "stunSpent": 0,
+        "xp": 8.100000000000001,
+        "gold": 0
+      },
+      {
+        "entity": "m4",
+        "defId": "slime_base_basic",
+        "name": "Slime",
+        "icon": "🟢",
+        "level": 2,
+        "tier": "basic",
+        "modifier": "normal",
+        "rarity": "common",
+        "attrs": {
+          "str": 4.464006739182413,
+          "dex": 4.093105577395439,
+          "con": 5.7345441098436405,
+          "int": 1.3454537489521363,
+          "wis": 1.3419134465920688,
+          "cha": 1.2567681183444075
+        },
+        "hp": 52,
+        "range": "melee",
+        "bar": 157.36759003931175,
+        "stunSpent": 0,
+        "xp": 8.100000000000001,
+        "gold": 0
+      },
+      null,
+      null,
+      null
+    ],
+    "playerBar": 309,
+    "momentum": 0,
+    "position": "neutral",
+    "cooldowns": {},
+    "events": {
+      "onEncounterStart": 5654
+    },
+    "buffs": []
+  },
+  "site": {
+    "id": "f1_test_hall",
+    "name": "Test Hall",
+    "encounters": [
+      {
+        "monsterId": "slime_base_basic",
+        "weight": 3,
+        "level": [
+          1,
+          2
+        ]
+      },
+      {
+        "monsterId": "goblin",
+        "weight": 1,
+        "level": [
+          1,
+          1
+        ]
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 2,
+        "weight": 1
+      }
+    ]
+  },
+  "hunting": true,
+  "respawnTimer": 0,
+  "ledger": {
+    "outcome": "won",
+    "ticks": -5654,
+    "endedAt": 5654,
+    "spot": "f1_test_hall",
+    "foes": [
+      {
+        "defId": "slime_base_basic",
+        "name": "Slime",
+        "icon": "🟢",
+        "level": 2,
+        "count": 2
+      }
+    ],
+    "incoming": [],
+    "stopped": {
+      "absorbed": 0,
+      "parried": 0,
+      "riposted": 0,
+      "dodged": 0,
+      "parries": 0,
+      "dodges": 0
+    },
+    "healed": {
+      "idle": 0.2190000000000012
+    },
+    "healRefused": 0,
+    "outgoing": {
+      "damage": 0,
+      "hits": 0,
+      "kills": 0
+    },
+    "afflictions": [],
+    "transcript": []
+  },
+  "lastFight": {
+    "outcome": "knocked_out",
+    "ticks": 205,
+    "endedAt": 5606,
+    "spot": "f1_test_hall",
+    "foes": [
+      {
+        "defId": "slime_base_basic",
+        "name": "Slime",
+        "icon": "🟢",
+        "level": 1,
+        "count": 2
+      }
+    ],
+    "incoming": [
+      {
+        "key": "monster:slime_base_basic",
+        "label": "Slime",
+        "icon": "🟢",
+        "amount": 55.5985,
+        "hits": 13
+      }
+    ],
+    "stopped": {
+      "absorbed": 7.934867878156318,
+      "parried": 0,
+      "riposted": 0,
+      "dodged": 6.3447407747547135,
+      "parries": 0,
+      "dodges": 1
+    },
+    "healed": {
+      "idle": 5.598500000000003
+    },
+    "healRefused": 0,
+    "outgoing": {
+      "damage": 23,
+      "hits": 10,
+      "kills": 0
+    },
+    "afflictions": [],
+    "transcript": [
+      {
+        "text": "🟢 Slime (Lv 1) and 1 others attack!"
+      },
+      {
+        "text": "⚔️ You hit the Slime for 1 (resisted)"
+      },
+      {
+        "text": "🩸 The Slime hits you for 6 bludgeoning."
+      }
+    ]
+  },
+  "notebook": [],
+  "huntRest": {
+    "at": 0.3,
+    "toFull": false,
+    "active": false
+  },
+  "style": {
+    "id": "balanced",
+    "exertion": {
+      "on": "attack",
+      "cost": 0.02,
+      "hit": {
+        "damage": 0.1
+      }
+    }
+  },
+  "rotation": [],
+  "nextEntity": 5,
+  "triggers": {},
+  "approach": null
+}

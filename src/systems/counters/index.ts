@@ -4,7 +4,7 @@
  * (`state.stats`, `bumpStat`, `raiseStat`, `setStat`) and of
  * `systems/conditions.ts`. See README.md in this folder.
  */
-import { defineEvent, defineSystem, on, type DeepReadonly } from '../../kernel';
+import { answer, defineEvent, defineRequest, defineSystem, on, type DeepReadonly } from '../../kernel';
 import { migrations } from './migrations';
 
 export * from './conditions';
@@ -28,6 +28,13 @@ export const setCounter = defineEvent<{ key: string; value: number }>('counters/
 export const clearCounter = defineEvent<{ key: string }>('counters/clear');
 /** A counter was written. `value` is the new value, 0 after a clear. */
 export const counterChanged = defineEvent<{ key: string; value: number }>('counters/changed');
+/**
+ * Overwrite a counter now, inside the caller's handler. For a caller that
+ * reads the counter again before its own events are delivered: two kills of
+ * one tick are two deliveries of `combat/kill` before either handler's
+ * events (`sea`, the leg's kill count). `counters/changed` is still sent.
+ */
+export const setCounterNow = defineRequest<{ key: string; value: number }, void>('counters/set-now');
 
 // ---- reads ----
 
@@ -79,6 +86,13 @@ export default defineSystem<CountersState, CountersView>({
       if (!(key in ctx.state.counts)) return ctx.skip('counters/clear', `counter "${key}" is not set`);
       delete ctx.state.counts[key];
       ctx.emit(counterChanged, { key, value: 0 });
+    }),
+  ],
+
+  requests: [
+    answer(setCounterNow, (ctx, { key, value }) => {
+      ctx.state.counts[key] = value;
+      ctx.emit(counterChanged, { key, value });
     }),
   ],
 

@@ -36,9 +36,20 @@
  * review. The segment records the level and gold the run ended with. Its
  * debug skip is `prestige/debug-hold-wall`.
  *
+ * Run 3 (step 4 port C3, `through` 11 to 14): the siege's prestige starts
+ * it at the Foot. `reclimb3` climbs floors 1 to 6 again and replays band 3's
+ * wards (a ward that was a wall in run 2 is skipped without playing; the
+ * replayed wards record nothing of their own). Then the harbor: on floor 11
+ * John signs with the side `side` names (`quests/accept` at its berth, by
+ * way of the quay) and works the roadstead; on floors 12 and 13 he works the
+ * floor's last water (the far water by the strait and the isle; the blockade
+ * by the picket line, not the pilot's channel); on floor 14 his side's wing,
+ * the approach water as the den and the mission boss as the keeper. He fires
+ * what the hold has (nothing: he crafts and buys nothing) and fights what the
+ * water sends.
+ *
  * Differences from the old driver, each from a port not done yet:
- * - Run 3 (floors 11 to 20 after the siege) is ports C3 to C7. `through`
- *   stops at 11, the siege.
+ * - Floors 15 to 20 are ports C4 to C7. `through` stops at 14.
  * - The prestige takes no seed: the old `Game.prestige(seed)` reseeded the
  *   generator; the kernel's generator runs on.
  *
@@ -50,7 +61,8 @@ import combat, { type CombatState } from '../src/systems/combat';
 import counters, { counterValue } from '../src/systems/counters';
 import gold from '../src/systems/gold';
 import materials, { heldOf } from '../src/systems/materials';
-import quests, { acceptQuest, objectiveProgress, QUESTS, turnInQuest } from '../src/systems/quests';
+import { NPCS } from '../src/systems/npcs';
+import quests, { acceptedKey, acceptQuest, objectiveProgress, QUESTS, turnInQuest } from '../src/systems/quests';
 import { clearMet, debugSkipWall, FLOORS, ladderReader, type FloorDef } from '../src/systems/ladder';
 import levels from '../src/systems/levels';
 import prestige, {
@@ -63,6 +75,7 @@ import prestige, {
   STRONGHOLD_WAVE,
 } from '../src/systems/prestige';
 import resources from '../src/systems/resources';
+import { SEA_SIDE_LIST, SEA_SIDES } from '../src/systems/sea';
 import { statOf } from '../src/systems/stats';
 import { learnFromTeacher, lessonsOf } from '../src/systems/martial';
 import { chooseSpell, chooseStance, chooseWeapon, skipTutorial } from '../src/systems/tutorial';
@@ -94,6 +107,8 @@ export const SEGMENTS = [
   'reclimb2', 'floor7', 'floor8', 'floor9', 'floor10',
   // Floor 11 on the first climb: the stronghold (`through` 11).
   'siege',
+  // Run 3: floors 1 to 10 again, then the harbor (`through` 11 to 14).
+  'reclimb3', 'floor11', 'floor12', 'floor13', 'floor14',
 ] as const;
 export type ClimbSegment = (typeof SEGMENTS)[number];
 
@@ -109,6 +124,7 @@ const BOSSES: Partial<Record<ClimbSegment, string[]>> = {
   floor9: ['f9_ossuary'],
   floor10: ['f10_foundry'],
   siege: ['f11_wall'],
+  floor14: SEA_SIDE_LIST.map((x) => x.mission.spot),
 };
 
 /** A try at a boss counts only when this foe is in the fight (the wall's eighth fight, its captain). */
@@ -126,7 +142,11 @@ export interface ClimbOptions {
   attentive?: boolean;
   /** Give up after this many ticks of play. Default two hours, 80 past floor 6. */
   budget?: number;
-  /** The last floor: 3 (band 1, the default) to 6 (band 2), 7 to 10 (band 3, run 2), 11 (the siege, run 2). */
+  /**
+   * The last floor: 3 (band 1, the default) to 6 (band 2), 7 to 10 (band 3,
+   * run 2), 11 to 14 (the siege, which ends run 2, and run 3 to that floor of
+   * the harbor).
+   */
   through?: number;
   /** Ticks of play one floor past 6 may take before it is a wall. Default four hours. */
   floorCap?: number;
@@ -136,6 +156,8 @@ export interface ClimbOptions {
   wards?: number[];
   /** After floor 6, take the first prestige. Default true when `through` is 6. */
   prestige?: boolean;
+  /** The harbor side John signs with: merchants, pirates, privateers or navy. Default: the first berth. */
+  side?: string;
   /** Called after every tick; the climb ends when it answers true. For tools that need a state mid-climb. */
   stopWhen?: (k: Kernel) => boolean;
 }
@@ -159,7 +181,7 @@ export interface ClimbReport {
   prestiged: boolean;
   /** Points the first harvest paid. */
   harvest: number | null;
-  /** The run each segment closed in: 1, or 2 after the first prestige. */
+  /** The run each segment closed in: 1; 2 after the first prestige; 3 after the stronghold. */
   runs: Record<ClimbSegment, number | null>;
   /** Floors past 6 that were walls (or the script stopped on), by segment. */
   stuck: Partial<Record<ClimbSegment, StuckRecord>>;
@@ -198,6 +220,7 @@ export function runJohn(options: ClimbOptions): ClimbReport {
     floorCap: 4 * 3600 * TPS,
     skipWalls: true,
     wards: [7, 8, 9, 10],
+    side: 'merchants',
     stopWhen: () => false,
     ...options,
     through,
@@ -508,7 +531,12 @@ export function runJohn(options: ClimbOptions): ClimbReport {
 
   // ---- Floor-level machinery for everything past floor 6. ----
 
-  const r = ladderReader(eye);
+  /**
+   * Whether a floor's clear holds now. The reader is made per read: a reader
+   * holds the counters slice it was made on, and a new run (the stronghold's
+   * prestige) replaces every slice.
+   */
+  const clears = (floorId: string) => clearMet(ladderReader(eye), FLOORS[floorId]);
   /** Settle what the last floor left: a knockout slept off, a fight that cannot be fled finished. */
   const settle = () => {
     if (C().fight?.forced) until(() => !C().fight, 5 * 60 * TPS);
@@ -529,18 +557,27 @@ export function runJohn(options: ClimbOptions): ClimbReport {
     }
   };
   /**
-   * Play one floor of run 2 inside its cap: climb to it, `work` it, and close
-   * the segment when its clear holds. A floor still open at the cap is a
-   * wall: record it, send the debug skip and report whether the climb goes on.
+   * Play one floor of run 2 or 3 inside its cap: climb to it, `work` it, and
+   * close the segment when its clear holds. A floor still open at the cap is
+   * a wall: record it, send the debug skip and report whether the climb goes
+   * on. `replay` is a floor John already played in run 2: no record, and a
+   * floor that was a wall then is skipped without playing.
    */
   const attempt = (
     seg: ClimbSegment,
     floorId: string,
     work: () => void,
-    o: { goal?: () => boolean; skip?: () => void } = {},
+    o: { goal?: () => boolean; skip?: () => void; replay?: boolean } = {},
   ): boolean => {
-    const goal = o.goal ?? (() => clearMet(r, FLOORS[floorId]));
-    segment = seg;
+    const goal = o.goal ?? (() => clears(floorId));
+    // DEBUG SKIP, not a player action: the floor's gate and clear counters
+    // written, its clear XP stamped as paid.
+    const skip = o.skip ?? (() => send(debugSkipWall({ floor: floorId })));
+    if (o.replay && report.stuck[seg]) {
+      skip();
+      return true;
+    }
+    if (!o.replay) segment = seg;
     segStart = t;
     capEnd = t + opts.floorCap;
     const k0 = knockouts;
@@ -557,10 +594,15 @@ export function runJohn(options: ClimbOptions): ClimbReport {
     const capped = t >= capEnd;
     capEnd = Infinity;
     if (goal()) {
-      record(seg);
+      if (!o.replay) record(seg);
       return true;
     }
     if (t >= opts.budget || stopped) return false;
+    if (o.replay) {
+      report.firstSkip ??= seg;
+      skip();
+      return true;
+    }
     const why = capped
       ? `open at the ${Math.round(opts.floorCap / TPS / 60)} min cap` + (entered ? '' : ' (the climb was refused: the floor gate is unmet)')
       : !entered
@@ -572,10 +614,7 @@ export function runJohn(options: ClimbOptions): ClimbReport {
     // ends the run, and the prestige resets the level and the gold.
     record(seg);
     report.firstSkip ??= seg;
-    // DEBUG SKIP, not a player action: the floor's gate and clear counters
-    // written, its clear XP stamped as paid.
-    if (o.skip) o.skip();
-    else send(debugSkipWall({ floor: floorId }));
+    skip();
     return true;
   };
   /**
@@ -600,7 +639,7 @@ export function runJohn(options: ClimbOptions): ClimbReport {
   // again each time a knockout sends him back.
   const wardWork: Record<number, () => void> = {
     7: () => {
-      const done = () => clearMet(r, FLOORS.ascent_f7);
+      const done = () => clears('ascent_f7');
       const pos = () => stat('band:pos:ascent_f7');
       repeat(done, () => {
         const at = pos();
@@ -623,20 +662,24 @@ export function runJohn(options: ClimbOptions): ClimbReport {
       });
     },
     8: () => {
-      if (scout(['f8_old_forest', 'f8_lodge'])) keeperLoop('f8_old_forest', 'f8_lodge', () => clearMet(r, FLOORS.ascent_f8));
+      if (scout(['f8_old_forest', 'f8_lodge'])) keeperLoop('f8_old_forest', 'f8_lodge', () => clears('ascent_f8'));
     },
     9: () => {
-      if (scout(['f9_barrow_fields', 'f9_ossuary'])) keeperLoop('f9_barrow_fields', 'f9_ossuary', () => clearMet(r, FLOORS.ascent_f9));
+      if (scout(['f9_barrow_fields', 'f9_ossuary'])) keeperLoop('f9_barrow_fields', 'f9_ossuary', () => clears('ascent_f9'));
     },
     10: () => {
-      if (scout(['f10_quarry', 'f10_foundry'])) keeperLoop('f10_quarry', 'f10_foundry', () => clearMet(r, FLOORS.ascent_f10));
+      if (scout(['f10_quarry', 'f10_foundry'])) keeperLoop('f10_quarry', 'f10_foundry', () => clears('ascent_f10'));
     },
   };
-  /** `through` 7 to 9 stops after those wards; 10 plays all four. */
+  /** `through` 7 to 9 stops after those wards; 10 and up plays all four. */
   const wardsFor = opts.through >= 10 ? opts.wards : opts.wards.filter((n) => n <= opts.through);
-  for (const n of wardsFor) {
-    if (!attempt(`floor${n}` as ClimbSegment, `ascent_f${n}`, wardWork[n])) return finish();
-  }
+  const playWards = (replay: boolean): boolean => {
+    for (const n of wardsFor) {
+      if (!attempt(`floor${n}` as ClimbSegment, `ascent_f${n}`, wardWork[n], { replay })) return false;
+    }
+    return true;
+  };
+  if (!playWards(false)) return finish();
   if (opts.through <= 10) return finish();
 
   // ---- Floor 11 on the first climb: the stronghold. The steward's two repairs
@@ -679,7 +722,50 @@ export function runJohn(options: ClimbOptions): ClimbReport {
     send(debugHoldWall());
     tick();
   };
-  attempt('siege', 'ascent_f11', siegeWork, { goal: strongholdHeld, skip: siegeSkip });
+  if (!attempt('siege', 'ascent_f11', siegeWork, { goal: strongholdHeld, skip: siegeSkip })) return finish();
+  if (runNo !== 3) return finish();
+
+  // ---- Run 3: floors 1 to 10 again. A ward that was a wall in run 2 is skipped. ----
+  segment = 'reclimb3';
+  segStart = t;
+  if (!lowerBands()) return finish();
+  if (!playWards(true)) return finish();
+  record('reclimb3');
+
+  // ---- The harbor (floors 11 to 14). ----
+  const side = SEA_SIDES[opts.side];
+  if (!side) throw new Error(`no harbor side "${opts.side}"`);
+  /** Sign with the side: accepting its join quest at its berth is the pick. */
+  const sign = () => {
+    if (stat(acceptedKey(side.joinQuest)) >= 1) return;
+    if (scout(['f11_quay', NPCS[side.giver].spotId])) send(acceptQuest({ quest: side.joinQuest }));
+  };
+  /**
+   * Floors 11 to 13 clear on crates won (any water, cumulative over the run)
+   * and a fight won on the floor's last water, so John works that water: the
+   * convoy sails past it and he is present. He fights what the water sends.
+   */
+  const water = (floorId: string, spot: string, route: string[]) => () => {
+    if (scout(route)) persist(spot, 'hunt', () => clears(floorId));
+  };
+  const harbor: Record<number, () => void> = {
+    11: () => {
+      sign();
+      water('ascent_f11', 'f11_roadstead', ['f11_quay', 'f11_roadstead'])();
+    },
+    12: water('ascent_f12', 'f12_far_water', ['f12_strait', 'f12_isle', 'f12_far_water']),
+    // Through the picket line: the pilot's channel costs a purchase.
+    13: water('ascent_f13', 'f13_blockade', ['f13_picket', 'f13_blockade']),
+    // The side's wing: the approach is the den, the mission boss the keeper.
+    14: () => {
+      const boss = side.mission.spot;
+      const approach = Object.values(SPOTS).find((x) => x.areaId === FLOORS.ascent_f14.areaId && x.connections.some((c) => c.to === boss))!;
+      if (scout([approach.id, boss])) keeperLoop(approach.id, boss, () => clears('ascent_f14'));
+    },
+  };
+  for (let n = 11; n <= 14 && n <= opts.through; n++) {
+    if (!attempt(`floor${n}` as ClimbSegment, `ascent_f${n}`, harbor[n])) return finish();
+  }
   return finish();
 }
 
@@ -700,6 +786,7 @@ export const FLOOR_OF: Record<ClimbSegment, string> = {
   floor4: 'f4', gate5: 'f5 gate', floor5: 'f5', gate6: 'f6 gate', floor6: 'f6',
   reclimb2: 'f1-6 again', floor7: 'f7', floor8: 'f8', floor9: 'f9', floor10: 'f10',
   siege: 'f11 siege',
+  reclimb3: 'f1-10 again', floor11: 'f11', floor12: 'f12', floor13: 'f13', floor14: 'f14',
 };
 
 /** The per-floor table of one climb, in the old pacing script's columns. */

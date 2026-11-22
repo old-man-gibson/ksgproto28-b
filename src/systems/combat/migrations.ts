@@ -16,4 +16,7 @@ export const migrations: Record<number, (data: Json) => Json> = {
       triggers: {},
     };
   },
+  // Version 3 (step 4 port C3): the opening a road bought, waiting for the
+  // first fight at its end. A save from before has none.
+  2: (data) => ({ ...(data as { [key: string]: Json }), approach: null }),
 };

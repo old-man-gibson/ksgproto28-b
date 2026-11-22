@@ -1,8 +1,8 @@
-// Sends John (tests/john.ts) up floors 0 to 11, headless, and prints a
+// Sends John (tests/john.ts) up floors 0 to 14, headless, and prints a
 // per-floor table for each climb: when each stretch finished, the knockouts,
 // the boss tries, the level and the gold. Port of the old `scripts/pacing.ts`
-// (bands 1 to 3: run 1, the prestige, run 2 to floor 10, the siege of floor
-// 11). This only prints.
+// (bands 1 to 4: run 1, the prestige, run 2 to floor 10, the siege of floor
+// 11, run 3 to the harbor's floor 14). This only prints.
 //
 //   npm run pacing                                  John (skip), seeds 42, 7, 1234, through floor 6
 //   npm run pacing -- --seeds 1,2,3                 other seeds
@@ -11,7 +11,10 @@
 //   npm run pacing -- --attentive                   explore first
 //   npm run pacing -- --through 10                  the prestige, run 2: floors 1 to 6 again, band 3's wards
 //   npm run pacing -- --through 10 --wards 10,9,8,7 band 3's wards in this order (default 7,8,9,10)
-//   npm run pacing -- --through 11                  and the siege of floor 11, which ends run 2
+//   npm run pacing -- --through 11                  and the siege of floor 11, which ends run 2, then run 3
+//                                                   to floor 11 of the harbor
+//   npm run pacing -- --through 14                  run 3 to floor 14, the harbor's final mission
+//   npm run pacing -- --through 14 --side navy      the harbor side John signs with (default merchants)
 //   npm run pacing -- --through 10 --cap 120        a floor past 6 still open after 120 minutes of game
 //                                                   time is a wall (default 240); past it John takes the
 //                                                   debug skip and later floors read "measured after skip"
@@ -30,11 +33,12 @@ const through = Number(list('--through', '6')[0]);
 const attentive = args.includes('--attentive');
 const wards = list('--wards', '7,8,9,10').map(Number);
 const capMinutes = Number(list('--cap', '240')[0]);
+const side = list('--side', 'merchants')[0];
 
 for (const seed of seeds) {
   for (const weapon of weapons) {
     const started = performance.now();
-    const r = runJohn({ seed, weapon, through, attentive, wards, floorCap: capMinutes * 60 * 10 });
+    const r = runJohn({ seed, weapon, through, attentive, wards, side, floorCap: capMinutes * 60 * 10 });
     const ms = Math.round(performance.now() - started);
     console.log(`\n${climbTable(r)}\n(${ms} ms of wall clock)`);
   }

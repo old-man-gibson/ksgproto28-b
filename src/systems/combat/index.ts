@@ -94,7 +94,7 @@ import {
 import { migrations } from './migrations';
 import { combatText, TEXT } from './text';
 import { evaluateTrigger, type SkillTrigger } from './triggers';
-import type { CombatBuff, CombatState, EncounterSite, Enemy, FightLedger, HuntRest, StyleState } from './types';
+import type { CombatBuff, CombatState, EncounterSite, Enemy, FightLedger, HuntRest, PendingApproach, StyleState } from './types';
 
 export * from './actions';
 export * from './triggers';
@@ -139,6 +139,13 @@ export const setHunt = defineRequest<{ site: EncounterSite }, boolean>('combat/s
 export const stopHuntLoop = defineRequest<void, void>('combat/stop-hunt');
 /** Leave the fight. Never refuses. True when there was one. The old `abandonCombat`. */
 export const abandon = defineRequest<void, boolean>('combat/abandon');
+/**
+ * Stamp the opening of the road just walked, or clear it (`null`). The world
+ * sends it on every arrival: an arrival without an approach wipes the last
+ * one, so an opening never outlives its road. The old `pendingApproach`
+ * write in `tickTravel` and `fastTravelTo`.
+ */
+export const stampApproach = defineRequest<{ approach: PendingApproach | null }, void>('combat/approach');
 /**
  * Damage from outside the normal attack lands on an enemy. Null when no
  * enemy has the entity id or it is already dead. The dead are swept by the
@@ -301,7 +308,7 @@ const copy = <T>(value: DeepReadonly<T>): T => cloneJson(value as Json) as T;
 
 const combat = defineSystem<CombatState, CombatView>({
   id: 'combat',
-  version: 2,
+  version: 3,
   migrations,
   // After `resources` and `statuses`: the old loop ticked the pools, the
   // player's conditions and the health trickle before the fight.
@@ -321,6 +328,7 @@ const combat = defineSystem<CombatState, CombatView>({
     rotation: [],
     triggers: {},
     nextEntity: 1,
+    approach: null,
   }),
   content: { combat_text: combatText },
   stats,
@@ -453,6 +461,9 @@ const combat = defineSystem<CombatState, CombatView>({
       const had = ctx.state.fight !== null;
       abandonCombat(ctx);
       return had;
+    }),
+    answer(stampApproach, (ctx, { approach }) => {
+      ctx.state.approach = approach ? copy(approach) : null;
     }),
     answer(damageEnemy, (ctx, p) => {
       const e = enemyOf(ctx.state, p.entity);

@@ -15,8 +15,10 @@
  * - `state.bonusTime.banked` is the `bonus` slice.
  * - `floorUnlocked(state, floor)` takes the ladder reader.
  *
- * Left out: the harbor half of "its clear is the harbor’s roadstead" (the
- * road's edge on to `f11_quay`): the quay is port C3. The offline summary of
+ * The harbor half of "its clear is the harbor’s roadstead" (the road's edge
+ * on to `f11_quay`) came with port C3.
+ *
+ * Left out: the offline summary of
  * the old case (kills and gold not negative) has no counterpart: the summary
  * is the UI step.
  */
@@ -209,6 +211,9 @@ describe('floor 11 on the ladder', () => {
       { type: 'stat', key: 'sea:crates:won', value: 8 },
       { type: 'stat', key: 'fights:f11_roadstead', value: 1 },
     ]);
+    // Port C3: the road on to the quay.
+    expect(SPOTS.f11_road.connections.find((c) => c.to === 'f11_quay')?.requires).toEqual([
+      { type: 'stat', key: STRONGHOLD_KEY, value: 1 },
+    ]);
   });
-  it.todo('the road leads on to the quay only with the stronghold (step 4 port C3: the harbor)');
 });

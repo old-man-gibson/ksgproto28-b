@@ -778,6 +778,35 @@ export interface StagedMember {
   attrBias?: Partial<Record<AttributeId, number>>;
 }
 
+/**
+ * The road in spends its opening on the first fight at its end (old
+ * `startEncounter`, the `pendingApproach` block): conditions laid on every
+ * enemy, with the player's penetration, and on the player, who resists what
+ * the way in does as any other dose. Before the tempo check, so a surprised
+ * formation hands the player the first move. Answers the feed lines, which
+ * the caller sends once the fight's transcript is open.
+ */
+function spendApproach(ctx: C, siteId: string, fight: Fight): string[] {
+  const opening = ctx.state.approach;
+  if (!opening || opening.spot !== siteId) return [];
+  ctx.state.approach = null;
+  const lines: string[] = [];
+  let told = false;
+  const penetration = statBlockOf(ctx).penetration;
+  for (const e of liveEnemies(fight)) {
+    for (const app of opening.enemies) {
+      told = !!ctx.request(applyStatus, { entity: e.entity, app, source: 'your approach', penetration }) || told;
+    }
+  }
+  if (told) lines.push('🥷 Your approach applied conditions to the enemies.');
+  if (!opening.self.length) return lines;
+  for (const inst of ctx.request(applyStatuses, { entity: PLAYER, apps: opening.self, source: 'the way in', resist: true })) {
+    const def = STATUSES[inst.id];
+    if (def && !def.hidden) lines.push(`${def.icon} You arrive ${def.name.toLowerCase()}!`);
+  }
+  return lines;
+}
+
 /** Start an encounter at the site. The old `startEncounter`. */
 function startEncounter(ctx: C, site: EncounterSite, forced = false, enemies?: (Enemy | null)[]): void {
   ctx.state.site = site;
@@ -803,6 +832,8 @@ function startEncounter(ctx: C, site: EncounterSite, forced = false, enemies?: (
       ctx.request(applyStatuses, { entity: e.entity, apps: wears.map(toApplication), source: MONSTERS[e.defId].name });
   }
 
+  const opening = spendApproach(ctx, site.id, fight);
+
   // Opening tempo: a fight that begins on enemies who have not registered it
   // hands the player the first move. The bar starts one tick short of full.
   if (liveEnemies(fight).some((e) => heldBy(ctx, e).some((s) => STATUSES[s.id]?.opensTempo))) {
@@ -813,6 +844,7 @@ function startEncounter(ctx: C, site: EncounterSite, forced = false, enemies?: (
   markCombatEvent(ctx, 'onEncounterStart');
   beginFight(ctx.state, line, now(ctx));
   ctx.emit(transcriptOpen, undefined);
+  for (const text of opening) feed(ctx, text);
   ctx.emit(setSituation, { inCombat: true });
   ctx.emit(setPace, { inCombat: true });
   const group = liveEnemies(fight);

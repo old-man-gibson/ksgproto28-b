@@ -93,3 +93,15 @@ The steward's two repairs (old `quests.data.ts` 80-110), giver
 `f11_arm_the_wall` (10 raiders, 4 iron ingots; requires the first). Both
 require `legacy:stronghold` 0, so neither is offered on a run after the
 stronghold. No new machinery.
+
+## Step 4 port C3
+
+The harbor's eight quests (old `quests.data.ts` 111-198). The four join
+quests (`f11_join_merchants`, `f11_join_pirates`, `f11_join_privateers`,
+`f11_join_navy`): accepting one stamps `flag:quest:<id>:accepted`, which
+is the run's side (`sea`); each requires the other three stamps at 0
+(`statMax`), so one side a run. Objective: 8 crates won
+(`sea:crates:won`, a live `stat` objective). The four preparations
+(`f11_merchants_clearance`: a Port Clearance bought; the other three: 12
+kills of one monster), each requiring its join quest; turned in, the
+side's floor 14 approach lays its condition on the boss. No new machinery.

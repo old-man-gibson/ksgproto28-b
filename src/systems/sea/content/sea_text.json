@@ -1,0 +1,26 @@
+[
+  {
+    "id": "leg_convoy",
+    "text": "⛵ Leg {leg}/{legs}: threat {threat}, battery {rating}, kills {kills}. {lost} crates lost, {crates} aboard."
+  },
+  {
+    "id": "leg_escort",
+    "text": "⛵ Leg {leg}/{legs}: monsters {monsters}, battery {rating}, kills {kills}. {lost} crates lost, {crates} aboard."
+  },
+  {
+    "id": "leg_raid",
+    "text": "🏴‍☠️ Leg {leg}/{legs}: guard {guard}, battery {rating}, kills {kills}. {seized} crates seized."
+  },
+  {
+    "id": "leg_recover",
+    "text": "📜 Leg {leg}/{legs}: pirate crew {crew}, battery {rating}, kills {kills}. {recovered} crates recovered, {carried} still aboard the pirates."
+  },
+  {
+    "id": "sold",
+    "text": "💰 {crates} crates sold at port, {price} gold each: {gold} gold. Crates won this run: {total}."
+  },
+  {
+    "id": "won",
+    "text": "📦 {crates} crates won: {list}. Crates won this run: {total}."
+  }
+]

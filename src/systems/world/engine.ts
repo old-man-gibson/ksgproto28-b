@@ -14,6 +14,7 @@ import combat, {
   fightsKey,
   inForcedFight,
   setHunt,
+  stampApproach,
   startForced,
   stopHuntLoop,
   type CombatState,
@@ -50,7 +51,7 @@ import { rollMercyChance } from '../mercy';
 import { RECOVERY_MULT, setPace } from '../resources';
 import skills, { checkDiscovery, conditionReader, grantSkillXp, skillLevel, SKILLS, skillTrainedBy } from '../skills';
 import { BASE_ACTION_BAR, BASE_SPEED, formulaAttr, scopedMult, statBlockOf, type AttributeId, type DerivedStats, type StatKey } from '../stats';
-import { setSituation } from '../statuses';
+import { setSituation, toApplication } from '../statuses';
 import worldTextData from './content/world_text.json';
 import {
   AREAS,
@@ -771,6 +772,8 @@ export function placeAt(ctx: W, spotId: string, newRun: boolean): boolean {
   const from = state.spot;
   const hadActivity = state.activity;
   if (combatOf(ctx).hunting) ctx.request(stopHuntLoop, undefined);
+  // No road was walked: no opening waits here (old `skipTutorial`).
+  if (combatOf(ctx).approach) ctx.request(stampApproach, { approach: null });
   state.activity = null;
   state.travel = null;
   state.travelPlan = [];
@@ -1035,10 +1038,28 @@ export function cancelTravelPlan(ctx: W): boolean {
   return true;
 }
 
+/**
+ * The opening the road just walked buys, stamped for the first fight at its
+ * end to spend; any arrival without one wipes the last stamp (old
+ * `tickTravel`). The request is skipped when there is nothing to stamp and
+ * nothing stamped.
+ */
+function stampRoad(ctx: W, to: string, walked: Edge | undefined): void {
+  const approach = walked?.approach;
+  const tells = !!approach && (!approach.requires || conditionsMet(reader(ctx), approach.requires));
+  if (!tells && !combatOf(ctx).approach) return;
+  ctx.request(stampApproach, {
+    approach: tells
+      ? { spot: to, enemies: (approach!.enemies ?? []).map(toApplication), self: (approach!.self ?? []).map(toApplication) }
+      : null,
+  });
+}
+
 /** What follows every arrival: the haven, the events, the ambush or the settle. */
 function arrive(ctx: W, from: string, walked: Edge | undefined): void {
   const state = ctx.state;
   const dest = getSpot(state.spot);
+  stampRoad(ctx, dest.id, walked);
   // A cleared spot forces nothing.
   const ambushed = !!(dest.forced || walked?.forced) && !spotCleared(ctx, dest);
   // Only a peaceful arrival records a haven.
