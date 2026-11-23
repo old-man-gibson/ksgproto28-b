@@ -55,7 +55,9 @@
  * `step3-gaps` after the training, practice and wuxin ports (the new slices
  * `practice`, `training` and `wuxin`: every state hash, nothing else; no
  * run and no John fights training equipment, hunts the Cages or opens the
- * wuxin shutter).
+ * wuxin shutter), and on branch `step4-C5` after port C5 (the `festival`
+ * slice's version 2 field `plan`: every state hash, nothing else; no run
+ * reaches floor 16 and the John digest stops at the first prestige).
  * A change that only makes the simulation faster leaves every one
  * of them equal. A change to a rule, a formula or content changes them;
  * record them again then, and say why in the commit.
@@ -71,7 +73,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 1,
     'gold': 0,
-    'state': 'bc592317'
+    'state': 'a7bd8f61'
   },
   'poison': {
     'tick': 288000,
@@ -80,7 +82,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 1,
     'gold': 0,
-    'state': '2fec7b93'
+    'state': '6ba7fcad'
   },
   'floor1': {
     'tick': 288000,
@@ -89,7 +91,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 9,
     'gold': 33649,
-    'state': '0cbafcb3'
+    'state': '0ea77a51'
   },
   'floor6': {
     'tick': 288000,
@@ -98,7 +100,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 26,
     'gold': 1627909,
-    'state': 'da90f54b'
+    'state': '6563db37'
   },
   'world4': {
     'tick': 288000,
@@ -107,7 +109,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 4,
     'level': 18,
     'gold': 362564,
-    'state': '09d36337'
+    'state': 'b8e1b1f3'
   },
   'world6': {
     'tick': 288000,
@@ -116,7 +118,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 26,
     'gold': 1627911,
-    'state': '94a02e7f'
+    'state': '318a4dfb'
   },
   'worldSea': {
     'tick': 288000,
@@ -125,7 +127,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 43,
     'gold': 3688288,
-    'state': '75711954'
+    'state': 'adfdf0f8'
   }
 };
 
@@ -211,7 +213,7 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'defeats': 0,
       'level': 1,
       'gold': 0,
-      'state': '2312fd9e'
+      'state': 'f4baafd0'
     }
   },
   '42': {
@@ -295,7 +297,7 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'defeats': 0,
       'level': 1,
       'gold': 0,
-      'state': 'cc26760a'
+      'state': '9b5e1830'
     }
   },
   '1234': {
@@ -379,7 +381,7 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'defeats': 0,
       'level': 1,
       'gold': 0,
-      'state': '0b7a40e6'
+      'state': 'a5e80fa8'
     }
   }
 };
