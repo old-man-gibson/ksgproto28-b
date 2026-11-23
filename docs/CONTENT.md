@@ -476,6 +476,8 @@ and can run beside another port (W touches only `weather` and `clock`).
   and `step3-gaps` (the keeper's dare and its hold of play, K2; practice
   shaping; wuxin; section 22), so C5's John table starts from the old
   rules. John's runs 1 to 3 through floor 15 are unchanged by the second.
+- Done: section 12, split in two commits (part 1 the pure modules with
+  John unchanged; part 2 the wiring and the panels). No kernel change.
 
 ### 5.7 Port W: Weathersense, Chronosense, sky lint
 
@@ -1636,3 +1638,341 @@ slices.
   `runHeadless` without `hold`, so the speed project does not ask the hook;
   that file belongs to another session, and it was not changed here. The
   measurement above asks it.
+
+## 12. Port C5: the royale and floor 16 (done)
+
+Done 2026-11-22 on branch `step4-C5`, from `main` at `96a0032`. Not merged,
+not pushed. Split in two commits, as 5.6 allowed:
+
+1. `98dd825`, part 1: the generator, the map and the field. Every pure
+   module of the royale with its old test file, and the royale's
+   registries; nothing reads them in play, so John is unchanged.
+2. `dbd7b2d`, part 2: the wiring and the panels. The festival's tick steps
+   the field, floor 16 is content, the festival slice is version 2, the
+   panels and John's `floor16`.
+
+The outcome digests are recorded again in their own commit (`9735c47`).
+
+The full account: `src/systems/festival/README.md` and the "Step 4 port
+C5" section of the `items` README.
+
+What was ported:
+
+- Content: floor 16 (`ascent_f16`, band 5, clear `boss:f16_arena`, 850
+  XP), area `ascent_f16_area` (roofed) and the arena `f16_arena`: 159
+  spots, 28 areas, 17 floors. The survivor, champion and den monsters and
+  the `festival_*` weapons were here already.
+- `festival`, part 1 (old `royaleMap.ts` 810, `royaleTerrain.ts` 86,
+  `royaleField.ts` 733, `survivorGen.ts` 460, `ui/lib/royaleView.ts` 383,
+  `data/survivors.data.ts` 299, the royale part of `festival.data.ts`):
+  `royaleMap.ts`, `royaleTerrain.ts`, `royaleField.ts`, `survivorGen.ts`,
+  `royaleView.ts`, `royaleData.ts`, unchanged but for the imports. Seven
+  registries: `royale_strategies` (10), `royale_sections` (8, registry
+  order is the map's cell index), `royale_dens` (5), `royale_caches` (35),
+  `survivor_species` (2, `id` is the monster), `survivor_families` (9),
+  `survivor_archetypes` (10, `species` a list of `{ monsterId, weight }`).
+  A scratch script ran the old modules (imported read-only) and the new
+  ones on the same seeds: the same map, the same 3,000-step field run (97
+  fallen, the same two left) and the same survivor builds and staged
+  members.
+- `festival`, part 2 (old `royale.ts` 255, the royale part of
+  `festival.ts`, `RoyaleField.svelte` 707, `RoyaleMinimap.svelte` 186,
+  `royaleMapImage.svelte.ts`, the field preview of `FestivalPanel.svelte`):
+  - `royale.ts`: `tickRoyale` (the field made from the attempt's seed,
+    never during a fight; leftovers walk again; the champion restored;
+    `stepField` on the kernel's generator; the spring's heal), the caches
+    (`takeCache`, `takesTheHand`), the dens, `royaleFightWon`.
+  - The tick: phase `royale` on the arena, out of travel and recovery.
+    `combat/fight-won` at the arena: a den cleared, survivors off the
+    field, the champion's fall the win (`winFestival`).
+  - Slice version 2: `plan` (run state, as the old `FestivalState.plan`);
+    `run.field`. Migration step 1 sets `plan` empty; fixture `v2.json`.
+  - Commands `festival/move-on-field`, `festival/clear-field-target`,
+    `festival/set-plan` (the old `Game` methods). The C4 debug command
+    `festival/debug-win` is removed.
+  - `royalePublish.ts`: the view's royale (the field on the player's map,
+    the survivors in sight as people, the radar, the ground, the known
+    caches and dens), the hub's preview, the plan, "Enter the royale now".
+  - Panels: `RoyaleFieldReadout.svelte`, `RoyaleMinimap.svelte`,
+    `mapImage.ts` (the terrain image, redrawn on a theme switch),
+    `FestivalReadout.svelte` (the hub's preview and enter control, the
+    field), `royaleControls.ts` (each control's command). The Location
+    panel's ladder card writes a refused rung's reason as a term and labels
+    the climb into the royale "Enter the royale", as the old `ladderView`.
+  - The royale's lint checks in `validation.ts` (the old ones), run by
+    `tests/worldContent.test.ts`.
+- `items`: `items/grant` takes `wear` (a lent piece put on when its slot is
+  free, else the pack; old `wearIfFree` in `takeCache`).
+- Spec ported: `royaleMap.test.ts` (24 of 24), `royaleView.test.ts` (37 of
+  37), `royaleField.test.ts` (47 of 47), `survivorGen.test.ts` (36 of 36),
+  the 13 C5 todos of `festival.test.ts` and the three old royale sections
+  C4 left out ("the attempt's field" 4, "caches and lent gear" 8, "dens"
+  2; 77 cases in the file, no todo), the royale lint todo of
+  `worldContent.test.ts`, the floor 16 cases of old `openSky.test.ts` in
+  `exposure.test.ts`, `festivalHub.test.ts` reading `ROYALE_SECTIONS`, the
+  panels in `festivalPanels.test.ts` (8 new cases: every control rendered
+  on the server and its command sent, the ground's and the minimap's pick
+  through `walkAt`), John's smoke case at 16.
+
+Old bugs and rules kept:
+
+- The champion's kill is floor 16's clear and ends the fight, so floor 16's
+  clear XP is paid twice (850 twice; the log in the browser check shows
+  both lines). The floor-clear bug of section 11, older than this port.
+- A survivor's weapon cache gives a random `CACHE_WEAPONS` entry; the
+  `unarmed` entry, iron gauntlets, is worn as armour, not wielded.
+- A different item of the issued weapon's family always takes the hand:
+  there is no ranking of weapons.
+- The `weakest` move looks within the field's flat sight (20), not the
+  looker's terrain sight.
+- A den's monsters pay their kill XP and drops like any kill.
+- Outside an attempt the ladder refuses floor 16 from anywhere (`closed`),
+  floor 15 cleared or not, as the old `festivalLadder`.
+
+Changed while porting (no rule):
+
+- The royale's tables are registries (the old ones were plain data, the
+  strategies and sections a prose registry); `survivor_species` is keyed
+  by the monster (`id`), an archetype's `species` is a list.
+- The field's random draws come from the kernel's generator, as the old
+  ones came from the state's.
+- The map's palette names this build's colour tokens.
+- The fight on the field is shown by the Combat panel, with a line "Fight:
+  open; the Combat panel shows it." under the field; the old panel drew
+  the battle stage under the field.
+- Status lines are "Label: fact" ("Radar: on in 42 min (42 s of play)",
+  "Ground: ...", "Field: ...", "Fights: ..."); the old line read "Radar in
+  42 min (42s of play)". The lists of who and what is known scroll in fixed
+  boxes; "Whole field" sits on the map's corner.
+- The view carries the fighters in the player's sight and counts, never the
+  whole field; the survivors in sight are named from a memo.
+- A lent piece is minted by `items/grant` with `wear`; the issued weapon is
+  taken out and given back by `items/take-weapon` and `items/give-back`.
+
+Noticed, older than this port:
+
+- C4's stand-in `festival/debug-win` is removed; every case that used it
+  plays the royale.
+- The festival-floor cases of old `openSky.test.ts` ("no spot of the
+  Vermin Festival is open", darkness and sun at the arena) were not ported
+  by C4; ported here.
+- `kernel.view()` costs about 2.5 ms per call wherever the player stands
+  (12.2); docs/PERFORMANCE.md section 3.4. Not changed.
+- The festival cases that play a royale take 2.5 to 3 s each in the
+  parallel unit run; two of them (two royales in one case) passed vitest's
+  5 s default in the first verify. Every case that plays the royale has a
+  30 s limit.
+
+Left out:
+
+- The old field's fallback for an attempt saved without a field seed: every
+  attempt here draws its seed at the door.
+- The offline summary's festival lines (the UI step, as in C4).
+
+### 12.1 John
+
+`tests/john.ts` gains `floor16` (section 3.1, the old driver's
+`attemptFestival(16)`): with the dark room won and the door open, John
+climbs from the dark room to floor 16 at once (no preparation in the hall,
+no hub activity), walks the field by the default plan, and lets the field's
+fights come until the attempt ends; a lost one is taken up again after the
+lockout. A try at the boss is a fight with `ph_survivor_champion` in it.
+`through: 16` plays run 3 to floor 16; `npm run pacing -- --through 16
+[--side navy]`. No wall on any seed or side. The John smoke case of
+`tests/john.test.ts` runs at 16.
+
+New John and old John at `7c1267b` (`D:\ksgproto28`, nothing edited; its
+modules imported read-only by a scratch script with a kill counter and a
+tally of the royale's events), the same day, seeds 42, 7 and 1234. Runs 1
+and 2, `f1-10 again` and floors 11 to 15 are the rows of docs/SPINE.md
+section 22.1, unchanged on every seed and side (the same tick each segment
+closed on, knockouts, kills and boss tries).
+
+Merchants (the default):
+
+| Segment | Old | New | Old mean | New mean | Change | KO old | KO new | Kills old | Kills new | Boss tries/lost old | Boss tries/lost new |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| f15 | 0:00:21 / 0:00:25 / 0:00:23 | 0:00:23 / 0:00:22 / 0:00:22 | 0:00:23 | 0:00:22 | -4.1% | 0/0/0 | 0/0/0 | 9/9/9 | 9/9/9 | 1/0, 1/0, 1/0 | 1/0, 1/0, 1/0 |
+| f16 | 0:03:45 / 0:03:05 / 0:04:25 | 0:03:02 / 0:03:32 / 0:04:24 | 0:03:45 | 0:03:39 | -2.5% | 0/0/0 | 0/0/0 | 15/9/11 | 10/8/10 | 1/0, 1/0, 1/0 | 1/0, 1/0, 1/0 |
+| Run 3 to f16 | 3:03:19 / 3:08:44 / 2:58:00 | 3:08:38 / 3:15:06 / 2:57:58 | 3:03:21 | 3:07:14 | +2.1% | | | | | | |
+| Floor 0 to f16 | 4:23:15 / 4:32:45 / 4:16:04 | 4:28:10 / 4:28:35 / 4:23:44 | 4:24:01 | 4:26:50 | +1.1% | | | | | | |
+
+`--side navy` (runs 1 and 2 and `f1-10 again` are the merchants' rows):
+
+| Segment | Old | New | Old mean | New mean | Change | KO old | KO new | Kills old | Kills new | Boss tries/lost old | Boss tries/lost new |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| f15 | 0:00:23 / 0:00:23 / 0:00:22 | 0:00:26 / 0:00:23 / 0:00:21 | 0:00:22 | 0:00:24 | +4.9% | 0/0/0 | 0/0/0 | 9/9/9 | 9/9/9 | 1/0, 1/0, 1/0 | 1/0, 1/0, 1/0 |
+| f16 | 0:03:03 / 0:04:32 / 1:17:11 | 0:03:10 / 0:03:21 / 1:20:43 | 0:28:15 | 0:29:04 | +2.9% | 0/0/1 | 0/0/1 | 7/13/22 | 10/10/24 | 1/0, 1/0, 1/0 | 1/0, 1/0, 1/0 |
+| Run 3 to f16 | 3:02:40 / 2:52:07 / 4:16:46 | 3:14:50 / 2:56:56 / 4:20:16 | 3:23:51 | 3:30:41 | +3.3% | | | | | | |
+| Floor 0 to f16 | 4:22:36 / 4:16:08 / 5:34:50 | 4:34:22 / 4:10:26 / 5:46:01 | 4:44:32 | 4:50:16 | +2.0% | | | | | | |
+
+Kills on floor 16 are the survivors and den monsters John killed on the
+field. Boss tries: one try at the champion per attempt, won, on every seed
+and side in both builds. Navy seed 1234 loses one royale in both builds (a
+knockout in a field fight, not at the champion): the loss shuts floors 15
+and 16 for three world days, 72 minutes of play, which John waits out, then
+he empties the dark room again and wins the second attempt. Level at the
+floor 16 clear: old 40, 41, 40 (merchants) and 41, 40, 41 (navy); new 41 on
+every seed and side.
+
+The field itself: field fights John won (a line "N left on the field" each)
+old 14/8/10 and 6/9/12, new 9/7/9 and 8/9/14; caches John took old 6/1/5
+and 3/3/5, new 0/0/1 and 1/2/5; den fights old 0/0/0 and 0/1/0, new 0/0/0
+and 1/0/0. Each build draws the attempt's field seed from its own
+generator at the door, so the map, the scatter and the field's draws
+differ between the builds; and the default plan's first strategy, "Fall
+Back When Hurt", reads the health John carries in from the dark room,
+which differs by seed in both directions (on arrival, old 0.62 / 0.34 /
+0.79 of max, new 0.45 / 1.00 / 1.00, merchants). With the same seed and
+inputs the field steps identically in both builds (part 1's scratch run),
+and the cache cases of `tests/festival.test.ts` take every kind of cache.
+
+Against section 3.4: run 3 is within 15% of the old mean on both sides
+(+2.1% merchants, +3.3% navy); floor 16 is a boss segment, reported, not
+held (-2.5% and +2.9%, the lockout on navy seed 1234 in both builds); floors
+12 and 13 are the rows of SPINE 22.1, within one convoy.
+
+### 12.2 Live play on floor 16
+
+The field steps once a live tick while the player stands on the arena (the
+festival's catch-up hold stops catch-up the moment an attempt holds the
+player, so the field never runs offline). Measured as the speed project
+reports live play (docs/PERFORMANCE.md section 5.4), both builds in one
+process (the old build's modules imported read-only), 10 alternating
+rounds, seed 42: each build's John to floor 15, the climb into the royale,
+100 ticks of warm-up on the field, then each round loads that state and
+runs 300 ticks. Machine load 4% before, 22% after. Microseconds per tick
+(minimum / median):
+
+| Per tick | Old `game.tick()` | New `kernel.tick()` | New `kernel.tick()` + `kernel.view()` |
+|---|---|---|---|
+| Floor 16, the field live | 362 / 373 | 309 / 320 | 2,941 / 3,051 |
+
+- The field's own cost: `stepField` alone on a copy of the field the new
+  build opened (99 survivors, the player in a fight so not engaged), 300
+  steps per round: the new code 263 / 269 µs a step, the old code 265 /
+  270 (the same code). It is 84% of the new build's floor 16 tick. Per
+  step: the duels whose time is up, a fifth of the survivors choosing a
+  goal (the look-around), the walk, the caches, the dens, and the
+  all-pairs check for duels over at most a hundred bodies.
+- The new tick is 0.86 of the old build's here (the bar of 0.5 holds for
+  catch-up, which this state never runs; live play is reported, not held).
+- The view: `kernel.view()` costs about 2.5 ms per call on the arena and
+  in the hub alike (2,481 / 2,491 µs on the arena, 2,412 / 2,591 in the
+  hub with the preview): the cost of the whole view of section 3.4 of
+  docs/PERFORMANCE.md, older than this port. The royale's part of it,
+  `fieldView` alone, is 43 / 44 µs per call (the fog over 99 survivors, the
+  40 caches and dens, the radar, one line per survivor in sight from a
+  memo); the hub's preview, `previewView`, 13 / 14 µs. The view never
+  copies the field: it carries the survivors in sight and counts.
+- The tick reads the clock, world, combat, resources, levels and the stat
+  block each tick on the field (something is due every tick); the counters
+  only when the player's plan asks which sections it knows. With no attempt
+  the festival's tick reads its own slice and returns, as in C4.
+
+### 12.3 Offline budgets and the speed project
+
+The port adds no per-tick work off the festival floors: with no attempt the
+festival's tick reads its own slice and returns, as in C4; the catch-up
+hold is C4's; the royale's registries are validated at kernel creation
+only, which catch-up skips. Floor 16 adds one floor, one area and one spot
+to the content every per-kill and per-spot read walks.
+
+Against `main` (`96a0032`, the worktree `D:\ksgproto28-b-main`), both
+builds' modules in one process, alternating rounds (`.scratch-c5/ab.ts`,
+`abspeed.ts`, the scripts of section 22.2 of docs/SPINE.md). Wall time
+(minimum / median) and processor time of the process, the median of the
+per-round differences.
+
+Batch 1, machine load 13% before the idle runs, 20% before the fight runs,
+60% before the speed states (other programs), 25% after:
+
+| Run of 8 hours | Rounds | `main` wall | Branch wall | Wall median | Processor, paired |
+|---|---|---|---|---|---|
+| No fight, no condition | 15 | 1,752 / 1,908 | 1,758 / 1,894 | -14 (-0.7%) | +15 (+0.8%) |
+| A poison held | 15 | 4,586 / 5,226 | 4,408 / 5,263 | +37 (+0.7%) | -93 (-1.5%) |
+| Floor 1 table sent to combat | 3 | 5,462 / 6,015 | 5,330 / 5,863 | -152 (-2.5%) | -142 (-2.1%) |
+| Floor 6 Tunnels sent to combat | 3 | 9,411 / 9,880 | 9,017 / 9,948 | +68 (+0.7%) | -484 (-4.3%) |
+| World: hunt, floor 4 Woods Edge | 3 | 9,157 / 10,169 | 9,614 / 9,922 | -247 (-2.4%) | +376 (+3.4%) |
+| World: hunt, floor 6 Tunnels | 3 | 9,020 / 9,703 | 9,066 / 9,652 | -51 (-0.5%) | +1 (0.0%) |
+| World: the roadstead | 3 | 8,620 / 8,944 | 8,315 / 9,125 | +181 (+2.0%) | +189 (+1.9%) |
+
+The speed project's four states (built by John in each build, then 8 hours
+of catch-up asking the holds, as `catchUp` does) and the idle run. Batch 1
+started at 60% load; batch 2 ran alone at 29% before and after:
+
+| State | `main` wall (batch 1) | Branch wall (batch 1) | Processor, paired (batch 1) | `main` wall (batch 2) | Branch wall (batch 2) | Processor, paired (batch 2) |
+|---|---|---|---|---|---|---|
+| Floor 1 hunting | 6,215 / 6,767 | 6,382 / 7,048 | +389 (+5.2%) | 5,756 / 6,822 | 5,741 / 6,795 | -62 (-0.8%) |
+| Floor 6 hunting | 11,728 / 12,315 | 12,222 / 12,886 | +203 (+1.5%) | 11,685 / 13,260 | 11,406 / 13,208 | +78 (+0.5%) |
+| Idle in town | 1,984 / 2,158 | 2,025 / 2,175 | +47 (+2.1%) | 2,003 / 2,229 | 1,986 / 2,321 | +32 (+1.4%) |
+| Floor 7 hunting | 8,223 / 8,409 | 8,427 / 9,005 | +750 (+8.0%) | 8,460 / 8,850 | 8,387 / 9,155 | -62 (-0.6%) |
+| Idle (budget run) | 1,922 / 2,047 | 1,926 / 2,014 | +1 (0.0%) | 1,964 / 2,033 | 1,973 / 2,063 | +47 (+2.2%) |
+
+Batch 1 has 5 rounds per state and 15 idle runs; batch 2 has 7 and 21.
+The batch run at the lower load reads within -0.8% and +2.2% of `main`
+on every state; batch 1's +5 to +8% on floors 1 and 7 did not repeat. Every
+outcome digest is equal to the recorded ones but for the state hash (the
+slice field `plan`), in its own commit.
+
+`npm run verify` on the final code, exit 0 (processor at 26% at the start,
+42% at the end): svelte-check 0 errors; unit 3,546 passed, 4 skipped, 123
+todo; budget 4 (idle 2,112 ms of 2,420, poison 5,438 of 8,250, floor 1
+5,586 of 7,700, floor 6 9,393 of 14,850); budget-world 3 (floor 4 9,039,
+floor 6 9,929, the roadstead 9,864, each of 14,300); speed (floor 1 57%,
+floor 6 77%, town 57%, floor 7 51% of the limit, machine load 23 to 25%,
+yardstick 206 to 215 ms; kills as the old build's within 10%); john 14;
+build. No budget failed on time in any of the three verify runs of the
+session; the first two stopped on the festival timeouts and the digests
+above.
+
+### 12.4 Browser check
+
+Dev server 5600, desktop (1024 px) and 375 px. The dev save was backed up
+at `ksgb:development:save.before-step4C5-check` and put back after, from
+the forge page with the game page closed. The save used is C4's
+`ksgb:development:save.step4C4-hall` (seed 7, run 3, the hall, festival
+day 1), loaded into the dev slot with `savedAt` an hour ahead (no
+catch-up); its festival slice loaded at version 1 and migrated.
+
+- The hub at 1024 px: "Enter the royale now" with its line, and the
+  preview of the attempt's field (the terrain image, the section names,
+  "Scouted: 0 of 8", every section "not scouted"). At 375 px: the block 351
+  px wide, no overflow, the button 44 px high.
+- Pressed "Enter the royale now": the ride up ("Field: on the way up; 99
+  survivors wait there."), then the field on floor 16: four status lines at
+  24 px each, the terrain, the village's buildings, the sight ring, the
+  compass, the minimap over the frame's corner. A click on the ground set a
+  point (the path and the flag), "Back to the plan" turned enabled; the
+  player walked into the village and the plan took over on arrival; the
+  village's caches and the cleared Hound Yard showed in "Known on this
+  field" (18, in a fixed box that scrolls). A click on the minimap set a
+  point; "Back to the plan" cleared it. The royale was won: the log named
+  each survivor by its build ("Duelist Marsin"), "Champion Branesin (Lv
+  40)", the win, the laurel and the hidden title; `festival:wins` 1,
+  `boss:f16_arena` 1, the player left on the arena. The same log showed
+  floor 16's clear XP twice (the old clear bug, kept).
+- A second royale from the same save at 375 px: the minimap under the
+  field, "Whole field" (pressed: the whole diamond), the plan's pickers 44
+  px high (slot 1 set to Keep Away, slot 2 cleared to None: the rest moved
+  up and a third picker was offered; the plan was in the next save), a tap
+  on the ground set a point, the arrow key moved it three units, a theme
+  switch redrew the terrain image. A field fight opened under the plan
+  "Hunt the Weakest": "Fights: 0 duelling each other, 1 fighting you.",
+  the radar's line, "Fight: open; the Combat panel shows it.", every line
+  still 24 px. Won again.
+- Found and fixed: at 375 px the ground's line shared its row with "Whole
+  field" and was cut ("The Deserted Villa..."); the button moved onto the
+  map's top right corner, and the ground's line has a two-line fixed box in
+  a frame narrower than 520 px. The radar's off line read "Radar in 46
+  min"; it reads "Radar: on in 46 min (46 s of play)" now.
+- The ladder card from floor 14 after the win: floor 16 "Cleared" with the
+  term "Refused: Floor 16 is the festival's royale, entered only from floor
+  15's hall during an attempt ...", the ride disabled, as the old card's
+  "Entered from floor 15's hall" term. Found in this check: the reason was
+  only a tooltip before.
+- No console errors.
+
+Not checked in a browser: a den fight, a knockout on the field, a cache
+lending a weapon that takes the hand (tested headless), the "Enter the
+royale" label of the ladder card's climb from the hall, day ten's ride.
