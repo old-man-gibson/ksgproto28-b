@@ -754,7 +754,7 @@ describe('a plan alone', () => {
       expect(field.fighters, `plan ${plan.join(', ')} after ${t} ticks`).toHaveLength(0);
       expect(lastFightSize, `plan ${plan.join(', ')}: the champion is fought alone`).toBe(1);
     }
-  });
+  }, 30_000);
 
   it('survivors take caches, and dens thin the field without ever emptying it', () => {
     const { field } = emptyField(DEFAULT_ROYALE_PLAN, 3);

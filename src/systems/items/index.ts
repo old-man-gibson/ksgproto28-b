@@ -441,10 +441,13 @@ function equipFromPack(ctx: Ctx<ItemsState>, uid: number, slot: SlotId | undefin
  * affix. Draws: one for the slots, one for the affix chance when given, one
  * for the affix when it lands. `plain`: the rolled slots are dropped (the
  * festival's issued weapon). `stash`: minted into the stronghold stash, a
- * keep-marked piece only. Answers a copy of the instance.
+ * keep-marked piece only. `wear`: put on in that slot at once when the slot
+ * is free and the piece fits (the rules of `wearIfFree`), else into the
+ * pack (a royale cache's lent piece, old `wearIfFree` in `takeCache`).
+ * Answers a copy of the instance.
  */
 export const grantItem = defineRequest<
-  { defId: string; size?: SizeTag; affixChance?: number; plain?: boolean; stash?: boolean },
+  { defId: string; size?: SizeTag; affixChance?: number; plain?: boolean; stash?: boolean; wear?: SlotId },
   ItemInstance
 >(
   'items/grant',
@@ -776,7 +779,7 @@ const system: SystemDef<ItemsState, ItemsView> = defineSystem<ItemsState, ItemsV
   ],
 
   requests: [
-    answer(grantItem, (ctx, { defId, size, affixChance, plain = false, stash = false }) => {
+    answer(grantItem, (ctx, { defId, size, affixChance, plain = false, stash = false, wear }) => {
       // A `forged:<class>` id is a class stub with no numbers of its own:
       // minted, it becomes the class's exemplar at Fair grade, with no rune
       // slots (old `createItem`).
@@ -804,6 +807,8 @@ const system: SystemDef<ItemsState, ItemsView> = defineSystem<ItemsState, ItemsV
       // `stashItem(createItem())`): a keep-marked piece only.
       if (stash) {
         if (keepMarked(item)) ctx.state.stash.push(item);
+      } else if (wear !== undefined && wearHeld(ctx, wear, item)) {
+        ctx.touch(WORN_SOURCE);
       } else {
         ctx.state.inventory.push(item);
       }

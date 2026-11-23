@@ -627,15 +627,26 @@ describe('open sky in the tower', () => {
   });
 
   it('a floor 12 spot has a sky; a festival spot and a floor 1 spot have none', () => {
-    // The old case read `f16_arena` too: floor 16 is step 4 port C5.
     const kind = skyAt('f12_landing');
     expect(kind).not.toBeNull();
     expect(WEATHER_KINDS).toContain(kind);
+    expect(skyAt('f16_arena')).toBeNull();
     expect(skyAt('f15_herb_yard')).toBeNull();
     expect(skyAt('f1_landing')).toBeNull();
   });
 
-  it.todo('floors 16 to 20: open and roofed areas, night and sun (step 4: floors above 15)');
+  it('no spot of the Vermin Festival is open, the herb yard and the arena included', () => {
+    for (const id of ['f15_herb_yard', 'f16_arena', 'f15_dark_room', 'f15_hall']) expect(skyAt(id), id).toBeNull();
+  });
+
+  it('floor 16: the arena is dark neither by night nor lit by moon or sun (step 4 port C5, old openSky cases)', () => {
+    const night = reads(gameAt('f16_arena', at(3, 23)));
+    expect(darknessFactor(night)).toBe(0);
+    expect(moonlightOn(night)).toBeNull();
+    expect(sunlight(reads(gameAt('f16_arena', at(3, 12))))).toBe(0);
+  });
+
+  it.todo('floors 17 to 20: open and roofed areas, night and sun (step 4 ports C6 and C7)');
   it.todo('the header weather chip shows `still` at a roofed spot (the UI step: `headerSky` of the old shell)');
 });
 

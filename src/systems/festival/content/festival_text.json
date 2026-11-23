@@ -54,5 +54,37 @@
   {
     "id": "stash_regalia",
     "text": "🎟️ {icon} {name} is in your stronghold stash. Take it out on the Prestige tab; every prestige returns it there."
+  },
+  {
+    "id": "field_left",
+    "text": "🏟️ {alive} left on the field."
+  },
+  {
+    "id": "cache_worn",
+    "text": "🎁 {cache}: {icon} {item}, lent for the attempt and worn. It is taken back when the attempt ends."
+  },
+  {
+    "id": "cache_swapped",
+    "text": "🎁 {cache}: {icon} {item}, lent for the attempt and wielded in place of the issued weapon, which is in your pack. Both are taken back when the attempt ends."
+  },
+  {
+    "id": "cache_packed",
+    "text": "🎁 {cache}: {icon} {item}, lent for the attempt, in your pack (the slot is taken). It is taken back when the attempt ends."
+  },
+  {
+    "id": "cache_empty",
+    "text": "📭 {cache}: nothing in it for your weapon."
+  },
+  {
+    "id": "cache_heal",
+    "text": "🩹 {cache}: {healed} health restored."
+  },
+  {
+    "id": "den_enter",
+    "text": "⚔️ {den}: its monsters fight you. Winning clears the den and opens what it guards."
+  },
+  {
+    "id": "den_cleared",
+    "text": "✅ {den} is cleared."
   }
 ]

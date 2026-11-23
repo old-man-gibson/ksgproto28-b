@@ -156,5 +156,11 @@
     "name": "The Dark Room and the Hall",
     "regionId": "the_ascent",
     "scene": "hall"
+  },
+  {
+    "id": "ascent_f16_area",
+    "name": "The Royale Field",
+    "regionId": "the_ascent",
+    "scene": "hall"
   }
 ]

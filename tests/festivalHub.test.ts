@@ -13,15 +13,13 @@
  *   `attributes` slice.
  * - `searchSpent(state, spot, act)` takes a read context.
  * - An activity's `attrXp` is a list of `{ attr, weight }`.
- * - `Object.keys(ROYALE_SECTIONS)` is `ROYALE_SECTION_IDS` until the royale's
- *   registry comes with step 4 port C5.
  */
 import { describe, expect, it } from 'vitest';
 import type { Kernel } from '../src/kernel';
 import { REAGENTS } from '../src/systems/alchemy';
 import type { AttributesState } from '../src/systems/attributes';
 import { RECIPES } from '../src/systems/crafting';
-import { DARK_FLOOR, FESTIVAL_RESTOCK, PREP_TICKS, ROYALE_SECTION_IDS, scoutedKey, type FestivalState } from '../src/systems/festival';
+import { DARK_FLOOR, FESTIVAL_RESTOCK, PREP_TICKS, ROYALE_SECTIONS, scoutedKey, type FestivalState } from '../src/systems/festival';
 import { FLOORS, floorStructureIssues } from '../src/systems/ladder';
 import { MATERIALS, type MaterialsState } from '../src/systems/materials';
 import { ATTRIBUTE_IDS } from '../src/systems/stats';
@@ -253,8 +251,9 @@ describe('the hub’s stock', () => {
   it('the survey pays one find per royale section, each setting that section’s scouted flag', () => {
     const survey = restocked().find((r) => r.spot === 'f15_survey')!;
     expect(survey.ticks).toBe(12 * HOUR);
-    expect(ROYALE_SECTION_IDS).toHaveLength(8);
-    expect((survey.act.rewards ?? []).map((r) => r.id)).toEqual(ROYALE_SECTION_IDS);
+    const sections = Object.keys(ROYALE_SECTIONS);
+    expect(sections).toHaveLength(8);
+    expect((survey.act.rewards ?? []).map((r) => r.id)).toEqual(sections);
     for (const r of survey.act.rewards ?? []) {
       expect(r.limit).toBe(1);
       expect(r.stat).toEqual({ key: scoutedKey(r.id), set: 1 });
@@ -283,7 +282,7 @@ describe('a new attempt restocks the hub', () => {
       leavings[key] = 9;
       for (const r of act.rewards ?? []) leavings[`${key}:${r.id}`] = r.limit!;
     }
-    for (const id of ROYALE_SECTION_IDS) leavings[scoutedKey(id)] = 1;
+    for (const id of Object.keys(ROYALE_SECTIONS)) leavings[scoutedKey(id)] = 1;
     // A flag outside the festival's namespace is left alone.
     leavings['flag:festival:unrelated'] = 3;
     setCounters(k, leavings);
@@ -297,7 +296,7 @@ describe('a new attempt restocks the hub', () => {
       expect(searchSpent(reads(k), spot, act), `${spot}/${act.id} can be searched again`).toBe(false);
       for (const r of act.rewards ?? []) expect(counterOf(k, `${key}:${r.id}`), `${key}:${r.id} reset`).toBe(0);
     }
-    for (const id of ROYALE_SECTION_IDS) expect(counterOf(k, scoutedKey(id)), id).toBe(0);
+    for (const id of Object.keys(ROYALE_SECTIONS)) expect(counterOf(k, scoutedKey(id)), id).toBe(0);
     expect(counterOf(k, 'flag:festival:unrelated')).toBe(3);
   });
 });
@@ -323,7 +322,7 @@ describe('the hub played through', () => {
     }
 
     // The survey scouted all eight sections.
-    for (const id of ROYALE_SECTION_IDS) expect(counterOf(k, scoutedKey(id)), id).toBe(1);
+    for (const id of Object.keys(ROYALE_SECTIONS)) expect(counterOf(k, scoutedKey(id)), id).toBe(1);
     // What the searches paid is in hand: scrap, wood, hide, spirit, water.
     expect(held(k).counts.iron_scrap).toBe(15);
     expect(held(k).counts.hardwood).toBe(3);

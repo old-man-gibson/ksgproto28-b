@@ -265,3 +265,14 @@ Converted with `node scripts/convert-content.mjs items affixes runes`.
   A log line per refused uid, as the old `sellItems`; a sale of lent items
   only is skipped with `the festival lends those items for the attempt:
   they cannot be sold`.
+
+## Step 4 port C5
+
+- `items/grant` takes `wear` (a slot): the minted piece is put on in that
+  slot when the slot is free and the piece fits (the rules of
+  `items/wear-if-free`), else it goes to the pack. A royale cache's lent
+  piece (old `takeCache`: a plain copy, `wearIfFree` in its slot, else the
+  pack). The festival takes the issued weapon out of the hand first with
+  `items/take-weapon` when a lent weapon of its family is to take the
+  hand, and gives it back with `items/give-back` (to the pack when the
+  lent one is in the hand, else to the hand), the old `takesTheHand`.

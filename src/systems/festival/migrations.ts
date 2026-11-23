@@ -4,4 +4,9 @@
 import type { Json } from '../../kernel/json';
 
 /** Step N takes slice data at version N to version N + 1. */
-export const migrations: Record<number, (data: Json) => Json> = {};
+export const migrations: Record<number, (data: Json) => Json> = {
+  // Version 2 (step 4 port C5): the player's royale plan, empty (the default
+  // plan). A version 1 attempt has no field: the royale opens one on its
+  // first tick on the arena.
+  1: (data) => ({ ...(data as Record<string, Json>), plan: [] }),
+};

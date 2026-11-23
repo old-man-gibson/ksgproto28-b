@@ -1,0 +1,20 @@
+{
+  "run": null,
+  "weaponKills": {
+    "unarmed": 3120,
+    "sword": 9
+  },
+  "lockedUntil": null,
+  "legacy": {
+    "tokens": [
+      {
+        "seed": 12345
+      }
+    ],
+    "bonus": 2,
+    "techniques": [
+      "riposte"
+    ]
+  },
+  "plan": []
+}

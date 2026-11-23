@@ -2,10 +2,11 @@
  * The location, tower and floor lints of the old `tests/content.test.ts`
  * ("world graph", "towers, bands & floors", the activity drops, the region
  * skies, the band 3 wards), under their old names, on the registries here: 4
- * regions, 27 areas, 158 spots, 1 tower, 5 bands, 16 floors (step 4 port C1
+ * regions, 28 areas, 159 spots, 1 tower, 5 bands, 17 floors (step 4 port C1
  * added band 3, the City; port C2 floor 11's stronghold, band 4 and the
  * hold; port C3 the harbor, floors 11 to 14, and the sea lint; port C4 the
- * festival's band 5, floor 15 and the festival lint, without the royale's).
+ * festival's band 5, floor 15 and the festival lint, without the royale's;
+ * port C5 floor 16 and the royale's lint).
  *
  * Changed: imports; a find's gold is `{ min, max }`; an activity's `attrXp` is
  * a list. The old cases stood on the shelved countryside where they named a
@@ -26,7 +27,19 @@ import { MATERIALS } from '../src/systems/materials';
 import { MONSTERS, monsterTagsOf } from '../src/systems/monsters';
 import { NPCS } from '../src/systems/npcs';
 import { QUESTS } from '../src/systems/quests';
-import { DARK_ROOM_WAVES, FESTIVAL_DOOR_KEY, FESTIVAL_SWIFT_KEY, festivalContentIssues } from '../src/systems/festival';
+import {
+  DARK_ROOM_WAVES,
+  DEFAULT_ROYALE_PLAN,
+  FESTIVAL_DOOR_KEY,
+  FESTIVAL_SWIFT_KEY,
+  festivalContentIssues,
+  ROYALE_CACHES,
+  ROYALE_DENS,
+  ROYALE_SECTIONS,
+  ROYALE_STRATEGIES,
+  SURVIVOR_CHAMPION,
+  SURVIVOR_SPECIES,
+} from '../src/systems/festival';
 import { CONVOY_LIST, CONVOYS, SEA_CRATES_OFFLINE, SEA_CRATES_WON, SEA_MISSION_DONE, SEA_SIDE_LIST, seaContentIssues } from '../src/systems/sea';
 import { SKILLS } from '../src/systems/skills';
 import { STAT_NAMES } from '../src/systems/stats';
@@ -182,7 +195,7 @@ function searchContentIssues(spot: SpotDef): string[] {
 
 // New here: what the port holds.
 describe('the registries in scope', () => {
-  it('158 spots (27 in Threshold, 53 on floors 0 to 6, 16 in the City, 10 on floor 11, 20 on floors 12 to 14, 7 on floor 15, 25 in the hold), 27 areas, 4 regions', () => {
+  it('159 spots (27 in Threshold, 53 on floors 0 to 6, 16 in the City, 10 on floor 11, 20 on floors 12 to 14, 7 on floor 15, 1 on floor 16, 25 in the hold), 28 areas, 4 regions', () => {
     const inRegion = (regionId: string) => Object.values(SPOTS).filter((s) => AREAS[s.areaId]?.regionId === regionId).length;
     const cityAreas = new Set(['ascent_castle_area', ...['ascent_f7', 'ascent_f8', 'ascent_f9', 'ascent_f10'].map((id) => FLOORS[id].areaId)]);
     const inCity = Object.values(SPOTS).filter((s) => cityAreas.has(s.areaId)).length;
@@ -190,22 +203,24 @@ describe('the registries in scope', () => {
     const harborAreas = new Set(['ascent_f12', 'ascent_f13', 'ascent_f14'].map((id) => FLOORS[id].areaId));
     const onFloors12to14 = Object.values(SPOTS).filter((s) => harborAreas.has(s.areaId)).length;
     const onFloor15 = Object.values(SPOTS).filter((s) => s.areaId === FLOORS.ascent_f15.areaId).length;
-    expect(Object.keys(SPOTS)).toHaveLength(158);
+    const onFloor16 = Object.values(SPOTS).filter((s) => s.areaId === FLOORS.ascent_f16.areaId).length;
+    expect(Object.keys(SPOTS)).toHaveLength(159);
     expect(inRegion('threshold')).toBe(27);
     expect(inCity).toBe(16);
     expect(onFloor11).toBe(10);
     expect(onFloors12to14).toBe(20);
     expect(onFloor15).toBe(7);
+    expect(onFloor16).toBe(1);
     expect(inRegion('the_hold')).toBe(25);
-    expect(inRegion('holding_level') + inRegion('the_ascent') - inCity - onFloor11 - onFloors12to14 - onFloor15).toBe(53);
-    expect(Object.keys(AREAS)).toHaveLength(27);
+    expect(inRegion('holding_level') + inRegion('the_ascent') - inCity - onFloor11 - onFloors12to14 - onFloor15 - onFloor16).toBe(53);
+    expect(Object.keys(AREAS)).toHaveLength(28);
     expect(Object.keys(REGIONS).sort()).toEqual(['holding_level', 'the_ascent', 'the_hold', 'threshold']);
   });
 
-  it('1 tower, 5 bands, 16 floors', () => {
+  it('1 tower, 5 bands, 17 floors', () => {
     expect(Object.keys(TOWERS)).toEqual(['the_ascent']);
     expect(Object.keys(BANDS)).toEqual(['ascent_lower', 'ascent_middle', 'ascent_upper', 'ascent_harbor', 'ascent_festival']);
-    expect(Object.values(FLOORS).map((f) => f.index).sort((a, b) => a - b)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]);
+    expect(Object.values(FLOORS).map((f) => f.index).sort((a, b) => a - b)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
   });
 
   it('the starting spot is the cell of floor 0', () => {
@@ -702,12 +717,6 @@ describe('towers, bands & floors', () => {
     for (const band of Object.values(BANDS)) {
       const floors = Object.values(FLOORS).filter((f) => f.bandId === band.id);
       if (!floors.length) continue;
-      // Band 5 holds floors 15 and 16; floor 16, the royale, is step 4 port C5.
-      if (band.id === 'ascent_festival') {
-        expect(floors.map((f) => f.id)).toEqual(['ascent_f15']);
-        expect(band.clearsToAdvance).toBe(2);
-        continue;
-      }
       expect(band.clearsToAdvance, `${band.id}: clearsToAdvance must be at least 1`).toBeGreaterThan(0);
       expect(
         band.clearsToAdvance,
@@ -867,7 +876,7 @@ describe('towers, bands & floors', () => {
       .map(({ floor, report }) => `${floor.id} (${report.skipped})`);
     expect(skipped, 'floors whose spine rules did not run').toEqual(['ascent_f14 (no-clear-spot)']);
     expect(Object.keys(SPINE_EXEMPT), 'the forge stays quiet for exactly these').toEqual(['ascent_f14']);
-    expect(reports()).toHaveLength(15);
+    expect(reports()).toHaveLength(16);
     expect(issuesOf('spine')).toEqual([]);
   });
 
@@ -889,11 +898,31 @@ describe('towers, bands & floors', () => {
 
   it('the festival’s strategies, plans and staged fighters resolve', () => {
     // The run's part: the dark room's waves and its boss line. The royale's
-    // strategies, plans, species, champion, dens and caches come with port C5.
+    // part is the next case.
     const issues = festivalContentIssues(DARK_ROOM_WAVES, { monsters: MONSTERS, spots: SPOTS });
     expect(issues.map((i) => `${i.kind} ${i.id}: ${i.message}`)).toEqual([]);
   });
-  it.todo('the festival’s strategies, plans and staged fighters resolve: the royale’s (step 4 port C5)');
+
+  it('the festival’s strategies, plans and staged fighters resolve: the royale’s', () => {
+    // Strategies name real moves and sane conditions, every plan names real
+    // strategies, every survivor species is a monster with a plan, the
+    // champion is the arena's boss line (floor 16's clear), every den and
+    // cache resolves.
+    const issues = festivalContentIssues(
+      DARK_ROOM_WAVES,
+      { monsters: MONSTERS, spots: SPOTS },
+      {
+        strategies: ROYALE_STRATEGIES,
+        sections: ROYALE_SECTIONS,
+        defaultPlan: DEFAULT_ROYALE_PLAN,
+        species: SURVIVOR_SPECIES,
+        champion: SURVIVOR_CHAMPION,
+        dens: ROYALE_DENS,
+        caches: ROYALE_CACHES,
+      },
+    );
+    expect(issues.map((i) => `${i.kind} ${i.id}: ${i.message}`)).toEqual([]);
+  });
 });
 
 /**

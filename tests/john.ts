@@ -48,13 +48,17 @@
  * what the hold has (nothing: he crafts and buys nothing) and fights what the
  * water sends.
  *
- * Floor 15 (step 4 port C4, `through` 15): the festival's dark room. John
- * waits out a lockout, rides to floor 15 (the climb is his: the festival's
- * ladder rules are its own) and lets the dark room's four waves come; the
- * room emptied clears the floor. No preparation in the hall.
+ * Floors 15 and 16 (step 4 ports C4 and C5, `through` 15 and 16): the
+ * festival. One attempt runs from the dark room to the end of the royale.
+ * John waits out a lockout, rides to floor 15 (the climb is his: the
+ * festival's ladder rules are its own) and lets the dark room's four waves
+ * come; the room emptied clears floor 15. For floor 16 he climbs from the
+ * dark room the moment its door opens (no preparation in the hall, no hub
+ * activity), walks the field by the default plan and lets the field's
+ * fights come until the champion falls or the attempt is lost.
  *
  * Differences from the old driver, each from a port not done yet:
- * - Floors 16 to 20 are ports C5 to C7. `through` stops at 15.
+ * - Floors 17 to 20 are ports C6 and C7. `through` stops at 16.
  * - The prestige takes no seed: the old `Game.prestige(seed)` reseeded the
  *   generator; the kernel's generator runs on.
  *
@@ -65,7 +69,7 @@ import { TPS, type Command, type Ctx, type Kernel } from '../src/kernel';
 import combat, { type CombatState } from '../src/systems/combat';
 import clockSystem, { totalTicksOf } from '../src/systems/clock';
 import counters, { counterValue } from '../src/systems/counters';
-import festival, { DARK_FLOOR, DARK_ROOM, lockoutLeft } from '../src/systems/festival';
+import festival, { ARENA, DARK_FLOOR, DARK_ROOM, lockoutLeft, ROYALE_FLOOR } from '../src/systems/festival';
 import gold from '../src/systems/gold';
 import materials, { heldOf } from '../src/systems/materials';
 import { NPCS } from '../src/systems/npcs';
@@ -115,8 +119,8 @@ export const SEGMENTS = [
   // Floor 11 on the first climb: the stronghold (`through` 11).
   'siege',
   // Run 3: floors 1 to 10 again, then the harbor (`through` 11 to 14) and
-  // the festival's floor 15.
-  'reclimb3', 'floor11', 'floor12', 'floor13', 'floor14', 'floor15',
+  // the festival's floors 15 and 16.
+  'reclimb3', 'floor11', 'floor12', 'floor13', 'floor14', 'floor15', 'floor16',
 ] as const;
 export type ClimbSegment = (typeof SEGMENTS)[number];
 
@@ -134,10 +138,19 @@ const BOSSES: Partial<Record<ClimbSegment, string[]>> = {
   siege: ['f11_wall'],
   floor14: SEA_SIDE_LIST.map((x) => x.mission.spot),
   floor15: [DARK_ROOM],
+  floor16: [ARENA],
 };
 
-/** A try at a boss counts only when this foe is in the fight (the wall's eighth fight, its captain). */
-const BOSS_FOE: Partial<Record<ClimbSegment, string>> = { siege: 'ph_siege_captain', floor15: 'ph_room_last' };
+/**
+ * A try at a boss counts only when this foe is in the fight (the wall's
+ * eighth fight, its captain; the dark room's last fighter; the royale's
+ * champion, not its survivors or its dens).
+ */
+const BOSS_FOE: Partial<Record<ClimbSegment, string>> = {
+  siege: 'ph_siege_captain',
+  floor15: 'ph_room_last',
+  floor16: 'ph_survivor_champion',
+};
 
 /** After a knockout at a keeper, John hunts the den this long before the next try. */
 const GRIND = 6 * 60 * TPS;
@@ -782,23 +795,35 @@ export function runJohn(options: ClimbOptions): ClimbReport {
   }
   if (opts.through <= 14) return finish();
 
-  // ---- The festival (floor 15). One attempt runs from the dark room to the
-  // end of the royale; a lost one shuts floors 15 and 16 for three world
-  // days. John's rules: no preparation in the hall, no hub activity. The
-  // royale (floor 16) is step 4 port C5. ----
+  // ---- The festival (floors 15 and 16). One attempt runs from the dark room
+  // to the end of the royale; a lost one shuts both floors for three world
+  // days. John's rules: no preparation in the hall (he rides up to the
+  // royale the day the door opens), the default strategy plan, no hub
+  // activity. The old `attemptFestival(upTo)`. ----
   const festivalRun = () => eye.read(festival).run;
   const lockLeft = () => lockoutLeft(eye.read(festival), totalTicksOf(eye.read(clockSystem)));
-  const attemptFestival = () => {
-    if (lockLeft() > 0) {
-      settle();
-      until(() => lockLeft() === 0);
+  const attemptFestival = (upTo: 15 | 16) => {
+    // An open door (the dark room won, the hall reached) is the way up to the royale.
+    if (!(upTo === 16 && festivalRun()?.phase === 'prep')) {
+      if (lockLeft() > 0) {
+        settle();
+        until(() => lockLeft() === 0);
+      }
+      if (!send(climb({ floor: DARK_FLOOR }))) return;
+      until(() => !W().travel, 60 * TPS);
+      until(() => !festivalRun() || festivalRun()!.phase !== 'dark');
     }
-    if (!send(climb({ floor: DARK_FLOOR }))) return;
+    if (upTo === 15 || !festivalRun()) return;
+    if (!send(climb({ floor: ROYALE_FLOOR }))) return;
     until(() => !W().travel, 60 * TPS);
-    until(() => !festivalRun() || festivalRun()!.phase !== 'dark');
+    until(() => !festivalRun());
   };
-  const festivalWork = () => repeat(() => clears(DARK_FLOOR), attemptFestival);
-  if (!attempt('floor15', DARK_FLOOR, festivalWork, { ride: false })) return finish();
+  for (const n of [15, 16] as const) {
+    if (n > opts.through) return finish();
+    const floorId = n === 15 ? DARK_FLOOR : ROYALE_FLOOR;
+    const work = () => repeat(() => clears(floorId), () => attemptFestival(n));
+    if (!attempt(`floor${n}`, floorId, work, { ride: false })) return finish();
+  }
   return finish();
 }
 
@@ -821,6 +846,7 @@ export const FLOOR_OF: Record<ClimbSegment, string> = {
   siege: 'f11 siege',
   reclimb3: 'f1-10 again', floor11: 'f11', floor12: 'f12', floor13: 'f13', floor14: 'f14',
   floor15: 'f15',
+  floor16: 'f16',
 };
 
 /** The per-floor table of one climb, in the old pacing script's columns. */

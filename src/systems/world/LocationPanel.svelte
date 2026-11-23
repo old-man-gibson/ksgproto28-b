@@ -228,6 +228,9 @@
             <ul class="terms">
               {#if r.shut}
                 <li>Shut: a festival attempt was lost; three days or the next prestige</li>
+              {:else if view.rideVerdicts[r.id]?.kind === 'refuse' && (r.status === 'open' || r.status === 'cleared')}
+                <!-- The old ladder card's terms for the royale: no door of its own, or the dark room still fighting. -->
+                <li>Refused: {view.rideVerdicts[r.id]?.msg}</li>
               {/if}
               {#each r.gate as t (t.text)}
                 <li>Gate: {t.text} ({t.current.toLocaleString('en-US')} of {t.needed.toLocaleString('en-US')}){t.met ? ', met' : ''}</li>
@@ -248,7 +251,11 @@
               title={view.rideVerdicts[r.id]?.msg || undefined}
               onclick={() => run(send(climb({ floor: r.id })))}
             >
-              {view.rideVerdicts[r.id]?.kind === 'forfeit' ? 'Forfeit: ride' : 'Ride'} to floor {r.index}
+              {view.rideVerdicts[r.id]?.kind === 'forfeit'
+                ? 'Forfeit: ride'
+                : view.rideVerdicts[r.id]?.kind === 'enter'
+                  ? 'Enter the royale: ride'
+                  : 'Ride'} to floor {r.index}
             </Button>
           </li>
         {/each}

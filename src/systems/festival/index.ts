@@ -82,9 +82,12 @@ import survivorArchetypesData from './content/survivor_archetypes.json';
 import survivorFamiliesData from './content/survivor_families.json';
 import survivorSpeciesData from './content/survivor_species.json';
 import { migrations } from './migrations';
-import { ROYALE_MOVES } from './royaleData';
+import { cleanPlan, royaleFightWon, royalePlan, tickRoyale } from './royale';
+import { ROYALE_MOVES, type RoyaleField } from './royaleData';
+import { fieldView, planView, previewView, type RoyaleFieldView, type RoyalePlanView, type RoyalePreviewView } from './royalePublish';
 import {
   bonusStacks,
+  ARENA,
   DARK_ROOM,
   ejectionSpotOf,
   FESTIVAL_BAND,
@@ -123,6 +126,8 @@ export * from './royaleTerrain';
 export * from './royaleField';
 export * from './survivorGen';
 export * from './royaleView';
+export * from './royale';
+export * from './royalePublish';
 
 // ---- content ----
 
@@ -318,10 +323,12 @@ export interface FestivalRun {
   held: HeldGear;
   /** The uid of the issued weapon. Absent for bare hands. */
   issued?: number;
-  /** Uids the royale lends for the attempt (step 4 port C5). */
+  /** Uids the royale's caches lent for the attempt, taken back when it ends. */
   lent?: number[];
   /** This attempt's royale field, drawn at the door. */
   fieldSeed: number;
+  /** The royale's field, once the climb into it has begun and the player has stood on it a tick (`royale.ts`). */
+  field?: RoyaleField;
 }
 
 /** What a prestige keeps of the festival: the stronghold stash's tokens and what they bought. */
@@ -344,6 +351,12 @@ export interface FestivalState {
   weaponKills: Record<string, number>;
   /** The world-clock tick a lost attempt's lockout ends at; null when floors 15 and 16 are open. */
   lockedUntil: number | null;
+  /**
+   * The player's royale strategies, royale strategy ids in priority order;
+   * empty reads as the default plan. Kept between attempts; run state, as
+   * the old `FestivalState.plan` (a prestige starts it empty).
+   */
+  plan: string[];
   legacy: FestivalLegacy;
 }
 
@@ -471,18 +484,23 @@ registerFloorShut((r, floor: FloorDef) => floor.bandId === FESTIVAL_BAND && r.co
 export const spendToken = defineCommand<{ index: number; choice: TokenChoice }>('festival/spend-token');
 
 /**
- * DEBUG, not a player action: end the attempt in progress as a royale won.
- * Until port C5 brings the royale this is the only way to a win; the tests
- * of the rewards, the tokens and the hidden title use it. Refused in a
- * production build.
+ * Send the player to a point on the royale's field by hand. The plan takes
+ * over again on arrival. The point is held to the field. The old
+ * `moveOnField`.
  */
-export const debugWin = defineCommand<void>('festival/debug-win');
+export const walkOnField = defineCommand<{ x: number; y: number }>('festival/move-on-field');
+
+/** Clear a hand-set destination on the field: the plan decides again. The old `clearFieldTarget`. */
+export const backToPlan = defineCommand<void>('festival/clear-field-target');
+
+/**
+ * Rank the player's royale strategies: known ids only, no repeats, at most
+ * three. Kept between attempts. The old `setRoyalePlan`.
+ */
+export const setRoyalePlan = defineCommand<{ ids: string[] }>('festival/set-plan');
 
 /** The climb into the royale begins (the world's ride, the `royale` verdict). */
 export const beginRoyaleRequest = defineRequest<void, void>('festival/begin-royale');
-
-/** A production build of the page: the debug win is refused. */
-const PRODUCTION = (import.meta as { env?: { PROD?: boolean } }).env?.PROD === true;
 
 // ---- the door: holding and returning gear ----
 
@@ -682,7 +700,7 @@ function beginRoyale(run: FestivalRun): void {
   run.phase = 'royale';
 }
 
-/** A won fight at a festival spot: the dark room's next wave (the royale's field is port C5). */
+/** A won fight at a festival spot: the dark room's next wave, or the royale's field. */
 function festivalFightWon(ctx: F, site: string): void {
   const run = ctx.state.run;
   if (!run) return;
@@ -690,6 +708,8 @@ function festivalFightWon(ctx: F, site: string): void {
     run.wave += 1;
     if (run.wave >= DARK_ROOM_WAVES.length) openDoor(ctx, run);
     else run.nextAt = nowOf(ctx) + WAVE_PAUSE_TICKS;
+  } else if (run.phase === 'royale' && site === ARENA) {
+    if (royaleFightWon(ctx, run, nowOf(ctx))) winFestival(ctx);
   }
 }
 
@@ -745,8 +765,8 @@ function liftLockout(ctx: F): void {
 /**
  * Once per tick, after the activity and the fight. Ends an attempt the
  * player has left, runs the festival's clock, and starts what is due: the
- * next dark room wave, the climb to the royale at day ten. The old
- * `tickFestival`.
+ * next dark room wave, the climb to the royale at day ten, the royale's
+ * field while the player stands on it. The old `tickFestival`.
  */
 function tickFestival(ctx: F): void {
   liftLockout(ctx);
@@ -768,8 +788,9 @@ function tickFestival(ctx: F): void {
   } else if (run.phase === 'prep') {
     // Day ten: the survivors are walked up to floor 16, ready or not.
     if (run.clock >= PREP_TICKS && !fighting) ctx.request(rideNow, { floor: ROYALE_FLOOR });
+  } else if (w.spot === ARENA) {
+    tickRoyale(ctx, run, nowOf(ctx), fighting);
   }
-  // The royale's field (`ARENA`) is step 4 port C5.
 }
 
 // ---- the source ----
@@ -842,9 +863,44 @@ export interface FestivalStashView {
 export interface FestivalView {
   /** The attempt, while it holds the player; null otherwise. */
   attempt: FestivalAttemptView | null;
+  /** The royale's field while the player stands on it in the royale; null otherwise. */
+  royale: RoyaleFieldView | null;
+  /** In the hub: the field the royale will open on, as far as the survey scouted it. */
+  preview: RoyalePreviewView | null;
+  /** While an attempt holds the player: the ranked plan and the strategies. */
+  plan: RoyalePlanView | null;
+  /** In the hub: "Enter the royale now", and why it is disabled (null: it can be used). */
+  enter: { blocked: string | null } | null;
   /** World ticks left on the lockout. */
   lockoutLeft: number;
   stash: FestivalStashView;
+}
+
+/** The royale's part of the view, while an attempt holds the player. */
+function royaleViews(ctx: Ctx<FestivalState>, run: DeepReadonly<FestivalRun>): Pick<FestivalView, 'royale' | 'preview' | 'plan' | 'enter'> {
+  const counts = ctx.read(counters);
+  const counter = (key: string) => counterValue(counts, key);
+  const w = ctx.read(world);
+  const fighting = ctx.read(combat).fight !== null;
+  const field = run.field;
+  const onField = run.phase === 'royale' && w.spot === ARENA && !!field?.fighters;
+  return {
+    royale: onField ? fieldView(field as RoyaleField, nowOf(ctx), counter, fighting) : null,
+    preview: run.phase === 'prep' ? previewView(run.fieldSeed, counter) : null,
+    plan: planView(royalePlan(ctx.state.plan).map((s) => s.id), !!field?.player.target),
+    enter:
+      run.phase === 'prep'
+        ? {
+            blocked: w.recovering
+              ? 'Knocked out: resting until recovered.'
+              : w.travel
+                ? 'Travelling: the climb waits until the ride ends.'
+                : fighting
+                  ? 'A fight is open.'
+                  : null,
+          }
+        : null,
+  };
 }
 
 const bonusText = (): string =>
@@ -876,6 +932,7 @@ function festivalView(ctx: Ctx<FestivalState>): FestivalView {
   const techniqueRow = (id: string) => ({ id, name: TECHNIQUES[id]?.name ?? id, icon: TECHNIQUES[id]?.icon ?? '' });
   return {
     attempt,
+    ...(run ? royaleViews(ctx, run) : { royale: null, preview: null, plan: null, enter: null }),
     lockoutLeft: lockoutLeft(state, nowOf(ctx)),
     stash: {
       shown: legacy.tokens.length > 0 || keptItems > 0 || stacks > 0 || legacy.techniques.length > 0,
@@ -926,9 +983,9 @@ function festivalView(ctx: Ctx<FestivalState>): FestivalView {
 
 const system = defineSystem<FestivalState, FestivalView>({
   id: 'festival',
-  version: 1,
+  version: 2,
   migrations,
-  initial: () => ({ run: null, weaponKills: {}, lockedUntil: null, legacy: { tokens: [], bonus: 0, techniques: [] } }),
+  initial: () => ({ run: null, weaponKills: {}, lockedUntil: null, plan: [], legacy: { tokens: [], bonus: 0, techniques: [] } }),
   content: {
     dark_room_waves: darkRoomWaves,
     issued_weapons: issuedWeapons,
@@ -994,10 +1051,25 @@ const system = defineSystem<FestivalState, FestivalView>({
       return OK;
     }),
 
-    handle(debugWin, (ctx) => {
-      if (PRODUCTION) return skipped('the debug win is refused in a production build');
-      if (!ctx.state.run) return skipped('no festival attempt is in progress');
-      winFestival(ctx);
+    handle(walkOnField, (ctx, { x, y }) => {
+      const field = ctx.state.run?.field;
+      if (!field?.fighters) return skipped('no royale field is open');
+      if (ctx.read(world).spot !== ARENA) return skipped('the player is not on the royale field');
+      if (!Number.isFinite(x) || !Number.isFinite(y)) return skipped('the point is not a number');
+      const size = field.size;
+      field.player.target = { x: Math.max(0, Math.min(size, x)), y: Math.max(0, Math.min(size, y)) };
+      return OK;
+    }),
+
+    handle(backToPlan, (ctx) => {
+      const player = ctx.state.run?.field?.player;
+      if (!player?.target) return skipped('no point on the field is set by hand');
+      delete player.target;
+      return OK;
+    }),
+
+    handle(setRoyalePlan, (ctx, { ids }) => {
+      ctx.state.plan = cleanPlan(Array.isArray(ids) ? ids : []);
       return OK;
     }),
   ],

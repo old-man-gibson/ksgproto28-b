@@ -17,6 +17,7 @@
 //   npm run pacing -- --through 14                  run 3 to floor 14, the harbor's final mission
 //   npm run pacing -- --through 14 --side navy      the harbor side John signs with (default merchants)
 //   npm run pacing -- --through 15                  run 3 to floor 15, the festival's dark room
+//   npm run pacing -- --through 16                  run 3 to floor 16, the festival's royale
 //   npm run pacing -- --through 10 --cap 120        a floor past 6 still open after 120 minutes of game
 //                                                   time is a wall (default 240); past it John takes the
 //                                                   debug skip and later floors read "measured after skip"
