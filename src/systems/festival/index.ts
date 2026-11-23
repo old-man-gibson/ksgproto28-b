@@ -68,10 +68,21 @@ import skills, { skillLevel } from '../skills';
 import { contentMod, namedFact, type StatMod } from '../stats';
 import { checkTitles } from '../titles';
 import world, { arrived, registerFloorRule, rideNow, siteOf, spotActivities, SPOTS, type RideVerdict } from '../world';
+import { MONSTER_RANGES } from '../monsters';
+import { ATTRIBUTE_IDS, DAMAGE_TYPES } from '../stats';
+import { applicationSchema } from '../statuses';
 import darkRoomWavesData from './content/dark_room_waves.json';
 import festivalTextData from './content/festival_text.json';
 import issuedWeaponsData from './content/issued_weapons.json';
+import royaleCachesData from './content/royale_caches.json';
+import royaleDensData from './content/royale_dens.json';
+import royaleSectionsData from './content/royale_sections.json';
+import royaleStrategiesData from './content/royale_strategies.json';
+import survivorArchetypesData from './content/survivor_archetypes.json';
+import survivorFamiliesData from './content/survivor_families.json';
+import survivorSpeciesData from './content/survivor_species.json';
 import { migrations } from './migrations';
+import { ROYALE_MOVES } from './royaleData';
 import {
   bonusStacks,
   DARK_ROOM,
@@ -81,6 +92,7 @@ import {
   FESTIVAL_RESTOCK,
   FESTIVAL_REWARD,
   FESTIVAL_SHUT_KEY,
+  FESTIVAL_SOURCE,
   FESTIVAL_SWIFT_KEY,
   FESTIVAL_TOKEN,
   FESTIVAL_WINS_KEY,
@@ -105,6 +117,12 @@ import {
 
 export * from './rules';
 export * from './validation';
+export * from './royaleData';
+export * from './royaleMap';
+export * from './royaleTerrain';
+export * from './royaleField';
+export * from './survivorGen';
+export * from './royaleView';
 
 // ---- content ----
 
@@ -134,6 +152,131 @@ const issuedWeapons = registry(
 );
 
 const festivalText = registry(textSchema, festivalTextData, 'Festival text');
+
+// ---- the royale's registries (step 4 port C5; `royaleData.ts` types them) ----
+
+const royaleStrategies = registry(
+  s.object({
+    id: s.id(),
+    name: s.string({ minLength: 1 }),
+    icon: s.string(),
+    desc: s.string(),
+    move: s.enum(ROYALE_MOVES, { help: 'Where the strategy walks its fighter.' }),
+    when: s.optional(
+      s.object({
+        hpBelow: s.optional(s.number({ min: 0, max: 1, help: 'The bearer’s health share is below this.' })),
+        fieldAbove: s.optional(s.number({ integer: true, min: 0, help: 'More than this many survivors are left.' })),
+        fieldBelow: s.optional(s.number({ integer: true, min: 0, help: 'Fewer than this many survivors are left.' })),
+      }),
+    ),
+  }),
+  royaleStrategiesData,
+  'Royale strategies',
+);
+
+const royaleSections = registry(
+  s.object({
+    id: s.id(),
+    name: s.string({ minLength: 1 }),
+    icon: s.string(),
+    desc: s.string(),
+    pace: s.number({ min: 0, help: 'Walking pace multiplier for a fighter standing in it.' }),
+    sight: s.number({ min: 0, help: 'Sight multiplier for a fighter standing in it.' }),
+    cover: s.optional(s.boolean({ help: 'A fighter in it is seen at half the looker’s range.' })),
+    heal: s.optional(s.number({ min: 0, help: 'Health share a free fighter regains per tick standing in it.' })),
+  }),
+  royaleSectionsData,
+  'Royale sections (order is the map’s cell index)',
+);
+
+const royaleDens = registry(
+  s.object({
+    id: s.id(),
+    name: s.string({ minLength: 1 }),
+    icon: s.string(),
+    section: s.ref('royale_sections'),
+    radius: s.number({ min: 0, help: 'Field units: a fighter this close fights the den.' }),
+    foes: s.array(s.object({ monsterId: s.ref('monsters'), level: s.number({ integer: true, min: 1, help: 'Pinned.' }) })),
+  }),
+  royaleDensData,
+  'Royale dens',
+);
+
+const royaleCaches = registry(
+  s.object({
+    id: s.id(),
+    name: s.string({ minLength: 1 }),
+    icon: s.string(),
+    section: s.ref('royale_sections'),
+    building: s.optional(s.string({ help: 'In the village: smithy, bakery, guard_post or house.' })),
+    item: s.optional(s.ref('items', { help: 'Lent to the player for the attempt.' })),
+    weapon: s.optional(s.boolean({ help: 'A weapon of the player’s issued family, lent for the attempt.' })),
+    heal: s.optional(s.number({ min: 0, max: 1, help: 'A share of health back, at once.' })),
+    den: s.optional(s.ref('royale_dens', { help: 'Shut until this den is cleared.' })),
+  }),
+  royaleCachesData,
+  'Royale caches',
+);
+
+const survivorSpecies = registry(
+  s.object({
+    id: s.ref('monsters', { help: 'The species: a monster.' }),
+    weight: s.number({ min: 0, help: 'Scales its strength in duels between survivors.' }),
+    plan: s.array(s.ref('royale_strategies')),
+  }),
+  survivorSpeciesData,
+  'Survivor species',
+);
+
+const survivorFamilies = registry(
+  s.object({
+    id: s.id(),
+    damageType: s.enum(DAMAGE_TYPES),
+    range: s.enum(MONSTER_RANGES),
+    techniques: s.array(s.ref('techniques')),
+    signature: s.array(s.ref('techniques', { help: 'Drawn three times as often.' })),
+  }),
+  survivorFamiliesData,
+  'Survivor weapon families',
+);
+
+const perAttr = s.object(Object.fromEntries(ATTRIBUTE_IDS.map((id) => [id, s.optional(s.number())])) as Record<string, ReturnType<typeof s.optional>>);
+const perType = s.object(Object.fromEntries(DAMAGE_TYPES.map((t) => [t, s.optional(s.number())])) as Record<string, ReturnType<typeof s.optional>>);
+
+const survivorArchetypes = registry(
+  s.object({
+    id: s.id(),
+    name: s.string({ minLength: 1 }),
+    family: s.ref('survivor_families'),
+    weapons: s.array(s.ref('items'), { help: 'Empty: bare hands.' }),
+    range: s.optional(s.enum(MONSTER_RANGES, { help: 'Overrides the family’s reach.' })),
+    armor: s.array(s.number({ min: 0 }), { help: 'Level-1 armour range, [low, high]; grows 5% a level.' }),
+    resistances: s.optional(perType),
+    inflicts: s.optional(s.array(applicationSchema)),
+    attrs: perAttr,
+    power: s.number({ help: 'Bonus levels for duels between survivors.' }),
+    keepsFocus: s.optional(s.boolean({ help: 'Never trades its weapon for one of another family.' })),
+    workings: s.optional(
+      s.object({
+        count: s.number({ integer: true, min: 0 }),
+        pool: s.array(
+          s.object({
+            group: s.string(),
+            cast: s.object({
+              school: s.enum(['arcane', 'divine']),
+              words: s.optional(s.array(s.string(), { help: 'Arcane words.' })),
+              litany: s.optional(s.ref('miracles')),
+            }),
+          }),
+        ),
+      }),
+    ),
+    mending: s.optional(s.number({ integer: true, min: 1, help: 'Uses of the self-mending kept last in the rotation.' })),
+    species: s.array(s.object({ monsterId: s.ref('monsters'), weight: s.number({ min: 0 }) }), { help: 'A species not listed draws at weight 1.' }),
+  }),
+  survivorArchetypesData,
+  'Survivor archetypes',
+);
 const TEXT = Object.fromEntries((festivalTextData as TextRecord[]).map((r) => [r.id, r.text]));
 
 export interface IssuedWeaponDef {
@@ -206,9 +349,6 @@ export interface FestivalState {
 
 type F = Ctx<FestivalState>;
 type ReadCtx = DerivedReads & { read<T>(system: SystemDef<T, any>): DeepReadonly<T> };
-
-/** The modifier source of the festival: the attempt's facts and the legacy bonus. */
-export const FESTIVAL_SOURCE = 'festival/player';
 
 // ---- the catch-up hold (kernel decision 35) ----
 
@@ -789,7 +929,18 @@ const system = defineSystem<FestivalState, FestivalView>({
   version: 1,
   migrations,
   initial: () => ({ run: null, weaponKills: {}, lockedUntil: null, legacy: { tokens: [], bonus: 0, techniques: [] } }),
-  content: { dark_room_waves: darkRoomWaves, issued_weapons: issuedWeapons, festival_text: festivalText },
+  content: {
+    dark_room_waves: darkRoomWaves,
+    issued_weapons: issuedWeapons,
+    festival_text: festivalText,
+    royale_strategies: royaleStrategies,
+    royale_sections: royaleSections,
+    royale_dens: royaleDens,
+    royale_caches: royaleCaches,
+    survivor_species: survivorSpecies,
+    survivor_families: survivorFamilies,
+    survivor_archetypes: survivorArchetypes,
+  },
   // After combat (10), benches (15), wards (16) and the sea (17): the old
   // `tickFestival` ran after the activity and the harbor's convoys.
   order: 18,

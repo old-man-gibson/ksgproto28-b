@@ -1,0 +1,153 @@
+[
+  {
+    "id": "sword",
+    "damageType": "slashing",
+    "range": "melee",
+    "techniques": [
+      "gather",
+      "lunge",
+      "thrust",
+      "crosscut",
+      "riposte",
+      "dirty_stab"
+    ],
+    "signature": [
+      "thrust",
+      "crosscut",
+      "riposte"
+    ]
+  },
+  {
+    "id": "katana",
+    "damageType": "slashing",
+    "range": "melee",
+    "techniques": [
+      "gather",
+      "lunge",
+      "thrust",
+      "iai_draw",
+      "finishing_cut",
+      "riposte"
+    ],
+    "signature": [
+      "iai_draw",
+      "finishing_cut"
+    ]
+  },
+  {
+    "id": "dagger",
+    "damageType": "piercing",
+    "range": "melee",
+    "techniques": [
+      "gather",
+      "lunge",
+      "dirty_stab",
+      "hamstring",
+      "pocket_sand",
+      "riposte"
+    ],
+    "signature": [
+      "dirty_stab",
+      "pocket_sand"
+    ]
+  },
+  {
+    "id": "blunt",
+    "damageType": "bludgeoning",
+    "range": "melee",
+    "techniques": [
+      "gather",
+      "heavy_blow",
+      "lunge",
+      "hamstring"
+    ],
+    "signature": [
+      "heavy_blow"
+    ]
+  },
+  {
+    "id": "spear",
+    "damageType": "piercing",
+    "range": "melee",
+    "techniques": [
+      "gather",
+      "lunge",
+      "impaling_swing",
+      "hamstring",
+      "dirty_stab",
+      "riposte"
+    ],
+    "signature": [
+      "impaling_swing",
+      "lunge"
+    ]
+  },
+  {
+    "id": "bow",
+    "damageType": "piercing",
+    "range": "ranged",
+    "techniques": [
+      "gather",
+      "lunge",
+      "dirty_stab",
+      "hamstring",
+      "riposte"
+    ],
+    "signature": [
+      "hamstring",
+      "dirty_stab"
+    ]
+  },
+  {
+    "id": "greatsword",
+    "damageType": "slashing",
+    "range": "melee",
+    "techniques": [
+      "gather",
+      "heavy_blow",
+      "lunge",
+      "hamstring",
+      "riposte"
+    ],
+    "signature": [
+      "heavy_blow",
+      "riposte"
+    ]
+  },
+  {
+    "id": "staff",
+    "damageType": "bludgeoning",
+    "range": "melee",
+    "techniques": [
+      "gather",
+      "heavy_blow",
+      "hamstring",
+      "riposte"
+    ],
+    "signature": [
+      "heavy_blow"
+    ]
+  },
+  {
+    "id": "unarmed",
+    "damageType": "bludgeoning",
+    "range": "melee",
+    "techniques": [
+      "gather",
+      "heavy_blow",
+      "whirl_kick",
+      "clinch_knee",
+      "slip_jab",
+      "ginga",
+      "meia_lua",
+      "taunt",
+      "german_suplex",
+      "pocket_sand"
+    ],
+    "signature": [
+      "whirl_kick",
+      "clinch_knee",
+      "meia_lua"
+    ]
+  }
+]

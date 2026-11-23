@@ -1,0 +1,19 @@
+[
+  {
+    "id": "ph_survivor_blade",
+    "weight": 1,
+    "plan": [
+      "take_cover_hurt",
+      "loot_while_crowded",
+      "hunt_weakest"
+    ]
+  },
+  {
+    "id": "ph_survivor_brute",
+    "weight": 1.1,
+    "plan": [
+      "loot_while_crowded",
+      "press_nearest"
+    ]
+  }
+]

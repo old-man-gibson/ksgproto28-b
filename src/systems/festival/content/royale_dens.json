@@ -1,0 +1,83 @@
+[
+  {
+    "id": "harpy_nest",
+    "name": "Harpy Nest",
+    "icon": "🦅",
+    "section": "cliff",
+    "radius": 5,
+    "foes": [
+      {
+        "monsterId": "ph_den_harpy",
+        "level": 34
+      },
+      {
+        "monsterId": "ph_den_harpy",
+        "level": 34
+      }
+    ]
+  },
+  {
+    "id": "serpent_pool",
+    "name": "Serpent Pool",
+    "icon": "🐍",
+    "section": "waterfall",
+    "radius": 4,
+    "foes": [
+      {
+        "monsterId": "ph_den_serpent",
+        "level": 36
+      }
+    ]
+  },
+  {
+    "id": "wolf_den",
+    "name": "Wolf Den",
+    "icon": "🐺",
+    "section": "forest",
+    "radius": 6,
+    "foes": [
+      {
+        "monsterId": "ph_den_wolf",
+        "level": 33
+      },
+      {
+        "monsterId": "ph_den_wolf",
+        "level": 33
+      },
+      {
+        "monsterId": "ph_den_wolf",
+        "level": 34
+      }
+    ]
+  },
+  {
+    "id": "bear_cave",
+    "name": "Bear Cave",
+    "icon": "🐻",
+    "section": "cave",
+    "radius": 5,
+    "foes": [
+      {
+        "monsterId": "ph_den_bear",
+        "level": 37
+      }
+    ]
+  },
+  {
+    "id": "hound_yard",
+    "name": "Hound Yard",
+    "icon": "🐕",
+    "section": "village",
+    "radius": 5,
+    "foes": [
+      {
+        "monsterId": "ph_den_hound",
+        "level": 34
+      },
+      {
+        "monsterId": "ph_den_hound",
+        "level": 34
+      }
+    ]
+  }
+]

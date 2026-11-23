@@ -1,0 +1,69 @@
+[
+  {
+    "id": "cliff",
+    "name": "The Cliff",
+    "icon": "⛰️",
+    "desc": "A ridge along the far edge of the field. Slow going, but whoever stands on it sees far. Harpies nest on it.",
+    "pace": 0.6,
+    "sight": 1.6
+  },
+  {
+    "id": "waterfall",
+    "name": "The Waterfall",
+    "icon": "💦",
+    "desc": "Where the river comes off the cliff. Loud and wet: slow going and short sight. A serpent holds the pool.",
+    "pace": 0.6,
+    "sight": 0.8
+  },
+  {
+    "id": "river",
+    "name": "The River",
+    "icon": "🌊",
+    "desc": "The river from the waterfall to the near edge. Wading it is slow.",
+    "pace": 0.4,
+    "sight": 1
+  },
+  {
+    "id": "bank",
+    "name": "The Riverbank",
+    "icon": "🪨",
+    "desc": "The strips of firm ground either side of the river.",
+    "pace": 1,
+    "sight": 1
+  },
+  {
+    "id": "cave",
+    "name": "The Cave",
+    "icon": "🕳️",
+    "desc": "A cave in the far corner. Dark: short sight, and anyone inside is hard to see. A bear sleeps in it.",
+    "pace": 0.7,
+    "sight": 0.3,
+    "cover": true
+  },
+  {
+    "id": "glade",
+    "name": "The Glade",
+    "icon": "🌼",
+    "desc": "A clearing in the forest around a spring. Standing in it heals.",
+    "pace": 1,
+    "sight": 1.2,
+    "heal": 0.002
+  },
+  {
+    "id": "forest",
+    "name": "The Forest",
+    "icon": "🌲",
+    "desc": "The large wood on the west side. Slower going and short sight; anyone inside is hard to see. Wolves den in it.",
+    "pace": 0.8,
+    "sight": 0.5,
+    "cover": true
+  },
+  {
+    "id": "village",
+    "name": "The Deserted Village",
+    "icon": "🏚️",
+    "desc": "A deserted village on the east side: a smithy, a baker, a guard post and houses, each with something left behind.",
+    "pace": 1,
+    "sight": 0.7
+  }
+]

@@ -1,0 +1,84 @@
+[
+  {
+    "id": "press_nearest",
+    "name": "Press the Nearest",
+    "icon": "⚔️",
+    "desc": "Walk at the nearest fighter you can see. With no one in sight, roam until the radar finds one. Fights come quickly, one after another.",
+    "move": "nearest"
+  },
+  {
+    "id": "hunt_weakest",
+    "name": "Hunt the Weakest",
+    "icon": "🎯",
+    "desc": "Walk at the weakest fighter within sight: the wounded and the ones who have won least. Falls back on the nearest in sight; with no one in sight, roam.",
+    "move": "weakest"
+  },
+  {
+    "id": "hold_centre",
+    "name": "Hold the Centre",
+    "icon": "⭕",
+    "desc": "Walk to the middle of the field and stand there. Whoever crosses it comes to you.",
+    "move": "centre"
+  },
+  {
+    "id": "keep_away",
+    "name": "Keep Away",
+    "icon": "🏃",
+    "desc": "Walk away from the nearest fighter you can see. With no one in sight, roam. A fight still starts when someone corners you.",
+    "move": "away"
+  },
+  {
+    "id": "wait_at_edge",
+    "name": "Wait at the Edge",
+    "icon": "🧱",
+    "desc": "Walk to the nearest edge of the field and stand there while the middle thins out.",
+    "move": "edge"
+  },
+  {
+    "id": "fall_back_hurt",
+    "name": "Fall Back When Hurt",
+    "icon": "🩹",
+    "desc": "While hurt, walk away from the nearest fighter you can see until health returns. With no one in sight, roam.",
+    "move": "away",
+    "when": {
+      "hpBelow": 0.5
+    }
+  },
+  {
+    "id": "lie_low",
+    "name": "Lie Low While Crowded",
+    "icon": "🫥",
+    "desc": "While the field is crowded, walk away from the nearest fighter you can see. With no one in sight, roam.",
+    "move": "away",
+    "when": {
+      "fieldAbove": 30
+    }
+  },
+  {
+    "id": "loot_while_crowded",
+    "name": "Loot While Crowded",
+    "icon": "💎",
+    "desc": "While more than 50 survivors are left, walk to the nearest open cache you know of: in a section you have scouted or stood in, or in sight. With none, roam. Caches lend gear for the attempt or restore health.",
+    "move": "loot",
+    "when": {
+      "fieldAbove": 50
+    }
+  },
+  {
+    "id": "take_cover_hurt",
+    "name": "Take Cover When Hurt",
+    "icon": "🌲",
+    "desc": "While hurt, walk to the nearest forest or cave and stay there: anyone inside is seen at half range. With no cover on the map, roam.",
+    "move": "cover",
+    "when": {
+      "hpBelow": 0.5
+    }
+  },
+  {
+    "id": "wander",
+    "name": "Wander the Field",
+    "icon": "🧭",
+    "desc": "Walk to a point in another section of the field, then another. Keeps the heading until it arrives, whoever is in sight.",
+    "move": "roam"
+  }
+]

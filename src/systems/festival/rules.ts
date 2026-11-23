@@ -44,6 +44,9 @@ export const FESTIVAL_WINS_KEY = 'festival:wins';
  */
 export const FESTIVAL_SHUT_KEY = 'festival:shut';
 
+/** The modifier source of the festival: the attempt's facts and the legacy bonus. */
+export const FESTIVAL_SOURCE = 'festival/player';
+
 /** Ticks between one dark room wave falling and the next stepping up. */
 export const WAVE_PAUSE_TICKS = 30;
 

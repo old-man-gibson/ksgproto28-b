@@ -1,0 +1,105 @@
+/**
+ * Pure reads of the royale field's terrain. Port of old
+ * `systems/royaleTerrain.ts` (step 4 port C5): which section owns a point,
+ * how fast and how far a fighter there walks and sees, who sees whom, the
+ * radar, and what the player's map may show. Shared by the simulation
+ * (`royaleField.ts`) and the map (`royaleView.ts`, the panel), so the two can
+ * never disagree about what is visible. The terrain itself is `royaleMap.ts`,
+ * rebuilt from the field's seed.
+ */
+import { royaleMap, sectionIdOf, type RoyaleMap } from './royaleMap';
+import {
+  COVER_SIGHT,
+  RADAR_TICKS,
+  ROYALE_FIELD,
+  ROYALE_SECTIONS,
+  type RoyaleCacheDef,
+  type RoyaleDenDef,
+  type RoyaleField,
+  type RoyaleSectionDef,
+} from './royaleData';
+import { scoutedKey } from './rules';
+
+/** The terrain of a field: its map, from its seed (0 for a field saved without one). */
+export function mapOf(field: Pick<RoyaleField, 'seed'>): RoyaleMap {
+  return royaleMap(field.seed ?? 0);
+}
+
+/** The section that owns a point, or undefined for open meadow (and off the field). */
+export function sectionAt(map: RoyaleMap, x: number, y: number): RoyaleSectionDef | undefined {
+  const cx = Math.floor(x);
+  const cy = Math.floor(y);
+  if (cx < 0 || cy < 0 || cx >= map.size || cy >= map.size) return undefined;
+  const id = sectionIdOf(map.cells[cy * map.size + cx]);
+  return id ? ROYALE_SECTIONS[id] : undefined;
+}
+
+/** Walking pace multiplier at a point. */
+export function paceAt(map: RoyaleMap, x: number, y: number): number {
+  return sectionAt(map, x, y)?.pace ?? 1;
+}
+
+/** How far a fighter standing at a point sees, in field units. */
+export function sightAt(map: RoyaleMap, x: number, y: number): number {
+  return ROYALE_FIELD.sight * (sectionAt(map, x, y)?.sight ?? 1);
+}
+
+/** A fighter at `from` sees one at `to`: within its sight, cut to COVER_SIGHT when `to` stands in cover. */
+export function sees(map: RoyaleMap, from: { x: number; y: number }, to: { x: number; y: number }): boolean {
+  const range = sightAt(map, from.x, from.y) * (sectionAt(map, to.x, to.y)?.cover ? COVER_SIGHT : 1);
+  return Math.hypot(from.x - to.x, from.y - to.y) <= range;
+}
+
+/**
+ * Ticks until the radar switches on for a fighter whose last fight ended at
+ * `lastFight` (absent: it has not fought, so the field's opening counts).
+ * 0 means it is on.
+ */
+export function radarLeft(lastFight: number | undefined, openedAt: number | undefined, now: number): number {
+  const since = lastFight ?? openedAt ?? now;
+  return Math.max(0, RADAR_TICKS - (now - since));
+}
+
+/** The radar is on: a festival hour without a fight. */
+export function radarOn(lastFight: number | undefined, openedAt: number | undefined, now: number): boolean {
+  return radarLeft(lastFight, openedAt, now) === 0;
+}
+
+/** The nearest survivor to a point, sight or no sight (the radar's read), or null on an empty field. */
+export function nearestFighter(
+  field: Pick<RoyaleField, 'fighters'>,
+  x: number,
+  y: number,
+): { id: number; x: number; y: number; dist: number } | null {
+  let best: { id: number; x: number; y: number; dist: number } | null = null;
+  for (const f of field.fighters) {
+    const d = Math.hypot(f.x - x, f.y - y);
+    if (!best || d < best.dist) best = { id: f.id, x: f.x, y: f.y, dist: d };
+  }
+  return best;
+}
+
+/**
+ * A section's caches and dens show on the player's map: scouted in the hub
+ * this run (the survey's flags, read through `counter`), or stood in this
+ * attempt. The old `sectionKnown(state, field, id)`, which read the counters
+ * off the state.
+ */
+export function sectionKnown(
+  counter: (key: string) => number,
+  field: Pick<RoyaleField, 'seen'> | null | undefined,
+  sectionId: string,
+): boolean {
+  return counter(scoutedKey(sectionId)) >= 1 || !!field?.seen?.includes(sectionId);
+}
+
+/** The den still holds its place this attempt. */
+export function denLive(field: Pick<RoyaleField, 'cleared'>, den: Pick<RoyaleDenDef, 'id'>): boolean {
+  return !field.cleared?.includes(den.id);
+}
+
+/** The cache can be taken: not taken yet, and its den (if any) cleared. */
+export function cacheOpen(field: Pick<RoyaleField, 'taken' | 'cleared'>, cache: Pick<RoyaleCacheDef, 'id' | 'den'>): boolean {
+  if (field.taken?.includes(cache.id)) return false;
+  return !cache.den || !!field.cleared?.includes(cache.den);
+}

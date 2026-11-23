@@ -30,6 +30,39 @@ and `docs/FLOOR_IDEAS.md` section 5.3.
 - Floor 15 is world content: the dark room, the hall and the five hub spots
   (`world/content/spots.json`), band 5 and floor 15 in `ladder`.
 
+## The royale's pure modules (step 4 port C5, part 1)
+
+Ported with their old tests, unchanged but for the imports; no reader in
+play until part 2 wires the field into the tick. Each is a pure function of
+its inputs and keeps its own random streams or takes the generator it is
+handed.
+
+- `royaleData.ts`: the royale part of old `data/festival.data.ts` and all
+  of `data/survivors.data.ts`. The registries `royale_strategies`,
+  `royale_sections` (registry order is the map's cell index),
+  `royale_dens`, `royale_caches`, `survivor_species` (`id` is the monster),
+  `survivor_families`, `survivor_archetypes` (`species` is a list of
+  `{ monsterId, weight }`: the schema has no map), typed; the dials
+  (`ROYALE_FIELD`, `SURVIVOR_TOOLS`, `CACHE_WEAPONS`, the name syllables,
+  `ROYALE_LAYOUT_VERSION` 3, `RADAR_TICKS`, `COVER_SIGHT`); the field's
+  saved shape (`RoyaleField`, `FieldFighter`).
+- `royaleMap.ts`: the seeded terrain generator (old `royaleMap.ts`, 810
+  lines). Builds the same map from the same seed as the old build.
+- `royaleTerrain.ts`: sections, pace, sight, cover, the radar, dens and
+  caches open. `sectionKnown(counter, field, id)` takes a counter reader.
+- `royaleField.ts`: the field's simulation (old `royaleField.ts`).
+- `survivorGen.ts`: the survivor generator (old `survivorGen.ts`). Same
+  builds as the old build for the same seed, id and tools.
+  `survivorMember` answers a `SurvivorMember`, combat's `StagedMember`
+  shape.
+- `royaleView.ts`: the map's pure reads (old `ui/lib/royaleView.ts`): the
+  projection, camera, compass, fog, radar, section centres and the
+  terrain's palette. The palette recipe names this build's colour tokens
+  (`--color-*`); the old recipe named resource and material tokens this
+  build does not have.
+- `validation.ts`: the royale's lint checks, behind the optional third
+  argument (strategies, plans, species, champion, dens, caches).
+
 ## State
 
 Slice version 1:

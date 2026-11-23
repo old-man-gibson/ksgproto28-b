@@ -1,0 +1,264 @@
+[
+  {
+    "id": "falls_hollow",
+    "name": "Behind the Falls",
+    "icon": "💎",
+    "section": "waterfall",
+    "item": "iron_gauntlets",
+    "den": "serpent_pool"
+  },
+  {
+    "id": "fisher_hut",
+    "name": "Fisher’s Hut",
+    "icon": "🐟",
+    "section": "bank",
+    "heal": 0.5
+  },
+  {
+    "id": "hunter_cache",
+    "name": "Hunter’s Cache",
+    "icon": "🏹",
+    "section": "forest",
+    "item": "wolf_cloak",
+    "den": "wolf_den"
+  },
+  {
+    "id": "deep_cache",
+    "name": "The Deep Cache",
+    "icon": "⚔️",
+    "section": "cave",
+    "weapon": true,
+    "den": "bear_cave"
+  },
+  {
+    "id": "smithy",
+    "name": "The Smithy",
+    "icon": "🔨",
+    "section": "village",
+    "building": "smithy",
+    "weapon": true
+  },
+  {
+    "id": "armoury_rack",
+    "name": "Guard Post Armoury",
+    "icon": "🛡️",
+    "section": "village",
+    "building": "guard_post",
+    "item": "iron_breastplate",
+    "den": "hound_yard"
+  },
+  {
+    "id": "bakery",
+    "name": "The Bakery",
+    "icon": "🍞",
+    "section": "village",
+    "building": "bakery",
+    "heal": 0.6
+  },
+  {
+    "id": "house_north",
+    "name": "North House",
+    "icon": "🏠",
+    "section": "village",
+    "building": "house",
+    "item": "leather_cap"
+  },
+  {
+    "id": "house_south",
+    "name": "South House",
+    "icon": "🏠",
+    "section": "village",
+    "building": "house",
+    "item": "leather_boots"
+  },
+  {
+    "id": "house_corner",
+    "name": "Corner House",
+    "icon": "🏠",
+    "section": "village",
+    "building": "house",
+    "heal": 0.3
+  },
+  {
+    "id": "falls_ledge",
+    "name": "The Wet Ledge",
+    "icon": "🪨",
+    "section": "waterfall",
+    "heal": 0.3
+  },
+  {
+    "id": "harpy_hoard",
+    "name": "Harpy Hoard",
+    "icon": "🪶",
+    "section": "cliff",
+    "item": "hawk_feather_band",
+    "den": "harpy_nest"
+  },
+  {
+    "id": "cliff_cairn",
+    "name": "Cliff Cairn",
+    "icon": "🗿",
+    "section": "cliff",
+    "item": "old_spear"
+  },
+  {
+    "id": "signal_post",
+    "name": "The Signal Post",
+    "icon": "🚩",
+    "section": "cliff",
+    "weapon": true
+  },
+  {
+    "id": "ferry_shed",
+    "name": "Ferry Shed",
+    "icon": "⛵",
+    "section": "bank",
+    "item": "iron_sword"
+  },
+  {
+    "id": "net_loft",
+    "name": "Net Loft",
+    "icon": "🕸️",
+    "section": "bank",
+    "item": "leather_jerkin"
+  },
+  {
+    "id": "willow_stump",
+    "name": "Willow Stump",
+    "icon": "🌿",
+    "section": "bank",
+    "item": "herbal_charm"
+  },
+  {
+    "id": "reed_basket",
+    "name": "Reed Basket",
+    "icon": "🧺",
+    "section": "bank",
+    "item": "scout_bracers"
+  },
+  {
+    "id": "poachers_stash",
+    "name": "Poacher’s Stash",
+    "icon": "🏹",
+    "section": "forest",
+    "item": "hunting_bow"
+  },
+  {
+    "id": "woodcutter_hut",
+    "name": "Woodcutter’s Hut",
+    "icon": "🪓",
+    "section": "forest",
+    "item": "leather_vest"
+  },
+  {
+    "id": "forest_shrine",
+    "name": "Forest Shrine",
+    "icon": "⛩️",
+    "section": "forest",
+    "item": "pilgrim_amulet"
+  },
+  {
+    "id": "hollow_log",
+    "name": "Hollow Log",
+    "icon": "🪵",
+    "section": "forest",
+    "heal": 0.4
+  },
+  {
+    "id": "trapper_cabin",
+    "name": "Trapper’s Cabin",
+    "icon": "🛖",
+    "section": "forest",
+    "item": "wolf_fang_blade"
+  },
+  {
+    "id": "stump_cache",
+    "name": "Stump Cache",
+    "icon": "🌰",
+    "section": "forest",
+    "item": "oak_club"
+  },
+  {
+    "id": "spring_offering",
+    "name": "Spring Offerings",
+    "icon": "🪙",
+    "section": "glade",
+    "item": "lucky_charm"
+  },
+  {
+    "id": "glade_stone",
+    "name": "The Glade Stone",
+    "icon": "🪨",
+    "section": "glade",
+    "heal": 0.3
+  },
+  {
+    "id": "cave_mouth",
+    "name": "Cave Mouth",
+    "icon": "🕳️",
+    "section": "cave",
+    "item": "soldier_greaves"
+  },
+  {
+    "id": "hermit_niche",
+    "name": "Hermit’s Niche",
+    "icon": "🧙",
+    "section": "cave",
+    "item": "oak_staff"
+  },
+  {
+    "id": "miners_niche",
+    "name": "Miner’s Niche",
+    "icon": "⛏️",
+    "section": "cave",
+    "item": "ember_knife"
+  },
+  {
+    "id": "forge_rack",
+    "name": "The Forge Rack",
+    "icon": "⚒️",
+    "section": "village",
+    "building": "smithy",
+    "item": "katana"
+  },
+  {
+    "id": "guard_locker",
+    "name": "Guard Locker",
+    "icon": "🔒",
+    "section": "village",
+    "building": "guard_post",
+    "item": "parrying_dagger"
+  },
+  {
+    "id": "bakery_stores",
+    "name": "Bakery Stores",
+    "icon": "🥖",
+    "section": "village",
+    "building": "bakery",
+    "heal": 0.4
+  },
+  {
+    "id": "house_east",
+    "name": "East House",
+    "icon": "🏠",
+    "section": "village",
+    "building": "house",
+    "item": "warden_buckler"
+  },
+  {
+    "id": "house_attic",
+    "name": "Attic House",
+    "icon": "🏠",
+    "section": "village",
+    "building": "house",
+    "item": "apprentice_ring"
+  },
+  {
+    "id": "house_cellar",
+    "name": "Cellar House",
+    "icon": "🏠",
+    "section": "village",
+    "building": "house",
+    "item": "rapier"
+  }
+]
