@@ -2044,3 +2044,243 @@ death with knockout consequences and no document uses it; `itemUsed` fires
 for any direct use, a recipe card included; `miracleCast` fires for any
 divine cast with a deity in a fight; a stance with Power 0 does nothing; the
 host keeps `spendPool` though no document spends.
+
+## 21. Step 3 gap: super-attribute fusion
+
+Done 2026-11-22 on branch `step3-superattrs`, from `main` at `ba2ff37`.
+Not merged, not pushed. The full account: `src/systems/superattrs/README.md`.
+
+The gap: the spine ported the sum of a fused pair (`fuseFact` and the
+fusion read of the `stats` pipeline) with no system to state it, and step 3
+ported no fusion. Port C4 found it (docs/CONTENT.md section 11.1): the old
+John holds Dominion (Strength and Charisma fused) and the title Titan
+Incarnate (Strength 100) by floor 14 on every seed, the new John held
+neither, and his base damage at floor 14 was 93.9 against 168.0. He lost the
+floor 15 dark room on two of six runs, and run 3 read +19.2% and +18.5%
+against the 15% tolerance. C3's merchants floor 13, two convoys over the
+old time on every seed, had the same cause.
+
+What was ported:
+
+- `superattrs` (new system): old `systems/superattrs.ts`,
+  `data/superattrs.data.ts`, `text/superattrs.text.ts`, the fusion line of
+  `text/log.text.ts`, `isFused` and `superFor` of `systems/attributes.ts`.
+  Registries `superattrs` (3: Dominion, Force, Martial Prowess; written by
+  the new `superattrs` job of `scripts/convert-content.mjs`) and
+  `superattrs_text`. Slice version 1, `{ fused }` (the old `state.fused`);
+  a new run starts with none, as the old prestige did. Source
+  `superattrs/held`: `fuseFact` per fused pair, player only.
+- The check, the old `checkSuperUnlocks`: event `superattrs/check`, emitted
+  after `attributes/levelup`, `skills/levelup`, `skills/unlock` and
+  `combat/kill`, the four old listeners, so it runs after the kill's
+  `kills` bump. Not emitted once all three are fused. On a fusion: the id
+  added and the source touched, `superattrs/unlocked` (the old
+  `superattr:unlock`), `titles/check` (the old titles listener on
+  `superattr:unlock`), the log line, and the counters `attr:<a>` and
+  `attr:<b>` raised to the fused value (attribute achievements).
+- No tick. No check on gold earned or on a load, though the brief named
+  both: the old build had neither (a rule question answered by the old
+  code). A condition met by gold alone fuses on the next kill or level-up,
+  as before.
+- UI: `superattrs/FusionReadout.svelte` (props only), mounted in the
+  Character panel of `attributes` above the attribute list: the old
+  Sidebar's fused chip (icon, name, value) and its tooltip (description,
+  each component's effective value) as lines, with a "Formulas read" line
+  while the attribute ceiling holds the value. No control, so the server
+  render test checks what is drawn and sends nothing.
+- Lines outside the folder: three in `attributes/CharacterPanel.svelte`
+  (two imports, the view, the mount), one job in
+  `scripts/convert-content.mjs`, the READMEs of `stats`, `titles` and
+  `attributes`.
+- Tests: `tests/superattrs.test.ts` ports 9 of the 11 old cases (left out:
+  the 2 cases of the old save's own step from version 1; no importer) and
+  adds 8 (Titan Incarnate on fusion, the log line, one fusion only, the
+  stale check with a load and a new run, the content rule, the readout's
+  three renders); `tests/worldContent.test.ts` gains the old lint case
+  "super-attribute components and unlocks resolve"; `tests/john.test.ts`'s
+  smoke case at 15 checks that Dominion is fused; the fixture
+  `tests/fixtures/superattrs/v1.json`. The old pipeline cases
+  (`attributes.test.ts` 67, `breakdown.test.ts` 146) were ported with the
+  probe in the spine.
+
+Old rules ported as they are: the log line prints the fused value
+unformatted (`(140.12065987933198)`); the check runs on the four old
+events only.
+
+Differences from the old build (in the README): a title earned by the
+fused value logs after the fusion line (the old synchronous bus logged it
+before); the check reads the values after the kill's level XP (the old
+listener ran before the level listener paid it); the Character panel keeps
+the component rows, which carry the training bars; log kinds are not
+styled.
+
+### 21.1 John
+
+`npm run pacing -- --through 15 [--side navy]`, seeds 42, 7 and 1234,
+against the old build at `7c1267b` (D:\ksgproto28, nothing edited), run
+the same day; the fusion's tick from scratch scripts that add a listener to
+each build's John (the old build's modules imported read-only). No wall on
+any seed or side. Runs 1 and 2 and `f1-10 again` are unchanged from
+docs/CONTENT.md sections 10.1 and 11.1: no climb fuses before floor 13 of
+run 3.
+
+When Dominion fuses (both builds: run 3, floor 13, the blockade; the last
+condition to hold is Charisma 60; Titan Incarnate is earned on the same
+tick in every run):
+
+| Side | Build | Seed 42 | Seed 7 | Seed 1234 | Into floor 13 | Level | Kills | Strength fused |
+|---|---|---|---|---|---|---|---|---|
+| Merchants | Old | 2:22:03 | 2:18:04 | 2:05:31 | 0:53:03 / 0:55:04 / 0:42:31 | 38 / 38 / 37 | 2,294 / 2,299 / 1,943 | 132.2 / 132.2 / 131.1 |
+| Merchants | New | 2:06:53 | 2:03:18 | 2:00:53 | 0:37:53 / 0:40:18 / 0:43:53 | 37 / 37 / 37 | 1,947 / 1,878 / 1,746 | 131.1 / 130.1 / 130.1 |
+| Navy | Old | 2:15:31 | 2:10:49 | 2:00:12 | 0:52:31 / 0:53:49 / 0:37:12 | 38 / 38 / 37 | 2,064 / 2,028 / 1,796 | 132.2 / 132.2 / 131.1 |
+| Navy | New | 2:08:18 | 1:56:18 | 2:05:47 | 0:33:18 / 0:39:18 / 0:36:47 | 37 / 37 / 37 | 1,925 / 1,633 / 1,779 | 131.1 / 130.1 / 131.1 |
+
+Seed columns: game time from the start of run 3. At fusion: effective
+Strength 69.7 to 71.7, Charisma 60.4 to 60.5 in both builds; gold earned
+0.80 to 1.06 million (merchants) and 80,000 to 125,000 (navy). The new
+John fuses 4 to 15 minutes of run 3 earlier on five of six runs (navy seed
+1234: 5:35 later): his Charisma reaches 60 sooner, with fewer kills. Not
+investigated: the Charisma training rate is not this port's.
+
+Merchants (old at `7c1267b`; `main` is the rebuild before this port,
+sections 10.1 and 11.1):
+
+| Segment | Old | `main` | New | Old mean | New mean | Change | KO old | KO `main` | KO new |
+|---|---|---|---|---|---|---|---|---|---|
+| f11 | 0:12:18 / 0:07:24 / 0:07:00 | 0:06:27 / 0:05:47 / 0:03:38 | 0:06:27 / 0:05:47 / 0:03:38 | 0:08:54 | 0:05:17 | -40.6% | 6/4/3 | 1/2/3 | 1/2/3 |
+| f12 | 0:30:00 / 0:36:00 / 0:30:00 | 0:30:00 / 0:30:00 / 0:24:00 | 0:30:00 / 0:30:00 / 0:24:00 | 0:32:00 | 0:28:00 | -12.5% | 8/10/7 | 8/5/12 | 8/5/12 |
+| f13 | 1:30:00 / 1:42:00 / 1:30:00 | 1:42:00 / 1:54:00 / 1:42:00 | 1:36:00 / 1:48:00 / 1:36:00 | 1:34:00 | 1:40:00 | +6.4% | 6/9/12 | 10/14/14 | 6/9/10 |
+| f14 (keeper) | 0:00:13 / 0:00:14 / 0:00:12 | 0:00:13 / 0:00:12 / 0:00:17 | 0:00:13 / 0:00:13 / 0:00:13 | 0:00:13 | 0:00:13 | | 0/0/0 | 0/0/0 | 0/0/0 |
+| f15 | 0:00:21 / 0:00:25 / 0:00:23 | 0:00:27 / 0:00:27 / 1:13:32 | 0:00:23 / 0:00:22 / 0:00:22 | 0:00:23 | 0:00:22 | | 0/0/0 | 0/0/1 | 0/0/0 |
+| Run 3 to f15 | 2:59:34 / 3:05:39 / 2:53:35 | 3:11:40 / 3:17:39 / 4:12:48 | 3:05:36 / 3:11:34 / 2:53:34 | 2:59:36 | 3:03:35 | +2.2% (`main` +19.2%) | | | |
+| Floor 0 to f15 | 4:19:30 / 4:29:40 / 4:11:40 | 4:31:12 / 4:31:08 / 5:38:34 | 4:25:08 / 4:25:04 / 4:19:20 | 4:20:16 | 4:23:10 | +1.1% | | | |
+
+`--side navy` (runs 1 and 2 and `f1-10 again` are the merchants' rows):
+
+| Segment | Old | `main` | New | Old mean | New mean | Change | KO old | KO `main` | KO new |
+|---|---|---|---|---|---|---|---|---|---|
+| f11 | 0:06:18 / 0:07:24 / 0:07:00 | 0:06:27 / 0:05:47 / 0:03:38 | 0:06:27 / 0:05:47 / 0:03:38 | 0:06:54 | 0:05:17 | -23.3% | 3/6/6 | 4/4/3 | 4/4/3 |
+| f12 | 0:30:00 / 0:30:00 / 0:30:00 | 0:36:00 / 0:24:00 / 0:36:00 | 0:36:00 / 0:24:00 / 0:36:00 | 0:30:00 | 0:32:00 | +6.7% | 13/16/12 | 11/9/19 | 11/9/19 |
+| f13 | 1:36:00 / 1:30:00 / 1:36:00 | 1:42:00 / 1:36:00 / 1:30:00 | 1:36:00 / 1:36:00 / 1:30:00 | 1:34:00 | 1:34:00 | 0.0% | 14/15/11 | 16/20/15 | 9/15/10 |
+| f14 (keeper) | 0:00:15 / 0:00:13 / 0:00:13 | 0:00:14 / 0:00:13 / 0:00:13 | 0:00:14 / 0:00:13 / 0:00:12 | 0:00:13 | 0:00:13 | | 0/0/0 | 0/0/0 | 0/0/0 |
+| f15 | 0:00:23 / 0:00:23 / 0:00:22 | 1:13:33 / 0:00:26 / 0:00:29 | 0:00:26 / 0:00:23 / 0:00:21 | 0:00:22 | 0:00:24 | | 0/0/0 | 1/0/0 | 0/0/0 |
+| Run 3 to f15 | 2:59:37 / 2:47:35 / 2:59:35 | 4:30:46 / 2:53:39 / 2:59:42 | 3:11:40 / 2:53:36 / 2:59:33 | 2:55:36 | 3:01:36 | +3.4% (`main` +18.5%) | | | |
+| Floor 0 to f15 | 4:19:33 / 4:11:36 / 4:17:40 | - | 4:31:12 / 4:07:05 / 4:25:18 | 4:16:16 | 4:21:12 | +1.9% | | | |
+
+Floor 15 boss tries: one, won, on every seed and side in both builds.
+
+Against docs/CONTENT.md section 3.4:
+
+- Run 3 is within 15% of the old mean on both sides: +2.2% and +3.4%.
+- Floor 13 is within one convoy of the old time on every seed and side
+  (merchants +6, +6, +6 minutes, before +12 on each; navy 0, +6, -6). C3's
+  open floor 13 item is closed by this port. Knockouts there are now of the
+  old order (merchants 6/9/10 against 6/9/12; navy 9/15/10 against
+  14/15/11).
+- Floor 12 is unchanged (no climb fuses before floor 13).
+- Floor 15 is a boss segment, reported: no knockout on any seed or side, 21
+  to 26 s against the old 21 to 25 s; no lockout.
+
+Outcome digests recorded again in their own commit: every state hash (the
+new slice), nothing else. No budget run fuses, and John's digest stops at
+the first prestige.
+
+### 21.2 Offline budgets
+
+What the port adds to catch-up: no tick hook. One event
+(`superattrs/check`) and its handler per kill, per attribute or skill
+level-up and per skill unlock, while any super-attribute is unfused (in
+every run measured, Force and Martial Prowess never fuse, so for the whole
+game). The handler builds one condition reader and reads, per unfused
+super-attribute, its first condition: an attribute from the cached stat
+table. One modifier source, touched only on a fusion.
+
+Against `main` (`ba2ff37`, the worktree `D:\ksgproto28-b-main`), both
+builds' modules in one process, alternating, ms (minimum / median). The
+machine carried outside load all session (processor 54% at the start of
+the first batch, 62% at the start of the speed batch, 82% after it; the
+world runs took 13 to 19 s against about 8.5 s in port C4's session), so
+the fixed budgets were not used as the measure (the parent session's
+instruction).
+
+| Run of 8 hours | Rounds | `main` | Branch | Median |
+|---|---|---|---|---|
+| No fight, no condition (first batch) | 15 | 1,988 / 2,057 | 2,086 / 2,126 | +69 (+3.4%) |
+| World: hunt, floor 4 Woods Edge | 3 | 13,701 / 18,994 | 13,391 / 18,287 | -707 (-3.7%) |
+| World: hunt, floor 6 Tunnels | 3 | 15,163 / 18,546 | 14,436 / 18,359 | -187 (-1.0%) |
+| World: the roadstead | 3 | 14,644 / 16,958 | 17,158 / 17,286 | +328 (+1.9%) |
+
+The speed project's four states (built by John in each build, then 8 hours
+of catch-up asking the hold, as `catchUp` does) and the idle run, in one
+process after both builds' climbs:
+
+| State | Rounds | `main` | Branch | Median |
+|---|---|---|---|---|
+| Floor 1 hunting | 5 | 8,745 / 9,220 | 8,524 / 9,729 | +509 (+5.5%) |
+| Floor 6 hunting | 5 | 18,513 / 20,056 | 18,528 / 19,435 | -621 (-3.1%) |
+| Idle in town | 5 | 2,289 / 2,326 | 2,361 / 2,514 | +188 (+8.1%) |
+| Floor 7 hunting | 5 | 12,241 / 12,846 | 12,420 / 12,686 | -160 (-1.2%) |
+| Idle (budget run) | 15 | 2,084 / 2,164 | 2,110 / 2,174 | +10 (+0.5%) |
+
+The first idle batch read the branch slower in 14 of 15 rounds (+53 to
++120 ms); the second read +10 ms. A third process ran the idle run on the
+branch's code with four system lists and `main`, 9 rounds alternating
+(processor at 62%): every system 1,921 / 1,949; without `superattrs` 1,927
+/ 1,948; `superattrs` with no source 1,935 / 1,953; with no events 1,927 /
+1,972; `main` 1,932 / 1,954. The system costs the idle run nothing
+measurable there; the first batch's gap did not repeat. The town state's
++8.1% (minimum +72 ms, 3.1%) is not resolved at this load; the idle runs
+it resembles show no cost. The fight states move both ways by 1 to 6%,
+within the spread of their rounds.
+
+`npm run verify` on the branch, exit 0 (processor at 29% at the start):
+svelte-check 0 errors; unit 3,249 passed, 4 skipped, 157 todo; budget 4
+(idle 1,770 ms of 2,420, poison 4,616 of 8,250, floor 1 5,393 of 7,700,
+floor 6 9,290 of 14,850); budget-world 3 (floor 4 9,302, floor 6 9,580,
+the roadstead 8,487, each of 14,300); speed (floor 1 48%, floor 6 77%,
+town 62%, floor 7 57% of the limit, machine load 28 to 35%, yardstick 216
+to 226 ms; kills as the old build's within 10%); john 14; build. The run
+before it, at 54 to 62% load, failed two unit cases on vitest's 5 s
+timeout (`combat.test.ts` the benchmark post, `practice.test.ts` the
+Training Area dummies; both pass alone, 25 of 25 in their files), as the
+parent session saw on `main` under the same load.
+
+### 21.3 Browser check
+
+Dev server 5600, desktop (1024 px) and 375 px. The dev save was backed up
+at `ksgb:development:save.before-superattrs-check` and put back after; the
+save used is kept as `ksgb:development:save.superattrs-roadstead`. Port
+C3's roadstead save (run 3, floor 11's water, hunting) with Strength and
+Charisma trained to 60 and `kills` at 499, loaded from the forge page with
+`savedAt` an hour ahead (no catch-up). The 500th kill fused Dominion live:
+the log read "👑 Fusion: Strength and Charisma merge into DOMINION
+(187.61222220110025).", then "Title earned: Titan Incarnate" and "Honed Body
+III". The Character panel showed the readout above the attributes (👑
+Dominion 189.7, the description, Strength 95.9, Charisma 93.8) and both
+component rows at 189.7. At 375 px the readout was 351 px wide, no line
+cut, no horizontal overflow. No console error.
+
+Not checked in a browser: the "Formulas read" line (the attribute ceiling
+of Weakest Weapon Master holding a fused value; rendered on the server in
+`tests/superattrs.test.ts`), Force and Martial Prowess.
+
+### 21.4 Audit: old systems with no counterpart
+
+Every module of the old `src/core/systems/` (90 files) checked against the
+rebuild's sources, READMEs and docs. Modules with no counterpart that no
+port of docs/CONTENT.md section 5 schedules (not ported here):
+
+| Old module | Lines | What it is | State here |
+|---|---|---|---|
+| `training.ts` | 141 | The keeper of the Cages (after a won bout, heal to full and drop every damage-over-time condition while the six attributes total 30 or less) and the dare (offered after 8 wins at the spot; it holds play and banks bonus time while it waits for the answer) | The spot record keeps `healBetweenBouts` and `dare`, read by nothing; `tests/training.test.ts` has 10 `it.todo`. SPINE section 7.8 put it in step 3; no step 3 port took it. The dare's hold is a hold of play (K2 of docs/CONTENT.md section 4 is planned for port F only). |
+| `practice.ts` (with `data/practice.data.ts`, 35) | 77 | The XP shaping of a practice fight (`practiceShare`, `practiceXp`, `practising`): skill and attribute XP cut while every standing enemy is training equipment | `isPracticeFight` is in `combat`; the shaping is not; `tests/practice.test.ts` has 12 `it.todo` ("step 3: practice shaping"). |
+| `wuxin.ts` | 486 | The five-element cycle as a graph, structure only (no number, no game effect), with the sandbox `WuxinPanel.svelte` (1,230), behind the `wuxin` shutter | Nothing. |
+| `music.ts` (with `data/music.data.ts`, 585) | 1,546 | Music | docs/REBUILD.md section 4 step 5 ("Last"), not in docs/CONTENT.md section 5. |
+
+Scheduled in docs/CONTENT.md section 5: `royale.ts`, `royaleField.ts`,
+`royaleMap.ts`, `royaleTerrain.ts`, `survivorGen.ts` (C5),
+`weathersense.ts`, `chronosense.ts`, `skyValidation.ts` (W), `clones.ts`
+(F). `searchValidation.ts` has no function here; its rules are tests in
+`tests/worldContent.test.ts`. Every other module is named as ported in a
+system's README or code, in whole or in the parts each README lists.
+

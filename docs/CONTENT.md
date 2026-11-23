@@ -1399,7 +1399,9 @@ Noticed, older than this port (not changed):
 - Super-attribute fusion (old `systems/superattrs.ts`,
   `data/superattrs.data.ts`) is not ported: `fuseFact` exists in `stats`,
   but no system states it. See 11.1: it is the cause of C3's open floor 13
-  gap and of floor 15's knockouts.
+  gap and of floor 15's knockouts. Fixed after C4: the step 3 gap port
+  `superattrs` (branch `step3-superattrs`, 2026-11-22; docs/SPINE.md
+  section 21 has the account and John's tables with the fusion's timing).
 
 Left out:
 
