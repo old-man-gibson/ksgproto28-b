@@ -2284,3 +2284,296 @@ Scheduled in docs/CONTENT.md section 5: `royale.ts`, `royaleField.ts`,
 `tests/worldContent.test.ts`. Every other module is named as ported in a
 system's README or code, in whole or in the parts each README lists.
 
+## 22. Step 3 gaps: training, practice shaping, wuxin
+
+Done 2026-11-22 on branch `step3-gaps`, from `main` at `16804f3`. Not
+merged, not pushed. The three modules section 21.4 found with no
+counterpart and no scheduled port, ported before port C5 so C5's John table
+is not skewed. The full accounts: `src/systems/practice/README.md`,
+`src/systems/training/README.md`, `src/systems/wuxin/README.md`.
+
+What was ported:
+
+- `practice` (new system): the shaping half of old `systems/practice.ts`
+  (77) and `data/practice.data.ts` (35). `isPracticeFight`, the dropped
+  `hunt` tag and the skipped level XP were ported with combat in the spine.
+  The old scope was a module-level slot set around the combat tick, and the
+  old bus paid every grant inside it. Here `combat` sends `practice/open` at
+  the start of its tick when every standing enemy is passive; every payout
+  that tick causes is delivered in the drain after the combat tick hook;
+  `practice`'s own tick, order 11 (right after `combat` at 10, before
+  `benches` at 15), closes it. `skills` (`addSkillXp` after the cap check,
+  `bankLatentXp` at level 1) and `attributes` (`attributes/grant-xp`, before
+  the XP router) call `practicePayout`, which reads this slice and asks
+  `practice/xp` only while the scope is open. The clock (the old
+  `CombatState.practiceAt`) is the slice `{ at }`, version 1, emptied by
+  `practice/fight-started`, which `startEncounter` emits when the clock holds
+  a stamp. It outlives the fight by one drain: the killing blow's payouts
+  arrive after `combat` set `fight` to null and are still shaped, as the old
+  synchronous payouts were.
+- `training` (new system): old `systems/training.ts` (141), its five log
+  lines, `DareModal.svelte` and the dare's lines of `Game`. The keeper on
+  `combat/fight-won`; the dare's counters (`dare:<spot>:wins`,
+  `dare:<spot>:pending`, `hold:dare`, `training:patched`, in counters as the
+  old build kept them in stats; empty slice, version 1); the command
+  `training/answer-dare`; the window as a modal overlay (`DareModal.svelte`
+  passes the view to the props-only `DareReadout.svelte`).
+  The hold of play, request K2, approved by the parent session on
+  2026-11-22 (docs/KERNEL.md decision 36): a system field `playHold: {
+  holds(ctx), held(ctx) }`; `kernel.tick()` asks it before each tick, and
+  while the dare holds no system ticks, the tick number stays, and each
+  held tick banks one bonus tick (`bonus/bank`), as the old `Game.tick` did.
+  Commands and the view are not held, so the answer gets through and lifts
+  the hold. The dare also declares `catchUpHold` (decision 35) with the same
+  `holds`: catch-up stops on a waiting dare, or on one posed mid-way, and
+  banks the rest, which is the bank the old catch-up reached tick by tick.
+  `holds` answers from memory (one boolean for the last training slice
+  object asked), written when a dare is posed or answered and read from the
+  counters once after a load or a new run. One ask per tick: catch-up asks
+  only the catch-up holds, then ticks through `tickAfterHolds`, which skips
+  the play-hold ask; `defineSystem` refuses a play hold with no catch-up
+  hold (the parent session's change).
+- `wuxin` (new system): old `systems/wuxin.ts` (486, as `cycle.ts`), the
+  `WuxinBond` and `WuxinConfig` types, `WuxinPanel.svelte` (1,230, as the
+  panel and `sandbox.ts`, the panel's edits and lines as functions), and the
+  `wuxin` shutter (`flag:unlock_wuxin`; the panel's `shown`). Old readers of
+  the module: the panel and the navigation only; no effect, no data file, no
+  forge entry. Empty slice, version 1; view `{ open }`. Nothing in play opens
+  the shutter (the old debug panel did).
+- Lines outside the three folders: the kernel (`system.ts` the field,
+  `PlayHold` and the declaration check; `kernel.ts` the ask in `tick()` and
+  `tickAfterHolds`; `runner.ts` the single ask with `hold`),
+  `combat/engine.ts` (the open request, the clock's reset),
+  `skills/index.ts` and `attributes/index.ts` (one call each to
+  `practicePayout`),
+  `world/defs.ts` (the help of `healBetweenBouts` and `dare`), the READMEs
+  of `combat`, `skills`, `attributes`, `world` and `bonus`, docs/KERNEL.md
+  (decision 36, sections 2, 4 and 8), docs/PERFORMANCE.md (section 6.4: the
+  push model, later), docs/CONTENT.md (K2 in section 4, a line in 5.6).
+- Tests: `tests/practice.test.ts` (the 13 old cases and 3 new),
+  `tests/training.test.ts` (the 11 old cases and 12 new: the hold's cases,
+  the keeper's lines, the answer's old rules, the window rendered and
+  dispatched), `tests/wuxin.test.ts` (the 45 old cases unchanged and 8 new:
+  the shutter, the slice, the panel rendered on the server with each
+  control and the edits its clicks make), `tests/runner.test.ts` (8 kernel
+  cases of the play hold on a toy system), fixtures
+  `tests/fixtures/{practice,training,wuxin}/v1.json`. The old cases of the
+  three files all run: no `it.todo` is left in them.
+
+Old rules ported as they are (each README lists them):
+
+- Training: accepting the dare away from the Cages reads as a pass (the
+  hold lifts, the pass line, no fight); an answer with no dare waiting
+  still clears a stray `hold:dare` before it returns its reason; the keeper
+  heals after a forced win too (the dare's own fight included); the heal is
+  for the derived max HP, not the pool's available max.
+- Practice: XP paid outside the combat tick is not shaped though the fight
+  is a practice fight (weather, bench work, a flask from the panel), and
+  technique mastery reps and self-learning counters count in full (old
+  docs/PRACTICE.md section 6).
+- Wuxin: the clause table's arrow lists may leave the cycle illegal (two
+  arrows onto one element, an arrow at itself); the problem list says so,
+  while drawing on the graph displaces instead. The panel's cycle is lost
+  when the panel closes.
+
+Differences from the old build:
+
+- Practice: the old save dropped a fight and its practice clock; the
+  rebuild keeps a fight in the save, and so the clock.
+- Training: handler order on `combat/fight-won` is system order (`ladder`,
+  `training`, `knockout`, `sea`, `festival`, `facet`); the old bus ran the
+  training listener before knockout, sea and the floor-clear check. The
+  heal's status event reaches the conditions after the damage-over-time
+  conditions were removed. The old step buttons have no counterpart.
+- Wuxin: the readout follows the picked element only (the old one followed
+  the pointer too: controls here answer clicks); Escape drops a pick or a
+  drag (the old overlay stack also took the Android back button); fixed
+  heights for the pick line, the readout, the verdict and the problem list;
+  this build's colour tokens.
+
+### 22.1 John
+
+New John through floor 15 (`tests/john.ts`, `through: 15`, the merchants and
+`side: 'navy'`), seeds 42, 7 and 1234, on the branch and on `main` (the
+worktree `D:\ksgproto28-b-main` at `16804f3`), and the old John at
+`7c1267b` (D:\ksgproto28, nothing edited; its modules imported read-only),
+the same day, from scratch scripts that add a kill counter and a tally of
+the ported features to each build's John. No wall on any seed or side. The
+branch ran twice, before K2 and on the final code, with the same result.
+
+Every segment of every run equals `main`'s on both sides and all three
+seeds: the tick each segment closed on, knockouts, kills, levels, boss
+tries and losses. No segment moved. Neither build uses any ported feature
+on any seed or side: no fight against training equipment (the old build: 0
+ticks in a practice fight; the branch: no fight started with a passive
+monster, no `practice/fight-started`), no win at the Cages, no keeper's
+line, no dare, the wuxin shutter shut.
+
+Merchants (old at `7c1267b`; New is the branch, equal to `main`):
+
+| Segment | Old | New | Old mean | New mean | Change | KO old | KO new | Kills old | Kills new |
+|---|---|---|---|---|---|---|---|---|---|
+| f1 vermin | 0:01:29 / 0:01:11 / 0:01:34 | 0:01:25 / 0:01:24 / 0:01:29 | 0:01:24 | 0:01:26 | +1.5% | 1/0/1 | 1/1/1 | 6/6/6 | 6/6/6 |
+| f1 | 0:02:24 / 0:02:29 / 0:02:18 | 0:02:35 / 0:02:11 / 0:01:43 | 0:02:23 | 0:02:10 | -9.6% | 1/1/1 | 1/1/0 | 1/1/1 | 1/1/1 |
+| f2 | 0:02:09 / 0:03:03 / 0:02:53 | 0:02:47 / 0:02:50 / 0:03:01 | 0:02:42 | 0:02:52 | +6.3% | 0/1/1 | 1/1/1 | 13/15/15 | 14/14/14 |
+| f3 gate | 0:04:47 / 0:03:19 / 0:04:03 | 0:04:25 / 0:04:25 / 0:04:25 | 0:04:03 | 0:04:25 | +9.0% | 0/0/0 | 0/0/0 | 0/0/0 | 0/0/0 |
+| f3 stairs | 0:01:22 / 0:01:12 / 0:01:16 | 0:01:10 / 0:01:18 / 0:01:19 | 0:01:17 | 0:01:16 | -1.1% | 0/0/0 | 0/0/0 | 4/4/4 | 4/4/4 |
+| f3 | 0:00:50 / 0:00:20 / 0:00:20 | 0:01:15 / 0:01:22 / 0:00:51 | 0:00:30 | 0:01:10 | +133.2% | 1/0/0 | 2/2/1 | 1/1/1 | 1/1/1 |
+| f4 | 0:08:44 / 0:05:07 / 0:07:28 | 0:07:31 / 0:07:25 / 0:08:59 | 0:07:06 | 0:07:58 | +12.2% | 17/9/14 | 14/14/17 | 33/20/27 | 29/25/33 |
+| f5 gate | 0:00:03 / 0:00:03 / 0:00:03 | 0:00:03 / 0:00:03 / 0:00:03 | 0:00:03 | 0:00:03 | +0.0% | 0/0/0 | 0/0/0 | 0/0/0 | 0/0/0 |
+| f5 | 0:01:00 / 0:01:32 / 0:00:38 | 0:01:26 / 0:01:00 / 0:00:40 | 0:01:03 | 0:01:02 | -2.6% | 1/2/0 | 2/1/0 | 1/1/1 | 1/1/1 |
+| f6 gate | 0:03:38 / 0:04:17 / 0:03:18 | 0:03:17 / 0:03:55 / 0:03:02 | 0:03:44 | 0:03:25 | -8.7% | 5/7/4 | 4/6/4 | 26/26/26 | 26/26/26 |
+| f6 | 0:00:15 / 0:00:19 / 0:00:21 | 0:00:20 / 0:00:34 / 0:00:20 | 0:00:18 | 0:00:25 | +35.5% | 0/0/0 | 1/2/0 | 1/1/1 | 1/1/1 |
+| f1-6 again | 0:23:16 / 0:25:29 / 0:24:04 | 0:22:45 / 0:23:08 / 0:24:06 | 0:24:16 | 0:23:20 | -3.9% | 21/20/22 | 20/21/20 | 76/79/78 | 78/87/78 |
+| f7 | 0:03:02 / 0:02:58 / 0:03:05 | 0:02:45 / 0:02:25 / 0:02:41 | 0:03:02 | 0:02:37 | -13.5% | 3/3/3 | 2/2/2 | 32/33/36 | 32/29/33 |
+| f8 | 0:06:33 / 0:00:15 / 0:00:13 | 0:12:42 / 0:00:15 / 0:06:26 | 0:02:20 | 0:06:28 | +176.3% | 9/0/0 | 15/0/8 | 56/1/1 | 128/1/56 |
+| f9 | 0:12:44 / 0:12:51 / 0:19:13 | 0:00:12 / 0:12:48 / 0:06:29 | 0:14:56 | 0:06:30 | -56.5% | 11/15/20 | 0/16/9 | 144/133/213 | 1/128/54 |
+| f10 | 0:00:11 / 0:12:42 / 0:00:15 | 0:06:30 / 0:00:14 / 0:12:42 | 0:04:23 | 0:06:29 | +47.9% | 0/2/0 | 3/0/5 | 1/213/1 | 93/1/187 |
+| f11 siege | 0:07:29 / 0:06:54 / 0:07:03 | 0:08:23 / 0:08:11 / 0:07:30 | 0:07:09 | 0:08:02 | +12.4% | 3/2/2 | 5/4/4 | 38/35/41 | 39/38/35 |
+| f1-10 again | 0:46:42 / 0:39:36 / 0:46:00 | 0:52:33 / 0:47:13 / 0:49:22 | 0:44:06 | 0:49:43 | +12.7% | 47/36/35 | 42/46/48 | 304/256/366 | 419/311/333 |
+| f11 | 0:12:18 / 0:07:24 / 0:07:00 | 0:06:27 / 0:05:47 / 0:03:38 | 0:08:54 | 0:05:17 | -40.6% | 6/4/3 | 1/2/3 | 179/99/96 | 105/83/42 |
+| f12 | 0:30:00 / 0:36:00 / 0:30:00 | 0:30:00 / 0:30:00 / 0:24:00 | 0:32:00 | 0:28:00 | -12.5% | 8/10/7 | 8/5/12 | 559/662/555 | 545/571/393 |
+| f13 | 1:30:00 / 1:42:00 / 1:30:00 | 1:36:00 / 1:48:00 / 1:36:00 | 1:34:00 | 1:40:00 | +6.4% | 6/9/12 | 6/9/10 | 2424/2743/2399 | 2694/3028/2582 |
+| f14 (keeper) | 0:00:13 / 0:00:14 / 0:00:12 | 0:00:13 / 0:00:13 / 0:00:13 | 0:00:13 | 0:00:13 | -0.3% | 0/0/0 | 0/0/0 | 2/2/2 | 3/3/2 |
+| f15 | 0:00:21 / 0:00:25 / 0:00:23 | 0:00:23 / 0:00:22 / 0:00:22 | 0:00:23 | 0:00:22 | -4.1% | 0/0/0 | 0/0/0 | 9/9/9 | 9/9/9 |
+| Run 1 | 0:26:41 / 0:22:52 / 0:24:13 | 0:26:14 / 0:26:26 / 0:25:51 | 0:24:35 | 0:26:11 | +6.5% | | | | |
+| Run 2 | 0:53:15 / 1:01:09 / 0:53:52 | 0:53:17 / 0:47:03 / 0:59:54 | 0:56:05 | 0:53:25 | -4.8% | | | | |
+| Run 3 to f15 | 2:59:34 / 3:05:39 / 2:53:35 | 3:05:36 / 3:11:34 / 2:53:34 | 2:59:36 | 3:03:35 | +2.2% | | | | |
+| Floor 0 to f15 | 4:19:30 / 4:29:40 / 4:11:40 | 4:25:08 / 4:25:04 / 4:19:20 | 4:20:16 | 4:23:10 | +1.1% | | | | |
+
+`--side navy` (runs 1 and 2 and `f1-10 again` are the merchants' rows):
+
+| Segment | Old | New | Old mean | New mean | Change | KO old | KO new | Kills old | Kills new |
+|---|---|---|---|---|---|---|---|---|---|
+| f11 | 0:06:18 / 0:07:24 / 0:07:00 | 0:06:27 / 0:05:47 / 0:03:38 | 0:06:54 | 0:05:17 | -23.3% | 3/6/6 | 4/4/3 | 87/81/84 | 90/76/42 |
+| f12 | 0:30:00 / 0:30:00 / 0:30:00 | 0:36:00 / 0:24:00 / 0:36:00 | 0:30:00 | 0:32:00 | +6.7% | 13/16/12 | 11/9/19 | 517/506/528 | 662/418/600 |
+| f13 | 1:36:00 / 1:30:00 / 1:36:00 | 1:36:00 / 1:36:00 / 1:30:00 | 1:34:00 | 1:34:00 | +0.0% | 14/15/11 | 9/15/10 | 2497/2271/2612 | 2641/2527/2410 |
+| f14 (keeper) | 0:00:15 / 0:00:13 / 0:00:13 | 0:00:14 / 0:00:13 / 0:00:12 | 0:00:13 | 0:00:13 | -4.2% | 0/0/0 | 0/0/0 | 3/3/2 | 3/3/2 |
+| f15 | 0:00:23 / 0:00:23 / 0:00:22 | 0:00:26 / 0:00:23 / 0:00:21 | 0:00:22 | 0:00:24 | +4.9% | 0/0/0 | 0/0/0 | 9/9/9 | 9/9/9 |
+| Run 3 to f15 | 2:59:37 / 2:47:35 / 2:59:35 | 3:11:40 / 2:53:36 / 2:59:33 | 2:55:36 | 3:01:36 | +3.4% | | | | |
+| Floor 0 to f15 | 4:19:33 / 4:11:36 / 4:17:40 | 4:31:12 / 4:07:05 / 4:25:18 | 4:16:16 | 4:21:12 | +1.9% | | | | |
+
+Against docs/CONTENT.md section 3.4: run 3 is within 15% of the old mean on
+both sides (+2.2% merchants, +3.4% navy); floors 12 and 13 within one convoy
+of the old time on every seed and side; runs 1 and 2 are the tables of
+sections 10.1 and 11.1, unchanged. The segment rows are those of docs/SPINE.md
+section 21.1 and docs/CONTENT.md sections 10.1 and 11.1; kills per segment
+are new here. (Floors 8 to 10 are played in the order `wards` gives, so a
+seed's f8, f9 and f10 columns are not the same floor in both builds; their
+sum is.)
+
+Outcome digests recorded again in their own commit: every state hash (the
+three new slices), nothing else.
+
+### 22.2 Offline budgets
+
+What the ports add to every tick: `practice`'s tick (order 11), which
+reads one module slot and returns while no practice fight opened the scope;
+in a fight, one `isPracticeFight` per combat tick (stops at the first
+standing enemy that is not passive); per fight start, one read of the
+practice clock. The dare's hold: one ask per tick, live in `kernel.tick()`
+and in catch-up in `catchUpHeld`, each reading the training slice object to
+check the kept boolean. No other slice is read per tick. `wuxin` and
+`training` have no tick hook.
+
+Against `main` (`16804f3`, the worktree `D:\ksgproto28-b-main`), both
+builds' modules in one process, alternating rounds. Wall time and processor
+time of the process (`process.cpuUsage`; the median of the per-round
+differences), because other programs loaded the machine through most of
+the session (processor 93% at the start of the first batch below, 17 to 23%
+during the fight and speed batches, 9% after).
+
+The batch below ran before the last two kernel changes (the split of the
+ask from the held path, and the single ask of catch-up). In that build the
+play-hold check cost about 360 ns per tick in `kernel.tick()` itself, about
+100 ms per 8 hours on every branch run; the runs of the final code are
+cheaper by that. The parent session kept these rows and asked for the idle
+rows again (below).
+
+| Run of 8 hours | Rounds | `main` wall (min / median) | Branch wall (min / median) | Wall median | Processor, paired |
+|---|---|---|---|---|---|
+| No fight, no condition | 15 | 1,902 / 2,861 | 1,996 / 2,943 | +82 (+2.9%) | +172 (+6.8%) |
+| A poison held | 15 | 5,422 / 8,338 | 5,150 / 8,285 | -53 (-0.6%) | +139 (+1.7%) |
+| Floor 1 table sent to combat | 3 | 5,676 / 5,747 | 5,480 / 5,678 | -69 (-1.2%) | -47 (-0.7%) |
+| Floor 6 Tunnels sent to combat | 3 | 9,459 / 9,688 | 9,181 / 9,446 | -242 (-2.5%) | -110 (-1.0%) |
+| World: hunt, floor 4 Woods Edge | 3 | 9,708 / 9,813 | 9,540 / 9,678 | -135 (-1.4%) | -297 (-2.7%) |
+| World: hunt, floor 6 Tunnels | 3 | 9,757 / 9,971 | 9,380 / 9,980 | +9 (+0.1%) | -63 (-0.6%) |
+| World: the roadstead | 3 | 8,873 / 9,479 | 8,776 / 9,196 | -283 (-3.0%) | -360 (-3.5%) |
+
+The speed project's four states (built by John in each build, then 8 hours
+of catch-up asking the holds, as `catchUp` does) and the idle run, in one
+process after both builds' climbs:
+
+| State | Rounds | `main` wall (min / median) | Branch wall (min / median) | Wall median | Processor, paired |
+|---|---|---|---|---|---|
+| Floor 1 hunting | 5 | 6,215 / 6,527 | 6,297 / 6,509 | -18 (-0.3%) | +79 (+1.1%) |
+| Floor 6 hunting | 5 | 11,027 / 12,403 | 11,101 / 12,702 | +299 (+2.4%) | +63 (+0.5%) |
+| Idle in town | 5 | 1,947 / 2,097 | 2,046 / 2,225 | +128 (+6.1%) | +31 (+1.4%) |
+| Floor 7 hunting | 5 | 7,524 / 8,318 | 7,631 / 8,962 | +644 (+7.7%) | +219 (+2.4%) |
+| Idle (budget run) | 15 | 1,802 / 1,982 | 1,854 / 2,124 | +142 (+7.2%) | +141 (+6.7%) |
+
+The idle rows again, on the final code (the ask split from the held path,
+one ask per catch-up tick): the idle run's start, 8 hours through
+`runHeadless`, live (`kernel.tick()` asks the play hold) and catch-up (with
+`hold`: `catchUpHeld` asks, then `tickAfterHolds`), processor time, two
+batches of 12 alternating rounds at 20 to 46% machine load. A third list,
+the branch with the dare's two holds removed, separates the hold from the
+rest of the port:
+
+| Idle, 8 hours | `main` (min / median) | Branch (min / median) | Branch, paired | Earlier (before the single ask) | Branch without the holds, paired |
+|---|---|---|---|---|---|
+| Live, batch 1 | 1,719 / 1,812 | 1,750 / 1,844 | +17 (+0.9%) | +0.8 to +0.9% | -1 |
+| Live, batch 2 | 1,641 / 1,765 | 1,688 / 1,797 | +46 (+2.6%) | | -1 |
+| Catch-up, batch 1 | 1,733 / 1,860 | 1,797 / 1,891 | +31 (+1.7%) | +1.8 to +3.1% | -1 |
+| Catch-up, batch 2 | 1,687 / 1,765 | 1,719 / 1,782 | +17 (+1.0%) | | 0 |
+
+The rest of the port costs the idle run nothing measurable (the list
+without the holds reads -1 to 0 ms against `main`); the hold's ask is the
+cost, 0.9 to 2.6% live and 1.0 to 1.7% in catch-up. A profile of the idle
+run (864,000 ticks) puts `dareHolds` at about 20 ns a tick and `practice`'s
+closing tick under 3 ms in all. The fight rows above sit
+within the spread of their rounds. If port F adds holders: the push model
+of docs/PERFORMANCE.md section 6.4.
+
+`npm run verify` on the final code, exit 0 (processor at 11% at the start
+and the end): svelte-check 0 errors; unit 3,365 passed, 4 skipped, 137
+todo; budget 4 (idle 1,816 ms of 2,420, poison 4,449 of 8,250, floor 1
+5,559 of 7,700, floor 6 9,791 of 14,850); budget-world 3 (floor 4 9,570,
+floor 6 10,030, the roadstead 10,039, each of 14,300); speed (floor 1 56%,
+floor 6 88%, town 56%, floor 7 51% of the limit, machine load 23 to 29%,
+yardstick 229 to 243 ms; kills as the old build's within 10%); john 14;
+build. An earlier unit run at higher load failed `combat.test.ts` "the
+benchmark post takes a beating" on vitest's 5 s timeout (5,240 ms); alone it
+takes 2.3 to 2.4 s on both `main` and the branch.
+
+### 22.3 Browser check
+
+Dev server 5600, desktop (1024 px) and 375 px. The dev save was backed up
+at `ksgb:development:save.before-step3gaps-check` and put back after; the
+dare save used is kept as `ksgb:development:save.step3gaps-dare`. Saves
+were edited from the forge page (the game page closed, so its save on
+leaving could not overwrite the edit), with `savedAt` an hour ahead (no
+catch-up).
+
+- Wuxin: `flag:unlock_wuxin` set on the dev save; the navigation listed
+  Wuxin between Provisions and Quests. At 1024 px: a click on seed picked it
+  (the pick line and the readout, "charge 20%"), Hinders, a click on water
+  drew seed's hinders arrow there and displaced stone's: the grammar read
+  `seed → fire ⊣ water`, `stone → iron ⊣ ∅`, the verdict "Tempered". At
+  375 px: the panel 351 px wide, no horizontal overflow, the graph scaled;
+  a tap on fire and Sever cut `fire ⊣ iron`; the pick line kept its 57 px
+  height through the pick.
+- The dare: tutorial skipped, the player at the Cages with `hold:dare` and
+  `dare:the_cages:pending` set. The window opened over the Character panel:
+  the slime "Lv 16 · large, 1 size step above you", the keeper's words, HP,
+  the bank. At 375 px the box was 351 px wide, both buttons 44 px high.
+  Fight started the slime fight (lost at 10 HP, the defeat dialog after).
+  With the hold (after K2): the kernel tick stayed at 631,266 for 30 s while
+  the bank rose by about 10 ticks a second and HP did not regenerate; Flee
+  closed the window, `hold:dare` went to 0 and the tick moved again.
+- No console error in any step.
+
+Not checked in a browser: the "Relaxed" readout lines and the sandbox
+sliders (rendered on the server in `tests/wuxin.test.ts`), a drag with the
+mouse on the graph (the click path was used), a dare posed by an eighth live
+win at the Cages (posed by editing the counters), the keeper's patch lines.

@@ -472,6 +472,10 @@ and can run beside another port (W touches only `weather` and `clock`).
 - Parity: `floor16`. The largest port of step 4; it may split in two
   (generator, map and field first with John unchanged; wiring and panel
   second). Decided by the session that takes it.
+- Before it: the step 3 gap ports `superattrs` (docs/SPINE.md section 21)
+  and `step3-gaps` (the keeper's dare and its hold of play, K2; practice
+  shaping; wuxin; section 22), so C5's John table starts from the old
+  rules. John's runs 1 to 3 through floor 15 are unchanged by the second.
 
 ### 5.7 Port W: Weathersense, Chronosense, sky lint
 
