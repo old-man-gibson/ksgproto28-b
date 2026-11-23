@@ -297,7 +297,7 @@ describe('effective attributes (stat layer)', () => {
     const kernel = makeGame();
     setAttr(kernel, 'str', 15);
     setAttr(kernel, 'cha', 9);
-    // Fusion is not ported: the probe states the fact the fusion system will.
+    // The probe states the fact `superattrs` states once Dominion fuses.
     setMods(kernel, [fuseFact('str', 'cha')]);
     // eff STR (15 + 2 milestones) × 1.01 + eff CHA (9 + 1 milestone)
     expect(attrValue(kernel, 'str')).toBeCloseTo(17 * 1.01 + 10, 5);

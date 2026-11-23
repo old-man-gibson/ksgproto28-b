@@ -1,0 +1,91 @@
+[
+  {
+    "id": "dominion",
+    "art": "dominion",
+    "name": "Dominion",
+    "icon": "👑",
+    "components": [
+      "str",
+      "cha"
+    ],
+    "unlock": [
+      {
+        "type": "attr",
+        "attr": "str",
+        "level": 60
+      },
+      {
+        "type": "attr",
+        "attr": "cha",
+        "level": 60
+      },
+      {
+        "type": "stat",
+        "key": "kills",
+        "value": 500
+      },
+      {
+        "type": "stat",
+        "key": "gold:earned",
+        "value": 25000
+      }
+    ],
+    "desc": "Fuses Strength and Charisma: once unlocked, each reads as the sum of both everywhere. Requires Strength 60, Charisma 60, 500 kills and 25,000 gold earned."
+  },
+  {
+    "id": "force",
+    "art": "force",
+    "name": "Force",
+    "icon": "🌀",
+    "components": [
+      "int",
+      "con"
+    ],
+    "unlock": [
+      {
+        "type": "attr",
+        "attr": "int",
+        "level": 60
+      },
+      {
+        "type": "attr",
+        "attr": "con",
+        "level": 60
+      },
+      {
+        "type": "skill",
+        "id": "magic",
+        "level": 20
+      }
+    ],
+    "desc": "Fuses Intelligence and Constitution: once unlocked, each reads as the sum of both everywhere. Requires Intelligence 60, Constitution 60 and Magic 20."
+  },
+  {
+    "id": "martial_prowess",
+    "art": "martial_prowess",
+    "name": "Martial Prowess",
+    "icon": "🥋",
+    "components": [
+      "dex",
+      "wis"
+    ],
+    "unlock": [
+      {
+        "type": "attr",
+        "attr": "dex",
+        "level": 60
+      },
+      {
+        "type": "attr",
+        "attr": "wis",
+        "level": 60
+      },
+      {
+        "type": "skill",
+        "id": "school_ittou_ryu",
+        "level": 10
+      }
+    ],
+    "desc": "Fuses Dexterity and Wisdom: once unlocked, each reads as the sum of both everywhere. Requires Dexterity 60, Wisdom 60 and Ittou-ryu 10."
+  }
+]

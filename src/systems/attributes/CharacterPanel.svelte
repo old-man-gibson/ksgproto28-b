@@ -7,6 +7,8 @@
   import resources, { setExerting } from '../resources';
   import skills, { type SkillNodeView } from '../skills';
   import StatusList from '../statuses/StatusList.svelte';
+  import superattrs from '../superattrs';
+  import FusionReadout from '../superattrs/FusionReadout.svelte';
   import attributes from './index';
 
   const attrs = $derived(viewOf(attributes));
@@ -14,6 +16,7 @@
   const pools = $derived(viewOf(resources));
   const tree = $derived(viewOf(skills));
   const time = $derived(viewOf(clock));
+  const fusion = $derived(viewOf(superattrs));
 
   let lastReason = $state<string | null>(null);
 
@@ -90,6 +93,7 @@
   <StatusList />
 
   <h2>Attributes</h2>
+  <FusionReadout fused={fusion.fused} />
   <ul class="card list">
     {#each attrs.attributes as attr (attr.id)}
       <li>

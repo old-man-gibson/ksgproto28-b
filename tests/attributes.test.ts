@@ -32,8 +32,8 @@ import { emit, makeGame, patch, reads, setMods, slice } from './helpers';
  * Port of the old tests/attributes.test.ts, tests/attackspeed.test.ts and the
  * attribute and stat cases of tests/breakdown.test.ts.
  *
- * Changed: the call shape. Buffs, achievements and fusion are not ported
- * yet. Where an old test used one of them only as a source of modifiers, the
+ * Changed: the call shape. Buffs, achievements and fusion were not ported
+ * when this file was. Where an old test used one of them only as a source of modifiers, the
  * same modifiers come from the test-only probe source here, and the test
  * says so. What each of those systems does beyond emitting modifiers is left
  * behind:

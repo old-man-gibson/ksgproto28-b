@@ -251,6 +251,13 @@ const JOBS = [
     // `desc` is merged in from the old text table by `prose`.
     pick: (m) => Object.values(m.TITLES),
   },
+  {
+    name: 'superattrs',
+    out: 'superattrs/content/superattrs.json',
+    module: 'src/core/data/superattrs.data.ts',
+    // `desc` is merged in from the old text table by `prose`.
+    pick: (m) => Object.values(m.SUPERATTRS),
+  },
 ];
 
 const applications = (apps) => (apps ? apps.map(statusApplication) : undefined);

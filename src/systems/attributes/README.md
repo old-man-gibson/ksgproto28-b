@@ -53,7 +53,10 @@ standard list: +1 Skill XP at 5, +2 INT at 7, +10% INT and +10% Max Mana at
 time, the five pools with their locks and the exertion toggle, the six
 attributes, and the skill tree. It reads the views of the attributes, levels,
 resources, skills and clock systems. It is in this folder because a panel
-belongs to one system folder.
+belongs to one system folder. Since 2026-11-22 it mounts
+`superattrs/FusionReadout.svelte` above the attribute list, with the view of
+`superattrs` (the fused pairs; nothing while none is fused). An attribute
+row's value is the value checks read, so a fused component shows the sum.
 
 Layout rules it follows: every number that changes per tick is in fixed-width
 digits and does not wrap; each pool reserves one line for its lock name; bars

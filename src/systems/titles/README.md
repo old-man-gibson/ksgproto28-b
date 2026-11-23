@@ -32,7 +32,9 @@ bumped (combat bumps `kills` after it emits the kill). Since step 4 port
 L it also runs after `achievements/claimed` (the old `achievement`). The
 old build also checked on `craft` and `superattr:unlock`, and by direct
 call from consumables and the festival: those ports emit `titles/check`
-(the festival since step 4 port C4, on a win that earns the hidden title).
+(the festival since step 4 port C4, on a win that earns the hidden title;
+`superattrs` since 2026-11-22, on each fusion, where the old build heard
+`superattr:unlock`: the fused Strength reaches Titan Incarnate's 100).
 
 ## Modifiers
 

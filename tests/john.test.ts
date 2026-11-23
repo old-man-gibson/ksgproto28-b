@@ -178,5 +178,9 @@ describe('John: the road past band 2 (smoke test, no bounds)', () => {
     const p = r.kernel.snapshot().slices.prestige as { count: number; stronghold: boolean };
     expect(p.count, 'the stronghold prestiged a second time').toBe(2);
     expect(p.stronghold).toBe(true);
+    // The old John fuses Dominion on floor 13 of run 3 on every seed and side
+    // (docs/SPINE.md section 21); a climb without it is the gap port C4 found.
+    const fused = (r.kernel.snapshot().slices.superattrs as { fused: string[] }).fused;
+    expect(fused, 'Dominion fused by floor 15').toEqual(['dominion']);
   }, 120_000);
 });

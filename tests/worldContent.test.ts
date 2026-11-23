@@ -30,6 +30,7 @@ import { DARK_ROOM_WAVES, FESTIVAL_DOOR_KEY, FESTIVAL_SWIFT_KEY, festivalContent
 import { CONVOY_LIST, CONVOYS, SEA_CRATES_OFFLINE, SEA_CRATES_WON, SEA_MISSION_DONE, SEA_SIDE_LIST, seaContentIssues } from '../src/systems/sea';
 import { SKILLS } from '../src/systems/skills';
 import { STAT_NAMES } from '../src/systems/stats';
+import { SUPERATTR_LIST } from '../src/systems/superattrs';
 import { WARD_WINDOWS, wardContentIssues, wardStatKeys } from '../src/systems/wards';
 import { ELEMENT_TAGS, PLACE_TAGS, SKY_TABLES, TERRAIN_PROFILES, WEATHER_KINDS } from '../src/systems/weather';
 import {
@@ -550,6 +551,13 @@ describe('world graph', () => {
       for (const c of spot.connections) {
         checkConditions(`${spot.id} -> ${c.to} reveal`, c.revealWhen);
       }
+    }
+  });
+
+  it('super-attribute components and unlocks resolve', () => {
+    for (const s of SUPERATTR_LIST) {
+      for (const comp of s.components) expect(VALID_ATTRS.has(comp), `${s.id} ${comp}`).toBe(true);
+      checkConditions(`superattr ${s.id}`, s.unlock as Condition[]);
     }
   });
 
