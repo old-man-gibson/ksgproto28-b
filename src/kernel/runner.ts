@@ -21,7 +21,8 @@ export interface RunOptions {
   progressEvery?: number;
   /**
    * Ask the systems' catch-up holds before each tick and stop on the first
-   * that holds (decision 35). Set by `catchUp` only.
+   * that holds (decision 35); the tick then skips the play-hold ask, which
+   * the catch-up ask covers (decision 36). Set by `catchUp` only.
    */
   hold?: boolean;
 }
@@ -54,8 +55,11 @@ export function runHeadless(kernel: Kernel, options: RunOptions): RunResult {
       // The rest is the holding system's to account for; later commands do not run.
       const heldBy = kernel.catchUpHeld(ticks - done);
       if (heldBy !== null) return { ticks: done, results, heldBy };
+      // That ask covered the play holds too (decision 36): one ask per tick.
+      kernel.tickAfterHolds();
+    } else {
+      kernel.tick();
     }
-    kernel.tick();
     if (options.onProgress && (done + 1) % progressEvery === 0) options.onProgress(done + 1);
   }
   runDue(ticks);

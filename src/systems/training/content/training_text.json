@@ -1,0 +1,16 @@
+[
+  {
+    "id": "patched_first",
+    "text": "🩹 Cage keeper: \"Hey kid, here. Train safely.\" HP full; bleeds and poisons cleared. The keeper does this after every win here while your six attributes total {cap} or less."
+  },
+  { "id": "patched", "text": "🩹 The cage keeper patches you up: HP full." },
+  {
+    "id": "dare_held",
+    "text": "⏸️ The cage keeper stops the cages: a {name} is up. Play is held until you answer; the time is banked as bonus time."
+  },
+  { "id": "dare_taken", "text": "⚔️ You step in with the {name}. No fleeing, and no patching up until it is over." },
+  {
+    "id": "dare_declined",
+    "text": "You pass on the {name}. The cages carry on; the keeper asks again after {every} more wins."
+  }
+]

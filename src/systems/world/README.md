@@ -116,9 +116,8 @@ cold and lightning are set in `spellcraft` (`cast.ts`).
 ## Left behind
 
 - Fields kept in the data and not read: `recipes`, `benches` (crafting and
-  the benches, step 3), `caged` (the bestiary), `healBetweenBouts` and `dare`
-  (the keeper of the Cages and the hold of play, step 3), `scene` and `map`
-  (the UI step).
+  the benches, step 3), `caged` (the bestiary), `scene` and `map` (the UI
+  step). `healBetweenBouts` and `dare` are read by `training` (step 3 gap).
 - Craft activities, bench runs, performances.
 - `cardSpent` of the old activity drops: a card is not rolled while one is
   held; whether its recipe, word or technique is already known cannot be read
@@ -145,8 +144,8 @@ cold and lightning are set in `spellcraft` (`cast.ts`).
 - A fully explored spot still rolls 0.8% per tick for 1 to 4 gold and more.
 - The fully explored line names hidden roads by label; no road in scope is
   hidden.
-- `the_cages` carries `caged`, `dare` and `healBetweenBouts`; nothing reads
-  them here.
+- `the_cages` carries `caged`, `dare` and `healBetweenBouts`; the bestiary
+  and `training` read them.
 - The Great Hall's description names two escorts. The escorts are monster
   data (`combat`), not the spot's table.
 

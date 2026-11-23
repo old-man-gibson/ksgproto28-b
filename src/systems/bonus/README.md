@@ -18,10 +18,12 @@ Banked idle time. Port of the bank half of the old `systems/bonustime.ts`
 - `bonus/bank` (event, `{ ticks }`): bank a stretch at once, up to the cap.
   The old `bankTicks`. Sent by `prestige` from its `newRun` after the
   automatic prestige of the stronghold, which keeps the bank (a prestige by
-  choice starts the next run at 0). Also the entry for a held world (the
-  keeper's dare, the Facet hold of play, port F), none of which is here
-  yet, and festival time away: since step 4 port C4 the festival's catch-up
-  hold banks the ticks a catch-up did not run (kernel decision 35).
+  choice starts the next run at 0). Also the entry for a held world: the
+  keeper's dare (`training`, step 3 gaps) banks one tick per held tick
+  through its play hold (kernel decision 36) and the ticks a catch-up did
+  not run through its catch-up hold; the Facet hold of play is port F. And
+  festival time away: since step 4 port C4 the festival's catch-up hold
+  banks the ticks a catch-up did not run (kernel decision 35).
 
 Slice version 1: `{ banked }`. Fixture `tests/fixtures/bonus/v1.json`. No
 modifier source, no content, no command.

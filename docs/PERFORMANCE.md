@@ -721,3 +721,10 @@ the digests:
 - The speed test's method: each state in a fresh process, as the old
   build was measured. A change of method, not of speed; the user chose
   it, and it is built since 2026-11-22 (5.2, 5.3).
+- Later, if port F adds play holders (docs/KERNEL.md decision 36): a push
+  model for the holds. Today `kernel.tick()` asks each play holder and
+  catch-up asks each catch-up holder before every tick; each ask reads the
+  holder's slice object to see whether its memory is current (the dare
+  alone: about 1% of an idle tick). With one held set that the systems
+  update when a hold starts or ends, and that a load or a new run
+  recomputes, the kernel checks one field per tick. Not built.

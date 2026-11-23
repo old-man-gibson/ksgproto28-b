@@ -73,7 +73,11 @@ export interface Kernel {
   readonly tickCount: number;
   /** Run a command. A skipped command returns its reason and is logged. */
   dispatch(command: Command): CommandResult;
-  /** Advance game time by `count` ticks (default 1). */
+  /**
+   * Advance game time by `count` ticks (default 1). A tick asked while a
+   * system's `playHold` holds runs that system's `held` instead and leaves
+   * the tick number as it was (decision 36).
+   */
   tick(count?: number): void;
   view(): PublishedView;
   /** A derived value. `entity` defaults to the player, `variant` to the plain block. */
@@ -108,6 +112,13 @@ export interface Kernel {
    * nothing holds. Asks only the systems that declare the field.
    */
   catchUpHeld(ticksLeft: number): string | null;
+  /**
+   * One tick that does not ask the play holds (decision 36). For
+   * `runHeadless` with `hold`, which has asked `catchUpHeld` for this tick:
+   * a system that holds play also declares `catchUpHold` with the same
+   * `holds` (`defineSystem` checks), so one ask per tick covers both.
+   */
+  tickAfterHolds(): void;
 }
 
 /** Events delivered in one drain before the kernel assumes a loop. */
@@ -285,6 +296,27 @@ export function createKernel(options: KernelOptions): Kernel {
     .filter((system) => system.catchUpHold)
     .map((system) => ({ id: system.id, ctx: contexts.get(system.id)!, hold: system.catchUpHold! }));
 
+  // The play holds (decision 36), asked before every tick the same way.
+  const playHolders = systems
+    .filter((system) => system.playHold)
+    .map((system) => ({ ctx: contexts.get(system.id)!, hold: system.playHold! }));
+
+  /** The holder that holds this tick, or null. Asked before every tick: kept small. */
+  function playHolder(): (typeof playHolders)[number] | null {
+    for (let i = 0; i < playHolders.length; i++) {
+      const h = playHolders[i];
+      if (h.hold.holds(h.ctx)) return h;
+    }
+    return null;
+  }
+
+  /** A held tick: the holder's `held` runs and drains in place of the tick. */
+  function runHeld(h: (typeof playHolders)[number]): void {
+    h.hold.held(h.ctx);
+    drain();
+    if (runEnding) settleRun();
+  }
+
   // After every source is registered, so a dependency may name a source of a
   // system that comes later in the order.
   for (const system of systems) {
@@ -380,7 +412,12 @@ export function createKernel(options: KernelOptions): Kernel {
     },
 
     tick(count = 1) {
-      for (let i = 0; i < count; i++) tickOnce();
+      const asks = playHolders.length > 0;
+      for (let i = 0; i < count; i++) {
+        const h = asks ? playHolder() : null;
+        if (h === null) tickOnce();
+        else runHeld(h);
+      }
     },
 
     view() {
@@ -435,6 +472,10 @@ export function createKernel(options: KernelOptions): Kernel {
 
     reset(seed) {
       replaceState(freshState(normalizeSeed(seed)));
+    },
+
+    tickAfterHolds() {
+      tickOnce();
     },
 
     catchUpHeld(ticksLeft) {

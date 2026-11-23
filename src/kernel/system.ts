@@ -271,12 +271,27 @@ export interface SystemDef<S, V = unknown> {
    * runs with the ticks left; its events are delivered.
    */
   catchUpHold?: CatchUpHold<S>;
+  /**
+   * Holds play (decision 36): `kernel.tick()` asks `holds` before every
+   * tick, so it answers from memory the system keeps, never from the slices.
+   * On the first true that tick runs no system and the tick number stays;
+   * `held` runs instead and its events are delivered. Commands still run.
+   * A system with a play hold declares `catchUpHold` too, with the same
+   * `holds`: catch-up asks only the catch-up holds, once per tick.
+   */
+  playHold?: PlayHold<S>;
 }
 
 /** A system's hold on offline catch-up (decision 35). */
 export interface CatchUpHold<S> {
   holds(ctx: Ctx<S>): boolean;
   held(ctx: Ctx<S>, ticksLeft: number): void;
+}
+
+/** A system's hold on play (decision 36). */
+export interface PlayHold<S> {
+  holds(ctx: Ctx<S>): boolean;
+  held(ctx: Ctx<S>): void;
 }
 
 const SYSTEM_ID = /^[a-z][a-z0-9-]*$/;
@@ -288,6 +303,8 @@ export function defineSystem<S, V = unknown>(def: SystemDef<S, V>): SystemDef<S,
   };
   if (!SYSTEM_ID.test(def.id)) bad('id must match ' + SYSTEM_ID.source);
   if (!Number.isInteger(def.version) || def.version < 1) bad('version must be an integer of 1 or more');
+  if (def.playHold && !def.catchUpHold)
+    bad('a play hold needs a catch-up hold with the same holds: catch-up asks only the catch-up holds (decision 36)');
 
   const steps = Object.keys(def.migrations ?? {})
     .map(Number)

@@ -159,11 +159,16 @@ export const spots = registry(
     stampOnClear: s.optional(s.string()),
     scene: s.optional(s.enum(['town', 'hall', 'crypt', 'cistern', 'webs'])),
     caged: s.optional(s.boolean({ help: 'Bestiary: a kill here grants each fact at its minKills, no roll.' })),
-    healBetweenBouts: s.optional(s.object({ maxAttrTotal: s.number() }, { help: 'Not read until step 3.' })),
+    healBetweenBouts: s.optional(
+      s.object(
+        { maxAttrTotal: s.number() },
+        { help: 'Read by `training`: after a won fight here, heal to full and drop damage-over-time conditions while the six attributes total this or less.' },
+      ),
+    ),
     dare: s.optional(
       s.object(
         { monsterId: s.ref('monsters'), level: s.number(), every: s.number(), desc: s.string() },
-        { help: 'Not read until step 3.' },
+        { help: 'Read by `training`: while the keeper tends, every `every` wins here the keeper offers a staged fight with this monster until it is beaten.' },
       ),
     ),
     modifierWeights: s.optional(

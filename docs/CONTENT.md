@@ -316,9 +316,10 @@ segments under two minutes reported, not held.
   set by `catchUp` and false in `runHeadless`. The runner equality test then
   holds for content without a live-only clock and is stated per system for
   the rest. Lands in port C1. Recorded in `docs/KERNEL.md`.
-- **K2. A hold of play** (only with port F): old `Game.ts` stops the clock
-  and banks bonus time while a Facet evolution waits. A kernel or clock
-  hold that the tick reads.
+- **K2. A hold of play**: old `Game.ts` stops the clock and banks bonus
+  time while the keeper's dare or a Facet evolution waits. Lands in
+  step3-gaps for the keeper's dare; port F reuses it for the Facet
+  evolution (kernel decision 36, `playHold`).
 - **K3. A catch-up hold** (added during port C4, kernel decision 35): the
   old festival clock does not read the flag K1 names; the old catch-up loop
   stops while the festival holds the player and banks the rest. A system
