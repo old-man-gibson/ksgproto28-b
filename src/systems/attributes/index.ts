@@ -6,6 +6,7 @@
  */
 import { defineEvent, defineSystem, on, PLAYER, registry, s, type Ctx, type DeepReadonly, type RecordOf } from '../../kernel';
 import { raiseCounter } from '../counters';
+import { practicePayout } from '../practice';
 import { ATTRIBUTE_PROGRESSION, bandedXpNeeded, settleLevels } from '../progression';
 import {
   ATTRIBUTE_IDS,
@@ -211,8 +212,10 @@ const system = defineSystem<AttributesState, AttributesView>({
       const { attr, amount } = event.payload;
       const a = ctx.state.attrs[attr];
       if (!a) return ctx.skip('attributes/grant-xp', `unknown attribute "${attr}"`);
-      if (XP_ROUTER?.(ctx, attr, amount)) return;
-      a.xp += amount;
+      // Inside a practice fight's tick the amount is shaped (`practice`).
+      const xp = practicePayout(ctx, `attr:${attr}`, a.level, amount);
+      if (XP_ROUTER?.(ctx, attr, xp)) return;
+      a.xp += xp;
       const gained = settleLevels(a, ATTRIBUTE_PROGRESSION);
       if (gained === 0) return;
       ctx.touch(TRAINED_SOURCE);

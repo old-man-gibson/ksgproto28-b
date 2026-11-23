@@ -28,6 +28,7 @@ import counters, {
   type ConditionReader,
 } from '../counters';
 import { fillText, logLine, textSchema, type TextRecord } from '../log';
+import { practicePayout } from '../practice';
 import { bandedXpNeeded, bandSchema, DEFAULT_PROGRESSION, settleLevels, type ProgressionBand } from '../progression';
 import {
   attrValue,
@@ -494,7 +495,8 @@ function manifest(ctx: SkillsCtx, def: SkillDef): void {
 
 function bankLatentXp(ctx: SkillsCtx, def: SkillDef, amount: number): void {
   const state = ctx.state;
-  state.latent[def.id] = latentXp(state, def.id) + amount;
+  // A locked skill counts as level 1 for the practice share (`practice`).
+  state.latent[def.id] = latentXp(state, def.id) + practicePayout(ctx, `skill:${def.id}`, 1, amount);
   if (state.latent[def.id] >= skillXpNeeded(def.id, 1)) manifest(ctx, def);
 }
 
@@ -507,7 +509,8 @@ function addSkillXp(ctx: SkillsCtx, id: string, amount: number): void {
     held.xp = 0;
     return;
   }
-  held.xp += amount;
+  // Inside a practice fight's tick the amount is shaped (`practice`).
+  held.xp += practicePayout(ctx, `skill:${id}`, held.level, amount);
   let gained = settleLevels(held, skillProgression(id));
   if (held.level >= cap) {
     gained -= held.level - cap;

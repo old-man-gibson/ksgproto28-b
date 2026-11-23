@@ -366,9 +366,12 @@ Other old files: `ledger.ts` is `ledger.ts` whole. `huntrest.ts`:
 `clearRest` are in `engine.ts` and `index.ts`; `returnRecoverTarget` is port
 6. `monsterMind`, `mindInDebt` of `monsterStats.ts` are in `engine.ts`.
 `naturalDarkness` of `exposure.ts` is in `spawn.ts`. `isPracticeFight` of
-`practice.ts` is in `engine.ts`. The kill, defeat listeners of
-`achievements.ts` and the kill listener of `levels.ts` are in `onKill` and
-`onDefeat`.
+`practice.ts` is in `engine.ts`; the rest of `practice.ts` is the system
+`practice` (step 3 gap): `runCombatTick` sends `practice/open` at its start
+when the fight is a practice fight, and `startEncounter` emits
+`practice/fight-started` when the practice clock holds a stamp. The kill and
+defeat listeners of `achievements.ts` and the kill listener of `levels.ts`
+are in `onKill` and `onDefeat`.
 
 ## Not ported, each an extension point and not a stub
 
@@ -386,7 +389,6 @@ Other old files: `ledger.ts` is `ledger.ts` whole. `huntrest.ts`:
 | Statues and rubble, `standAside` | No monster of floors 0 to 6 has the rule. A statue condition on an enemy is reported once through the skip log. |
 | Skill actives (`strike`, `spell`, `buff`) | No skill record in the registry is an active. A player kind for skill ids when one exists. Combat buffs exist since port 5 (`combat/add-buff`). |
 | The approach (`pendingApproach`) | No road of floors 0 to 6 has one. Step 4: `world` applies it after `combat/fight-started`, or through a field of `combat/start-forced`. |
-| Practice shaping (`practiceXp`) | `skills` and `attributes` have no hook for shaping a grant by the receiving level. A fight against training equipment pays unshaped XP. |
 | Toll golem spell reactions, wards, festival, sea | Not ported. The 30-tick address of the toll golem is ported (`introTicks`); its reward is in `world` (spine port 6). |
 
 ## Skip reasons

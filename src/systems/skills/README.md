@@ -21,6 +21,10 @@ word skills included), and the skill block of `collectBaseMods` in old
 - **Novelty.** A skill with a `novelty` record pays `(k + n) / (c + n)` times
   the ordinary amount for an input seen n times. A grant with no input key
   pays 1. Several keys pay their mean.
+- **Practice.** Inside a practice fight's tick a grant to a held skill
+  (after the cap check) and a banked grant to a locked one (at level 1) are
+  shaped by `practicePayout` of the `practice` system; outside it the amount
+  is unchanged.
 - **Reveal.** A locked skill is shown when its parent is held and every
   threshold of its unlock list is at 90% (`REVEAL_FRACTION`), or with
   Foresight. A held skill under a locked parent shows the parent as hinted.
@@ -88,10 +92,6 @@ curve inline.
 - Who grants XP and checks discovery: `combat` does for kills, swings and
   blows taken (spine port 4). Actions, quests, the bestiary and the spell
   table emit the requests above when they are ported.
-- Practice shaping (`practiceXp`): no hook. The old rule cut a grant by the
-  level of the skill that receives it, so the granting system cannot shape
-  it. A fight against training equipment pays unshaped XP until this system
-  gets the hook.
 - Talent, cap raises of the legacy, Foresight: read as facts the prestige
   port states (see the stats README).
 - A skill panel of its own. The character panel shows the tree.

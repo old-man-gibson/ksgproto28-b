@@ -24,7 +24,9 @@ A level-up emits `attributes/levelup { attr, level }`, once per level, and
 raises the counter `attr:<id>` to the value checks read (`attrValue`).
 
 The amount is taken at face value. The `trainXp` stat is applied by the
-system that grants, as in the old build.
+system that grants, as in the old build. Inside a practice fight's tick the
+amount is shaped by the trained level (`practicePayout` of the `practice`
+system) before the XP router sees it; outside it the amount is unchanged.
 
 ## Modifier sources
 
@@ -68,7 +70,4 @@ are not positioned elements.
 
 ## Left behind
 
-- Practice shaping (`practiceXp`): a grant inside a practice fight is shaped
-  by the trained level. No hook here; the granting system shapes the amount
-  before it asks.
 - The XP router (`setXpRouter`, Weakest Weapon Master past its ceiling).

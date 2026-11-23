@@ -44,6 +44,7 @@ import {
 import log from '../log';
 import { rollDropTable } from '../loot';
 import { rollProcChance } from '../mercy';
+import practice, { clockRunning, openPractice, practiceFightStarted } from '../practice';
 import {
   biasAttrs,
   ENCOUNTER_SLOTS,
@@ -824,6 +825,9 @@ function startEncounter(ctx: C, site: EncounterSite, forced = false, enemies?: (
     buffs: [],
   };
   ctx.state.fight = fight;
+  // The practice clock belonged to the old fight object: a new fight starts
+  // with none. Sent only when the last fight left stamps on it.
+  if (clockRunning(ctx.read(practice))) ctx.emit(practiceFightStarted, undefined);
 
   // What a body is, on it before its first tick. Applied here and not in
   // `spawnMonster`: the monster's stat block is read from the slice.
@@ -1513,6 +1517,11 @@ export function setResting(ctx: C, active: boolean): void {
 /** One tick of combat. The old `runCombatTick`. */
 export function runCombatTick(ctx: C): void {
   const state = ctx.state;
+  // Against training equipment every skill and attribute payout of this tick
+  // is shaped (the old `tickCombat` running the tick inside `practising`).
+  // The scope stays open through the drain after this hook; `practice`
+  // closes it in its own tick, which comes next.
+  if (state.fight && isPracticeFight(state.fight)) ctx.request(openPractice, undefined);
   if (!state.fight) {
     // The fight is over however it ended: anything still floating settles now.
     const feedState = ctx.read(log);
