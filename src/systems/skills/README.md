@@ -63,6 +63,20 @@ activity. Which skills a tag list trains depends on the registry alone, so
 only those skills, in registry order. Measured on the world budget runs of 8
 hours: about 3 s of 20 before this.
 
+Since step 4 port W (the senses' grant on every game minute), each with every
+outcome digest and John's climbs equal:
+
+- `addSkillXp` reads the ceiling (`skillCap`, a derived read) only from the
+  skill's `maxLevel` up, at most once per grant: a ceiling is `maxLevel`
+  plus raises, and a raise only adds. It was a third of a grant's cost.
+- `skills/grant-xp` with tags that train exactly one skill pays that skill
+  if held, without walking every held skill (the walk would visit it
+  alone).
+
+A grant that changes no level then does: the event, one derived read (the
+`skillXp` multiplier), one read of the `practice` slice, the level's cost;
+no touch, no request.
+
 ## Modifier source
 
 `skills/effects`: each held skill's effects at its level, marked
@@ -95,6 +109,17 @@ curve inline.
 - Talent, cap raises of the legacy, Foresight: read as facts the prestige
   port states (see the stats README).
 - A skill panel of its own. The character panel shows the tree.
+
+## Step 4 port W: the two senses
+
+- Weathersense (tag `weather`) and Chronosense (tag `time`) train with no
+  action of their own. The trainers are in `weather` (its tick and its
+  exposure minute) and `world` (an arrival by travel); this system only
+  answers their `skills/check-discovery` and `skills/grant-xp`.
+- The view gains `timeSense`: null while Chronosense is not held, else the
+  level, the reading of `describeTimeSense` and one line per moon of
+  `describeMoons` (with the phase glyph). `TimeSenseReadout.svelte` renders
+  it; the Character panel mounts it.
 
 ## Differences from the old build
 

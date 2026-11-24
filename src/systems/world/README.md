@@ -125,7 +125,7 @@ cold and lightning are set in `spellcraft` (`cast.ts`).
 - The approach of a road (`ApproachSpec`, `pendingApproach`): no road in
   scope has one. Step 4.
 - The festival forfeit, the seam verb of floor 20.
-- `noteTravelSkies` (Weathersense), bonus time.
+- Bonus time.
 - The surveyed plan of the map and the Stations row.
 
 ## Differences from the old build
@@ -278,3 +278,15 @@ cold and lightning are set in `spellcraft` (`cast.ts`).
   disables a refused one (old `ladderView` `rideAction`).
 - The festival's readout is mounted in the Location panel under the
   harbor's (old placement).
+
+## Step 4 port W
+
+- `noteTravelSkies(ctx, regionId)` and `TRAVEL_XP_PER_ARRIVAL` (1.5): an
+  arrival by travel (`tickTravel`, after the Scouting XP) sends
+  `skills/grant-xp` with the tag `weather`, keyed `skies:<region>`, the
+  region of the spot's area (old `noteTravelSkies` of `weathersense.ts`).
+  Here because the weather system imports this one. The caravan, the
+  retreat and `world/place` arrive without travel and pay nothing, as in
+  the old build.
+- The weather system's Sky readout is mounted in the Location panel under
+  the festival's (`weather/SkyPanel.svelte`).

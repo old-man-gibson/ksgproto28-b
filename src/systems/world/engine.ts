@@ -1178,6 +1178,19 @@ function arrive(ctx: W, from: string, walked: Edge | undefined): void {
   settleArrival(ctx);
 }
 
+/** Weathersense XP per arrival by travel, before the novelty multiple of the region. */
+export const TRAVEL_XP_PER_ARRIVAL = 1.5;
+
+/**
+ * An arrival by travel trains Weathersense, keyed by the region of the
+ * spot's area: each region's skies are new once (old `noteTravelSkies` of
+ * `weathersense.ts`, called by `tickTravel`). It lives here because the
+ * weather system imports this one. A sense not held gains nothing.
+ */
+export function noteTravelSkies(ctx: Pick<W, 'emit'>, regionId: string): void {
+  ctx.emit(grantSkillXp, { tags: ['weather'], amount: TRAVEL_XP_PER_ARRIVAL, sourceKey: `skies:${regionId}` });
+}
+
 function tickTravel(ctx: W): void {
   const state = ctx.state;
   const t = state.travel!;
@@ -1195,6 +1208,9 @@ function tickTravel(ctx: W): void {
   // Walking grants Scouting XP by distance.
   ctx.emit(checkDiscovery, { tags: ['travel', 'explore'] });
   ctx.emit(grantSkillXp, { tags: ['travel', 'explore'], amount: t.total * 0.08 });
+  // New ground, new skies.
+  const arrivedRegion = AREAS[getSpot(to).areaId]?.regionId;
+  if (arrivedRegion) noteTravelSkies(ctx, arrivedRegion);
 
   const morePlanned = state.travelPlan.length > 0;
   const spot = getSpot(to);

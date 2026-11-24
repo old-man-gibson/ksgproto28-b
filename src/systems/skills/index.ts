@@ -18,6 +18,7 @@ import {
   type RecordOf,
   type SystemDef,
 } from '../../kernel';
+import clock, { CHRONOSENSE_ID, clockOf, describeMoons, describeTimeSense, MOON_ICONS, totalTicksOf } from '../clock';
 import counters, {
   bumpCounter,
   conditionSchema,
@@ -503,18 +504,25 @@ function bankLatentXp(ctx: SkillsCtx, def: SkillDef, amount: number): void {
 function addSkillXp(ctx: SkillsCtx, id: string, amount: number): void {
   const held = ctx.state.skills[id];
   if (!held) return;
-  const cap = skillCap(ctx, id);
+  // The ceiling is `maxLevel` plus raises, and a raise only adds, so below
+  // `maxLevel` the ceiling is not reached and its derived read is skipped (it
+  // costs about a third of a grant; port W measured it on the passive
+  // grants of every game minute). The read is made at most once.
+  const max = SKILLS[id]?.maxLevel;
+  let cap: number | undefined = max ? undefined : Infinity;
+  const ceiling = () => (cap ??= skillCap(ctx, id));
   // At the ceiling XP is discarded, not banked.
-  if (held.level >= cap) {
+  if (max && held.level >= max && held.level >= ceiling()) {
     held.xp = 0;
     return;
   }
   // Inside a practice fight's tick the amount is shaped (`practice`).
   held.xp += practicePayout(ctx, `skill:${id}`, held.level, amount);
   let gained = settleLevels(held, skillProgression(id));
-  if (held.level >= cap) {
-    gained -= held.level - cap;
-    held.level = cap;
+  if (max && held.level >= max && held.level >= ceiling()) {
+    const top = ceiling();
+    gained -= held.level - top;
+    held.level = top;
     held.xp = 0;
   }
   announceLevels(ctx, id, gained);
@@ -536,10 +544,33 @@ export interface SkillNodeView {
   children: SkillNodeView[];
 }
 
+/** The clock as Chronosense reads it (`describeTimeSense`, `describeMoons` of `clock`). */
+export interface TimeSenseView {
+  /** The Chronosense level. */
+  level: number;
+  text: string;
+  /** One line per moon from the season level, with the phase glyph. */
+  moons: { icon: string; text: string }[];
+}
+
 export interface SkillsView {
   categories: { id: string; name: string; icon: string; nodes: SkillNodeView[] }[];
   /** Number of held skills. */
   held: number;
+  /** Null while Chronosense is not held: the player cannot read the clock. */
+  timeSense: TimeSenseView | null;
+}
+
+function timeSenseView(ctx: ReadCtx): TimeSenseView | null {
+  const level = skillLevel(ctx.read(system), CHRONOSENSE_ID);
+  if (level < 1) return null;
+  const now = clockOf(totalTicksOf(ctx.read(clock)));
+  const moons = describeMoons(now, level);
+  return {
+    level,
+    text: describeTimeSense(now, level)!,
+    moons: moons.map((text, i) => ({ icon: MOON_ICONS[now.moons[i].phaseId], text })),
+  };
 }
 
 function nodeView(ctx: ReadCtx, node: SkillTreeNode): SkillNodeView {
@@ -600,12 +631,19 @@ const system: SystemDef<SkillsState, SkillsView> = defineSystem<SkillsState, Ski
       const { tags, amount, sourceKey, scale = 1 } = event.payload;
       if (amount <= 0) return ctx.skip('skills/grant-xp', `amount ${amount} is not above 0`);
       const mult = statOf(ctx, 'skillXp');
-      // The ids `skillTrainedBy` answers true for, kept per tag list.
-      const trained = trainedBy(tags).ids;
-      for (const id of Object.keys(ctx.state.skills)) {
-        const def = SKILLS[id];
-        if (!def || !trained.has(id)) continue;
-        addSkillXp(ctx, id, amount * mult * consumeNovelty(ctx.state, def, sourceKey) * scale);
+      // The skills `skillTrainedBy` answers true for, kept per tag list.
+      const trained = trainedBy(tags);
+      if (trained.skills.length === 1) {
+        // One skill trained (the passive grants of every game minute): the
+        // walk over every held skill below would visit it alone.
+        const def = trained.skills[0];
+        if (def.id in ctx.state.skills) addSkillXp(ctx, def.id, amount * mult * consumeNovelty(ctx.state, def, sourceKey) * scale);
+      } else {
+        for (const id of Object.keys(ctx.state.skills)) {
+          const def = SKILLS[id];
+          if (!def || !trained.ids.has(id)) continue;
+          addSkillXp(ctx, id, amount * mult * consumeNovelty(ctx.state, def, sourceKey) * scale);
+        }
       }
       // After the held skills, so one that manifests here is not paid twice.
       for (const def of skillsTrainedBy(tags)) {
@@ -665,6 +703,7 @@ const system: SystemDef<SkillsState, SkillsView> = defineSystem<SkillsState, Ski
       nodes: nodes.map((node) => nodeView(ctx, node)),
     })),
     held: Object.keys(ctx.state.skills).length,
+    timeSense: timeSenseView(ctx),
   }),
 });
 

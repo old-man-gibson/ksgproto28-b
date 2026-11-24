@@ -2,10 +2,10 @@
   import Button from '../../ui/components/Button.svelte';
   import type { DeepReadonly } from '../../kernel';
   import { send, viewOf } from '../../ui/game.svelte';
-  import clock from '../clock';
   import levels from '../levels';
   import resources, { setExerting } from '../resources';
   import skills, { type SkillNodeView } from '../skills';
+  import TimeSenseReadout from '../skills/TimeSenseReadout.svelte';
   import StatusList from '../statuses/StatusList.svelte';
   import superattrs from '../superattrs';
   import FusionReadout from '../superattrs/FusionReadout.svelte';
@@ -15,7 +15,6 @@
   const level = $derived(viewOf(levels));
   const pools = $derived(viewOf(resources));
   const tree = $derived(viewOf(skills));
-  const time = $derived(viewOf(clock));
   const fusion = $derived(viewOf(superattrs));
 
   let lastReason = $state<string | null>(null);
@@ -60,10 +59,7 @@
     <div class="bar" role="presentation">
       <div class="fill xp" style:width="{share(level.levelXp, level.xpToNext)}%"></div>
     </div>
-    <div class="row dim">
-      <span class="clip">{time.date}</span>
-      <span class="num">{time.time}</span>
-    </div>
+    <TimeSenseReadout sense={tree.timeSense} />
   </div>
 
   <h2>Pools</h2>

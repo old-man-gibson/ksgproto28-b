@@ -16,6 +16,10 @@
  * - the only sky-table region, `malgeri_range`, is step 4. The file mounts a
  *   region of that id with the old record, and the three spots of the old
  *   `tests/fixtures/malgeri.ts`, for its duration.
+ *
+ * Step 4 port W: the old "the forecast" (5 cases) and `skyContentIssues` (7
+ * cases) of `sky.test.ts`, and a case for Weathersense in the exposure tick,
+ * in place of three `it.todo`.
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { PLAYER, type Kernel } from '../src/kernel';
@@ -51,6 +55,7 @@ import {
   darknessFactor,
   ELEMENT_TAGS,
   firstCalmLine,
+  forecastFor,
   FRONT_HOURS,
   FRONT_TICKS,
   frontOfCell,
@@ -65,6 +70,7 @@ import {
   placeDarkness,
   SKY_RULES,
   SKY_TABLES,
+  skyContentIssues,
   skyDarkness,
   skyKindAt,
   sunlight,
@@ -1375,10 +1381,133 @@ describe('what the texts say about calm', () => {
   });
 });
 
+// ---------- Weathersense and the sky lint (step 4 port W) ----------
+
+describe('Weathersense under the sky', () => {
+  // New with port W (the trainer was step 4): the old `tickExposure` called
+  // `tickWeathersense` with the sample of an open sky, so a roof keeps the
+  // sense out, and a journey trains at the place left.
+  it('trains under an open sky, at the place left while travelling, and never under a roof', () => {
+    const gale = tickShowing('gale');
+    expect(skillsOf(minuteAt(RIDGE, gale)).weathersense?.level).toBe(1);
+    expect(skillsOf(minuteAt(HUT, gale)).weathersense).toBeUndefined();
+    expect(skillsOf(minuteAt(CAVE, gale)).weathersense).toBeUndefined();
+    const onTheRoad = minuteAt(RIDGE, gale, (slices) => (slices.world.travel = { from: RIDGE, to: HUT, ticksLeft: 100, total: 100 }));
+    expect(skillsOf(onTheRoad).weathersense?.level).toBe(1);
+  });
+});
+
+describe('the forecast', () => {
+  const calmStart = calmSpell(SEED, MOUNTAIN.id, 3)[0] * TICKS_PER_MINUTE;
+  // The 2-hour row looks 1200 ticks ahead; land it inside the spell.
+  const now = calmStart + 600 - 1200;
+  const sampleAhead = weatherAt(SEED, MOUNTAIN, now + 1200)!;
+
+  it('looks at a calm sky from the 2-hour row', () => {
+    expect(sampleAhead.kind).toBe('calm');
+  });
+
+  it('names a coming calm as weather at the fair and precise reads', () => {
+    const fair = forecastFor(3, MOUNTAIN, SEED, now)[0];
+    expect(fair.quality).toBe('fair');
+    expect(fair.text).toBe(`${WEATHER_ICONS.calm} calm, ${sampleAhead.band}`);
+    const precise = forecastFor(6, MOUNTAIN, SEED, now)[0];
+    expect(precise.quality).toBe('precise');
+    expect(precise.text).toBe(`${WEATHER_ICONS.calm} calm · ${Math.round(sampleAhead.temp)}°`);
+  });
+
+  it('reads a calm sky roughly as plain skies, and never says calm', () => {
+    const rough = forecastFor(1, MOUNTAIN, SEED, now)[0];
+    expect(rough.quality).toBe('rough');
+    expect(rough.text).toMatch(/^plain skies, /);
+    expect(rough.text).not.toMatch(/calm/i);
+  });
+
+  it('states no danger at any read', () => {
+    for (const level of [1, 3, 6]) {
+      for (const entry of forecastFor(level, MOUNTAIN, SEED, now)) {
+        expect(entry.text).not.toMatch(/danger|monster|beware|threat|ambush|foe|enem/i);
+      }
+    }
+  });
+
+  it('shows a heatwave by name at a fair read and as plain skies at a rough one', () => {
+    const tick = tickShowing('heatwave');
+    const ahead = tick - 1200;
+    const heat = weatherAt(SEED, MOUNTAIN, tick)!;
+    expect(forecastFor(3, MOUNTAIN, SEED, ahead)[0].text).toBe(`${WEATHER_ICONS.heatwave} heatwave, ${heat.band}`);
+    expect(forecastFor(1, MOUNTAIN, SEED, ahead)[0].text).toMatch(/^plain skies, /);
+  });
+});
+
+describe('skyContentIssues', () => {
+  const region = (extra: Partial<RegionDef> = {}) => ({ id: 'r', name: 'R', sky: 'malgeri', world: { x: 1, y: 1 }, ...extra });
+  const area = (extra: Record<string, unknown> = {}) => ({ id: 'a', regionId: 'r', ...extra });
+  const spot = (sky: string[] | undefined, tags?: string[]) => ({
+    id: 's',
+    areaId: 'a',
+    ...(tags ? { tags } : {}),
+    encounters: [{ monsterId: 'm', ...(sky ? { sky } : {}) }],
+  });
+  const issues = (r: ReturnType<typeof region>, a: ReturnType<typeof area>, s: ReturnType<typeof spot>) =>
+    skyContentIssues({ regions: { r }, areas: { a }, spots: { s } }).map((i) => `${i.kind} ${i.id}: ${i.message}`);
+
+  it('passes a placed region with a table and a line that can roll under it', () => {
+    expect(issues(region(), area(), spot(['calm', 'gale']))).toEqual([]);
+    expect(issues(region(), area(), spot(undefined))).toEqual([]);
+  });
+
+  it('passes the live registry', () => {
+    expect(skyContentIssues({ regions: REGIONS, areas: {}, spots: {} })).toEqual([]);
+  });
+
+  it('refuses a sky that names no table, and a table with no atlas pin', () => {
+    expect(issues(region({ sky: 'nowhere' }), area(), spot(undefined))).toEqual([expect.stringContaining("sky 'nowhere' is not in SKY_TABLES")]);
+    expect(issues(region({ world: undefined }), area(), spot(undefined))).toEqual([expect.stringContaining('needs an atlas pin')]);
+  });
+
+  it('refuses an empty list and a name that is not a weather kind', () => {
+    expect(issues(region(), area(), spot([]))).toEqual([expect.stringContaining('is empty')]);
+    expect(issues(region(), area(), spot(['hail']))).toEqual([expect.stringContaining("'hail', which is not a weather kind")]);
+  });
+
+  it('refuses calm and heatwave in a region with no sky table', () => {
+    const plain = region({ sky: undefined });
+    expect(issues(plain, area(), spot(['calm']))).toEqual([expect.stringContaining('only a region sky table produces')]);
+    expect(issues(plain, area(), spot(['heatwave']))).toEqual([expect.stringContaining('only a region sky table produces')]);
+    // The kinds the noise field draws are fine anywhere with a sky.
+    expect(issues(plain, area(), spot(['rain', 'storm']))).toEqual([]);
+  });
+
+  it("follows an area's skyRegionId for the table, and refuses one that names no region", () => {
+    const plain = region({ sky: undefined, world: undefined });
+    const under = { id: 'u', sky: 'malgeri', world: { x: 1, y: 1 } };
+    // Drawn in a region with no table, standing under one with a table: calm is allowed.
+    expect(
+      skyContentIssues({
+        regions: { r: plain, u: under },
+        areas: { a: area({ skyRegionId: 'u' }) },
+        spots: { s: spot(['calm']) },
+      }),
+    ).toEqual([]);
+    // Without the override the same line has no table and no atlas pin under it.
+    expect(skyContentIssues({ regions: { r: plain, u: under }, areas: { a: area() }, spots: { s: spot(['calm']) } })).not.toEqual([]);
+    expect(
+      skyContentIssues({ regions: { r: region() }, areas: { a: area({ skyRegionId: 'gone' }) }, spots: {} }).map((i) => `${i.kind} ${i.id}: ${i.message}`),
+    ).toEqual(["area a: skyRegionId 'gone' is not a region"]);
+  });
+
+  it('refuses a sky line where the sky is never open: indoor, sheltered, or unplaced', () => {
+    expect(issues(region(), area(), spot(['gale'], ['indoor']))).toEqual([expect.stringContaining('never has')]);
+    expect(issues(region(), area({ sheltered: true }), spot(['gale']))).toEqual([expect.stringContaining('never has')]);
+    expect(issues(region({ sheltered: true }), area(), spot(['gale']))).toEqual([expect.stringContaining('never has')]);
+    // An open area inside a sheltered region overrides it, as skyRegionOf does.
+    expect(issues(region({ sheltered: true }), area({ sheltered: false }), spot(['gale']))).toEqual([]);
+    expect(issues(region({ sky: undefined, world: undefined }), area(), spot(['gale']))).toEqual([expect.stringContaining('not on the atlas')]);
+  });
+});
+
 describe('not ported', () => {
-  it.todo('the forecast reads a calm sky and a heatwave by the Weathersense level (step 4: Weathersense)');
-  it.todo('Weathersense trains under an open sky and on a journey (step 4: Weathersense)');
-  it.todo('`skyContentIssues` refuses a sky line where the sky is never open (the content linter `skyValidation.ts` is not ported)');
   it.todo('Solar Charge banks `world.sunlight` each game minute (Facet is not ported)');
 });
 

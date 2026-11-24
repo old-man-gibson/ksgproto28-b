@@ -11,7 +11,15 @@
  *   the darkness penalties of combat.
  */
 import { defineSystem, on, PLAYER, registry, type Ctx, type DeepReadonly, type SystemDef } from '../../kernel';
-import clock, { clockOf, moonlight, TICKS_PER_GAME_MINUTE, totalTicksOf, type MoonState } from '../clock';
+import clock, {
+  CHRONOSENSE_ID,
+  CHRONOSENSE_MANIFEST_TICKS,
+  clockOf,
+  moonlight,
+  TICKS_PER_GAME_MINUTE,
+  totalTicksOf,
+  type MoonState,
+} from '../clock';
 import combat, { hook, naturalDarkness, registerSiteSky } from '../combat';
 import counters, { counterValue, raiseCounter } from '../counters';
 import { fillText, logLine, textSchema, type TextRecord } from '../log';
@@ -30,9 +38,20 @@ import {
 } from './defs';
 import { migrations } from './migrations';
 import { climateBaseline, tempBand, weatherAt, WEATHER_ICONS, type TempBand, type WeatherSample } from './sample';
+import {
+  forecastFor,
+  PROGNOSIS_TOOLTIP_AT,
+  senseState,
+  trainChronosense,
+  trainWeathersense,
+  WEATHERSENSE_ID,
+  type ForecastEntry,
+} from './senses';
 
 export * from './defs';
 export * from './sample';
+export * from './senses';
+export * from './validation';
 export { naturalDarkness };
 export { DARK_DODGE_PENALTY, DARK_MISS_CHANCE } from '../combat';
 
@@ -318,6 +337,8 @@ function tickExposure(ctx: W, spotId: string, totalTicks: number): void {
       for (const [element, share] of weatherExposure(sample, base.temp, now.hour)) {
         grantExposure(ctx, element, WEATHER_XP_PER_MINUTE * share);
       }
+      // The same open sky trains the sense that reads it forward.
+      trainWeathersense(ctx, sample, senseState(ctx, WEATHERSENSE_ID, ctx.read(skills).skills[WEATHERSENSE_ID]));
     }
   }
 
@@ -366,6 +387,59 @@ function tickSky(ctx: W, spotId: string, totalTicks: number): void {
   }
 }
 
+// ---- the forecast's sky ----
+
+/**
+ * The sky the forecast reads at a spot: its sky region and the weather over
+ * it now (the old shell's `headerSky`). Under a roof inside an open area (an
+ * `indoor` tag) the region is read as sheltered, so the sample is `still` with
+ * the damped temperature of a roofed floor. Null with no seed, and where the
+ * region has no atlas pin.
+ */
+export function forecastSky(
+  seed: number | null,
+  spotId: string,
+  totalTicks: number,
+): { region: RegionDef; weather: WeatherSample } | null {
+  const open = skyRegionOf(spotId);
+  if (!open || seed === null) return null;
+  const region = !open.sheltered && placeTags(spotId).has('indoor') ? { ...open, sheltered: true } : open;
+  const weather = weatherAt(seed, region, totalTicks);
+  return weather ? { region, weather } : null;
+}
+
+/** What Weathersense reads where the player stands. */
+export interface ForecastView {
+  /** The Weathersense level. */
+  level: number;
+  /** The name of the region read. */
+  region: string;
+  /** The sky now: icon, kind and the felt band. `still` under a roof. */
+  now: string;
+  /** From level 5: the rows are the region's daily prognosis. */
+  prognosis: boolean;
+  /** One row per forecast row the level opens, nearest first. */
+  rows: ForecastEntry[];
+}
+
+/** The forecast, or null below Weathersense level 1 and where `forecastSky` is null. */
+export function forecastView(ctx: Reads): ForecastView | null {
+  const level = skillLevel(ctx.read(skills), WEATHERSENSE_ID);
+  if (level < 1) return null;
+  const seed = ctx.read(weather).seed;
+  const totalTicks = totalTicksOf(ctx.read(clock));
+  const sky = forecastSky(seed, ctx.read(world).spot, totalTicks);
+  if (!sky || seed === null) return null;
+  const { region, weather: now } = sky;
+  return {
+    level,
+    region: region.name,
+    now: `${WEATHER_ICONS[now.kind]} ${now.kind} · feels ${now.band}`,
+    prognosis: level >= PROGNOSIS_TOOLTIP_AT,
+    rows: forecastFor(level, region, seed, totalTicks),
+  };
+}
+
 // ---- view ----
 
 export interface WeatherView {
@@ -377,7 +451,19 @@ export interface WeatherView {
   temp: number | null;
   /** The place darkness of the slice, 0 to 1. */
   darkness: number;
+  /** What Weathersense reads; null below level 1. */
+  forecast: ForecastView | null;
 }
+
+/**
+ * The last weather slice object seen while Chronosense was held. Within one
+ * slice object the sense stays held (a load or a new run replaces the
+ * object), so on a tick that is not a game minute nothing is due once the
+ * memo matches, and the skills slice is not read. Kept in memory, never
+ * saved; one field serves every kernel in the process (a mismatch only means
+ * one more read).
+ */
+let chronosenseHeldIn: object | null = null;
 
 // ---- the system ----
 
@@ -414,7 +500,16 @@ const weather = defineSystem<WeatherState, WeatherView>({
   tick: (ctx) => {
     syncEyeless(ctx);
     const totalTicks = totalTicksOf(ctx.read(clock));
-    if (totalTicks % TICKS_PER_GAME_MINUTE !== 0) return;
+    const minute = totalTicks % TICKS_PER_GAME_MINUTE === 0;
+    // Chronosense, before the exposure, as in the old loop. Something is due
+    // on a game minute, and on any tick from one day lived while the sense is
+    // not held.
+    if (minute || (totalTicks >= CHRONOSENSE_MANIFEST_TICKS && chronosenseHeldIn !== ctx.state)) {
+      const held = ctx.read(skills).skills[CHRONOSENSE_ID];
+      chronosenseHeldIn = held ? ctx.state : null;
+      trainChronosense(ctx, totalTicks, senseState(ctx, CHRONOSENSE_ID, held));
+    }
+    if (!minute) return;
     // While travelling the spot is the place left, as in the old loop.
     const spotId = ctx.read(world).spot;
     tickExposure(ctx, spotId, totalTicks);
@@ -445,6 +540,7 @@ const weather = defineSystem<WeatherState, WeatherView>({
       band: sample ? tempBand(sample.temp) : null,
       temp: sample ? Math.round(sample.temp) : null,
       darkness: ctx.state.darkness,
+      forecast: forecastView(ctx),
     };
   },
 });

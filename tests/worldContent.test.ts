@@ -45,7 +45,7 @@ import { SKILLS } from '../src/systems/skills';
 import { STAT_NAMES } from '../src/systems/stats';
 import { SUPERATTR_LIST } from '../src/systems/superattrs';
 import { WARD_WINDOWS, wardContentIssues, wardStatKeys } from '../src/systems/wards';
-import { ELEMENT_TAGS, PLACE_TAGS, SKY_TABLES, TERRAIN_PROFILES, WEATHER_KINDS } from '../src/systems/weather';
+import { ELEMENT_TAGS, PLACE_TAGS, skyContentIssues, TERRAIN_PROFILES } from '../src/systems/weather';
 import {
   ADJACENCY,
   AREAS,
@@ -948,26 +948,15 @@ describe('the harbor band: sides and convoys', () => {
   });
 });
 
+/**
+ * Region skies and the encounter lines that wait on them (old
+ * `content.test.ts`). The checks are one pure function in
+ * `weather/validation.ts` (old `skyValidation.ts`), run here on the live
+ * registry; its cases are in `tests/exposure.test.ts`.
+ */
 describe('region skies and sky-gated encounter lines', () => {
   it('every region sky names a table, and every sky line can roll where it stands', () => {
-    // The region and area rules of the old `skyContentIssues`, which is not
-    // ported as a function. Its spot rules (a sky line under a roof, a
-    // table-only kind with no table) have nothing to read: no line in scope
-    // waits on the sky. The last assertion fails when one arrives.
-    const kinds = new Set<string>(WEATHER_KINDS);
-    for (const region of Object.values(REGIONS)) {
-      if (region.sky === undefined) continue;
-      expect(SKY_TABLES[region.sky], `${region.id}: sky '${region.sky}' is not in SKY_TABLES`).toBeDefined();
-      expect(region.world, `${region.id}: a sky table needs an atlas pin (world)`).toBeDefined();
-    }
-    for (const area of Object.values(AREAS)) {
-      if (area.skyRegionId === undefined) continue;
-      expect(REGIONS[area.skyRegionId], `${area.id}: skyRegionId '${area.skyRegionId}' is not a region`).toBeDefined();
-    }
-    const skyLines = Object.values(SPOTS).flatMap((s) => (s.encounters ?? []).filter((e) => e.sky !== undefined).map((e) => ({ spot: s.id, e })));
-    for (const { spot, e } of skyLines) {
-      for (const k of e.sky ?? []) expect(kinds.has(k), `${spot} ${e.monsterId}: sky names '${k}'`).toBe(true);
-    }
-    expect(skyLines.map((l) => l.spot), 'a sky line is in scope: port the spot rules of skyContentIssues').toEqual([]);
+    const issues = skyContentIssues({ regions: REGIONS, areas: AREAS, spots: SPOTS });
+    expect(issues.map((i) => `${i.kind} ${i.id}: ${i.message}`)).toEqual([]);
   });
 });

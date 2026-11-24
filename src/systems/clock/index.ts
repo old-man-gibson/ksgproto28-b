@@ -232,6 +232,100 @@ export function formatMoon(moon: MoonState, withDay = false): string {
   return `${moon.name}: ${moon.phaseName}${day}`;
 }
 
+// ---- Chronosense: the clock as the player can read it ----
+//
+// Port of the old `systems/chronosense.ts` but for `tickChronosense`. The
+// skill manifests from lived time alone and trains on every game minute; the
+// trainer runs in the tick of `weather`, which reads this clock on every tick
+// already (this system imports no other, so it cannot send skill XP).
+
+export const CHRONOSENSE_ID = 'chronosense';
+
+/** One full day lived, and the sense manifests. */
+export const CHRONOSENSE_MANIFEST_TICKS = TICKS_PER_DAY;
+
+/** XP per game minute, to every skill the tag `time` trains. */
+export const CHRONOSENSE_XP_PER_MINUTE = 0.05;
+
+/**
+ * The level at which each precision arrives. The skill's `tierNames` list the
+ * same levels. `minute` is past the base cap of 20: it needs a raised cap.
+ */
+export const SENSE_LEVELS = {
+  daypart: 1,
+  season: 4,
+  bell: 8,
+  weekday: 12,
+  date: 16,
+  minute: 25,
+} as const;
+
+/**
+ * Time resistance, for the levels past the base cap of 20: x0.99 per level
+ * from 21, x0.97 on a decade level (30, 40, ...), and a further x0.95 at 50,
+ * 75 and 100. Level 100 leaves x0.326 of a time penalty. No system reads it:
+ * no time penalty exists in the old build either.
+ */
+export function timePenaltyMult(level: number): number {
+  let mult = 1;
+  for (let l = 21; l <= level; l++) {
+    mult *= l >= 30 && l % 10 === 0 ? 0.97 : 0.99;
+    if (l === 50 || l === 75 || l === 100) mult *= 0.95;
+  }
+  return mult;
+}
+
+const DAYPARTS: { until: number; name: string }[] = [
+  { until: 4, name: 'Deep night' },
+  { until: 6, name: 'Dawn' },
+  { until: 11, name: 'Morning' },
+  { until: 13, name: 'Midday' },
+  { until: 17, name: 'Afternoon' },
+  { until: 19, name: 'Dusk' },
+  { until: 23, name: 'Night' },
+];
+
+function daypart(hour: number): string {
+  return (DAYPARTS.find((d) => hour <= d.until) ?? DAYPARTS[0]).name;
+}
+
+const bell = (clock: WorldClock): string => `about ${String(clock.hour).padStart(2, '0')}:00`;
+
+/**
+ * The clock as a Chronosense level reads it; null below level 1.
+ *
+ *   L1  "Morning"
+ *   L4  "Morning · winter"          (a holy day reads as "a holy day")
+ *   L8  "about 09:00 · winter"
+ *   L12 "Fifthday · about 09:00 · winter"
+ *   L16 "Fifthday, 12th of Third Month, Year 1 · about 09:00"
+ *   L25 "Fifthday, 12th of Third Month, Year 1 · 09:23"
+ */
+export function describeTimeSense(clock: WorldClock, level: number): string | null {
+  if (level < SENSE_LEVELS.daypart) return null;
+  if (level >= SENSE_LEVELS.date) {
+    return `${formatDate(clock)} · ${level >= SENSE_LEVELS.minute ? formatTime(clock) : bell(clock)}`;
+  }
+  const parts: string[] = [];
+  if (level >= SENSE_LEVELS.weekday && clock.weekday !== null) parts.push(WEEKDAYS[clock.weekday]);
+  parts.push(level >= SENSE_LEVELS.bell ? bell(clock) : daypart(clock.hour));
+  if (level >= SENSE_LEVELS.season) {
+    parts.push(clock.season);
+    if (clock.holyDay) parts.push('a holy day');
+  }
+  return parts.join(' · ');
+}
+
+/**
+ * The moons as a Chronosense level reads them, one line per moon: none below
+ * the season level, the phase from there, the day of the cycle from the date
+ * level.
+ */
+export function describeMoons(clock: WorldClock, level: number): string[] {
+  if (level < SENSE_LEVELS.season) return [];
+  return clock.moons.map((m) => formatMoon(m, level >= SENSE_LEVELS.date));
+}
+
 // ---- the system ----
 
 export interface ClockState {

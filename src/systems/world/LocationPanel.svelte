@@ -6,6 +6,7 @@
   import ladder from '../ladder';
   import FestivalPanel from '../festival/FestivalPanel.svelte';
   import SeaPanel from '../sea/SeaPanel.svelte';
+  import SkyPanel from '../weather/SkyPanel.svelte';
   import world, { cancelPlan, climb, climbHub, goAndDoCommand, selectActivity, setIntent, travelTo, type MapSpotView as SpotView } from './index';
 
   type MapSpotView = DeepReadonly<SpotView>;
@@ -108,6 +109,7 @@
 
   <SeaPanel />
   <FestivalPanel />
+  <SkyPanel />
 
   <h2>Map: {view.map.region}</h2>
   <div class="card picked" data-testid="location-picked">
