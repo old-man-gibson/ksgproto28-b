@@ -491,6 +491,10 @@ and can run beside another port (W touches only `weather` and `clock`).
   todos `exposure.test.ts` 1264, 1265.
 - Parity: John unchanged (he trains neither skill by choice; check the
   passive XP does not move a segment).
+- Done: section 13. No kernel change. Chronosense's trainer runs in
+  `weather` (`clock` imports no system). The passive XP does move John
+  from run 2 on: both senses count in `skill:levels` and the harvest (an
+  old rule). Run totals stay within 15% of the old means (13.1).
 
 ### 5.8 Port C6: the Malgeri Crossing
 
@@ -1976,3 +1980,347 @@ catch-up); its festival slice loaded at version 1 and migrated.
 Not checked in a browser: a den fight, a knockout on the field, a cache
 lending a weapon that takes the hand (tested headless), the "Enter the
 royale" label of the ladder card's climb from the hall, day ten's ride.
+
+## 13. Port W: Weathersense, Chronosense, the sky lint (done)
+
+Done 2026-11-23 on branch `step4-W`, from `main` at `ec83015`. Not merged,
+not pushed. Commits:
+
+1. `1677910`, the port.
+2. `e3944b0`, the outcome digests recorded again.
+3. This account.
+
+The full account: the "Step 4 port W" sections of the `weather`, `skills`
+and `world` READMEs, the Chronosense section of the `clock` README, and the
+panel paragraph of the `attributes` README.
+
+What was ported:
+
+- `clock`: the readers of old `chronosense.ts` (147): `SENSE_LEVELS`,
+  `describeTimeSense`, `describeMoons`, `timePenaltyMult` (read by nothing,
+  as in the old build), the skill's id and numbers.
+- `weather`: `senses.ts`, old `weathersense.ts` (186) but
+  `noteTravelSkies`, and `tickChronosense`; `validation.ts`, old
+  `skyValidation.ts` (93), unchanged but for the imports. Both trainers run
+  in this system's tick: Chronosense before the exposure (the old loop's
+  order), Weathersense inside the exposure minute with the sample of an
+  open sky. `clock` imports no system and `skills` imports `log`, which
+  imports `clock`, so the trainer cannot live in `clock`; the weather tick
+  reads the clock on every tick already. `forecastSky` (old shell
+  `headerSky`: `still` under a roof), `view.forecast`, `SkyReadout.svelte`
+  and `SkyPanel.svelte`, mounted in the Location panel under the festival's
+  readout.
+- `world`: `noteTravelSkies` in `tickTravel`, after the Scouting XP (old
+  `locations.ts` 94-95), keyed by the region of the spot's area.
+- `skills`: the view's `timeSense` (null until Chronosense is held) and
+  `TimeSenseReadout.svelte`. The Character panel (`attributes`) mounts it in
+  its head card in place of the date and time line: the old build showed the
+  calendar only through the sense (the header clock chip, absent until the
+  sense manifests).
+- No slice changes shape: no migration, no fixture. No kernel change.
+- Spec ported, every old case accounted for:
+
+| Old file | Cases | Here |
+|---|---|---|
+| `weathersense.test.ts` | 9 | 9 in `tests/weathersense.test.ts`, `westlands` (shelved) replaced by `threshold`; `prognosisTitle` asserted on `view.forecast`. 7 new: the trainer in the tick (a severe minute manifests, a roof keeps it out, the watch rate on a minute only, no keyless grant at the ceiling while a severe key still counts, an arrival by travel), the Sky readout rendered on the server (3). |
+| `chronosense.test.ts` | 15 | 15 in `tests/chronosense.test.ts`; one old `tickChronosense` is one kernel tick landing on the clock value. 4 new: no grant at the ceiling and training again once it is raised; a save past the first day manifests on the next tick, minute or not; the view's `timeSense`; the readout rendered on the server. |
+| `sky.test.ts` "the forecast" | 5 | 5 in `tests/exposure.test.ts` (the todo "the forecast reads a calm sky and a heatwave") |
+| `sky.test.ts` `skyContentIssues` | 7 | 7 in `tests/exposure.test.ts` (the todo "`skyContentIssues` refuses ...") |
+| `content.test.ts` "region skies and sky-gated encounter lines" | 1 | `tests/worldContent.test.ts` calls `skyContentIssues` on the live content (it held an inline copy of the region and area rules) |
+| `exposure.test.ts` todo "Weathersense trains under an open sky and on a journey" | 1 | 1 new case: under the open ridge, at the place left while travelling, never under a roof; the arrival case is in `weathersense.test.ts` |
+| `skySlots.test.ts` | 2 | Not ported: the 7.1em clock slot of the old header chip and phone dock line (`shortClock`). The shell has neither (the UI step). The Character panel's time line has a fixed height, two lines under 640 px. |
+| `prestige.test.ts` "Chronosense ceiling" | 1 | Ported before (`tests/prestige.test.ts`) |
+
+  The exposure todos the plan names as 1264 and 1265 are the first two of
+  the three above (lines 1379 to 1381 at `ec83015`). Unit project: 3,594
+  passed, 4 skipped, 120 todo (`main`: 3,546, 4, 123).
+
+Old bugs and rules kept:
+
+- Chronosense manifests when the clock reaches one day (`totalTicks >=
+  TICKS_PER_DAY`), but a run starts at 09:00 of day 1: the sense manifests
+  15 game hours (9,000 ticks) into every run, not after a full day lived.
+- Severe by temperature alone (-10 and below, 37 and above) makes many
+  winter minutes severe: where Weathersense manifests depends on the drawn
+  seed (John: the first game minute at the Foot with seed 7, floor 4 with
+  seed 42, never with seed 1234).
+- A severe temperature keys the novelty by temperature (`wx:brutal_cold`,
+  `wx:scorch`), not by the kind; a rough read calls snow, a blizzard and a
+  storm "wet weather"; `noteTravelSkies` keys on the area's region, not the
+  sky region.
+- Both senses count in `skill:levels` (Eternal Student: +5% skill XP at
+  25 levels, +8% at 100) and in the harvest's skill levels. This moves
+  John (13.1) and the fight budget runs (13.2).
+
+Changed while porting (no rule):
+
+- The forecast and the sky now are lines in the Location panel, shown from
+  Weathersense level 1; the old build had them in the header chip's
+  tooltip, on hover. "Label: fact" lines; the rough marker is "(rough)",
+  not "(?)".
+- The old `prognosisTitle`, read by no UI, put the exact date in the
+  prognosis heading at any Chronosense level; the heading here is the old
+  header's, the region only.
+- A grant with no novelty key changes nothing to a sense not held, or to a
+  sense at its ceiling with 0 XP, so the trainers do not send it then (the
+  watch XP, the minute XP; `senseState`). The old calls ran and changed
+  nothing. Every outcome digest and John's climbs through floor 16 are equal
+  with and without the skip.
+
+Noticed, older than this port:
+
+- The old `content.test.ts` case "every skill tag is emitted by something"
+  (which lists `time` and `weather`) has no counterpart in the rebuild.
+- The forge validator calls no sky lint (as for the ward, sea and festival
+  lints).
+
+### 13.1 John
+
+`tests/john.ts` is unchanged: John trains neither sense by choice. Both
+train on their own in his climb, as in the old build: Chronosense
+manifests 9,000 ticks into each run (old: the same tick); Weathersense in
+the first severe open-sky minute, which depends on the drawn weather seed
+(seed 42: floor 4 in run 1; seed 7: the first minute at the Foot; seed
+1234: in no run). Old John (`7c1267b`, seed 42, merchants) gains both in
+every run too, Weathersense at tick 6,370 and Chronosense at 9,000 of run
+1, and ends floor 16 at Weathersense 17 and Chronosense 17 (branch: 14 and
+16).
+
+The passive XP moves John's segments; the plan (5.7) expected it not to.
+The cause is the old rule that both senses count in `skill:levels` and in
+the harvest:
+
+- Run 1: every segment closes on the same tick as on `main`, but seed 42's
+  floor 6 gate and floor 6 one tick earlier (the Eternal Student's 100-level
+  tier, +8% skill XP, is claimed at tick 10,849 instead of 12,272). The
+  first harvest's skill-level source pays 5 points on every seed instead of
+  4: 18 / 17 / 18 points (`main` 17 / 16 / 17). The old build's harvest is
+  17 / 18 / 17, its skill-level source 5 / 5 / 5.
+- Runs 2 and 3: the senses manifest again 9,000 ticks into each run and the
+  student tiers come earlier again; every segment from `f1-6 again` on
+  differs from `main` on every seed (scratch `.scratch-w/diff.txt`).
+
+New John against `main` (`ec83015`) and old John at `7c1267b`
+(`D:\ksgproto28`, nothing edited; its modules imported read-only), the same
+day, seeds 42, 7 and 1234, `--through 16`, the scripts of 12.1. `main`'s
+results equal port C5's branch runs on every seed and side, and the old
+results equal C5's old runs. Runs 1 and 2 are the same for both sides.
+
+Merchants (the default):
+
+| Segment | Old | Main | Branch | Old mean | Main mean | Branch mean | Branch vs main | Branch vs old | KO old | KO main | KO branch | Kills main | Kills branch |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| f1-6 again | 0:23:16 / 0:25:29 / 0:24:04 | 0:22:45 / 0:23:08 / 0:24:06 | 0:22:57 / 0:23:43 / 0:24:13 | 0:24:16 | 0:23:20 | 0:23:38 | +1.3% | -2.7% | 21/20/22 | 20/21/20 | 20/23/20 | 78/87/78 | 78/88/78 |
+| f7 | 0:03:02 / 0:02:58 / 0:03:05 | 0:02:45 / 0:02:25 / 0:02:41 | 0:03:23 / 0:02:55 / 0:02:32 | 0:03:02 | 0:02:37 | 0:02:57 | +12.6% | -2.6% | 3/3/3 | 2/2/2 | 3/2/2 | 32/29/33 | 40/43/33 |
+| f8 | 0:06:33 / 0:00:15 / 0:00:13 | 0:12:42 / 0:00:15 / 0:06:26 | 0:06:33 / 0:00:14 / 0:06:26 | 0:02:20 | 0:06:28 | 0:04:24 | -31.8% | +88.4% | 9/0/0 | 15/0/8 | 8/0/8 | 128/1/56 | 65/1/57 |
+| f9 | 0:12:44 / 0:12:51 / 0:19:13 | 0:00:12 / 0:12:48 / 0:06:29 | 0:06:27 / 0:06:29 / 0:06:27 | 0:14:56 | 0:06:30 | 0:06:28 | -0.6% | -56.7% | 11/15/20 | 0/16/9 | 7/8/7 | 1/128/54 | 62/60/66 |
+| f10 | 0:00:11 / 0:12:42 / 0:00:15 | 0:06:30 / 0:00:14 / 0:12:42 | 0:00:11 / 0:06:29 / 0:12:43 | 0:04:23 | 0:06:29 | 0:06:28 | -0.3% | +47.5% | 0/2/0 | 3/0/5 | 0/4/6 | 93/1/187 | 1/89/188 |
+| f11 siege | 0:07:29 / 0:06:54 / 0:07:03 | 0:08:23 / 0:08:11 / 0:07:30 | 0:08:57 / 0:08:17 / 0:07:30 | 0:07:09 | 0:08:02 | 0:08:15 | +2.7% | +15.4% | 3/2/2 | 5/4/4 | 6/5/4 | 39/38/35 | 43/38/35 |
+| f1-10 again | 0:46:42 / 0:39:36 / 0:46:00 | 0:52:33 / 0:47:13 / 0:49:22 | 0:42:24 / 0:46:37 / 1:00:01 | 0:44:06 | 0:49:43 | 0:49:41 | -0.1% | +12.7% | 47/36/35 | 42/46/48 | 41/40/54 | 419/311/333 | 233/350/525 |
+| f11 | 0:12:18 / 0:07:24 / 0:07:00 | 0:06:27 / 0:05:47 / 0:03:38 | 0:04:36 / 0:06:23 / 0:04:59 | 0:08:54 | 0:05:17 | 0:05:19 | +0.5% | -40.3% | 6/4/3 | 1/2/3 | 5/2/2 | 105/83/42 | 48/97/74 |
+| f12 | 0:30:00 / 0:36:00 / 0:30:00 | 0:30:00 / 0:30:00 / 0:24:00 | 0:30:00 / 0:24:00 / 0:24:00 | 0:32:00 | 0:28:00 | 0:26:00 | -7.1% | -18.8% | 8/10/7 | 8/5/12 | 9/7/5 | 545/571/393 | 533/429/454 |
+| f13 | 1:30:00 / 1:42:00 / 1:30:00 | 1:36:00 / 1:48:00 / 1:36:00 | 1:30:00 / 1:48:00 / 1:48:00 | 1:34:00 | 1:40:00 | 1:42:00 | +2.0% | +8.5% | 6/9/12 | 6/9/10 | 8/10/11 | 2694/3028/2582 | 2486/2873/3038 |
+| f14 | 0:00:13 / 0:00:14 / 0:00:12 | 0:00:13 / 0:00:13 / 0:00:13 | 0:00:14 / 0:00:13 / 0:00:13 | 0:00:13 | 0:00:13 | 0:00:13 | +3.4% | +3.1% | 0/0/0 | 0/0/0 | 0/0/0 | 3/3/2 | 3/2/2 |
+| f15 | 0:00:21 / 0:00:25 / 0:00:23 | 0:00:23 / 0:00:22 / 0:00:22 | 0:00:22 / 0:00:22 / 0:00:22 | 0:00:23 | 0:00:22 | 0:00:22 | -0.2% | -4.2% | 0/0/0 | 0/0/0 | 0/0/0 | 9/9/9 | 9/9/9 |
+| f16 | 0:03:45 / 0:03:05 / 0:04:25 | 0:03:02 / 0:03:32 / 0:04:24 | 0:03:25 / 0:03:09 / 0:03:56 | 0:03:45 | 0:03:39 | 0:03:30 | -4.2% | -6.6% | 0/0/0 | 0/0/0 | 0/0/0 | 10/8/10 | 8/10/7 |
+| Run 1 | 0:26:41 / 0:22:52 / 0:24:13 | 0:26:14 / 0:26:26 / 0:25:51 | 0:26:14 / 0:26:26 / 0:25:51 | 0:24:35 | 0:26:11 | 0:26:11 | -0.0% | +6.5% | | | | | |
+| Run 2 | 0:53:15 / 1:01:09 / 0:53:52 | 0:53:17 / 0:47:03 / 0:59:54 | 0:48:28 / 0:48:06 / 0:59:51 | 0:56:05 | 0:53:25 | 0:52:09 | -2.4% | -7.0% | | | | | |
+| Run 3 to f16 | 3:03:19 / 3:08:44 / 2:58:00 | 3:08:38 / 3:15:06 / 2:57:58 | 2:51:01 / 3:08:44 / 3:21:31 | 3:03:21 | 3:07:14 | 3:07:05 | -0.1% | +2.0% | | | | | |
+| Floor 0 to f16 | 4:23:15 / 4:32:45 / 4:16:04 | 4:28:10 / 4:28:35 / 4:23:44 | 4:05:43 / 4:23:17 / 4:47:13 | 4:24:01 | 4:26:50 | 4:25:25 | -0.5% | +0.5% | | | | | |
+
+Level at the floor 16 clear: old 40/41/40, main 41/41/41, branch 40/41/41.
+
+Fights in the climb: old 2719/2968/2689 main 2880/2953/2703 branch 2512/2849/3160
+
+`--side navy` (runs 1 and 2 and `f1-10 again` are the merchants' rows):
+
+| Segment | Old | Main | Branch | Old mean | Main mean | Branch mean | Branch vs main | Branch vs old | KO old | KO main | KO branch | Kills main | Kills branch |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| f11 | 0:06:18 / 0:07:24 / 0:07:00 | 0:06:27 / 0:05:47 / 0:03:38 | 0:16:36 / 0:06:23 / 0:04:59 | 0:06:54 | 0:05:17 | 0:09:19 | +76.1% | +35.0% | 3/6/6 | 4/4/3 | 13/5/3 | 90/76/42 | 221/76/70 |
+| f12 | 0:30:00 / 0:30:00 / 0:30:00 | 0:36:00 / 0:24:00 / 0:36:00 | 0:30:00 / 0:30:00 / 0:30:00 | 0:30:00 | 0:32:00 | 0:30:00 | -6.3% | +0.0% | 13/16/12 | 11/9/19 | 7/14/9 | 662/418/600 | 560/516/563 |
+| f13 | 1:36:00 / 1:30:00 / 1:36:00 | 1:36:00 / 1:36:00 / 1:30:00 | 1:42:00 / 1:42:00 / 1:30:00 | 1:34:00 | 1:34:00 | 1:38:00 | +4.3% | +4.3% | 14/15/11 | 9/15/10 | 14/16/9 | 2641/2527/2410 | 2831/2661/2459 |
+| f14 | 0:00:15 / 0:00:13 / 0:00:13 | 0:00:14 / 0:00:13 / 0:00:12 | 0:00:13 / 0:00:13 / 0:00:13 | 0:00:13 | 0:00:13 | 0:00:13 | +2.1% | -2.2% | 0/0/0 | 0/0/0 | 0/0/0 | 3/3/2 | 3/3/2 |
+| f15 | 0:00:23 / 0:00:23 / 0:00:22 | 0:00:26 / 0:00:23 / 0:00:21 | 0:00:23 / 0:00:22 / 0:00:25 | 0:00:22 | 0:00:24 | 0:00:24 | +0.0% | +4.9% | 0/0/0 | 0/0/0 | 0/0/0 | 9/9/9 | 9/9/9 |
+| f16 | 0:03:03 / 0:04:32 / 1:17:11 | 0:03:10 / 0:03:21 / 1:20:43 | 0:02:59 / 0:03:22 / 0:04:16 | 0:28:15 | 0:29:04 | 0:03:32 | -87.9% | -87.5% | 0/0/1 | 0/0/1 | 0/0/0 | 10/10/24 | 9/10/9 |
+| Run 3 to f16 | 3:02:40 / 2:52:07 / 4:16:46 | 3:14:50 / 2:56:56 / 4:20:16 | 3:14:34 / 3:08:57 / 3:09:54 | 3:23:51 | 3:30:41 | 3:11:08 | -9.3% | -6.2% | | | | | |
+| Floor 0 to f16 | 4:22:36 / 4:16:08 / 5:34:50 | 4:34:22 / 4:10:26 / 5:46:01 | 4:29:17 / 4:23:30 / 4:35:37 | 4:44:32 | 4:50:16 | 4:29:28 | -7.2% | -5.3% | | | | | |
+
+Level at the floor 16 clear: old 41/40/41, main 41/41/41, branch 41/41/41.
+
+Fights in the climb: old 2662/2588/2772 main 2960/2548/2755 branch 2898/2765/2867
+
+Against section 3.4, on the means over the three seeds, against the old
+build (`.scratch-w/tolerance.mjs`):
+
+- Every run total is within 15%: run 1 +6.5% (unchanged from `main`), run
+  2 -7.0% (`main` -4.8%), run 3 to floor 16 +2.0% merchants and -6.2% navy
+  (`main` +2.1% and +3.3%), floor 0 to 16 +0.5% and -5.3%.
+- Every segment over two minutes of old mean is within 35% but these:
+
+| Segment | Side | Old mean | Branch mean | Change | `main` mean | `main` change |
+|---|---|---|---|---|---|---|
+| f8 (keeper) | both | 0:02:20 | 0:04:24 | +88.4% | 0:06:28 | +176.3% |
+| f9 (keeper) | both | 0:14:56 | 0:06:28 | -56.7% | 0:06:30 | -56.5% |
+| f10 (keeper) | both | 0:04:23 | 0:06:28 | +47.5% | 0:06:29 | +47.9% |
+| f11 | merchants | 0:08:54 | 0:05:19 | -40.3% | 0:05:17 | -40.6% |
+| f11 | navy | 0:06:54 | 0:09:19 | +35.0% (35.02) | 0:05:17 | -23.3% |
+| f16 (boss) | navy | 0:28:15 | 0:03:32 | -87.5% | 0:29:04 | +2.9% |
+
+  Floors 8 to 10 and merchants floor 11 were outside on `main` already
+  (sections 8.1 and 10.1: keepers, one try every 6:30; floor 11 bound to
+  the convoy schedule). New with this port: navy floor 11, where seed 42
+  arrives at level 18 (`main` 21) and is knocked out 13 times (16:36
+  against the old 6:18), and navy floor 16, where seed 1234 wins its first
+  royale on the branch while the old build and `main` lose one and wait out
+  the 72-minute lockout (4:16 against 1:17:11). Section 3.4 reports keeper
+  and boss segments and holds floors 11 to 13 per seed by the convoy (next
+  item); on the plain rule of the means, these six rows are outside.
+- Per seed on the schedule-bound floors (one convoy is 6 minutes; floor 11
+  needs one):
+  - floor 11, merchants -7:42 / -1:01 / -2:01 against the old (`main`
+    -5:51 / -1:37 / -3:22); navy +10:18 / -1:01 / -2:01 (`main` +0:09 /
+    -1:37 / -3:22). Navy seed 42 arrives at level 18 (`main` 21) and is
+    knocked out 13 times on floor 11;
+  - floor 12, merchants 0 / -12 / -6 minutes, navy 0 / 0 / 0 (`main` 0 /
+    -6 / -6 and +6 / -6 / +6);
+  - floor 13, merchants 0 / +6 / +18, navy +6 / +12 / -6 (`main` +6 / +6 /
+    +6 and 0 / +6 / -6).
+  Merchants seed 7 on floor 12, merchants seed 1234 on floor 13, navy seed 7
+  on floor 13 and navy seed 42 on floor 11 are outside one convoy of the old
+  time. The run totals hold. The movement is the divergence of three seeds
+  once the skill XP changes in run 2; no rule of floors 11 to 13 changed.
+
+### 13.2 Offline budgets and the speed project
+
+What the port adds per tick: no tick hook. The weather tick, which read the
+clock on every tick already, compares the clock with the manifest tick and
+a memo; on a game minute it reads the skills slice once for Chronosense and,
+under an open sky with a sample, once for Weathersense. Per game minute
+while the senses are held: one `skills/grant-xp` for Chronosense, one for
+Weathersense under an open sky (the old build sent both whether held or
+not). Per arrival by travel: one `skills/grant-xp`. The views: the
+forecast's samples (up to 10) only while Weathersense is held; the time
+sense's clock reading only while Chronosense is held.
+
+The senses also change what the budget runs simulate: Chronosense reaches
+level 20 in every run of 8 hours, and its levels bring the Eternal Student
+tiers earlier (13 above), so a branch run is not the same run as `main`'s.
+
+The cost per grant, and what was cut. A scratch benchmark ran 8 hours of
+ticks at the start spot with Chronosense held below its ceiling (a grant
+every game minute) and at it (none sent), paired, 7 rounds: 2.67 µs per
+grant at first. A profile put a third of the skills handler in the ceiling
+read (`skillCap`, a derived read of the fact `skillCap:<id>`), made on
+every grant to a capped skill however far below the cap. Two changes in
+`skills`, each leaving every outcome digest and John's six climbs through
+floor 16 equal:
+
+- `addSkillXp` reads the ceiling only from `maxLevel` up (a ceiling is
+  `maxLevel` plus raises, and a raise only adds), at most once per grant;
+- the grant handler, when the tags train exactly one skill, pays that skill
+  if held instead of walking every held skill to find it (the walk would
+  visit it alone).
+
+After them: 2.19 µs per grant. Counted on the floor 1 run (a listener on
+every event, both builds): 19,694 more `skills/grant-xp` (Chronosense's
+minutes until its ceiling) and 20 more level-up chains, 2.7% more events in
+all; the stat-cache census shows the same block computes (371 of the
+player, 9,677 of monsters) and 20 more recollects (the level-ups).
+
+What a grant that changes no level does, counted (`.scratch-w/grantcounts.ts`:
+600 game minutes at the start spot with Chronosense held at level 19, cap
+raised, never levelling, against the same minutes with no sense): per
+grant one `skills/grant-xp` event and no other event, one derived read
+(the `skillXp` multiplier the amount needs), no touch of any source, no
+recollect, no stat compute, no dispatch, no request. By the code the
+handler also reads the `practice` slice once (a practice fight shapes the
+XP) and computes the level's cost to see that no level is gained; the
+weather tick reads the skills slice once per game minute. Both reads are
+needed for the same outcome, and the event is the kernel's rule for a
+change to another system: nothing cheap is left on that path.
+
+Against `main` (`ec83015`, the worktree `D:\ksgproto28-b-main`), both
+builds' modules in one process, alternating rounds (the scripts of 12.3),
+on the final code. Idle and poison: three processes of 5 rounds, machine
+load 45, 38 and 19% at their starts; fights: three processes of 1 round
+(the third with the branch first), load 7, 9 and 35%. Wall time (minimum /
+median) and processor time of the process, the median of the per-round
+differences:
+
+| Run of 8 hours | Rounds | `main` wall | Branch wall | Wall median | Processor, paired |
+|---|---|---|---|---|---|
+| No fight, no condition | 15 | 1,747 / 1,873 | 1,871 / 1,961 | +88 (+4.7%) | +93 (+4.7%) |
+| A poison held | 15 | 4,753 / 5,060 | 4,801 / 5,261 | +201 (+4.0%) | +110 (+1.8%) |
+| Floor 1 table sent to combat | 3 | 5,436 / 5,439 | 5,619 / 5,812 | +373 (+6.9%) | +343 (+5.1%) |
+| Floor 6 Tunnels sent to combat | 3 | 9,080 / 9,585 | 9,014 / 9,619 | +34 (+0.4%) | +61 (+0.5%) |
+| World: hunt, floor 4 Woods Edge | 3 | 8,705 / 9,418 | 9,036 / 9,871 | +453 (+4.8%) | +405 (+3.8%) |
+| World: hunt, floor 6 Tunnels | 3 | 8,749 / 9,160 | 8,800 / 9,612 | +452 (+4.9%) | +235 (+2.3%) |
+| World: the roadstead | 3 | 8,632 / 8,653 | 8,783 / 8,801 | +148 (+1.7%) | +281 (+2.9%) |
+
+Before the two changes in `skills` (15 rounds of idle and poison, 3 of
+fights, load 7 to 35%): idle +5.8% wall, +7.2% processor; poison +5.2% and
++3.6%; floor 1 +6.2% and +5.2%.
+
+Reading: the idle and poison runs pay about 23,000 Chronosense grants per 8
+hours (until level 20), 2.2 µs each by the benchmark, about 50 ms; the
+measured +88 to +201 ms is above that, and the floor 1 run's +343 ms of
+processor is several times the counted work. The rest is not found in any
+count (events, stat computes); the fight runs simulate a different game
+from `main`'s (the Eternal Student tiers move XP), so their per-run time
+is not a like-for-like measure. A grant per game minute is the old build's
+rule: its catch-up sent two (Chronosense and Weathersense) whether the
+senses were held or capped. A long-lived save holds both senses at their
+ceilings, where this build sends none.
+
+The speed project (the four John states and the idle run against `main`) is
+not measured: from about 20:50 another program (HandBrake, a video
+encoder) held the machine at 77 to 100%, and two attempts during it ran at
+about twice the usual times. The budget rows above were taken before it.
+
+`npm run verify` on the final code: svelte-check 0 errors; unit 3,594
+passed, 4 skipped, 120 todo; john 14 passed; build passed. The timed
+projects are not measured, because of outside load: `budget` and
+`budget-world` ran at 87 to 90% machine load (HandBrake), every run took
+about twice its usual time and all seven time limits failed (idle 3,401
+ms, poison 9,949, floor 1 15,296, floor 6 27,543, world 4 21,294, world 6
+22,270, the roadstead 18,672); every digest assertion, checked before the
+time, passed. `speed` was not run under that load.
+
+### 13.3 Browser check
+
+Port 5600 was held by another program's dev server for the whole session
+(a different project, started by another agent application), so the check
+ran on the build preview, port 5601 (`npm run build`, `ksgb-preview`), at
+1024 px and at 375 px. The preview's save slot (`ksgb:production:save` of
+`localhost:5601`) held only the new game the first page load created; it
+was backed up at `ksgb:production:save.before-step4W-check` and put back
+after, the backup key removed. Every edit of the slot was made from a
+static file of the same origin (`/assets/*.css`), so no game page could
+save over it. The save used: John (seed 7) at the close of floor 4, built
+by a scratch script on the branch, `savedAt` an hour ahead (no catch-up):
+Weathersense 7, Chronosense 2, standing at the Raid Camp (floor 4, open
+sky).
+
+- Character panel, 1024 px: the head card reads "Time: Dawn" (24 px line);
+  no moon line below level 4; the skill tree lists "Chronosense Lv 2 / 20"
+  and "Weathersense Lv 7 / 30".
+- Location panel, 1024 px: the Sky card under Activities: "Now: overcast ·
+  feels freezing", "Prognosis: The Ascent", "In 2 hours" and "In 6 hours"
+  precise, "In 12 hours" and "Tomorrow" fair, as level 7 gives. Every line
+  24 px, none cut. At 375 px: the card 351 px wide, the same lines, no
+  horizontal scroll.
+- Weathersense 30 and Chronosense 25 (cap raised by 5), 375 px: twelve
+  lines, out to "In 7 days: wet weather, freezing (rough)" (the 7-day row
+  opens at 29); "Time: Secondday, 2nd of First Month, Year 1 · 06:39" in its
+  two-line box (48 px), and three moon lines with the day of the cycle
+  ("Middle Moon: waxing crescent (day 2 of 28)"), none cut.
+- Floor 1 (a roofed region), Weathersense 30: "Now: still · feels cold" and
+  still rows with damped temperatures, as the old header read a roofed
+  spot.
+- Neither sense held: "Time: unknown until Chronosense manifests (one full
+  day lived)." (one line at 1024 px, the two-line box at 375 px), no Sky
+  card, neither skill in the tree.
+- No console errors.
+
+Not checked in a browser: a sense manifesting or levelling in live play
+(tested headless), the forecast while travelling, the dev server on 5600.
