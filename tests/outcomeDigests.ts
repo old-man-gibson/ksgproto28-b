@@ -57,7 +57,14 @@
  * run and no John fights training equipment, hunts the Cages or opens the
  * wuxin shutter), and on branch `step4-C5` after port C5 (the `festival`
  * slice's version 2 field `plan`: every state hash, nothing else; no run
- * reaches floor 16 and the John digest stops at the first prestige).
+ * reaches floor 16 and the John digest stops at the first prestige), and on
+ * branch `step4-W` after port W (Chronosense and Weathersense train on their
+ * own, as the old build did: every state hash. Their levels count in
+ * `skill:levels`, so the Eternal Student tiers come earlier: the gold of
+ * the floor 1, floor 6 and world 6 runs, the generator, kills and gold of
+ * the world 4 and roadstead runs; John's harvest is one point higher on
+ * every seed, and seed 42 closes the floor 6 gate and floor 6 one tick
+ * earlier).
  * A change that only makes the simulation faster leaves every one
  * of them equal. A change to a rule, a formula or content changes them;
  * record them again then, and say why in the commit.
@@ -73,7 +80,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 1,
     'gold': 0,
-    'state': 'a7bd8f61'
+    'state': 'fe36d4e8'
   },
   'poison': {
     'tick': 288000,
@@ -82,7 +89,7 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'defeats': 0,
     'level': 1,
     'gold': 0,
-    'state': '6ba7fcad'
+    'state': 'd6900b5e'
   },
   'floor1': {
     'tick': 288000,
@@ -90,8 +97,8 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'kills': 9677,
     'defeats': 0,
     'level': 9,
-    'gold': 33649,
-    'state': '0ea77a51'
+    'gold': 33640,
+    'state': '56086952'
   },
   'floor6': {
     'tick': 288000,
@@ -99,17 +106,17 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'kills': 11571,
     'defeats': 0,
     'level': 26,
-    'gold': 1627909,
-    'state': '6563db37'
+    'gold': 1627941,
+    'state': '542cff8b'
   },
   'world4': {
     'tick': 288000,
-    'rng': 3326362229,
-    'kills': 10020,
+    'rng': 885689646,
+    'kills': 9983,
     'defeats': 4,
     'level': 18,
-    'gold': 362564,
-    'state': 'b8e1b1f3'
+    'gold': 362864,
+    'state': '6b492f9b'
   },
   'world6': {
     'tick': 288000,
@@ -117,17 +124,17 @@ export const RUN_DIGESTS: Record<RunName, Digest> = {
     'kills': 11571,
     'defeats': 0,
     'level': 26,
-    'gold': 1627911,
-    'state': '318a4dfb'
+    'gold': 1627942,
+    'state': 'ebefd6e9'
   },
   'worldSea': {
     'tick': 288000,
-    'rng': 4068044825,
-    'kills': 10970,
+    'rng': 4112587919,
+    'kills': 10997,
     'defeats': 0,
     'level': 43,
-    'gold': 3688288,
-    'state': 'adfdf0f8'
+    'gold': 3646041,
+    'state': '809b7ccb'
   }
 };
 
@@ -205,7 +212,7 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
     },
     'fights': 85,
     'goldEarned': 10877,
-    'harvest': 16,
+    'harvest': 17,
     'end': {
       'tick': 15884,
       'rng': 727186057,
@@ -213,7 +220,7 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'defeats': 0,
       'level': 1,
       'gold': 0,
-      'state': 'f4baafd0'
+      'state': '7c3da547'
     }
   },
   '42': {
@@ -228,8 +235,8 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'floor4': 12676,
       'gate5': 12709,
       'floor5': 13570,
-      'gate6': 15542,
-      'floor6': 15744
+      'gate6': 15541,
+      'floor6': 15743
     },
     'knockouts': {
       'tutorial': 0,
@@ -289,15 +296,15 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
     },
     'fights': 85,
     'goldEarned': 11827,
-    'harvest': 17,
+    'harvest': 18,
     'end': {
-      'tick': 15804,
+      'tick': 15803,
       'rng': 1133562174,
       'kills': 0,
       'defeats': 0,
       'level': 1,
       'gold': 0,
-      'state': '9b5e1830'
+      'state': '67f76a52'
     }
   },
   '1234': {
@@ -373,7 +380,7 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
     },
     'fights': 82,
     'goldEarned': 13628,
-    'harvest': 17,
+    'harvest': 18,
     'end': {
       'tick': 15563,
       'rng': 245962908,
@@ -381,7 +388,7 @@ export const JOHN_DIGESTS: Record<number, JohnDigest> = {
       'defeats': 0,
       'level': 1,
       'gold': 0,
-      'state': 'a5e80fa8'
+      'state': '63099e28'
     }
   }
 };
