@@ -12,7 +12,9 @@
  * - A fight count reads in the view's frame, "4 wins at <spot>", where the
  *   old `condText` said "win 4 fights at <spot>". The ward position terms
  *   read the same.
- * - The boss latch case is floor 17 (step 4 port C6): `it.todo`.
+ * - The boss latch case: `it.todo`. Floor 17 came with step 4 port C6, but
+ *   the case reads a road's terms on the map, which this build does not
+ *   print (the UI step).
  */
 import { describe, expect, it } from 'vitest';
 import type { Kernel } from '../src/kernel';
@@ -65,5 +67,10 @@ describe('ward terms in words', () => {
     }
   });
 
-  it.todo('a boss latch reads as the keeper to defeat, on every road that is shut by one (step 4: port C6, floor 17)');
+  // Floor 17 is here since step 4 port C6: its descent (Malgeri Peak to the
+  // Mountain Base) is the one road shut by a boss latch. The old case read
+  // the road's terms as the map's barrier and the go button printed them
+  // (`routeInfo.shut`, the map plan); this build's map says "No known route."
+  // and prints no road terms. The UI step.
+  it.todo('a boss latch reads as the keeper to defeat, on every road that is shut by one (UI step: the map prints no road terms, old `routeInfo.shut`)');
 });

@@ -105,3 +105,10 @@ is the run's side (`sea`); each requires the other three stamps at 0
 (`f11_merchants_clearance`: a Port Clearance bought; the other three: 12
 kills of one monster), each requiring its join quest; turned in, the
 side's floor 14 approach lays its condition on the boss. No new machinery.
+
+## Step 4 port C6
+
+The panel's people list is `npcs/PeopleList.svelte`: the same Talk control,
+and the line each person says now ("Says: “…”", the old people card's
+rotating line), where floor 17's lore line shows. The list box is 12rem
+high (it was 9rem) to hold the line.

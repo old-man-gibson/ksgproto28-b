@@ -108,3 +108,15 @@ averaged profile (`monsterProfile`) for the selected entry only, from
 | `migrations.ts` | None yet. |
 
 Tests: `tests/bestiary.test.ts`, the cages case of `tests/onboarding.test.ts`.
+
+## Step 4 port C6
+
+- Floor 17's calm trio (`malgeri_ridge_wolf`, `malgeri_cairn_brute`,
+  `malgeri_hollow_seer`) now spawns: the calm lines of the six open hunt
+  spots. The veil, `openLiftedEntries` and the first-kill rule are port L's;
+  `tests/malgeri.test.ts` ports the old "the veil on the calm monsters" (6
+  cases) on the live content, and `tests/malgeriCatchup.test.ts` checks the
+  same ticks offline and live leave the same book.
+- `veilIssues(monsters, { skills, quests })`: the veil half of the old forge
+  validator's veil and lore rule (an empty veil hides nothing; a condition
+  names a real skill or quest). The lore half is `loreIssues` in `npcs`.

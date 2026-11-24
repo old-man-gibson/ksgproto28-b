@@ -200,7 +200,8 @@ the pools, the activity and the fight.
   boundary.
 - `NOISE_NORM` (4.67) is a measured constant, not derived.
 - No region in the content of this port has a sky table. The table `malgeri`
-  and the five rules are data with no reader until floor 17 (step 4).
+  and the five rules are data with no reader until floor 17 (step 4). Since
+  step 4 port C6 the region `malgeri_range` reads them (below).
 
 ## Step 4 port W: Weathersense, Chronosense, the sky lint
 
@@ -303,3 +304,37 @@ forge does not call it (as for the ward, sea and festival lints).
 - Events are queued: a severe minute's discovery and XP apply after this
   system's tick, in emit order, as the old synchronous calls did in the same
   order.
+
+## Step 4 port C6: the Malgeri Range
+
+- The table's reader is content: the region `malgeri_range` (`world`) names
+  the table `malgeri`, and floor 17's area stands under it by `skyRegionId`.
+  `skyRegionOf`, the sample, the sky rules, the sky lines and the first calm
+  read it as they read any region; no code changed here.
+- What a player meets on floor 17's open slopes: the fronts (gale, snow,
+  rain, storm, heatwave, one per 6-hour cell, one kind removed per season),
+  the conditions of each front's rule on the player and on the foes, the
+  front's slime line, and once per 12 days the 8-hour calm with its three
+  lines (the calm has no rule and no condition). Roofed spots (the caves,
+  the camps, the hamlet) take none of it.
+- The first calm: the flag `flag:malgeri_calm_seen` and the line, at the
+  first calm minute under an open sky, live or in catch-up. The flag lifts
+  the veil of the calm trio (`bestiary`, `openLiftedEntries` on the
+  `counters/changed` delivery) and Captain Bren's lore line (`npcs`).
+- The offline line: the old summarised catch-up suppressed the log and put
+  the line in its summary (`OfflineSummary.firstCalm`). Here catch-up keeps
+  log lines, so the line is in the log after it; the summary dialog is the
+  UI step. `tests/exposure.test.ts` and `tests/malgeriCatchup.test.ts` check
+  the line after catch-up.
+
+### Old rules and bugs ported as they are (floor 17)
+
+- John's arranged calm climb (`calmAtMalgeri`, `--malgeri-calm`) looks for
+  the next calm at most 12 days ahead, minute by minute; a spell can be up to
+  24 days less 8 hours away (two windows), so the arranged climb can find no
+  calm and jump 12 days anyway. In this port's runs: old seed 1234 and
+  branch seed 42 (each build draws its own weather seed).
+
+### Left behind
+
+- The forge validator calls no sky lint (as before).

@@ -57,8 +57,17 @@
  * activity), walks the field by the default plan and lets the field's
  * fights come until the champion falls or the attempt is lost.
  *
+ * Floor 17 (step 4 port C6, `through` 17): the Malgeri Crossing, the old
+ * `desertFloors[17]`. John walks the cave and the east slope to the peak,
+ * tries the peak's guardian with the roofed west peak as his den, walks the
+ * descent to the hamlet's gates after the guardian's first kill, and tries the
+ * regent with the mountain base as his den. With `calmAtMalgeri` the world
+ * clock jumps once to the range's next calm as he sets out (the DEBUG command
+ * `clock/debug-advance`; the old driver wrote the clock), and his den at the
+ * peak is the open east ridge.
+ *
  * Differences from the old driver, each from a port not done yet:
- * - Floors 17 to 20 are ports C6 and C7. `through` stops at 16.
+ * - Floors 18 to 20 are port C7. `through` stops at 17.
  * - The prestige takes no seed: the old `Game.prestige(seed)` reseeded the
  *   generator; the kernel's generator runs on.
  *
@@ -67,7 +76,7 @@
  */
 import { TPS, type Command, type Ctx, type Kernel } from '../src/kernel';
 import combat, { type CombatState } from '../src/systems/combat';
-import clockSystem, { totalTicksOf } from '../src/systems/clock';
+import clockSystem, { debugAdvanceClock, TICKS_PER_GAME_MINUTE, totalTicksOf } from '../src/systems/clock';
 import counters, { counterValue } from '../src/systems/counters';
 import festival, { ARENA, DARK_FLOOR, DARK_ROOM, lockoutLeft, ROYALE_FLOOR } from '../src/systems/festival';
 import gold from '../src/systems/gold';
@@ -90,7 +99,8 @@ import { SEA_SIDE_LIST, SEA_SIDES } from '../src/systems/sea';
 import { statOf } from '../src/systems/stats';
 import { learnFromTeacher, lessonsOf } from '../src/systems/martial';
 import { chooseSpell, chooseStance, chooseWeapon, skipTutorial } from '../src/systems/tutorial';
-import world, { climb, selectActivity, SPOTS, travelTo, type WorldState } from '../src/systems/world';
+import weather, { isCalmAt, skyKindAt, weatherAt } from '../src/systems/weather';
+import world, { climb, selectActivity, skyRegionOf, SPOTS, travelTo, type WorldState } from '../src/systems/world';
 import { makeGame, run } from './helpers';
 
 /** Floor 2's corridor, in walking order. */
@@ -121,6 +131,8 @@ export const SEGMENTS = [
   // Run 3: floors 1 to 10 again, then the harbor (`through` 11 to 14) and
   // the festival's floors 15 and 16.
   'reclimb3', 'floor11', 'floor12', 'floor13', 'floor14', 'floor15', 'floor16',
+  // Floor 17, the Malgeri Crossing (`through` 17).
+  'floor17',
 ] as const;
 export type ClimbSegment = (typeof SEGMENTS)[number];
 
@@ -139,7 +151,12 @@ const BOSSES: Partial<Record<ClimbSegment, string[]>> = {
   floor14: SEA_SIDE_LIST.map((x) => x.mission.spot),
   floor15: [DARK_ROOM],
   floor16: [ARENA],
+  // The peak's guardian (the gate down the west face) and the regent at the hamlet's gates (the clear).
+  floor17: ['f17_peak', 'f17_keeper'],
 };
+
+/** Floor 17's calm lines (docs/CONTENT.md section 5.8). */
+const CALM_TRIO = ['malgeri_ridge_wolf', 'malgeri_cairn_brute', 'malgeri_hollow_seer'];
 
 /**
  * A try at a boss counts only when this foe is in the fight (the wall's
@@ -167,7 +184,8 @@ export interface ClimbOptions {
   /**
    * The last floor: 3 (band 1, the default) to 6 (band 2), 7 to 10 (band 3,
    * run 2), 11 to 14 (the siege, which ends run 2, and run 3 to that floor of
-   * the harbor), 15 (run 3 to the festival's dark room).
+   * the harbor), 15 (run 3 to the festival's dark room), 16 (its royale), 17
+   * (the Malgeri Crossing).
    */
   through?: number;
   /** Ticks of play one floor past 6 may take before it is a wall. Default four hours. */
@@ -180,6 +198,14 @@ export interface ClimbOptions {
   prestige?: boolean;
   /** The harbor side John signs with: merchants, pirates, privateers or navy. Default: the first berth. */
   side?: string;
+  /**
+   * An arranged climb of floor 17 (old option of the same name): as John sets
+   * out for the floor the world clock jumps once to the range's next calm
+   * (`clock/debug-advance`, a DEBUG command), and his den between tries at the
+   * peak is the open east ridge instead of the roofed west peak, so the calm
+   * lines are what he fights. Default false.
+   */
+  calmAtMalgeri?: boolean;
   /** Called after every tick; the climb ends when it answers true. For tools that need a state mid-climb. */
   stopWhen?: (k: Kernel) => boolean;
   /** Called when a segment closes, before it is recorded: the segment, the tick, the climb's kernel. For tools that need the state at a floor clear (`tests/speedStates.ts`). */
@@ -213,6 +239,14 @@ export interface ClimbReport {
   firstSkip: ClimbSegment | null;
   /** Per segment: the first skip before it closed, so a number measured past a wall reads as such. */
   skipBefore: Record<ClimbSegment, ClimbSegment | null>;
+  /**
+   * Floor 17 only (the old `malgeriCalm` and the fight records the old pacing
+   * read): ticks of the floor's play inside a calm spell of the Malgeri Range,
+   * and of those the ticks John stood under the open calm sky; fights that
+   * ended with the peak's guardian in them, and how many were lost; fights
+   * that ended with a calm line in them, and how many were lost.
+   */
+  malgeri: { inSpell: number; underOpenSky: number; peakFights: number; peakLost: number; calmFights: number; calmLost: number };
   kernel: Kernel;
 }
 
@@ -245,6 +279,7 @@ export function runJohn(options: ClimbOptions): ClimbReport {
     skipWalls: true,
     wards: [7, 8, 9, 10],
     side: 'merchants',
+    calmAtMalgeri: false,
     stopWhen: () => false,
     onRecord: () => {},
     ...options,
@@ -283,6 +318,7 @@ export function runJohn(options: ClimbOptions): ClimbReport {
     stuck: {},
     firstSkip: null,
     skipBefore: blank(null),
+    malgeri: { inSpell: 0, underOpenSky: 0, peakFights: 0, peakLost: 0, calmFights: 0, calmLost: 0 },
     kernel: k,
   };
 
@@ -296,6 +332,9 @@ export function runJohn(options: ClimbOptions): ClimbReport {
   let knockouts = 0;
   let inFight = false;
   let fightBoss: ClimbSegment | null = null;
+  /** Floor 17: the fight in progress has the peak's guardian, a calm line. */
+  let fightGuardian = false;
+  let fightCalm = false;
   let stopped = false;
   /** Level, gold and run when the stronghold ended the run: the siege segment records these. */
   let ended: { level: number; gold: number; run: number } | null = null;
@@ -319,6 +358,14 @@ export function runJohn(options: ClimbOptions): ClimbReport {
       return;
     }
     const down = W().recovering;
+    if (segment === 'floor17') {
+      // The old report's `malgeriCalm`: a tick of the floor inside a calm spell, and under the open calm sky.
+      const seed = eye.read(weather).seed;
+      if (seed !== null && isCalmAt(seed, 'malgeri_range', totalTicksOf(eye.read(clockSystem)))) {
+        report.malgeri.inSpell++;
+        if (skyKindAt(eye, W().spot) === 'calm') report.malgeri.underOpenSky++;
+      }
+    }
     if (!wasDown && down) {
       knockouts++;
       report.knockouts[segment]++;
@@ -328,12 +375,25 @@ export function runJohn(options: ClimbOptions): ClimbReport {
     if (!before && after) {
       const spots = BOSSES[segment];
       const foe = BOSS_FOE[segment];
-      const foeHere = !foe || C().fight!.enemies.some((e) => e?.defId === foe);
+      const foes = C().fight!.enemies.flatMap((e) => (e ? [e.defId] : []));
+      const foeHere = !foe || foes.includes(foe);
       fightBoss = spots && spots.includes(W().spot) && foeHere ? segment : null;
       if (fightBoss) report.bossTries[fightBoss]++;
+      fightGuardian = segment === 'floor17' && foes.includes('malgeri_guardian');
+      fightCalm = segment === 'floor17' && foes.some((id) => CALM_TRIO.includes(id));
     } else if (before && !after) {
       report.fights++;
-      if (!wasDown && down && fightBoss) report.bossLost[fightBoss]++;
+      const lost = !wasDown && down;
+      if (lost && fightBoss) report.bossLost[fightBoss]++;
+      // The old pacing's floor 17 line read the fights that ended: the peak's tries and the calm lines.
+      if (fightBoss === 'floor17' && fightGuardian) {
+        report.malgeri.peakFights++;
+        if (lost) report.malgeri.peakLost++;
+      }
+      if (fightCalm) {
+        report.malgeri.calmFights++;
+        if (lost) report.malgeri.calmLost++;
+      }
     }
     if (opts.stopWhen(k)) stopped = true;
   };
@@ -594,7 +654,7 @@ export function runJohn(options: ClimbOptions): ClimbReport {
     seg: ClimbSegment,
     floorId: string,
     work: () => void,
-    o: { goal?: () => boolean; skip?: () => void; replay?: boolean; ride?: boolean } = {},
+    o: { goal?: () => boolean; skip?: () => void; prep?: () => void; replay?: boolean; ride?: boolean } = {},
   ): boolean => {
     const goal = o.goal ?? (() => clears(floorId));
     // DEBUG SKIP, not a player action: the floor's gate and clear counters
@@ -612,9 +672,11 @@ export function runJohn(options: ClimbOptions): ClimbReport {
     let entered = true;
     // A pass that ends early (a knockout moved him, a route was refused) is
     // taken up again until the floor opens, the cap runs out, or a pass does
-    // nothing. Each pass settles first and climbs if he is not on the floor.
+    // nothing. Each pass settles first, does the floor's prep, and climbs if
+    // he is not on the floor.
     repeat(goal, () => {
       settle();
+      o.prep?.();
       entered = o.ride === false || onFloor() || climbTo(floorId);
       if (entered) work();
     });
@@ -824,7 +886,49 @@ export function runJohn(options: ClimbOptions): ClimbReport {
     const work = () => repeat(() => clears(floorId), () => attemptFestival(n));
     if (!attempt(`floor${n}`, floorId, work, { ride: false })) return finish();
   }
+  if (opts.through <= 16) return finish();
+
+  // ---- Floor 17, the Malgeri Crossing: four maps in order. The cave and the
+  // east slope are walked through, not worked: the nest is optional and John
+  // skips it. The peak's guardian opens the west face; the regent at the
+  // hamlet's gates is the clear. The camps on the way are the dens (roofed,
+  // so the sky does not reach him there); with `calmAtMalgeri` the peak's den
+  // is the open east ridge, under a calm. The old `desertFloors[17]`. ----
+  /** `calmAtMalgeri`: the clock has been jumped to the calm (once per climb). */
+  let calmArranged = false;
+  const floor17 = {
+    prep: () => {
+      if (!opts.calmAtMalgeri || calmArranged) return;
+      calmArranged = true;
+      // DEBUG jump: to the first minute of the next calm spell over the east
+      // ridge (at most one 12-day window away), as the old John wrote the clock.
+      const seed = eye.read(weather).seed;
+      if (seed === null) return;
+      const now = totalTicksOf(eye.read(clockSystem));
+      let minutes = 0;
+      for (; minutes < 12 * 24 * 60 && kindOverRidge(seed, now + minutes * TICKS_PER_GAME_MINUTE) !== 'calm'; minutes++);
+      if (minutes > 0) send(debugAdvanceClock({ ticks: minutes * TICKS_PER_GAME_MINUTE }));
+    },
+    work: () => {
+      const peakDown = () => stat('boss:f17_peak') >= 1;
+      if (!peakDown()) {
+        const route = ['f17_cave_hub', 'f17_central_caves', 'f17_east_mouth', 'f17_east_ascent', 'f17_east_peak', 'f17_east_ridge', 'f17_west_ridge', 'f17_west_peak', 'f17_peak'];
+        if (!scout(route)) return;
+        keeperLoop(opts.calmAtMalgeri ? 'f17_east_ridge' : 'f17_west_peak', 'f17_peak', peakDown);
+      }
+      if (!peakDown()) return;
+      if (scout(['f17_base', 'f17_path', 'f17_old_path', 'f17_hamlet_square', 'f17_keeper'])) {
+        keeperLoop('f17_base', 'f17_keeper', () => clears('ascent_f17'));
+      }
+    },
+  };
+  if (!attempt('floor17', 'ascent_f17', floor17.work, { prep: floor17.prep })) return finish();
   return finish();
+}
+
+/** The sky over the open east ridge of floor 17 at a clock tick: the old `skyKindAt(s, 'f17_east_ridge')`. */
+function kindOverRidge(seed: number, totalTicks: number): string | null {
+  return weatherAt(seed, skyRegionOf('f17_east_ridge')!, totalTicks)?.kind ?? null;
 }
 
 /** Seconds, for reading. */
@@ -847,6 +951,7 @@ export const FLOOR_OF: Record<ClimbSegment, string> = {
   reclimb3: 'f1-10 again', floor11: 'f11', floor12: 'f12', floor13: 'f13', floor14: 'f14',
   floor15: 'f15',
   floor16: 'f16',
+  floor17: 'f17',
 };
 
 /** The per-floor table of one climb, in the old pacing script's columns. */

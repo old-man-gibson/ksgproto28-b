@@ -3,7 +3,7 @@
  * of a tick count. Port of the old `systems/clock.ts` and of the calendar
  * part of `data/climate.data.ts`. See README.md in this folder.
  */
-import { defineSystem, registry, s, type DeepReadonly, type RecordOf } from '../../kernel';
+import { defineCommand, defineSystem, handle, OK, registry, s, skipped, type DeepReadonly, type RecordOf } from '../../kernel';
 import holyDaysData from './content/holy_days.json';
 import monthsData from './content/months.json';
 import moonPhasesData from './content/moon_phases.json';
@@ -340,6 +340,17 @@ export function totalTicksOf(state: DeepReadonly<ClockState>): number {
   return state.totalTicks;
 }
 
+/**
+ * DEBUG, not a player action: move the world clock on by `ticks` game ticks
+ * at once, with nothing simulated in between (old John's arranged climb of
+ * floor 17 wrote `state.totalTicks` to reach the range's next calm). Used by
+ * the John driver only (`calmAtMalgeri`). Refused in a production build.
+ */
+export const debugAdvanceClock = defineCommand<{ ticks: number }>('clock/debug-advance');
+
+/** A production build of the page: the debug jump is refused. Tests, scripts and the dev server run it. */
+const PRODUCTION = (import.meta as { env?: { PROD?: boolean } }).env?.PROD === true;
+
 export interface ClockView {
   totalTicks: number;
   date: string;
@@ -358,6 +369,14 @@ export default defineSystem<ClockState, ClockView>({
   tick: (ctx) => {
     ctx.state.totalTicks += 1;
   },
+  commands: [
+    handle(debugAdvanceClock, (ctx, { ticks }) => {
+      if (PRODUCTION) return skipped('the debug jump of the clock is refused in a production build');
+      if (!Number.isInteger(ticks) || ticks < 0) return skipped(`the clock moves on by a whole number of ticks, not ${ticks}`);
+      ctx.state.totalTicks += ticks;
+      return OK;
+    }),
+  ],
   content: { months, weekdays, holy_days: holyDays, moons, moon_phases: moonPhases },
   view: ({ state }) => {
     const clock = clockOf(state.totalTicks);

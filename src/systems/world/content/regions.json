@@ -43,5 +43,15 @@
       "x": 14.8,
       "y": 21
     }
+  },
+  {
+    "id": "malgeri_range",
+    "name": "Malgeri Range",
+    "terrain": "mountains",
+    "sky": "malgeri",
+    "world": {
+      "x": 16,
+      "y": 29
+    }
   }
 ]

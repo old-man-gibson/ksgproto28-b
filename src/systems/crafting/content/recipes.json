@@ -105,5 +105,176 @@
     ],
     "ticks": 120,
     "xp": 3
+  },
+  {
+    "id": "leather",
+    "name": "Leather",
+    "ticks": 90,
+    "xp": 2,
+    "cost": [
+      {
+        "id": "ruined_fur",
+        "qty": 4
+      }
+    ],
+    "alts": [
+      {
+        "id": "torn",
+        "cost": [
+          {
+            "id": "torn_fur",
+            "qty": 3
+          }
+        ]
+      },
+      {
+        "id": "pristine",
+        "cost": [
+          {
+            "id": "pristine_fur",
+            "qty": 1
+          }
+        ],
+        "qty": 2
+      }
+    ],
+    "tags": [
+      "leatherwork"
+    ],
+    "result": {
+      "id": "leather",
+      "kind": "material"
+    }
+  },
+  {
+    "id": "leather_cap",
+    "tags": [
+      "leatherwork"
+    ],
+    "result": {
+      "kind": "item",
+      "id": "leather_cap"
+    },
+    "cost": [
+      {
+        "id": "ruined_fur",
+        "qty": 4
+      }
+    ],
+    "ticks": 150,
+    "xp": 4
+  },
+  {
+    "id": "leather_vest",
+    "tags": [
+      "leatherwork"
+    ],
+    "result": {
+      "kind": "item",
+      "id": "leather_vest"
+    },
+    "cost": [
+      {
+        "id": "torn_fur",
+        "qty": 4
+      },
+      {
+        "id": "ruined_fur",
+        "qty": 2
+      }
+    ],
+    "ticks": 250,
+    "xp": 8
+  },
+  {
+    "id": "leather_boots",
+    "tags": [
+      "leatherwork"
+    ],
+    "result": {
+      "kind": "item",
+      "id": "leather_boots"
+    },
+    "cost": [
+      {
+        "id": "torn_fur",
+        "qty": 3
+      }
+    ],
+    "ticks": 200,
+    "xp": 6
+  },
+  {
+    "id": "hunting_bow",
+    "tags": [
+      "leatherwork"
+    ],
+    "result": {
+      "kind": "item",
+      "id": "hunting_bow"
+    },
+    "cost": [
+      {
+        "id": "hardwood",
+        "qty": 2
+      },
+      {
+        "id": "torn_fur",
+        "qty": 1
+      }
+    ],
+    "ticks": 250,
+    "xp": 8
+  },
+  {
+    "id": "herbal_charm",
+    "tags": [
+      "alchemy"
+    ],
+    "result": {
+      "kind": "item",
+      "id": "herbal_charm"
+    },
+    "cost": [
+      {
+        "id": "common_herb",
+        "qty": 8
+      },
+      {
+        "id": "torn_fur",
+        "qty": 1
+      }
+    ],
+    "ticks": 300,
+    "xp": 10
+  },
+  {
+    "id": "wolf_cloak",
+    "tags": [
+      "leatherwork"
+    ],
+    "result": {
+      "kind": "item",
+      "id": "wolf_cloak"
+    },
+    "cost": [
+      {
+        "id": "pristine_fur",
+        "qty": 2
+      },
+      {
+        "id": "torn_fur",
+        "qty": 3
+      }
+    ],
+    "ticks": 400,
+    "xp": 15,
+    "unlock": [
+      {
+        "type": "skill",
+        "id": "leathercrafting",
+        "level": 5
+      }
+    ]
   }
 ]

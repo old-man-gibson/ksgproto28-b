@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import clock, {
   clockOf,
+  debugAdvanceClock,
   DAYS_PER_YEAR,
   formatDate,
   formatTime,
@@ -194,5 +195,22 @@ describe('the moons', () => {
     expect(JSON.stringify(loaded.save(1_000))).toBe(json);
     const ticks = (k: typeof kernel) => (k.snapshot().slices.clock as { totalTicks: number }).totalTicks;
     expect(clockOf(ticks(loaded)).moons).toEqual(clockOf(ticks(kernel)).moons);
+  });
+});
+
+describe('the debug jump (step 4 port C6, John only)', () => {
+  it('moves the clock on by whole ticks with nothing simulated, and refuses anything else with a reason', () => {
+    const k = makeKernel();
+    const now = () => (k.snapshot().slices.clock as { totalTicks: number }).totalTicks;
+    const before = now();
+    const tick = k.snapshot().kernel.tick;
+    expect(k.dispatch(debugAdvanceClock({ ticks: 6000 })).ok).toBe(true);
+    expect(now()).toBe(before + 6000);
+    expect(k.snapshot().kernel.tick).toBe(tick);
+    const half = k.dispatch(debugAdvanceClock({ ticks: 1.5 }));
+    expect(half.ok).toBe(false);
+    expect(half.ok ? '' : half.reason).toContain('whole number of ticks');
+    expect(k.dispatch(debugAdvanceClock({ ticks: -10 })).ok).toBe(false);
+    expect(now()).toBe(before + 6000);
   });
 });

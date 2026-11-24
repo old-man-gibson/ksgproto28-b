@@ -159,3 +159,15 @@ quay of floor 11: `ship_cannon` (6 iron ingots, 600 ticks), `cannonball`
 (3 from 1 iron ingot, 90 ticks), `powder_charge` (2 from 3 biomatter and
 1 iron scrap, 120 ticks, alchemy). Worth no more than their inputs at any
 counter (`tests/harbor.test.ts`, the no-arbitrage case).
+
+## Step 4 port C6
+
+Kystel's Anvil (`f17_hamlet_forge`, floor 17) lists eight recipes. Seven are
+new in `recipes`, from old `recipes.data.ts`, numbers unchanged: `leather`
+(three routes: 4 ruined fur, 3 torn fur, or 1 pristine fur for 2), the
+leatherwork pieces `leather_cap`, `leather_vest`, `leather_boots`,
+`hunting_bow` and `wolf_cloak` (unlocked at Leathercrafting 5), and
+`herbal_charm` (tagged `alchemy`). 14 recipes. The route cases of
+`tests/crafting.test.ts` keep the old literal and check the registry record
+equals it; its tick-loop case stands at Kystel's Anvil now. "Left behind"
+above still holds for the histones (mutagens).

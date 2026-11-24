@@ -22,7 +22,7 @@ import {
   type SystemDef,
 } from '../../kernel';
 import { dynamicLevelBonus, enemyKilled, fightStarted, type CombatState, type EncounterLine } from '../combat';
-import counters, { bumpCounter, conditionsMet, counterChanged, counterValue, type Condition } from '../counters';
+import counters, { bumpCounter, conditionRefIssues, conditionsMet, counterChanged, counterValue, type Condition } from '../counters';
 import levels, { encounterLevel, levelOf } from '../levels';
 import { fillText, logLine, textSchema, type TextRecord } from '../log';
 import { MONSTER_LIST, MONSTERS } from '../monsters';
@@ -106,6 +106,24 @@ const veilOf = (monsterId: string): readonly Condition[] | undefined => MONSTERS
 export function isVeiled(ctx: ReadCtx, monsterId: string): boolean {
   const veil = veilOf(monsterId);
   return !!veil && !conditionsMet(conditionReader(ctx), veil);
+}
+
+/**
+ * The veil lint of the old forge validator (`forge/lib/validate.ts`, the
+ * `veil` half of its veil and lore rule): a veil holds a condition, and its
+ * conditions name real skills and quests. Empty when sound. The lore half is
+ * `loreIssues` in `npcs`.
+ */
+export function veilIssues(
+  monsters: readonly { id: string; veil?: readonly Condition[] }[],
+  refs: { skills: Record<string, unknown>; quests: Record<string, unknown> },
+): { monster: string; message: string }[] {
+  const issues: { monster: string; message: string }[] = [];
+  for (const def of monsters) {
+    if (def.veil && !def.veil.length) issues.push({ monster: def.id, message: 'an empty veil hides nothing' });
+    for (const message of conditionRefIssues(def.veil, refs)) issues.push({ monster: def.id, message });
+  }
+  return issues;
 }
 
 /** An entry exists once its species was killed, and is not veiled. */

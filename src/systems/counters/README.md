@@ -72,3 +72,10 @@ the caller's handler and send `counters/changed`. For a caller that reads
 the counter again before its own events are delivered: two kills of one
 tick are two deliveries of `combat/kill` before either handler's events,
 and `sea` counts the leg's kills from the counter it wrote.
+
+## Step 4 port C6
+
+`conditionRefIssues(conds, { skills, quests })`: the skills and quests a
+list of conditions names that are not in the given registries, as the old
+forge validator's messages ("condition names unknown skill 'x'"). Read by
+`veilIssues` (`bestiary`) and `loreIssues` (`npcs`).

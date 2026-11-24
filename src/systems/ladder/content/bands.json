@@ -56,5 +56,13 @@
     "index": 5,
     "clearsToAdvance": 2,
     "desc": "Floors 15 and 16, the Vermin Festival: ten rooms of ten, one survivor from each, then one of a hundred. The festival keeps its own clock, which runs only while the game does; time away inside it goes to banked bonus time."
+  },
+  {
+    "id": "ascent_aberrant",
+    "name": "The Malgeri Mountains",
+    "towerId": "the_ascent",
+    "index": 6,
+    "clearsToAdvance": 1,
+    "desc": "Floor 17, the Malgeri Crossing: four maps in a line, from the cave out of the Vermin Festival over the eastern ascent, the ridge and the peak, and down the west side to a hamlet before the desert. Open slopes take the range’s weather; roofed places take none."
   }
 ]

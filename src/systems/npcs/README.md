@@ -41,7 +41,8 @@ A greeting bumps `met:<npc>`, sends `skills/check-discovery` and
   master came with martial; their lessons are martial's registry
   `teachers`, not a field here (`src/systems/martial/README.md`).
 - The 6 people of floors 11 to 20 (step 4). `lore` lines: no person in scope
-  has any.
+  has any. (Floors 11 to 13 came with ports C2 and C3; floor 17's two and
+  `lore` with port C6, below.)
 - The warden's quest list holds `the_first_ascent` only; the two Threshold
   quests return with step 3.
 
@@ -74,3 +75,30 @@ of floor 13 the pilot (`f13_pilot`, shop Passage: the Pilot's Passage)
 and the harbor master (`f13_harbor_master`, shop Papers: Port Clearance,
 shown to merchants only). No new machinery: the shops' `requires` and the
 `shop:buys:<npc>` counter were there.
+
+## Step 4 port C6
+
+The hamlet of floor 17 (old `npcs.data.ts` 322-341, text `npcs.text.ts`
+153-165): Thora Ironbrand (`f17_thora`) at Kystel's Anvil and Captain Bren
+(`f17_bren`) in Hamlet Square. Neither gives quests or sells.
+
+- `lore` (old `NpcDef.lore`): a list of `{ requires, dialogue }`. The lines
+  of an entry join the person's dialogue once every condition holds.
+  `npcDialogue(reader, npc)` builds the list (old `npcDialogue(state, npc)`);
+  the view reads the conditions only where someone here has lore. Bren's one
+  entry waits for `flag:malgeri_calm_seen` (the first calm, `weather`): the
+  only line any person says about the calm.
+- `loreIssues(people, { skills, quests })`: the lore half of the old forge
+  validator's veil and lore rule (an entry with no condition would always
+  show; an entry with no line says nothing; a condition names a real skill
+  or quest). `tests/malgeri.test.ts` calls it on the live content. The veil
+  half is `veilIssues` in `bestiary`; both use `conditionRefIssues` of
+  `counters`. The forge calls neither (as for the other lints).
+- `dialogueLine(lines, totalTicks)` and the view's `line`: the line said
+  now, rotating every 300 ticks (old people card, `LocationPanel.svelte`
+  `dialogueLine`). The view reads the clock only where someone stands.
+- `PeopleList.svelte`: the people at the spot, with the Talk control, the
+  description and "Says: “…”" in a fixed three-line box that scrolls.
+  The Quests panel mounts it (before this port it drew the list itself and
+  showed no dialogue, so no lore line could be seen). Tested by a server
+  render in `tests/malgeri.test.ts`.

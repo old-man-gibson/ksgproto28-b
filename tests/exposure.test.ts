@@ -13,21 +13,31 @@
  * - the spots of the shelved countryside are replaced by spots of this port:
  *   `ascent_foot` (settlement), `f0_cell` (indoor), `f4_deep_woods` (open
  *   sky), `f5_hollows` (dark), `the_forges` (heat);
- * - the only sky-table region, `malgeri_range`, is step 4. The file mounts a
- *   region of that id with the old record, and the three spots of the old
- *   `tests/fixtures/malgeri.ts`, for its duration.
+ * - the only sky-table region, `malgeri_range`, is in the content since step
+ *   4 port C6 (floor 17). The file mounts the three spots of the old
+ *   `tests/fixtures/malgeri.ts` and their two areas in that region for its
+ *   duration (`tests/fixtures/malgeri.ts` here is the same mount for other
+ *   files). Before the port the file mounted the region as well.
+ *
+ * Step 4 port C6: the todos "`malgeri_range` names a registered table on a
+ * pinned mountain region", "the calm lines of the east ridge roll only under
+ * a calm open sky", "the first calm opens the pending bestiary entries", the
+ * offline line of the first calm, and floor 17's part of "floors 17 to 20:
+ * open and roofed areas, night and sun".
  *
  * Step 4 port W: the old "the forecast" (5 cases) and `skyContentIssues` (7
  * cases) of `sky.test.ts`, and a case for Weathersense in the exposure tick,
  * in place of three `it.todo`.
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { PLAYER, type Kernel } from '../src/kernel';
+import { catchUp, PLAYER, type Kernel } from '../src/kernel';
+import { systems } from '../src/systems';
 import type { AttributesState } from '../src/systems/attributes';
 import { clockOf, moonlight, MOONLIGHT_WEIGHT, SEASONS, type SeasonId } from '../src/systems/clock';
 import { eligibleEncounters, hook, hunt, type CombatState, type EncounterSite } from '../src/systems/combat';
 import type { CountersState } from '../src/systems/counters';
 import type { ItemsState } from '../src/systems/items';
+import { FLOORS } from '../src/systems/ladder';
 import type { LogState } from '../src/systems/log';
 import type { SkillsState } from '../src/systems/skills';
 import { statBlockOf, statMod, statOf } from '../src/systems/stats';
@@ -87,6 +97,7 @@ import {
 } from '../src/systems/weather';
 import { AREAS, arrived as arrivedEvent, cycleDone, REGIONS, selectActivity, skyRegionOf, SPOTS, type RegionDef, type SpotDef } from '../src/systems/world';
 import { spawn, stage } from './combatHelpers';
+import { CAVE, HUT, mountMalgeri, PLAIN, RIDGE, STILL, WINDY } from './fixtures/malgeri';
 import { ask, emit, equip, listFiles, makeGame, patch, readJson, reads, setMods, slice } from './helpers';
 
 const CREATED = 1_754_000_000_000;
@@ -100,58 +111,18 @@ const at = (d: number, h = 0) => (d * 1440 + h * 60) * 10;
 
 // ---- the mounted mountain ----
 
-/** The old record of `malgeri_range` (`data/locations.data.ts`). */
-const MOUNTAIN: RegionDef = { id: 'malgeri_range', name: 'Malgeri Range', terrain: 'mountains', sky: 'malgeri', world: { x: 16, y: 29 } };
+/** The old record of `malgeri_range` (`data/locations.data.ts`). In the content since step 4 port C6. */
+const OLD_MOUNTAIN: RegionDef = { id: 'malgeri_range', name: 'Malgeri Range', terrain: 'mountains', sky: 'malgeri', world: { x: 16, y: 29 } };
+const MOUNTAIN: RegionDef = REGIONS.malgeri_range;
 const TABLE = SKY_TABLES.malgeri;
-
-/** Open sky: weather reaches it. */
-const RIDGE = 'test_malgeri_ridge';
-/** A roof inside the same region: the `indoor` tag. */
-const HUT = 'test_malgeri_hut';
-/** An area that overrides the region to sheltered. */
-const CAVE = 'test_malgeri_cave';
-
-const PLAIN = 'goblin';
-const WINDY = 'hobgoblin';
-const STILL = 'slime_king';
-
-const table = (): NonNullable<SpotDef['encounters']> => [
-  { monsterId: PLAIN, weight: 10, level: [1, 1] },
-  { monsterId: WINDY, weight: 10, level: [1, 1], sky: ['gale', 'storm'] },
-  { monsterId: STILL, weight: 10, level: [1, 1], sky: ['calm'] },
-];
-
-const testSpot = (id: string, areaId: string, tags?: string[]): SpotDef => ({
-  id,
-  name: id,
-  icon: '⛰️',
-  areaId,
-  desc: 'A test spot.',
-  activities: [],
-  encounters: table(),
-  connections: [],
-  ...(tags ? { tags } : {}),
-});
 
 const siteOf = (spotId: string): EncounterSite => ({ id: spotId, name: spotId, encounters: SPOTS[spotId].encounters ?? [] });
 
+let unmountMalgeri = () => {};
 beforeAll(() => {
-  REGIONS.malgeri_range = MOUNTAIN;
-  AREAS.test_malgeri_area = { id: 'test_malgeri_area', name: 'Test Malgeri', regionId: 'malgeri_range' };
-  AREAS.test_malgeri_cave_area = { id: 'test_malgeri_cave_area', name: 'Test Malgeri Cave', regionId: 'malgeri_range', sheltered: true };
-  SPOTS[RIDGE] = testSpot(RIDGE, 'test_malgeri_area');
-  SPOTS[HUT] = testSpot(HUT, 'test_malgeri_area', ['indoor']);
-  SPOTS[CAVE] = testSpot(CAVE, 'test_malgeri_cave_area');
+  unmountMalgeri = mountMalgeri();
 });
-
-afterAll(() => {
-  delete REGIONS.malgeri_range;
-  delete AREAS.test_malgeri_area;
-  delete AREAS.test_malgeri_cave_area;
-  delete SPOTS[RIDGE];
-  delete SPOTS[HUT];
-  delete SPOTS[CAVE];
-});
+afterAll(() => unmountMalgeri());
 
 // ---- helpers ----
 
@@ -462,6 +433,19 @@ describe('open sky in the tower', () => {
     f8: ['f8_lodge'],
     f9: ['f9_ossuary'],
     f10: ['f10_quarry', 'f10_foundry'],
+    // Step 4 port C6. Floor 17 carried its roofs before the ruling of 2026-11-11 (old comment).
+    f17: [
+      'f17_landing',
+      'f17_cave_hub',
+      'f17_cave_crack',
+      'f17_nest',
+      'f17_central_caves',
+      'f17_east_mouth',
+      'f17_west_peak',
+      'f17_base',
+      'f17_hamlet_square',
+      'f17_hamlet_forge',
+    ],
   };
   const LEFT_OPEN = [
     'f0_gate',
@@ -486,6 +470,8 @@ describe('open sky in the tower', () => {
     'ascent_f12_area',
     'ascent_f13_area',
     'ascent_f14_area',
+    // Open by its sky region (`skyRegionId`), not by `sheltered: false`.
+    'ascent_f17_area',
   ];
   /** One open spot per floor of bands 3 and 4, for the night checks. */
   const NIGHT_SPOT: Record<number, string> = {
@@ -652,7 +638,35 @@ describe('open sky in the tower', () => {
     expect(sunlight(reads(gameAt('f16_arena', at(3, 12))))).toBe(0);
   });
 
-  it.todo('floors 17 to 20: open and roofed areas, night and sun (step 4 ports C6 and C7)');
+  it('floor 17 reads the Malgeri Range through `skyRegionId`, not the Ascent, and does not set sheltered: false (step 4 port C6)', () => {
+    const area = AREAS[FLOORS.ascent_f17.areaId];
+    expect(area.regionId).toBe('the_ascent');
+    expect(area.sheltered).toBeUndefined();
+    expect(area.skyRegionId).toBe('malgeri_range');
+    for (const spot of Object.values(SPOTS).filter((s) => s.areaId === area.id)) {
+      expect(skyRegionOf(spot.id)?.id, spot.id).toBe('malgeri_range');
+      const kind = skyAt(spot.id);
+      expect(kind === null, `${spot.id}: ${kind}`).toBe(!!spot.tags?.includes('indoor'));
+      if (kind !== null) expect([...TABLE.fronts.map((f) => f.kind), 'calm'], spot.id).toContain(kind);
+    }
+  });
+
+  it('floor 17: the night is dark and moonlit on the open slopes and teaches Darkvision; the caves are dark at noon (step 4 port C6)', () => {
+    const night = reads(gameAt('f17_east_ridge', at(3, 23), undefined, SEED_B));
+    const moon = moonlightOn(night);
+    expect(moon).not.toBeNull();
+    expect(darknessFactor(night)).toBeCloseTo(skyDarkness(23, moon!.lit), 12);
+    expect(darknessFactor(night)).toBeGreaterThan(0);
+    expect(skillsOf(minuteAt('f17_east_ridge', at(3, 23), undefined, SEED_B)).darkvision?.xp ?? 0).toBeGreaterThan(0);
+    expect(darknessFactor(reads(gameAt('f17_east_ridge', at(3, 12), undefined, SEED_B)))).toBe(0);
+    // A cave tagged dark is dark at every hour; a roof that is not a cave is not.
+    expect(darknessFactor(reads(gameAt('f17_cave_hub', at(3, 12), undefined, SEED_B)))).toBe(1);
+    expect(darknessFactor(reads(gameAt('f17_east_mouth', at(3, 23), undefined, SEED_B)))).toBe(0);
+    expect(sunlight(reads(gameAt('f17_east_ridge', at(3, 12), undefined, SEED_B)))).toBeGreaterThan(0);
+    expect(sunlight(reads(gameAt('f17_hamlet_square', at(3, 12), undefined, SEED_B)))).toBe(0);
+  });
+
+  it.todo('floors 18 to 20: open and roofed areas, night and sun (step 4 port C7)');
   it.todo('the header weather chip shows `still` at a roofed spot (the UI step: `headerSky` of the old shell)');
 });
 
@@ -695,7 +709,14 @@ describe('places and work that radiate', () => {
 // ---------- sky.test.ts ----------
 
 describe('the Malgeri sky table', () => {
-  it.todo('`malgeri_range` names a registered table on a pinned mountain region (step 4: floor 17 and its region)');
+  it('names a registered table on a pinned mountain region', () => {
+    expect(MOUNTAIN.sky).toBe('malgeri');
+    expect(MOUNTAIN.terrain).toBe('mountains');
+    expect(MOUNTAIN.world).toBeDefined();
+    expect(MOUNTAIN.sheltered).toBeFalsy();
+    // New here: the content record is the old one.
+    expect(MOUNTAIN).toEqual(OLD_MOUNTAIN);
+  });
 
   it('holds the five kinds at the ruled weights, calm among none of them', () => {
     expect(TABLE.fronts.map((f) => [f.kind, f.weight])).toEqual([
@@ -1277,7 +1298,19 @@ describe('encounter lines with `sky`', () => {
     expect(ids(RIDGE, tick)).not.toEqual(ids(RIDGE, tickShowing('calm')));
   });
 
-  it.todo('the calm lines of the east ridge roll only under a calm open sky (step 4: floor 17)');
+  it('the calm lines of the east ridge roll only under a calm open sky (step 4 port C6: floor 17)', () => {
+    const TRIO = ['malgeri_ridge_wolf', 'malgeri_cairn_brute', 'malgeri_hollow_seer'];
+    const calmOf = (spot: string, tick: number) => ids(spot, tick).filter((id) => TRIO.includes(id));
+    expect(skyKindAt(reads(gameAt('f17_east_ridge', tickShowing('calm'))), 'f17_east_ridge')).toBe('calm');
+    expect(calmOf('f17_east_ridge', tickShowing('calm'))).toEqual([...TRIO].sort());
+    for (const kind of ['gale', 'storm', 'snow', 'rain'] as WeatherKind[]) {
+      expect(calmOf('f17_east_ridge', tickShowing(kind)), kind).toEqual([]);
+    }
+    // A roof on the same floor keeps the calm out, and the calm lines out of the draw.
+    for (const spot of ['f17_east_mouth', 'f17_west_peak', 'f17_base', 'f17_cave_hub']) {
+      expect(calmOf(spot, tickShowing('calm')), spot).toEqual([]);
+    }
+  });
 });
 
 // ---------- the first calm ----------
@@ -1348,8 +1381,41 @@ describe('the first calm', () => {
     expect(Object.keys(weatherOf(makeGame())).sort()).toEqual(['darkness', 'eyeless', 'seed']);
   });
 
-  it.todo('the offline summary carries the first calm line when the log is suppressed (port 7: the offline summary)');
-  it.todo('the first calm opens the pending bestiary entries (the bestiary is not ported)');
+  it('stamps the flag during offline catch-up as live play does, and the log keeps the line (step 4 port C6)', () => {
+    // The old summarised catch-up suppressed the log and the summary carried
+    // the line (`OfflineSummary.firstCalm`). Here catch-up keeps log lines,
+    // so the line is in the log after it; there is no summary dialog (the UI step).
+    const kernel = gameAt(RIDGE, calmStart() * TICKS_PER_MINUTE - 5);
+    const away = makeGame();
+    expect(away.load(catchUp({ systems, envelope: kernel.save(0), ticks: 600, now: 0 })).ok).toBe(true);
+    expect(counter(away, CALM_SEEN_KEY)).toBe(1);
+    expect(calmLines(away)).toEqual([firstCalmLine()]);
+    // Already stamped: a later absence logs nothing more.
+    const again = makeGame();
+    expect(again.load(catchUp({ systems, envelope: away.save(0), ticks: 600, now: 0 })).ok).toBe(true);
+    expect(calmLines(again)).toEqual([firstCalmLine()]);
+  });
+
+  it('the first calm opens the pending bestiary entries at the stamp (step 4 port C6)', () => {
+    // Two calm species killed under the veil before the first calm: counted, not shown.
+    // `firstKill` holds the kernel tick; the calm minute lands on the fifth tick, so it is not 0.
+    const kernel = gameAt(RIDGE, calmStart() * TICKS_PER_MINUTE - 5, (slices) => {
+      slices.bestiary.entries.malgeri_cairn_brute = { kills: 2, seen: {}, facts: [], spots: [], firstKill: 0 };
+      slices.bestiary.entries.malgeri_ridge_wolf = { kills: 1, seen: {}, facts: [], spots: [], firstKill: 0 };
+    });
+    kernel.tick(4);
+    expect(counter(kernel, 'bestiary:entries')).toBeUndefined();
+    expect(counter(kernel, CALM_SEEN_KEY)).toBeUndefined();
+    kernel.tick();
+    expect(counter(kernel, CALM_SEEN_KEY)).toBe(1);
+    const book = slice<{ entries: Record<string, { firstKill: number; kills: number }> }>(kernel, 'bestiary').entries;
+    expect(book.malgeri_cairn_brute.firstKill).toBeGreaterThan(0);
+    expect(book.malgeri_ridge_wolf.firstKill).toBeGreaterThan(0);
+    expect(book.malgeri_cairn_brute.kills).toBe(2);
+    expect(counter(kernel, 'bestiary:entries')).toBe(2);
+    // A species never killed stays out of the book.
+    expect(book.malgeri_hollow_seer).toBeUndefined();
+  });
 });
 
 describe('what the texts say about calm', () => {

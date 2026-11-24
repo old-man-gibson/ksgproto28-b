@@ -9910,5 +9910,2009 @@
     ],
     "connections": [],
     "desc": "The royale’s field on floor 16. In an attempt, the survivors fight each other and come at you one or two at a time, stronger as the field empties; the last one standing is fought alone, and beating it wins the festival. Outside an attempt the field is empty: attempts start in the dark room on floor 15. The way up to floor 17 is a cave in the field’s far wall."
+  },
+  {
+    "id": "f17_landing",
+    "name": "The Cave Exit",
+    "icon": "🕳️",
+    "areaId": "ascent_f17_area",
+    "map": {
+      "x": 42,
+      "y": 71
+    },
+    "tags": [
+      "indoor",
+      "dark"
+    ],
+    "activities": [
+      {
+        "id": "camp_f17",
+        "kind": "rest",
+        "name": "Camp",
+        "icon": "🏕️"
+      },
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Hunt the Cave Mouth",
+        "icon": "⚔️"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 55
+      },
+      {
+        "size": 2,
+        "weight": 30
+      },
+      {
+        "size": 3,
+        "weight": 15
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "malgeri_goblin",
+        "weight": 40,
+        "level": [
+          40,
+          41
+        ]
+      },
+      {
+        "monsterId": "malgeri_cave_spider",
+        "weight": 30,
+        "level": [
+          40,
+          41
+        ]
+      },
+      {
+        "monsterId": "malgeri_scree_slime",
+        "weight": 30,
+        "level": [
+          40,
+          41
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "to": "f17_cave_hub",
+        "ticks": 30
+      }
+    ],
+    "desc": "Landing of floor 17, where the cave out of floor 16’s field comes out, deep under the Malgeri Mountains. Dark and roofed: no weather reaches it. Camp is a rest activity, and the landing is a haven. Endless hunt: ridge goblins, deep spiders and scree slimes, level 40 to 41, up to three at once. The Hub Cavern is the way on."
+  },
+  {
+    "id": "f17_cave_hub",
+    "name": "The Hub Cavern",
+    "icon": "⛏️",
+    "areaId": "ascent_f17_area",
+    "map": {
+      "x": 54,
+      "y": 67
+    },
+    "tags": [
+      "indoor",
+      "dark"
+    ],
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Hunt the Hub",
+        "icon": "⚔️"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 55
+      },
+      {
+        "size": 2,
+        "weight": 30
+      },
+      {
+        "size": 3,
+        "weight": 15
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "malgeri_cave_spider",
+        "weight": 40,
+        "level": [
+          40,
+          41
+        ]
+      },
+      {
+        "monsterId": "malgeri_scree_slime",
+        "weight": 30,
+        "level": [
+          40,
+          41
+        ]
+      },
+      {
+        "monsterId": "malgeri_goblin",
+        "weight": 20,
+        "level": [
+          40,
+          41
+        ]
+      },
+      {
+        "monsterId": "malgeri_goblin_chief",
+        "weight": 10,
+        "level": [
+          40,
+          41
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "to": "f17_central_caves",
+        "ticks": 40
+      },
+      {
+        "to": "f17_cave_crack",
+        "ticks": 25,
+        "label": "Through the Crack",
+        "returnLabel": "Back Through the Crack"
+      },
+      {
+        "to": "f17_nest",
+        "ticks": 30,
+        "label": "To the Nest",
+        "returnLabel": "Back to the Hub"
+      }
+    ],
+    "desc": "A cavern where the cave’s passages meet. Dark and roofed. Endless hunt: deep spiders, scree slimes, ridge goblins and goblin chiefs with their packs, level 40 to 41, up to three at once, five with a chief. A crack leads to a side chamber and a tunnel to the brood nest; the Central Caves are the way on."
+  },
+  {
+    "id": "f17_cave_crack",
+    "name": "The Crack",
+    "icon": "🔦",
+    "areaId": "ascent_f17_area",
+    "map": {
+      "x": 47,
+      "y": 56
+    },
+    "tags": [
+      "indoor",
+      "dark"
+    ],
+    "activities": [
+      {
+        "id": "explore",
+        "kind": "explore",
+        "name": "Search the Crack",
+        "icon": "🔍"
+      }
+    ],
+    "exploreTicks": 200,
+    "finds": [
+      {
+        "id": "f17_crack_scrap",
+        "at": 0.3,
+        "material": {
+          "id": "iron_scrap",
+          "qty": 5
+        },
+        "desc": "🔩 Scrap in a crevice: 5 Iron Scrap."
+      },
+      {
+        "id": "f17_crack_salt",
+        "at": 0.6,
+        "material": {
+          "id": "rock_salt",
+          "qty": 4
+        },
+        "desc": "🧂 A salt seam: 4 Rock Salt."
+      },
+      {
+        "id": "f17_crack_purse",
+        "at": 1,
+        "gold": {
+          "min": 60,
+          "max": 120
+        },
+        "desc": "💰 A purse under the rubble: 60 to 120 gold."
+      }
+    ],
+    "connections": [],
+    "desc": "A side chamber behind a wide crack off the Hub Cavern. Dark and roofed; nothing hunts here. Search the Crack explores (20 s) for iron scrap, rock salt and a purse."
+  },
+  {
+    "id": "f17_nest",
+    "name": "The Brood Nest",
+    "icon": "🕸️",
+    "areaId": "ascent_f17_area",
+    "map": {
+      "x": 61,
+      "y": 56
+    },
+    "tags": [
+      "indoor",
+      "dark"
+    ],
+    "fightLimit": 1,
+    "modifierWeights": {
+      "normal": 100
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Face the Brood Queen",
+        "icon": "⚔️"
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "malgeri_brood_queen",
+        "weight": 1,
+        "level": [
+          43,
+          43
+        ],
+        "boss": true
+      }
+    ],
+    "connections": [],
+    "desc": "The Brood Queen’s nest, off the Hub Cavern. Dark and roofed. One fight, started when you choose: the queen, level 43, alone. Her bite poisons, 60% a hit. Winning clears the nest for good. Optional: no gate and no clear reads it."
+  },
+  {
+    "id": "f17_central_caves",
+    "name": "The Central Caves",
+    "icon": "🪨",
+    "areaId": "ascent_f17_area",
+    "map": {
+      "x": 68,
+      "y": 68
+    },
+    "tags": [
+      "indoor",
+      "dark"
+    ],
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Hunt the Central Caves",
+        "icon": "⚔️"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 50
+      },
+      {
+        "size": 2,
+        "weight": 30
+      },
+      {
+        "size": 3,
+        "weight": 20
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "malgeri_cave_spider",
+        "weight": 30,
+        "level": [
+          40,
+          41
+        ]
+      },
+      {
+        "monsterId": "malgeri_downpour_slime",
+        "weight": 25,
+        "level": [
+          40,
+          41
+        ]
+      },
+      {
+        "monsterId": "malgeri_scree_slime",
+        "weight": 25,
+        "level": [
+          40,
+          41
+        ]
+      },
+      {
+        "monsterId": "malgeri_goblin_chief",
+        "weight": 20,
+        "level": [
+          40,
+          41
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "to": "f17_east_mouth",
+        "ticks": 55
+      }
+    ],
+    "desc": "Wide caves under the range’s core. Dark and roofed. Endless hunt: deep spiders, downpour slimes, scree slimes and goblin chiefs with their packs, level 40 to 41, up to three at once, five with a chief. The east tunnel leads out of the cave."
+  },
+  {
+    "id": "f17_east_mouth",
+    "name": "The East Mouth",
+    "icon": "🏕️",
+    "areaId": "ascent_f17_area",
+    "map": {
+      "x": 84,
+      "y": 67
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [
+      {
+        "id": "camp_f17_east",
+        "kind": "rest",
+        "name": "Camp Under the Overhang",
+        "icon": "🏕️"
+      },
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Hunt the Mouth",
+        "icon": "⚔️"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 50
+      },
+      {
+        "size": 2,
+        "weight": 30
+      },
+      {
+        "size": 3,
+        "weight": 20
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "malgeri_scree_slime",
+        "weight": 35,
+        "level": [
+          41,
+          42
+        ]
+      },
+      {
+        "monsterId": "malgeri_goblin",
+        "weight": 35,
+        "level": [
+          41,
+          42
+        ]
+      },
+      {
+        "monsterId": "malgeri_cave_spider",
+        "weight": 20,
+        "level": [
+          41,
+          42
+        ]
+      },
+      {
+        "monsterId": "malgeri_goblin_chief",
+        "weight": 10,
+        "level": [
+          41,
+          42
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "to": "f17_east_ascent",
+        "ticks": 60,
+        "label": "Out Onto the Slope",
+        "returnLabel": "Back Under the Overhang"
+      }
+    ],
+    "desc": "The cave’s east mouth, a ledge under an overhang: roofed, so no weather reaches it, and not dark. Camp Under the Overhang is a rest activity, and the mouth is a haven. Endless hunt: scree slimes, ridge goblins, deep spiders and goblin chiefs, level 41 to 42. The slope past it is open sky."
+  },
+  {
+    "id": "f17_east_ascent",
+    "name": "The Eastern Ascent",
+    "icon": "⛰️",
+    "areaId": "ascent_f17_area",
+    "map": {
+      "x": 90,
+      "y": 54
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Hunt the Slope",
+        "icon": "⚔️"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 50
+      },
+      {
+        "size": 2,
+        "weight": 30
+      },
+      {
+        "size": 3,
+        "weight": 20
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "malgeri_scree_slime",
+        "weight": 30,
+        "level": [
+          41,
+          42
+        ]
+      },
+      {
+        "monsterId": "malgeri_goblin",
+        "weight": 30,
+        "level": [
+          41,
+          42
+        ]
+      },
+      {
+        "monsterId": "malgeri_goblin_chief",
+        "weight": 10,
+        "level": [
+          41,
+          42
+        ]
+      },
+      {
+        "monsterId": "malgeri_rime_slime",
+        "weight": 25,
+        "level": [
+          41,
+          42
+        ],
+        "sky": [
+          "snow"
+        ]
+      },
+      {
+        "monsterId": "malgeri_cinder_slime",
+        "weight": 25,
+        "level": [
+          41,
+          42
+        ],
+        "sky": [
+          "heatwave"
+        ]
+      },
+      {
+        "monsterId": "malgeri_squall_slime",
+        "weight": 25,
+        "level": [
+          41,
+          42
+        ],
+        "sky": [
+          "gale"
+        ]
+      },
+      {
+        "monsterId": "malgeri_storm_slime",
+        "weight": 25,
+        "level": [
+          41,
+          42
+        ],
+        "sky": [
+          "storm"
+        ]
+      },
+      {
+        "monsterId": "malgeri_downpour_slime",
+        "weight": 25,
+        "level": [
+          41,
+          42
+        ],
+        "sky": [
+          "rain"
+        ]
+      },
+      {
+        "monsterId": "malgeri_ridge_wolf",
+        "weight": 100,
+        "level": [
+          46,
+          48
+        ],
+        "sky": [
+          "calm"
+        ]
+      },
+      {
+        "monsterId": "malgeri_cairn_brute",
+        "weight": 100,
+        "level": [
+          46,
+          48
+        ],
+        "sky": [
+          "calm"
+        ]
+      },
+      {
+        "monsterId": "malgeri_hollow_seer",
+        "weight": 80,
+        "level": [
+          46,
+          48
+        ],
+        "sky": [
+          "calm"
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "to": "f17_east_peak",
+        "ticks": 60
+      }
+    ],
+    "desc": "The eastern slope, out of the cave. Open sky: every 3 game minutes the sky’s status lands on you (Buffeted in a gale, Wet in rain, Chilled in snow, Wet and Jolted in a storm, Sweltering and Dazzled in a heatwave). Roofed places take none. Endless hunt: scree slimes, ridge goblins and goblin chiefs, level 41 to 42. Sky lines, level 41 to 42: rime slimes under snow, cinder slimes in a heatwave, squall slimes in a gale, storm slimes in a storm, downpour slimes in rain."
+  },
+  {
+    "id": "f17_east_peak",
+    "name": "The East Peak",
+    "icon": "🏔️",
+    "areaId": "ascent_f17_area",
+    "map": {
+      "x": 88,
+      "y": 40
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Hunt the East Peak",
+        "icon": "⚔️"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 50
+      },
+      {
+        "size": 2,
+        "weight": 30
+      },
+      {
+        "size": 3,
+        "weight": 20
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "malgeri_scree_slime",
+        "weight": 35,
+        "level": [
+          41,
+          42
+        ]
+      },
+      {
+        "monsterId": "malgeri_goblin",
+        "weight": 25,
+        "level": [
+          41,
+          42
+        ]
+      },
+      {
+        "monsterId": "malgeri_goblin_chief",
+        "weight": 10,
+        "level": [
+          41,
+          42
+        ]
+      },
+      {
+        "monsterId": "malgeri_rime_slime",
+        "weight": 25,
+        "level": [
+          41,
+          42
+        ],
+        "sky": [
+          "snow"
+        ]
+      },
+      {
+        "monsterId": "malgeri_cinder_slime",
+        "weight": 25,
+        "level": [
+          41,
+          42
+        ],
+        "sky": [
+          "heatwave"
+        ]
+      },
+      {
+        "monsterId": "malgeri_squall_slime",
+        "weight": 25,
+        "level": [
+          41,
+          42
+        ],
+        "sky": [
+          "gale"
+        ]
+      },
+      {
+        "monsterId": "malgeri_storm_slime",
+        "weight": 25,
+        "level": [
+          41,
+          42
+        ],
+        "sky": [
+          "storm"
+        ]
+      },
+      {
+        "monsterId": "malgeri_downpour_slime",
+        "weight": 25,
+        "level": [
+          41,
+          42
+        ],
+        "sky": [
+          "rain"
+        ]
+      },
+      {
+        "monsterId": "malgeri_ridge_wolf",
+        "weight": 100,
+        "level": [
+          46,
+          48
+        ],
+        "sky": [
+          "calm"
+        ]
+      },
+      {
+        "monsterId": "malgeri_cairn_brute",
+        "weight": 100,
+        "level": [
+          46,
+          48
+        ],
+        "sky": [
+          "calm"
+        ]
+      },
+      {
+        "monsterId": "malgeri_hollow_seer",
+        "weight": 80,
+        "level": [
+          46,
+          48
+        ],
+        "sky": [
+          "calm"
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "to": "f17_east_ridge",
+        "ticks": 60,
+        "label": "Onto the Ridge",
+        "returnLabel": "Down to the East Peak"
+      }
+    ],
+    "desc": "The eastern summit. Open sky. Endless hunt: scree slimes, ridge goblins and goblin chiefs, level 41 to 42. Sky lines, level 41 to 42: rime slimes under snow, cinder slimes in a heatwave, squall slimes in a gale, storm slimes in a storm, downpour slimes in rain. The ridge runs west from here."
+  },
+  {
+    "id": "f17_east_ridge",
+    "name": "The East Ridge",
+    "icon": "🌬️",
+    "areaId": "ascent_f17_area",
+    "map": {
+      "x": 74,
+      "y": 28
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Hunt the Ridge",
+        "icon": "⚔️"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 50
+      },
+      {
+        "size": 2,
+        "weight": 30
+      },
+      {
+        "size": 3,
+        "weight": 20
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "malgeri_scree_slime",
+        "weight": 25,
+        "level": [
+          41,
+          42
+        ]
+      },
+      {
+        "monsterId": "malgeri_goblin",
+        "weight": 30,
+        "level": [
+          41,
+          42
+        ]
+      },
+      {
+        "monsterId": "malgeri_goblin_chief",
+        "weight": 15,
+        "level": [
+          41,
+          42
+        ]
+      },
+      {
+        "monsterId": "malgeri_rime_slime",
+        "weight": 25,
+        "level": [
+          41,
+          42
+        ],
+        "sky": [
+          "snow"
+        ]
+      },
+      {
+        "monsterId": "malgeri_cinder_slime",
+        "weight": 25,
+        "level": [
+          41,
+          42
+        ],
+        "sky": [
+          "heatwave"
+        ]
+      },
+      {
+        "monsterId": "malgeri_squall_slime",
+        "weight": 25,
+        "level": [
+          41,
+          42
+        ],
+        "sky": [
+          "gale"
+        ]
+      },
+      {
+        "monsterId": "malgeri_storm_slime",
+        "weight": 25,
+        "level": [
+          41,
+          42
+        ],
+        "sky": [
+          "storm"
+        ]
+      },
+      {
+        "monsterId": "malgeri_downpour_slime",
+        "weight": 25,
+        "level": [
+          41,
+          42
+        ],
+        "sky": [
+          "rain"
+        ]
+      },
+      {
+        "monsterId": "malgeri_ridge_wolf",
+        "weight": 100,
+        "level": [
+          46,
+          48
+        ],
+        "sky": [
+          "calm"
+        ]
+      },
+      {
+        "monsterId": "malgeri_cairn_brute",
+        "weight": 100,
+        "level": [
+          46,
+          48
+        ],
+        "sky": [
+          "calm"
+        ]
+      },
+      {
+        "monsterId": "malgeri_hollow_seer",
+        "weight": 80,
+        "level": [
+          46,
+          48
+        ],
+        "sky": [
+          "calm"
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "to": "f17_west_ridge",
+        "ticks": 50
+      }
+    ],
+    "desc": "A narrow ridge between the two peaks. Open sky. Endless hunt: scree slimes, ridge goblins and goblin chiefs, level 41 to 42. Sky lines, level 41 to 42: rime slimes under snow, cinder slimes in a heatwave, squall slimes in a gale, storm slimes in a storm, downpour slimes in rain."
+  },
+  {
+    "id": "f17_west_ridge",
+    "name": "The West Ridge",
+    "icon": "🔭",
+    "areaId": "ascent_f17_area",
+    "map": {
+      "x": 58,
+      "y": 20
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Hunt the West Ridge",
+        "icon": "⚔️"
+      },
+      {
+        "id": "explore",
+        "kind": "explore",
+        "name": "Look Out From the Ridge",
+        "icon": "🔭"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 50
+      },
+      {
+        "size": 2,
+        "weight": 30
+      },
+      {
+        "size": 3,
+        "weight": 20
+      }
+    ],
+    "exploreTicks": 200,
+    "finds": [
+      {
+        "id": "f17_ridge_view",
+        "at": 0.4,
+        "desc": "🔭 Far below to the west: the desert, a road of obelisks across it and the pyramids at its far edge. The way down starts at the peak."
+      },
+      {
+        "id": "f17_ridge_bloom",
+        "at": 0.7,
+        "material": {
+          "id": "thunderbloom",
+          "qty": 3
+        },
+        "desc": "⚡ A thunderbloom on a ledge: 3 Thunderbloom."
+      },
+      {
+        "id": "f17_ridge_purse",
+        "at": 1,
+        "gold": {
+          "min": 40,
+          "max": 90
+        },
+        "desc": "💰 A purse in a cairn: 40 to 90 gold."
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "malgeri_scree_slime",
+        "weight": 30,
+        "level": [
+          41,
+          42
+        ]
+      },
+      {
+        "monsterId": "malgeri_goblin",
+        "weight": 25,
+        "level": [
+          41,
+          42
+        ]
+      },
+      {
+        "monsterId": "malgeri_goblin_chief",
+        "weight": 15,
+        "level": [
+          41,
+          42
+        ]
+      },
+      {
+        "monsterId": "malgeri_rime_slime",
+        "weight": 25,
+        "level": [
+          41,
+          42
+        ],
+        "sky": [
+          "snow"
+        ]
+      },
+      {
+        "monsterId": "malgeri_cinder_slime",
+        "weight": 25,
+        "level": [
+          41,
+          42
+        ],
+        "sky": [
+          "heatwave"
+        ]
+      },
+      {
+        "monsterId": "malgeri_squall_slime",
+        "weight": 25,
+        "level": [
+          41,
+          42
+        ],
+        "sky": [
+          "gale"
+        ]
+      },
+      {
+        "monsterId": "malgeri_storm_slime",
+        "weight": 25,
+        "level": [
+          41,
+          42
+        ],
+        "sky": [
+          "storm"
+        ]
+      },
+      {
+        "monsterId": "malgeri_downpour_slime",
+        "weight": 25,
+        "level": [
+          41,
+          42
+        ],
+        "sky": [
+          "rain"
+        ]
+      },
+      {
+        "monsterId": "malgeri_ridge_wolf",
+        "weight": 100,
+        "level": [
+          46,
+          48
+        ],
+        "sky": [
+          "calm"
+        ]
+      },
+      {
+        "monsterId": "malgeri_cairn_brute",
+        "weight": 100,
+        "level": [
+          46,
+          48
+        ],
+        "sky": [
+          "calm"
+        ]
+      },
+      {
+        "monsterId": "malgeri_hollow_seer",
+        "weight": 80,
+        "level": [
+          46,
+          48
+        ],
+        "sky": [
+          "calm"
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "to": "f17_west_peak",
+        "ticks": 60
+      }
+    ],
+    "desc": "The ridge’s west end. Open sky. Look Out From the Ridge explores (20 s): from here the desert of floors 18 to 20 and its pyramids are in view; it also turns up thunderbloom and a purse. Endless hunt: scree slimes, ridge goblins and goblin chiefs, level 41 to 42. Sky lines, level 41 to 42: rime slimes under snow, cinder slimes in a heatwave, squall slimes in a gale, storm slimes in a storm, downpour slimes in rain."
+  },
+  {
+    "id": "f17_west_peak",
+    "name": "The West Peak",
+    "icon": "🏕️",
+    "areaId": "ascent_f17_area",
+    "map": {
+      "x": 42,
+      "y": 12
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [
+      {
+        "id": "camp_f17_west",
+        "kind": "rest",
+        "name": "Camp in the Shelter",
+        "icon": "🏕️"
+      },
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Hunt Around the Shelter",
+        "icon": "⚔️"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 50
+      },
+      {
+        "size": 2,
+        "weight": 30
+      },
+      {
+        "size": 3,
+        "weight": 20
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "malgeri_scree_slime",
+        "weight": 35,
+        "level": [
+          41,
+          42
+        ]
+      },
+      {
+        "monsterId": "malgeri_goblin",
+        "weight": 30,
+        "level": [
+          41,
+          42
+        ]
+      },
+      {
+        "monsterId": "malgeri_cave_spider",
+        "weight": 20,
+        "level": [
+          41,
+          42
+        ]
+      },
+      {
+        "monsterId": "malgeri_goblin_chief",
+        "weight": 15,
+        "level": [
+          41,
+          42
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "to": "f17_peak",
+        "ticks": 60,
+        "label": "Up to the Summit",
+        "returnLabel": "Down to the Shelter"
+      }
+    ],
+    "desc": "A stone shelter under the west peak: roofed, so no weather reaches it, and a haven. Camp in the Shelter is a rest activity. Endless hunt: scree slimes, ridge goblins, deep spiders and goblin chiefs, level 41 to 42. The summit is one climb up."
+  },
+  {
+    "id": "f17_peak",
+    "name": "Malgeri Peak",
+    "icon": "🗻",
+    "areaId": "ascent_f17_area",
+    "map": {
+      "x": 18,
+      "y": 7
+    },
+    "modifierWeights": {
+      "normal": 100
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Face the Guardian",
+        "icon": "⚔️"
+      },
+      {
+        "id": "cut_thunderbloom_f17",
+        "kind": "gather",
+        "material": "thunderbloom",
+        "ticksPer": 260,
+        "name": "Cut Thunderbloom",
+        "icon": "⚡",
+        "tags": [
+          "herbalism"
+        ],
+        "speedFactors": [
+          {
+            "attr": "wis",
+            "weight": 0.012
+          },
+          {
+            "attr": "dex",
+            "weight": 0.008
+          },
+          {
+            "skill": "herbalism",
+            "weight": 0.016
+          }
+        ],
+        "outputFactors": [
+          {
+            "stat": "loot",
+            "weight": 1,
+            "base": 1
+          }
+        ],
+        "outputCap": 1
+      },
+      {
+        "id": "draw_vitriol_f17",
+        "kind": "gather",
+        "material": "green_vitriol",
+        "ticksPer": 280,
+        "name": "Draw Green Vitriol",
+        "icon": "🧪",
+        "tags": [
+          "mining"
+        ],
+        "speedFactors": [
+          {
+            "attr": "wis",
+            "weight": 0.01
+          },
+          {
+            "skill": "mining",
+            "weight": 0.018
+          }
+        ],
+        "outputFactors": [
+          {
+            "stat": "loot",
+            "weight": 1,
+            "base": 1
+          }
+        ],
+        "outputCap": 1
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "malgeri_guardian",
+        "weight": 1,
+        "level": [
+          44,
+          44
+        ],
+        "boss": true
+      }
+    ],
+    "connections": [
+      {
+        "to": "f17_base",
+        "ticks": 120,
+        "label": "Down the West Face",
+        "returnLabel": "Up the West Face",
+        "requires": [
+          {
+            "type": "stat",
+            "key": "boss:f17_peak",
+            "value": 1
+          }
+        ]
+      }
+    ],
+    "desc": "Malgeri Peak. Open sky. The Peak Guardian, level 44, alone, fights whenever you hunt here, and resists slashing and piercing. Its first kill opens the west face down to the Mountain Base; the road is shut until then and open both ways after. Cut Thunderbloom gathers thunderbloom (26 s each) and Draw Green Vitriol gathers green vitriol (28 s each)."
+  },
+  {
+    "id": "f17_base",
+    "name": "The Mountain Base",
+    "icon": "🏔️",
+    "areaId": "ascent_f17_area",
+    "map": {
+      "x": 8,
+      "y": 18
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Hunt the Base",
+        "icon": "⚔️"
+      },
+      {
+        "id": "mine_scree_f17",
+        "kind": "gather",
+        "material": "iron_scrap",
+        "ticksPer": 180,
+        "name": "Mine the Scree",
+        "icon": "⛏️",
+        "tags": [
+          "mining"
+        ],
+        "speedFactors": [
+          {
+            "attr": "str",
+            "weight": 0.01
+          },
+          {
+            "attr": "con",
+            "weight": 0.008
+          },
+          {
+            "skill": "mining",
+            "weight": 0.02
+          }
+        ],
+        "outputFactors": [
+          {
+            "skill": "mining",
+            "weight": 0.01
+          },
+          {
+            "stat": "loot",
+            "weight": 1,
+            "base": 1
+          }
+        ],
+        "outputCap": 2
+      },
+      {
+        "id": "chip_salt_f17",
+        "kind": "gather",
+        "material": "rock_salt",
+        "ticksPer": 160,
+        "name": "Chip Rock Salt",
+        "icon": "🧂",
+        "tags": [
+          "mining"
+        ],
+        "speedFactors": [
+          {
+            "attr": "str",
+            "weight": 0.008
+          },
+          {
+            "skill": "mining",
+            "weight": 0.02
+          }
+        ],
+        "outputFactors": [
+          {
+            "stat": "loot",
+            "weight": 1,
+            "base": 1
+          }
+        ],
+        "outputCap": 2
+      },
+      {
+        "id": "pan_quicksilver_f17",
+        "kind": "gather",
+        "material": "quicksilver",
+        "ticksPer": 230,
+        "name": "Pan for Quicksilver",
+        "icon": "🪙",
+        "tags": [
+          "mining"
+        ],
+        "speedFactors": [
+          {
+            "attr": "dex",
+            "weight": 0.01
+          },
+          {
+            "skill": "mining",
+            "weight": 0.018
+          }
+        ],
+        "outputFactors": [
+          {
+            "stat": "loot",
+            "weight": 1,
+            "base": 1
+          }
+        ],
+        "outputCap": 1
+      },
+      {
+        "id": "sweep_fixing_salt_f17",
+        "kind": "gather",
+        "material": "fixing_salt",
+        "ticksPer": 150,
+        "name": "Sweep the Salt Pan",
+        "icon": "🧂",
+        "tags": [
+          "mining"
+        ],
+        "speedFactors": [
+          {
+            "attr": "str",
+            "weight": 0.006
+          },
+          {
+            "skill": "mining",
+            "weight": 0.018
+          }
+        ],
+        "outputFactors": [
+          {
+            "stat": "loot",
+            "weight": 1,
+            "base": 1
+          }
+        ],
+        "outputCap": 2
+      },
+      {
+        "id": "burn_bone_ash_f17",
+        "kind": "gather",
+        "material": "bone_ash",
+        "ticksPer": 185,
+        "name": "Burn Bone to Ash",
+        "icon": "🦴",
+        "speedFactors": [
+          {
+            "attr": "wis",
+            "weight": 0.008
+          },
+          {
+            "attr": "con",
+            "weight": 0.006
+          }
+        ],
+        "outputFactors": [
+          {
+            "stat": "loot",
+            "weight": 1,
+            "base": 1
+          }
+        ],
+        "outputCap": 2
+      },
+      {
+        "id": "break_brimstone_f17",
+        "kind": "gather",
+        "material": "brimstone",
+        "ticksPer": 210,
+        "name": "Break Brimstone from the Warm Rock",
+        "icon": "🟡",
+        "tags": [
+          "mining"
+        ],
+        "speedFactors": [
+          {
+            "attr": "str",
+            "weight": 0.01
+          },
+          {
+            "skill": "mining",
+            "weight": 0.02
+          }
+        ],
+        "outputFactors": [
+          {
+            "stat": "loot",
+            "weight": 1,
+            "base": 1
+          }
+        ],
+        "outputCap": 2
+      },
+      {
+        "id": "rest_camp_f17",
+        "kind": "rest",
+        "name": "Shelter in the Lee",
+        "icon": "🏕️"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 50
+      },
+      {
+        "size": 2,
+        "weight": 30
+      },
+      {
+        "size": 3,
+        "weight": 20
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "malgeri_scree_slime",
+        "weight": 35,
+        "level": [
+          42,
+          42
+        ]
+      },
+      {
+        "monsterId": "malgeri_goblin",
+        "weight": 25,
+        "level": [
+          42,
+          42
+        ]
+      },
+      {
+        "monsterId": "malgeri_cave_spider",
+        "weight": 20,
+        "level": [
+          42,
+          42
+        ]
+      },
+      {
+        "monsterId": "malgeri_goblin_chief",
+        "weight": 20,
+        "level": [
+          42,
+          42
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "to": "f17_path",
+        "ticks": 50
+      }
+    ],
+    "desc": "The foot of the west face, a camp under a rock lee: roofed, so no weather reaches it, and a haven. Shelter in the Lee is a rest activity. Endless hunt: scree slimes, ridge goblins, deep spiders and goblin chiefs, level 42. Gathers: Mine the Scree (iron scrap, 18 s), Chip Rock Salt (16 s), Pan for Quicksilver (23 s), Sweep the Salt Pan (fixing salt, 15 s), Burn Bone to Ash (18.5 s) and Break Brimstone from the Warm Rock (21 s)."
+  },
+  {
+    "id": "f17_path",
+    "name": "The Mountain Path",
+    "icon": "🥾",
+    "areaId": "ascent_f17_area",
+    "map": {
+      "x": 22,
+      "y": 26
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Hunt the Path",
+        "icon": "⚔️"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 50
+      },
+      {
+        "size": 2,
+        "weight": 30
+      },
+      {
+        "size": 3,
+        "weight": 20
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "malgeri_scree_slime",
+        "weight": 30,
+        "level": [
+          42,
+          42
+        ]
+      },
+      {
+        "monsterId": "malgeri_goblin",
+        "weight": 30,
+        "level": [
+          42,
+          42
+        ]
+      },
+      {
+        "monsterId": "malgeri_goblin_chief",
+        "weight": 10,
+        "level": [
+          42,
+          42
+        ]
+      },
+      {
+        "monsterId": "malgeri_rime_slime",
+        "weight": 25,
+        "level": [
+          42,
+          42
+        ],
+        "sky": [
+          "snow"
+        ]
+      },
+      {
+        "monsterId": "malgeri_cinder_slime",
+        "weight": 25,
+        "level": [
+          42,
+          42
+        ],
+        "sky": [
+          "heatwave"
+        ]
+      },
+      {
+        "monsterId": "malgeri_squall_slime",
+        "weight": 25,
+        "level": [
+          42,
+          42
+        ],
+        "sky": [
+          "gale"
+        ]
+      },
+      {
+        "monsterId": "malgeri_storm_slime",
+        "weight": 25,
+        "level": [
+          42,
+          42
+        ],
+        "sky": [
+          "storm"
+        ]
+      },
+      {
+        "monsterId": "malgeri_downpour_slime",
+        "weight": 25,
+        "level": [
+          42,
+          42
+        ],
+        "sky": [
+          "rain"
+        ]
+      },
+      {
+        "monsterId": "malgeri_ridge_wolf",
+        "weight": 100,
+        "level": [
+          46,
+          48
+        ],
+        "sky": [
+          "calm"
+        ]
+      },
+      {
+        "monsterId": "malgeri_cairn_brute",
+        "weight": 100,
+        "level": [
+          46,
+          48
+        ],
+        "sky": [
+          "calm"
+        ]
+      },
+      {
+        "monsterId": "malgeri_hollow_seer",
+        "weight": 80,
+        "level": [
+          46,
+          48
+        ],
+        "sky": [
+          "calm"
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "to": "f17_old_path",
+        "ticks": 50
+      }
+    ],
+    "desc": "The path down the west slope. Open sky. Endless hunt: scree slimes, ridge goblins and goblin chiefs, level 42. Sky lines, level 42: rime slimes under snow, cinder slimes in a heatwave, squall slimes in a gale, storm slimes in a storm, downpour slimes in rain."
+  },
+  {
+    "id": "f17_old_path",
+    "name": "The Old Path",
+    "icon": "🛤️",
+    "areaId": "ascent_f17_area",
+    "map": {
+      "x": 10,
+      "y": 36
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Hunt the Old Path",
+        "icon": "⚔️"
+      }
+    ],
+    "groupWeights": [
+      {
+        "size": 1,
+        "weight": 50
+      },
+      {
+        "size": 2,
+        "weight": 30
+      },
+      {
+        "size": 3,
+        "weight": 20
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "malgeri_scree_slime",
+        "weight": 25,
+        "level": [
+          42,
+          42
+        ]
+      },
+      {
+        "monsterId": "malgeri_goblin",
+        "weight": 35,
+        "level": [
+          42,
+          42
+        ]
+      },
+      {
+        "monsterId": "malgeri_goblin_chief",
+        "weight": 10,
+        "level": [
+          42,
+          42
+        ]
+      },
+      {
+        "monsterId": "malgeri_rime_slime",
+        "weight": 25,
+        "level": [
+          42,
+          42
+        ],
+        "sky": [
+          "snow"
+        ]
+      },
+      {
+        "monsterId": "malgeri_cinder_slime",
+        "weight": 25,
+        "level": [
+          42,
+          42
+        ],
+        "sky": [
+          "heatwave"
+        ]
+      },
+      {
+        "monsterId": "malgeri_squall_slime",
+        "weight": 25,
+        "level": [
+          42,
+          42
+        ],
+        "sky": [
+          "gale"
+        ]
+      },
+      {
+        "monsterId": "malgeri_storm_slime",
+        "weight": 25,
+        "level": [
+          42,
+          42
+        ],
+        "sky": [
+          "storm"
+        ]
+      },
+      {
+        "monsterId": "malgeri_downpour_slime",
+        "weight": 25,
+        "level": [
+          42,
+          42
+        ],
+        "sky": [
+          "rain"
+        ]
+      },
+      {
+        "monsterId": "malgeri_ridge_wolf",
+        "weight": 100,
+        "level": [
+          46,
+          48
+        ],
+        "sky": [
+          "calm"
+        ]
+      },
+      {
+        "monsterId": "malgeri_cairn_brute",
+        "weight": 100,
+        "level": [
+          46,
+          48
+        ],
+        "sky": [
+          "calm"
+        ]
+      },
+      {
+        "monsterId": "malgeri_hollow_seer",
+        "weight": 80,
+        "level": [
+          46,
+          48
+        ],
+        "sky": [
+          "calm"
+        ]
+      }
+    ],
+    "connections": [
+      {
+        "to": "f17_hamlet_square",
+        "ticks": 40
+      }
+    ],
+    "desc": "The old road to the hamlet. Open sky. Endless hunt: scree slimes, ridge goblins and goblin chiefs, level 42. Sky lines, level 42: rime slimes under snow, cinder slimes in a heatwave, squall slimes in a gale, storm slimes in a storm, downpour slimes in rain. The hamlet is next."
+  },
+  {
+    "id": "f17_hamlet_square",
+    "name": "Hamlet Square",
+    "icon": "🏘️",
+    "areaId": "ascent_f17_area",
+    "map": {
+      "x": 22,
+      "y": 46
+    },
+    "tags": [
+      "indoor"
+    ],
+    "activities": [
+      {
+        "id": "train_cha_debates_f17",
+        "kind": "train",
+        "attr": "cha",
+        "name": "Participate in Debates",
+        "icon": "🎭"
+      },
+      {
+        "id": "job_guard_f17",
+        "kind": "job",
+        "gold": 30,
+        "ticksPer": 200,
+        "name": "Stand Guard",
+        "icon": "💂",
+        "staticTime": true,
+        "outputFactors": [
+          {
+            "stat": "goldGain",
+            "weight": 1,
+            "base": 1
+          },
+          {
+            "stat": "travelSpeed",
+            "weight": 0.5,
+            "base": 1
+          }
+        ]
+      },
+      {
+        "id": "rest_hamlet_f17",
+        "kind": "rest",
+        "name": "Rest at the Well",
+        "icon": "⛲"
+      },
+      {
+        "id": "mill_grain_f17",
+        "kind": "gather",
+        "material": "rough_flour",
+        "ticksPer": 140,
+        "name": "Turn the Handmill",
+        "icon": "🌾",
+        "speedFactors": [
+          {
+            "attr": "str",
+            "weight": 0.008
+          },
+          {
+            "attr": "con",
+            "weight": 0.008
+          }
+        ],
+        "outputFactors": [
+          {
+            "stat": "loot",
+            "weight": 1,
+            "base": 1
+          }
+        ],
+        "outputCap": 2
+      }
+    ],
+    "connections": [
+      {
+        "to": "f17_hamlet_forge",
+        "ticks": 20
+      },
+      {
+        "to": "f17_keeper",
+        "ticks": 30,
+        "label": "To the Gates",
+        "returnLabel": "Back Into the Hamlet"
+      }
+    ],
+    "desc": "The square of the hamlet at the foot of the range, roofed and a haven. Rest at the Well is a rest activity. Stand Guard pays 30 gold every 20 s, Participate in Debates trains Charisma and Turn the Handmill gathers rough flour (14 s each). Captain Bren stands here. The forge is off the square, and the gates lead on to floor 18."
+  },
+  {
+    "id": "f17_hamlet_forge",
+    "name": "Kystel's Anvil",
+    "icon": "⚒️",
+    "areaId": "ascent_f17_area",
+    "map": {
+      "x": 8,
+      "y": 54
+    },
+    "tags": [
+      "indoor",
+      "heat"
+    ],
+    "activities": [
+      {
+        "id": "job_bellows_f17",
+        "kind": "job",
+        "gold": 30,
+        "ticksPer": 250,
+        "name": "Work the Bellows",
+        "icon": "🔥"
+      },
+      {
+        "id": "train_str_hammers_f17",
+        "kind": "train",
+        "attr": "str",
+        "name": "Swing Practice Hammers",
+        "icon": "🔨",
+        "tags": [
+          "blunt"
+        ]
+      }
+    ],
+    "recipes": [
+      "iron_ingot",
+      "leather",
+      "leather_cap",
+      "leather_vest",
+      "leather_boots",
+      "hunting_bow",
+      "herbal_charm",
+      "wolf_cloak"
+    ],
+    "benches": [
+      "forging"
+    ],
+    "connections": [],
+    "desc": "The hamlet forge, roofed and hot: standing here trains Heat Resistance. Thora Ironbrand works it. Work the Bellows pays 30 gold every 25 s and Swing Practice Hammers trains Strength. Recipes: iron ingot, leather, leather cap, leather vest, leather boots, hunting bow, herbal charm and wolf cloak. An anvil forges ingots, hardwood and leather into pieces."
+  },
+  {
+    "id": "f17_keeper",
+    "name": "The Hamlet Gates",
+    "icon": "👑",
+    "areaId": "ascent_f17_area",
+    "map": {
+      "x": 25,
+      "y": 61
+    },
+    "modifierWeights": {
+      "normal": 100
+    },
+    "activities": [
+      {
+        "id": "hunt",
+        "kind": "hunt",
+        "name": "Face the Regent",
+        "icon": "⚔️"
+      }
+    ],
+    "encounters": [
+      {
+        "monsterId": "malgeri_slime_king",
+        "weight": 100,
+        "level": [
+          45,
+          45
+        ],
+        "boss": true
+      },
+      {
+        "monsterId": "malgeri_legionary",
+        "weight": 6,
+        "level": [
+          42,
+          43
+        ]
+      }
+    ],
+    "connections": [],
+    "desc": "The hamlet’s gates, under the open sky. The Slime Regent holds them with two Regent’s Legionaries: the regent at level 45, the legionaries at levels 42 to 43. It fights whenever you hunt here, cleared or not. Its first kill clears floor 17. A hunt here sometimes meets legionaries without the regent; that fight clears nothing."
   }
 ]

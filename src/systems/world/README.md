@@ -290,3 +290,35 @@ cold and lightning are set in `spellcraft` (`cast.ts`).
   the old build.
 - The weather system's Sky readout is mounted in the Location panel under
   the festival's (`weather/SkyPanel.svelte`).
+
+## Step 4 port C6
+
+- Content, appended from the old registry: region `malgeri_range` (Malgeri
+  Range, mountains, sky table `malgeri`, an atlas pin), area
+  `ascent_f17_area` (The Malgeri Crossing: `regionId` the Ascent,
+  `skyRegionId` the Malgeri Range) and the 18 spots of floor 17, four maps
+  in a line: the cave out of the festival (landing, hub cavern, the crack,
+  the brood nest, central caves; roofed and dark), the eastern ascent (east
+  mouth, roofed; eastern ascent, east peak), the ridge and the peak (east
+  ridge, west ridge, west peak, roofed; Malgeri Peak) and the western descent
+  (mountain base, roofed; mountain path, old path; Hamlet Square and Kystel's
+  Anvil, roofed; the Hamlet Gates). 177 spots, 29 areas, 5 regions.
+- The Malgeri Range holds no area: floor 17's area stands in the Ascent (the
+  ladder and the map count it there) and reads the range's sky through
+  `skyRegionId` (old decision, `docs/MALGERI.md` of the old repository).
+- The six open hunt spots carry the sky lines: a slime per front and the
+  three calm lines (`sky: ['calm']`, levels 46 to 48, four times the plain
+  weight). Roofed spots carry none. The weather system's `registerSiteSky`
+  answers them; no new code.
+- The descent (Malgeri Peak to the Mountain Base) needs `boss:f17_peak`; the
+  mirror back up carries no condition. No spot of the descent is a waypoint.
+- Kystel's Anvil (`f17_hamlet_forge`): `benches: ['forging']` (the Anvil
+  panel works here, `smithing`), eight recipes (`crafting`: the iron ingot
+  and the seven leather and charm recipes this port adds), two jobs (the
+  bellows pay 30 gold every 250 ticks) and a Strength drill; `heat` and
+  `indoor` tags. Hamlet Square: the well (a haven), a guard job, a Charisma
+  drill, the handmill.
+- The map prints no terms for a road shut by a condition ("No known route.").
+  The descent's latch is named in the spot and floor text. The old map
+  printed the road's terms (`routeInfo.shut`); the UI step
+  (`tests/wardLabels.test.ts` todo).

@@ -146,3 +146,19 @@ None: this system has no command and no request.
 - The festival's verdicts on a ride (`shut`, `closed`, `forfeit`,
   `royale`) are the world's to act on (`FloorRule`); `stopOpen` keeps the
   ladder's own terms.
+
+## Step 4 port C6
+
+- Band 6 (`ascent_aberrant`, The Malgeri Mountains, one clear to advance,
+  no gate, no hub, no dynamic levels) and floor 17 (`ascent_f17`, The
+  Malgeri Crossing: landing `f17_landing`, clear `boss:f17_keeper`, 900 XP),
+  old records. 6 bands, 18 floors. Floor 17 is the top rung until port C7:
+  its clear writes the end notice; the ladder card names floor 18 as not in
+  this build.
+- The clear is the regent's boss latch, not a fight count, so a fight of
+  legionaries alone (weight 6 against 100) clears nothing (old rule). The
+  ladder card reads it "1 keeper of The Hamlet Gates slain".
+- The peak gate (`boss:f17_peak` on the road down the west face) is a road
+  condition (`world`), not a ladder gate. The floor rules (spine, no skip,
+  wing depth, wing loop, clear table) and the explore rule pass on floor 17
+  (`tests/malgeri.test.ts`, `tests/worldContent.test.ts`).

@@ -125,3 +125,20 @@ export function conditionsProgress(reader: ConditionReader, conds: readonly Cond
 export function conditionsMet(reader: ConditionReader, conds: readonly Condition[]): boolean {
   return conds.every((c) => conditionMet(reader, c));
 }
+
+/**
+ * The skills and quests a list of conditions names that are not in the given
+ * registries, as messages (the old forge validator's `conditionRefs`, used on
+ * a monster's `veil` and a person's `lore`). Empty when every one resolves.
+ */
+export function conditionRefIssues(
+  conds: readonly Condition[] | undefined,
+  refs: { skills: Record<string, unknown>; quests: Record<string, unknown> },
+): string[] {
+  const issues: string[] = [];
+  for (const c of conds ?? []) {
+    if (c.type === 'skill' && !refs.skills[c.id]) issues.push(`condition names unknown skill '${c.id}'`);
+    if (c.type === 'quest' && !refs.quests[c.id]) issues.push(`condition names unknown quest '${c.id}'`);
+  }
+  return issues;
+}

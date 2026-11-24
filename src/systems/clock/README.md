@@ -57,3 +57,13 @@ calendar except through the sense.
   the ports of those systems. Nothing holds the clock yet.
 - The header clock chip and its short form (old `shortClock`, the 7.1em slot
   of `tests/skySlots.test.ts`): the UI step.
+
+## Step 4 port C6: the debug jump
+
+`clock/debug-advance { ticks }` (`debugAdvanceClock`): DEBUG, not a player
+action. The clock moves on by a whole number of ticks at once, with nothing
+simulated between. The old John's arranged calm climb wrote
+`state.totalTicks` to reach the Malgeri Range's next calm; John sends this
+command instead (`calmAtMalgeri`). Skip reasons: refused in a production
+build (`import.meta.env.PROD`, as `ladder/debug-skip-wall`); not a whole
+number of ticks, or below 0.

@@ -171,7 +171,8 @@ reason. The scan "nothing reads `ITEMS[<instance>.defId]`" runs over `src/`.
 
 - Shadow Clones at the anvil (the old "Send a clone" row, `cloneCraft`).
 - Kystel's Anvil (`f17_hamlet_forge`, floor 17) and the festival workshop
-  (`f15_workshop`): floors and content not ported.
+  (`f15_workshop`): floors and content not ported. (The workshop came with
+  step 4 port C4, Kystel's Anvil with port C6: see the end of this file.)
 - The plan's slices 2 and 3 (never built on `main`).
 - The forge editor's live smithing validation (`forge/lib/validate.ts`):
   the forge here validates schemas only; `validation.ts` is exported for it.
@@ -264,3 +265,12 @@ Away from an anvil the panel is one line: `Anvil: at The Forges`.
   `it.todo` (this build has neither).
 - `tests/items.test.ts`: "a forged item is never compared" stays `it.todo`
   (spare marks, UI step).
+
+## Step 4 port C6: Kystel's Anvil
+
+The hamlet forge of floor 17 (`f17_hamlet_forge`, `world`) lists `forging`
+in `benches`, so the Anvil panel works there as at The Forges, and the
+panel's away line names both anvils once the spot is discovered. No code
+changed here: the anvil was already read from the spot's `benches`. The
+spot's eight recipes are `crafting`'s (seven came with this port). Checked
+in a browser at 1024 px and 375 px.

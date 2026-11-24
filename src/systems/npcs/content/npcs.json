@@ -629,5 +629,45 @@
       "The closed port on floor 14 opens only for Port Clearance papers.",
       "I sell Port Clearance to merchants only."
     ]
+  },
+  {
+    "id": "f17_thora",
+    "name": "Thora Ironbrand",
+    "icon": "👩‍🏭",
+    "spotId": "f17_hamlet_forge",
+    "quests": [],
+    "desc": "Smith at the hamlet forge on floor 17, in Kystel’s Anvil. Sells nothing and gives no quests; the forge she works smelts, tans and forges (its recipes are listed on the forge, and it has an anvil).",
+    "dialogue": [
+      "Keep your edge keen and your work honest.",
+      "The anvil’s song rewards patience.",
+      "Scrap in, steel out. That’s the whole philosophy."
+    ]
+  },
+  {
+    "id": "f17_bren",
+    "name": "Captain Bren",
+    "icon": "💂",
+    "spotId": "f17_hamlet_square",
+    "quests": [],
+    "lore": [
+      {
+        "requires": [
+          {
+            "type": "stat",
+            "key": "flag:malgeri_calm_seen",
+            "value": 1
+          }
+        ],
+        "dialogue": [
+          "The mountain goes still for 8 hours in every 12 days. Wolves, brutes and seers come out onto the open slopes then, two or three together, at levels 46 to 48. Roofed places are not reached."
+        ]
+      }
+    ],
+    "desc": "Captain of the hamlet watch on floor 17, in the square. Sells nothing and gives no quests.",
+    "dialogue": [
+      "Eyes up. Trouble comes when you least expect it.",
+      "A steady post keeps the roads safe.",
+      "The gates are held against a slime regent and its legionaries. The road on to the desert is past them."
+    ]
   }
 ]

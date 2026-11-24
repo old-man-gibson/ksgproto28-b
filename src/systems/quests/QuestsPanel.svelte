@@ -2,6 +2,7 @@
   import Button from '../../ui/components/Button.svelte';
   import { send, viewOf } from '../../ui/game.svelte';
   import npcs, { talkTo } from '../npcs';
+  import PeopleList from '../npcs/PeopleList.svelte';
   import type { DeepReadonly } from '../../kernel';
   import quests, { acceptQuest, turnInQuest, type QuestView } from './index';
 
@@ -45,19 +46,7 @@
 
 <section class="panel" aria-label="Quests">
   <h2>People here</h2>
-  <ul class="card list short" aria-label="People here">
-    {#each people.here as p (p.id)}
-      <li>
-        <div class="row">
-          <span class="name">{p.icon} {p.name}</span>
-          <Button disabled={p.met} onclick={() => send(talkTo({ npc: p.id }))}>{p.met ? 'Met' : 'Talk'}</Button>
-        </div>
-        <div class="dim clip">{p.desc}</div>
-      </li>
-    {:else}
-      <li class="dim">Nobody stands here.</li>
-    {/each}
-  </ul>
+  <PeopleList people={people.here} onTalk={(npc) => send(talkTo({ npc }))} />
 
   <h2>Offered here</h2>
   <ul class="card list short" aria-label="Offered here">

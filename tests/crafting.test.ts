@@ -11,12 +11,12 @@
  * `Game.selectActivity` is the command `world/select-activity`; the old
  * `hamlet_forge` is `the_forges`.
  *
- * The old `leather` recipe is not in the registry here: no spot through
- * floor 6 lists it. The route cases use it as a literal. The tick-loop case
- * adds it to `RECIPES` and stands at a test spot that lists it, and removes
- * both after.
+ * The old `leather` recipe is in the registry since step 4 port C6 (Kystel's
+ * Anvil on floor 17 lists it). The route cases keep it as a literal; a case
+ * checks the registry record equals it. The tick-loop case stands at
+ * Kystel's Anvil (before the port it mounted the recipe and a test spot).
  */
-import { afterEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import type { Kernel } from '../src/kernel';
 import { useConsumable } from '../src/systems/consumables';
 import type { CountersState } from '../src/systems/counters';
@@ -33,10 +33,10 @@ import {
 import { takeMaterial, type MaterialsState } from '../src/systems/materials';
 import type { SkillsState } from '../src/systems/skills';
 import { statBlockOf } from '../src/systems/stats';
-import world, { activityFillRate, getSpot, selectActivity, spotActivities, SPOTS, type SpotDef, type WorldView } from '../src/systems/world';
+import world, { activityFillRate, selectActivity, spotActivities, SPOTS, type WorldView } from '../src/systems/world';
 import { logOf } from './combatHelpers';
 import { ask, makeGame, patch, reads, slice } from './helpers';
-import { gameAt, mountSpots, sent, worldOf } from './worldHelpers';
+import { gameAt, sent, worldOf } from './worldHelpers';
 
 /** The old `leather` recipe of `data/recipes.data.ts`. */
 const LEATHER: RecipeDef = {
@@ -125,18 +125,13 @@ describe('recipes with alternative routes', () => {
   });
 
   describe('through the tick loop', () => {
-    let unmount: (() => void) | null = null;
-    afterEach(() => {
-      unmount?.();
-      unmount = null;
-      delete RECIPES.leather;
+    it('the registry holds the old leather recipe as it was (step 4 port C6: Kystel’s Anvil lists it)', () => {
+      expect(RECIPES.leather).toEqual(LEATHER);
     });
 
     it('crafting through the tick loop banks the route’s own yield', () => {
-      RECIPES.leather = LEATHER;
-      const tannery: SpotDef = { ...getSpot('the_forges'), id: 'test_tannery', recipes: ['leather'], connections: [] };
-      unmount = mountSpots({ test_tannery: tannery });
-      const k = gameAt(4, 'test_tannery');
+      // Kystel's Anvil, floor 17, lists the leather recipe.
+      const k = gameAt(4, 'f17_hamlet_forge');
       setMaterials(k, { pristine_fur: 1 });
       expect(sent(k, selectActivity({ activity: 'craft_leather' }))).toBe(true);
       for (let i = 0; i < 400 && !counts(k)['leather']; i++) k.tick();

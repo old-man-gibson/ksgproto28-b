@@ -162,5 +162,11 @@
     "name": "The Royale Field",
     "regionId": "the_ascent",
     "scene": "hall"
+  },
+  {
+    "id": "ascent_f17_area",
+    "name": "The Malgeri Crossing",
+    "regionId": "the_ascent",
+    "skyRegionId": "malgeri_range"
   }
 ]
