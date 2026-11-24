@@ -510,6 +510,10 @@ and can run beside another port (W touches only `weather` and `clock`).
   `malgeriSave.test.ts` (98, 6), `fixtures/malgeri.ts` (56); the todos
   `exposure.test.ts` 577, 1159.
 - Parity: `floor17`, with and without `--malgeri-calm` on both builds.
+- Done: section 14. No kernel change. The plan's count of 19 spots is 18
+  (the old test's list). The old people card's rotating dialogue line was
+  not in the rebuild's Quests panel; it came with this port, so the lore
+  line can be seen.
 
 ### 5.9 Port C7: the desert
 
@@ -2324,3 +2328,326 @@ sky).
 
 Not checked in a browser: a sense manifesting or levelling in live play
 (tested headless), the forecast while travelling, the dev server on 5600.
+
+## 14. Port C6: the Malgeri Crossing, floor 17 (done)
+
+Done 2026-11-24 on branch `step4-C6`, from `main` at `0653c3c`. Not merged,
+not pushed. Commits:
+
+1. `b51d28c`, the port.
+2. This account.
+
+The outcome digests did not change (every digest of `npm run verify`
+passed on the port's code), so there is no digest commit.
+
+The full account: the "Step 4 port C6" sections of the `world`, `weather`,
+`npcs`, `bestiary`, `smithing`, `crafting`, `ladder`, `clock`, `counters`
+and `quests` READMEs.
+
+What was ported:
+
+- `world`: region `malgeri_range` (old `locations.data.ts` 40), area
+  `ascent_f17_area` (109: in the Ascent, its sky by `skyRegionId`) and the
+  18 spots of floor 17 (3447-4000), old records with their text: four maps,
+  the six open hunt spots with a slime line per front and the three calm
+  lines, the peak gate (`boss:f17_peak` on the road down the west face, the
+  mirror open), no waypoint on the descent, Kystel's Anvil and Hamlet
+  Square. 177 spots, 29 areas, 5 regions.
+- `weather`: the Malgeri sky table's reader is the region; no code changed.
+  The fronts, their rules on the player and the foes, the sky lines and the
+  calm run on floor 17's open slopes as the engine already ran them for a
+  mounted region in the tests.
+- The calm: the first-calm flag and line, live and in catch-up; the veil of
+  the calm trio (port L's) lifting at the stamp; Captain Bren's lore line.
+  The offline line: the old summary carried the first-calm line when its
+  catch-up suppressed the log; here catch-up keeps log lines, so the line is
+  in the log after it (tested); the summary dialog is the UI step.
+- `npcs`: Thora Ironbrand and Captain Bren (old `npcs.data.ts` 322-341 and
+  their text); `lore` with `npcDialogue(reader, npc)`; `loreIssues`; the
+  view's `line` (old `dialogueLine`, 300 ticks a line) and
+  `PeopleList.svelte` in the Quests panel.
+- `bestiary`: `veilIssues`. `counters`: `conditionRefIssues`. The two lints
+  are the old forge validator's veil and lore rule; the forge calls neither.
+- Kystel's Anvil (`f17_hamlet_forge`): `smithing` unchanged (the anvil is
+  read from the spot's `benches`); `crafting` gains the seven recipes the
+  spot lists that were not here (`leather`, `leather_cap`, `leather_vest`,
+  `leather_boots`, `hunting_bow`, `herbal_charm`, `wolf_cloak`; old numbers).
+- `ladder`: band 6 `ascent_aberrant` and floor 17 `ascent_f17` (clear
+  `boss:f17_keeper`, 900 XP). 6 bands, 18 floors; floor 17 is the top rung
+  until port C7.
+- `clock`: `clock/debug-advance`, a DEBUG jump for John's calm option (the
+  old John wrote the clock), refused in a production build.
+- No slice changes shape: no migration, no fixture. No kernel change.
+- Spec, every old case accounted for:
+
+| Old file | Cases | Here |
+|---|---|---|
+| `malgeri.test.ts` | 37 | 35 in `tests/malgeri.test.ts` under the old names: the layout (9), the monster levels (4), the sky lines (8), the disclosure rule (5), the veil (6), the forge validator (3, on `veilIssues` and `loreIssues`). "The map badge" (2) is `it.todo`: the map has no level badge (old `spotThreat`, the UI step). 2 new: Kystel's Anvil (an anvil, its eight crafts, the anvil view names it), the people list rendered on the server (Bren's lore line in its turn after the flag, the Talk control). The neighbour scan reads `f16_arena`; `f18_well_head` is port C7. |
+| `malgeriCatchup.test.ts` | 1 | 1 in `tests/malgeriCatchup.test.ts`: 288,000 ticks live and through `catchUp` from the same save, the same flag, entry count and trio kills; the first-calm line in both runs (a recorder system keeps it: eight hours of fights push it out of the log's 60 lines). 8.4 s. |
+| `malgeriSave.test.ts` | 6 | 4 as a save and a load at the current versions (the clear and the peak gate carry; a save at the keeper spot keeps spot and activity; a save at the landing and an uncleared save stay; the text round-trips). 2 `it.todo`: the move to the landing and the idempotence of the old v64 to v65 step (no importer from the old save). |
+| `fixtures/malgeri.ts` | | `tests/fixtures/malgeri.ts`: the same three spots and two areas, as a mount function that returns its removal, in the real region; `tests/exposure.test.ts` uses it instead of its inline copy (which mounted the region too). |
+| `exposure.test.ts` todos | 5 | The plan's 577 (`malgeri_range` names a registered table, plus the content record equals the old one) and 1159 (the calm lines of the east ridge roll only under a calm open sky) ported; "the offline summary carries the first calm line" as the line in the log after catch-up; "the first calm opens the pending bestiary entries"; floor 17's part of "floors 17 to 20" (2 cases: the range's sky through `skyRegionId`; night, moonlight, Darkvision, the caves dark at noon, sun on the slopes and none under the roofs). "Floors 18 to 20" stays `it.todo` for port C7. Floor 17's roofed spots joined the indoor list of the open-sky cases. |
+| `wardLabels.test.ts` todo | 1 | Still `it.todo`, reason changed: floor 17's descent is the one road shut by a boss latch, but the case reads the road's terms on the map, which this build does not print (old `routeInfo.shut`, the UI step). |
+| `john.test.ts` | 1 | The smoke case climbs to 17 (the old one to 20, port C7). |
+| `knockoutReturn.test.ts` "a roofed hunt as the last fallback" | | Ported before on floor 6's spots (the old cases stood on floor 17); not moved. |
+
+  Unit project: 3,644 passed, 4 skipped, 120 todo (`main`: 3,594, 4, 120).
+
+Old bugs and rules kept:
+
+- John's arranged calm climb looks for the next calm at most 12 days ahead,
+  minute by minute; a spell can be up to 24 days less 8 hours away, so the
+  climb can find no calm and still jumps 12 days. It happened to old seed
+  1234 and to branch seed 42 (each build draws its own weather seed).
+- The regent's spot has no fight limit and the clear is its boss latch: a
+  fight of legionaries alone (weight 6 against 100) clears nothing.
+- `firstKill` 0 is the "not opened" mark of a veiled species, and an entry
+  opened at the first tick of a new game gets 0 (port L's kept bug); the
+  floor 17 cases land their stamp a few ticks in.
+- The old test "has seven open-sky hunt spots" lists six.
+- Under a roof the Sky readout's prognosis reads `still` rows (the old
+  header read a roofed spot as sheltered; port W).
+- Floor 17 is the top rung until port C7: its clear writes the end notice.
+
+Changed while porting (no rule):
+
+- The people list shows the line each person says now, "Says: “…”" in a
+  fixed three-line box (old people card's rotating `dialogueLine`); the
+  rebuild's Quests panel showed only the description, so no lore line could
+  be seen. The list box is 12rem (was 9rem).
+- The old forge validator's veil and lore rule is two functions
+  (`veilIssues`, `loreIssues`) the tests call on the live content.
+- John's calm jump is a DEBUG command; his report carries the floor 17
+  counts (`malgeri`) the old pacing read from its per-fight list.
+- The Malgeri fixture is a mount function, not an import that assigns.
+
+Noticed, older than this port:
+
+- The Combat panel's "Dev encounter" picker (spine port 4: "until the world
+  port sends a site") ships in a production build. It lists every monster,
+  the calm trio included, before the first calm (against floor 17's
+  disclosure rule), and starts a fight with any monster at any level.
+- The map prints no terms for a road shut by a condition ("No known
+  route.") and has no level badge; both were the old map's (UI step).
+- `kernel.view()` costs about 3.5 to 4.2 ms per call on floor 17 and 3.75
+  to 3.9 ms on `main` at the arena the same day (14.2).
+- Old `docs/MALGERI.md` says Kystel's Anvil has 15 recipes; the old spot
+  lists 8.
+
+### 14.1 John
+
+`tests/john.ts` gains `floor17` (the old `desertFloors[17]`): John walks
+the cave and the east slope to the peak and tries the peak's guardian with
+the roofed west peak as his den; after its first kill he walks the descent
+to the hamlet's gates and tries the regent with the mountain base as his
+den. `calmAtMalgeri` (`--malgeri-calm`) jumps the clock once to the range's
+next calm as he sets out and makes the open east ridge his den at the peak.
+`npm run pacing -- --through 17 [--side navy] [--malgeri-calm]` prints the
+old floor 17 line (the two bosses told apart, the calm minutes, the
+fights against calm lines). No wall on any seed, side or option.
+
+Old John at `7c1267b` (`D:\ksgproto28`, nothing edited; its modules
+imported read-only by a scratch script), `main` (`0653c3c`, through 16)
+and the branch, the same day, seeds 42, 7 and 1234. On every seed and side
+the branch equals `main` through floor 16: the same tick each segment
+closed on, knockouts, boss tries, levels and kills. Runs 1 and 2 and every
+segment through floor 15 are section 13's rows.
+
+Merchants (the default):
+
+| Segment | Old | Main | Branch | Old mean | Main mean | Branch mean | Branch vs main | Branch vs old | KO old | KO branch | Kills old | Kills branch | Boss tries/lost old | Boss tries/lost branch |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| f16 | 0:03:45 / 0:03:05 / 0:04:25 | 0:03:25 / 0:03:09 / 0:03:56 | 0:03:25 / 0:03:09 / 0:03:56 | 0:03:45 | 0:03:30 | 0:03:30 | 0.0% | -6.6% | 0/0/0 | 0/0/0 | 15/9/11 | 8/10/7 | 1/0, 1/0, 1/0 | 1/0, 1/0, 1/0 |
+| f17 | 0:14:13 / 0:14:19 / 0:14:17 | - | 0:07:49 / 0:27:12 / 0:14:13 | 0:14:16 | - | 0:16:25 | - | +15.0% | 14/14/10 | 6/22/11 | 205/208/222 | 108/445/223 | 4/2, 4/2, 4/2 | 3/1, 6/4, 4/2 |
+| Run 3 to f16 | 3:03:19 / 3:08:44 / 2:58:00 | 2:51:01 / 3:08:44 / 3:21:31 | 2:51:01 / 3:08:44 / 3:21:31 | 3:03:21 | 3:07:05 | 3:07:05 | 0.0% | +2.0% | | | | | | |
+| Run 3 to f17 | 3:17:32 / 3:23:02 / 3:12:17 | - | 2:58:50 / 3:35:56 / 3:35:44 | 3:17:37 | - | 3:23:30 | - | +3.0% | | | | | | |
+| Floor 0 to f17 | 4:37:28 / 4:47:03 / 4:30:21 | - | 4:13:33 / 4:50:29 / 5:01:26 | 4:38:18 | - | 4:41:49 | - | +1.3% | | | | | | |
+
+Level at the floor 17 clear: old 45/45/45, branch 44/47/45. Floor 17's
+bosses (tries/lost): old peak 2/1, 1/0, 2/1 and gate 2/1, 3/2, 2/1; branch
+peak 1/0, 2/1, 2/1 and gate 2/1, 4/3, 2/1. Fights in the climb: old
+2838/3088/2820, branch 2571/3104/3282.
+
+`--side navy`:
+
+| Segment | Old | Main | Branch | Old mean | Main mean | Branch mean | Branch vs main | Branch vs old | KO old | KO branch | Kills old | Kills branch | Boss tries/lost old | Boss tries/lost branch |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| f16 | 0:03:03 / 0:04:32 / 1:17:11 | 0:02:59 / 0:03:22 / 0:04:16 | 0:02:59 / 0:03:22 / 0:04:16 | 0:28:15 | 0:03:32 | 0:03:32 | 0.0% | -87.5% | 0/0/1 | 0/0/0 | 7/13/22 | 9/10/9 | 1/0, 1/0, 1/0 | 1/0, 1/0, 1/0 |
+| f17 | 0:14:20 / 0:14:13 / 0:14:09 | - | 0:33:47 / 0:14:01 / 0:27:10 | 0:14:14 | - | 0:24:59 | - | +75.6% | 12/13/12 | 30/13/21 | 215/210/216 | 559/217/459 | 4/2, 4/2, 4/2 | 7/5, 4/2, 6/4 |
+| Run 3 to f16 | 3:02:40 / 2:52:07 / 4:16:46 | 3:14:34 / 3:08:57 / 3:09:54 | 3:14:34 / 3:08:57 / 3:09:54 | 3:23:51 | 3:11:08 | 3:11:08 | 0.0% | -6.2% | | | | | | |
+| Run 3 to f17 | 3:17:00 / 3:06:20 / 4:30:55 | - | 3:48:21 / 3:22:58 / 3:37:04 | 3:38:05 | - | 3:36:08 | - | -0.9% | | | | | | |
+| Floor 0 to f17 | 4:36:56 / 4:30:22 / 5:48:59 | - | 5:03:03 / 4:37:31 / 5:02:47 | 4:58:46 | - | 4:54:27 | - | -1.4% | | | | | | |
+
+Level at the floor 17 clear: old 45/45/45, branch 47/45/47. Floor 17's
+bosses: old peak 1/0, 2/1, 2/1 and gate 3/2, 2/1, 2/1; branch peak 1/0,
+2/1, 2/1 and gate 6/5, 2/1, 4/3.
+
+`--malgeri-calm` (merchants):
+
+| Seed | Build | f17 | KO | Boss tries/lost | Peak | Gate | Calm spell, min | Under the open calm sky, min | Calm-line fights, won | Level |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 42 | old | 0:14:15 | 21 | 4/2 | 2/1 | 2/1 | 8 | 5 | 16, 3 | 45 |
+| 42 | branch | 0:14:29 | 12 | 4/2 | 1/0 | 3/2 | 0 | 0 | 0, 0 | 45 |
+| 7 | old | 0:27:22 | 30 | 6/4 | 4/3 | 2/1 | 8 | 5 | 17, 4 | 46 |
+| 7 | branch | 0:20:45 | 25 | 5/3 | 2/1 | 3/2 | 8 | 5 | 16, 3 | 46 |
+| 1234 | old | 0:20:47 | 20 | 5/3 | 1/0 | 4/3 | 0 | 0 | 0, 0 | 46 |
+| 1234 | branch | 0:27:24 | 34 | 6/4 | 4/3 | 2/1 | 8 | 5 | 16, 1 | 46 |
+
+Means: old 0:20:48, branch 0:20:53. Where a calm was found (old 42 and 7,
+branch 7 and 1234), John spent the whole 8-minute spell on the floor, 5
+minutes of it under the open calm sky, and won 1 to 4 of 16 or 17 fights
+against calm lines in both builds (old `docs/MALGERI.md`, 2026-11-11: 29
+to 39% won). Old seed
+1234 and branch seed 42 found no calm within the 12-day search (old rule,
+above): the clock jumped 12 days and the floor ran under fronts.
+
+Why floor 17 differs per seed: the old build lost exactly two boss fights
+on every seed and side (each loss costs a 6-minute grind at the den), the
+branch one to five (12 of 24 tries lost old, 18 of 30 branch). Checked:
+
+- John at the floor's door is the same in both builds (seed 7: level 41,
+  the same six attributes, max HP 821 and 820, damage 655.4 and 655.0).
+- The regent's fight is the same: a fixed character (all attributes 55,
+  level 44, full health) against the hamlet gates' table, the same clock
+  and weather seed in both builds, 40 or 60 fights each: under a calm 14 and
+  16 of 40 won (old, branch), 315 and 310 ticks a fight; daytime snow 14 and
+  9 of 60, storm 20 and 17 of 60, heatwave 18 and 17 of 60.
+- What differs is chance in a handful of tries at about even odds, and the
+  sky over the bosses (open spots): each build draws its own weather seed.
+
+Against section 3.4, on the means over the three seeds, against the old
+build:
+
+- Every run total is within 15%: run 3 to floor 17 +3.0% merchants and
+  -0.9% navy, floor 0 to 17 +1.3% and -1.4%.
+- Segments over two minutes of old mean outside 35%: the six rows of section
+  13 (f8, f9, f10 keepers; merchants f11; navy f11; navy f16), each equal
+  on `main` (the branch equals `main` through floor 16); and navy f17,
+  +75.6% (0:24:59 against 0:14:14), new with this port, a boss segment
+  (two keeper loops), reported, not held. Merchants f17 is +15.0%.
+- Floors 12 and 13 per seed: section 13's numbers, unchanged.
+
+### 14.2 Live play on floor 17
+
+Both builds in one process (the old modules imported read-only),
+alternating rounds, seed 42: each build's John to the floor 16 close,
+stood at the spot hunting, the new build's clock and weather seed set to
+the old build's (both stand under the same sky: rain), 100 ticks of
+warm-up, then each round loads that state and runs 3,000 ticks. 10 rounds.
+Machine load 0% before, 8% after the ridge; 61% at the end of the west
+peak. Microseconds per tick (minimum / median):
+
+| Per tick | Old `game.tick()` | New `kernel.tick()` | New `kernel.tick()` + `kernel.view()` |
+|---|---|---|---|
+| The East Ridge (open sky, sky lines, the rain's rule) | 28 / 29 | 12 / 14 | 3,402 / 3,542 |
+| The West Peak (roofed den) | 28 / 29 | 15 / 16 | 3,568 / 3,696 |
+
+- The new tick is 0.48 and 0.55 of the old one on floor 17.
+- The view: `kernel.view()` is the cost of the whole view (docs/PERFORMANCE.md
+  section 3.4, older than this port). Same process per build, seed 42, John
+  at the floor 16 close, 200 calls a round, 7 rounds, medians: `main` 3,896
+  µs at the arena, 3,904 in the hall, 3,753 at the Foot; the branch 3,993,
+  4,066 and 3,996 at the same spots, and 4,259 at the east ridge, 4,194 in
+  Hamlet Square, 4,209 at Kystel's Anvil. The two builds ran one after the
+  other, not alternating. The port adds to the view one more rung, one more
+  area of map spots, and the people's line where someone stands.
+- What the port adds per tick: nothing. No tick hook; the weather tick runs
+  the sky rules and the calm check on floor 17 as it would for any region
+  with a sky table. The npcs view reads the clock, and the skills and
+  counters for a condition reader, only where a person stands (the reader
+  only where one has lore).
+
+### 14.3 Offline budgets and the speed project
+
+Against `main` (`0653c3c`, the worktree `D:\ksgproto28-b-main`), both
+builds' modules in one process, alternating rounds (the scripts of 12.3).
+Wall time (minimum / median) and processor time of the process, the median
+of the per-round differences. Idle and poison: one process of 15 rounds,
+machine load 32% before, 8% after; fights: two processes of 2 rounds and 1
+round (the second with the branch first), load 2 to 16%.
+
+| Run of 8 hours | Rounds | `main` wall | Branch wall | Wall median | Processor, paired |
+|---|---|---|---|---|---|
+| No fight, no condition | 15 | 1,927 / 1,974 | 1,934 / 1,964 | -10 (-0.5%) | +16 (+0.8%) |
+| A poison held | 15 | 5,096 / 5,253 | 5,005 / 5,149 | -104 (-2.0%) | -172 (-2.7%) |
+| Floor 1 table sent to combat | 3 | 5,941 / 5,962 | 5,858 / 5,909 | -53 (-0.9%) | +16 (+0.2%) |
+| Floor 6 Tunnels sent to combat | 3 | 9,784 / 9,799 | 9,772 / 9,990 | +191 (+1.9%) | +219 (+1.9%) |
+| World: hunt, floor 4 Woods Edge | 3 | 9,926 / 10,284 | 9,770 / 10,085 | -199 (-1.9%) | -859 (-7.6%) |
+| World: hunt, floor 6 Tunnels | 3 | 9,886 / 10,573 | 10,043 / 10,747 | +174 (+1.6%) | +360 (+3.1%) |
+| World: the roadstead | 3 | 9,132 / 9,595 | 9,309 / 9,554 | -41 (-0.4%) | -62 (-0.6%) |
+
+The speed project's four states (built by John in each build, then 8 hours
+of catch-up asking the holds, as `catchUp` does) and the idle run, one
+process, 5 rounds (15 idle runs), machine load 10% before, 7% after:
+
+| State | `main` wall | Branch wall | Wall median | Processor, paired |
+|---|---|---|---|---|
+| Floor 1 hunting | 6,086 / 6,524 | 6,070 / 6,665 | +141 (+2.2%) | +15 (+0.2%) |
+| Floor 6 hunting | 11,297 / 12,419 | 11,416 / 12,664 | +245 (+2.0%) | +233 (+1.7%) |
+| Idle in town | 2,224 / 2,270 | 2,230 / 2,334 | +64 (+2.8%) | +1 (0.0%) |
+| Floor 7 hunting | 7,852 / 8,539 | 7,855 / 8,650 | +111 (+1.3%) | +173 (+1.9%) |
+| Idle (budget run) | 2,004 / 2,069 | 1,991 / 2,125 | +56 (+2.7%) | -30 (-1.4%) |
+
+No state of the speed project or budget run stands on floor 17, and the
+port adds no per-tick work elsewhere; the content grows by one floor, one
+area and 18 spots that the per-kill floor checks and per-spot reads walk.
+The readings lie within -2.7% and +3.1% of `main` but floor 4's processor
+time (-7.6%, one of three rounds far off), and the wall and processor
+differences of one state often disagree in sign (idle, floor 1): within
+the noise of this machine.
+
+`npm run verify` on the port's code, exit 0 (machine load 9% at the start,
+0% at the end): svelte-check 0 errors; unit 3,644 passed, 4 skipped, 120
+todo; budget 4 (idle 1,986 ms of 2,420, poison 4,849 of 8,250, floor 1
+5,532 of 7,700, floor 6 9,042 of 14,850); budget-world 3 (floor 4 9,145,
+floor 6 9,376, the roadstead 8,534, each of 14,300); speed (floor 1 57%,
+floor 6 81%, town 65%, floor 7 57% of the limit, machine load 11 to 13%,
+yardstick 197 to 205 ms; kills as the old build's within 10%); john 14;
+build. Every outcome digest equal to the recorded ones.
+
+### 14.4 Browser check
+
+Port 5600 was held by another project's dev server ("Frontier Idle", not
+this repository) for the whole session, so the check ran on the build
+preview, port 5601 (`ksgb-preview`, the build of the port's code), at 1024
+px and 375 px. The preview's slot (`ksgb:production:save`) held a new game
+(4,488 bytes); it was backed up at `ksgb:production:save.before-step4C6-check`
+and put back after, the backup key removed, every edit of the slot made
+from a static file of the same origin (`/assets/*.css`). The save used:
+John (seed 42) through floor 17, built by a scratch script on the branch,
+stood at Kystel's Anvil with every floor 17 spot discovered, the
+first-calm flag set and some hides added, `savedAt` an hour ahead (no
+catch-up); served from the preview's folder for the check and deleted
+after.
+
+- Kystel's Anvil, Location panel, 1024 px: the spot's line ("The Ascent,
+  The Malgeri Crossing"), the two jobs and the eight crafts with their
+  costs, Wolf Cloak drawn disabled with "Requires: Leathercrafting 5".
+  "Craft Leather Cap" started ("Cycle: 80%"); a few caps later Leathercrafting
+  reached 5 and the Wolf Cloak showed its cost. The Sky card under a roof:
+  "Now: still · feels freezing", "Prognosis: Malgeri Range", still rows.
+  The ladder card: floor 17 "Cleared", "Clear: 1 keeper of The Hamlet Gates
+  slain, done", "The ladder answers here. Floor 18: not in this build."
+- The Anvil panel at Kystel's Anvil, 1024 px and 375 px: the anvil and its
+  controls (Forge disabled, "Short of Hardwood: 0 held, 1 needed"), no
+  horizontal scroll at 375 px, Forge 44 px high.
+- Quests panel at the forge: Thora Ironbrand, her description, "Says: “Scrap
+  in, steel out. That’s the whole philosophy.”" in its 58.5 px box; Talk
+  sent the greeting and the control read "Met", disabled.
+- Hamlet Square (walked from the forge): Captain Bren's lines rotated every
+  30 s; with the flag set his lore line came round ("Says: “The mountain
+  goes still for 8 hours in every 12 days. ...”"), three lines at 1024 px
+  (550 px wide). At 375 px: the list 351 px wide, no horizontal scroll, the
+  line box 325 px wide and 58.5 px high, the lore line four lines that
+  scroll inside it; Talk 44 px high.
+- The Mountain Path (open sky), 375 px: "Now: 💨 gale · feels cold",
+  "Prognosis: Malgeri Range", rows of storm, gale and snow; the hunt drew
+  the gale's line ("Uncommon Squall Slime (Lv 42) attacks!"); a knockout
+  there sent the knockout return back to the path. Back at Kystel's Anvil
+  at 375 px: every activity button inside its card (151 to 319 px of 351,
+  44 and 59 px high).
+- No console errors.
+
+Not checked in a browser: a calm on the open slopes (the calm lines and
+the first-calm line live; tested headless), the veiled bestiary entries
+opening, the peak gate on the map, the dev server on 5600.
