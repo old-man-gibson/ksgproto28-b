@@ -451,8 +451,10 @@ describe('world graph', () => {
   });
 
   // The old case asked for 2 waypoints or more, with the shelved countryside
-  // mounted. The content in scope has one: `ascent_foot`.
-  it.todo('waypoints exist for fast travel (step 4: the second waypoint is outside floors 0 to 6 and Threshold)');
+  // mounted (old `tests/fixtures/shelved-world`). Old `main`'s live content
+  // has one, `ascent_foot`, and so does this build with floors 0 to 20
+  // (step 4 port C7): the second waypoint is shelved content, not ported.
+  it.todo('waypoints exist for fast travel (the second waypoint is in the shelved countryside, not ported)');
 
   it('spot activities and recipe lists resolve', () => {
     // The recipe and bench halves of the old case are the two todos below.

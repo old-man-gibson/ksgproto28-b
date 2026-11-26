@@ -530,6 +530,10 @@ and can run beside another port (W touches only `weather` and `clock`).
   with the tolerance of section 3.4; the old smoke case of
   `tests/john.test.ts` at 20. The step 4 status is written here as SPINE
   section 9.3 was.
+- Done: section 15. No kernel change and no code change in any system:
+  the desert is content on rules ported before. The full climb's run totals
+  hold the tolerance; the segments outside it are the seven of `main`,
+  each chance met a few times per seed (15.1). Step 4 status: 15.5.
 
 ### 5.10 Port F: Facet leftovers (conditional)
 
@@ -2651,3 +2655,413 @@ after.
 Not checked in a browser: a calm on the open slopes (the calm lines and
 the first-calm line live; tested headless), the veiled bestiary entries
 opening, the peak gate on the map, the dev server on 5600.
+
+## 15. Port C7: the desert, floors 18 to 20 (done)
+
+Done 2026-11-25 on branch `step4-C7`, from `main` at `68fdfc1`. Not merged,
+not pushed. Commits:
+
+1. `5e94827`, the port.
+2. This account.
+
+The outcome digests did not change (every digest of `npm run verify`
+passed on the port's code), so there is no digest commit.
+
+The full account: the "Step 4 port C7" sections of the `world`, `ladder`,
+`npcs`, `shops` and `combat` READMEs.
+
+What was ported:
+
+- `world`: areas `ascent_f18_area` (The Necropolis Road: open sky, tag
+  `heat`), `ascent_f19_area` (The Pyramid: open sky, scene `crypt`) and
+  `ascent_f20_area` (The Delta Port: open sky), and their 23 spots (old
+  `locations.data.ts` 4008-4393, text `locations.text.ts` 333-371), old
+  records: floor 18 (10) the Well-Head, five obelisks (a haven each; the
+  read is an explore of 180 ticks whose one find bumps `flag:chart`), the
+  Dunes, the Salt Flat, the Tomb Row and the Forecourt (the sand colossus);
+  floor 19 (8) the Causeway, the Valley Temples, the Side Tomb (Heat
+  Resistance 10), the Entrance Passage, the Grand Gallery, the Burial
+  Chamber, the Treasury (six grave goods, each bumping `flag:tomb:taken`,
+  each refused once `boss:f19_door` is above 0) and the Door (the judge,
+  `levelRise` on `flag:tomb:taken`, share 0.1, ceiling 45); floor 20 (5)
+  the River Road, the Quay (the roadstead's forced road surprises the crew
+  at `flag:chart` 3), the Warehouses, the Notice Wall and the Roadstead.
+  200 spots, 32 areas.
+- `ladder`: band 7 `ascent_desert` and floors 18 to 20 (old
+  `towers.data.ts` 418-463; gates 60 and 150 desert kills; clears
+  `boss:f18_forecourt`, `boss:f19_door`, `fights:f20_roadstead`; floor 20's
+  `seam: { verb: 'Sailing' }`). 7 bands, 21 floors. Floor 20 is the top
+  rung: its clear writes "Floor 21: not in this build." once per run.
+- `npcs`: the broker `f20_broker` on the Quay (old `npcs.data.ts` 343-356),
+  no shelf. `shops`: nothing to change; a sale pays the global price
+  anywhere.
+- `combat`: nothing to change. The judge is the first live line with
+  `levelRise` (spine port 4 code); the seam verb is said by `ride` (spine
+  port 6 code).
+- No slice changes shape: no migration, no fixture. No kernel change.
+- Spec, every old case accounted for:
+
+| Old file | Cases | Here |
+|---|---|---|
+| `desert.test.ts` | 28 | 28 in `tests/desert.test.ts` under the old names. The four method-drop cases were ported in spine port 4 against copies of the two tables (`tests/loot.test.ts`, `tests/combatStatuses.test.ts`); here they run again on the live spots and monsters. The roadstead's surprise is read after the arrival tick with the player dazed: the arrival tick runs the fight, and the player's first blow, which a surprised formation hands the player, spends the front crew member's surprise (port C3: the first combat tick is the arrival tick). 2 new: the five obelisks' reads, the side tomb's door and finds. |
+| `ladderEnd.test.ts` | 14 | 14 in `tests/ladderEnd.test.ts`. The old UI readers (`ladderEnd`, `towerSection(...).end`, `ladderBands`) are the ladder view's `endNotice` and rungs. The four absence cases: the old summary's `ladderEnd` line is the notice in the log after `catchUp`, once (as port C6's first-calm line); a recorder system keeps the notice lines, since ten minutes of fights push a line out of the log's 60. |
+| `finds.test.ts` | 14 | Ported before (spine port 6, 14 of 14); it has no desert case. The desert's finds are in `tests/desert.test.ts`. |
+| `openSky.test.ts`, the desert's part | | In `tests/exposure.test.ts`: floors 18 to 20 in the open areas, the roofed list (`f19` six spots, `f20_warehouses`), the spots judged open (`f18_tomb_row`, `f19_valley`, `f20_notice_wall`), the night spots of 18 to 20 in the three night cases; "weather changes over 120 days on floor 12 and on floor 18", which no earlier port carried (on the pure weather read: 238 kernels took over the parallel run's time limit); 1 new case for the three areas; the todo "floors 18 to 20" removed. The header chip case (`f19_chamber`, `f19_door`) stays the UI step's todo. |
+| `knockoutReturn.test.ts`, the desert's cases | 3 | The real `f20_roadstead` joins the pocket waters (the two `it.each` cases); "a boss door is not sailed into again" runs on the real Door of floor 19 beside its pocket stand-in. |
+| `john.test.ts` smoke case | 1 | Climbs to 20, as the old one; also asserts a try at each desert boss. |
+| `malgeri.test.ts`, `malgeriSave.test.ts` | | The disclosure scan reads `f18_well_head` as the old one did; the first save case stands on floor 18's landing as the old one did. |
+
+  New: `tests/desertPanels.test.ts` (6): the Location panel rendered on the
+  server over a test kernel (the module `src/ui/game.svelte` replaced by
+  `vi.mock`): the rungs of floors 18 to 20, their rides and gates, the end
+  notice, the obelisk's read, the quay's forced road; and the broker in the
+  people list with Talk. Unit project: 3,699 passed, 4 skipped, 119 todo
+  (`main`: 3,644, 4, 120). The worldContent todo "waypoints exist for fast
+  travel" keeps its todo with its reason corrected: old `main`'s live
+  content has one waypoint; the old case passed with the shelved countryside
+  mounted.
+
+Old bugs and rules kept:
+
+- The desert reads the Ascent's plains sky (no per-area climate pin, an old
+  decision in `locations.data.ts`): the Necropolis Road "feels freezing"
+  under an overcast sky.
+- The side tomb opens at Heat Resistance 10, not the floor entry's 15 (old
+  comment: it returns to 15 once the area has its own climate).
+- After the judge's first kill the Treasury's search can still be chosen
+  and runs its 36 seconds for nothing (a find whose conditions fail waits,
+  old `pendingFinds`).
+- Floor 20's seam verb "Sailing" is read only on a climb one rung up from
+  floor 20; floor 21 does not exist, so no live climb says it.
+- The old John walks past the obelisks unread, so the roadstead crew never
+  starts surprised in his climb; ported as it is.
+- The broker's old `shop.lines: []` is written as no `shop` (old comment:
+  the content lint holds a shop to one line).
+
+Changed while porting (no rule): the ladder end's absence cases read the log
+after catch-up (no summary dialog in this build, the UI step); the Location
+panel is rendered on the server in a test through a replaced module.
+
+Noticed, older than this port:
+
+- A fight-count term reads "1 wins at The Roadstead" (also "1 wins at The
+  Hunting Lodge" on floor 8): the term words of port C1 do not make the
+  singular.
+- In the build the obelisk's find line did not appear in any panel (the
+  Combat panel shows the fight feed); the log lines of finds, greetings and
+  the ladder's end could not be read in the browser.
+- `kernel.view()` costs about 4.2 to 4.4 ms per call on floors 18 to 20
+  (15.2); port C6 measured 3.5 to 4.3 ms.
+- The Character panel lists rows "❔ Unknown skill" under Combat for John at
+  floor 20; not investigated.
+
+### 15.1 John
+
+`tests/john.ts` gains `floor18` to `floor20` (old `desertFloors[18]` to
+`[20]`): floor 18, the road obelisk to obelisk (none read) to the
+Forecourt, the guardian tried with the Dunes as the den; floor 19, its
+gate's sixty desert kills hunted at the Dunes before the climb, then the
+Entrance Passage, the Grand Gallery and the Burial Chamber to the Door
+(nothing taken from the Treasury), the judge tried with the Gallery as the
+den; floor 20, its gate's 150 at the Valley Temples, then the Quay and the
+Roadstead's one fight, the River Road as the den. `npm run pacing --
+--through 20 [--side navy]`. No wall on any seed or side, in either build.
+
+Old John at `7c1267b` (`D:\ksgproto28`, nothing edited; its modules
+imported read-only by a scratch script), `main` (`68fdfc1`, through 17)
+and the branch (through 20), the same day, seeds 42, 7 and 1234. On every
+seed and side the branch equals `main` through floor 17 (the same tick each
+segment closed on, knockouts, boss tries, levels and kills), and `main`
+equals port C6's recorded runs. The old whole climb (merchants) is section
+3.3's: 4:42:50 / 4:52:51 / 4:35:37.
+
+Merchants (the default):
+
+| Segment | Old | Main | Branch | Old mean | Main mean | Branch mean | Branch vs main | Branch vs old | KO old | KO branch | Kills old | Kills branch | Boss tries/lost old | Boss tries/lost branch |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| f1-6 again | 0:23:16 / 0:25:29 / 0:24:04 | 0:22:57 / 0:23:43 / 0:24:13 | 0:22:57 / 0:23:43 / 0:24:13 | 0:24:16 | 0:23:38 | 0:23:38 | +0.0% | -2.7% | 21/20/22 | 20/23/20 | 76/79/78 | 78/88/78 | | |
+| f7 | 0:03:02 / 0:02:58 / 0:03:05 | 0:03:23 / 0:02:55 / 0:02:32 | 0:03:23 / 0:02:55 / 0:02:32 | 0:03:02 | 0:02:57 | 0:02:57 | +0.0% | -2.6% | 3/3/3 | 3/2/2 | 32/33/36 | 40/43/33 | | |
+| f8 | 0:06:33 / 0:00:15 / 0:00:13 | 0:06:33 / 0:00:14 / 0:06:26 | 0:06:33 / 0:00:14 / 0:06:26 | 0:02:20 | 0:04:24 | 0:04:24 | +0.0% | +88.4% | 9/0/0 | 8/0/8 | 56/1/1 | 65/1/57 | 2/1, 1/0, 1/0 | 2/1, 1/0, 2/1 |
+| f9 | 0:12:44 / 0:12:51 / 0:19:13 | 0:06:27 / 0:06:29 / 0:06:27 | 0:06:27 / 0:06:29 / 0:06:27 | 0:14:56 | 0:06:28 | 0:06:28 | +0.0% | -56.7% | 11/15/20 | 7/8/7 | 144/133/213 | 62/60/66 | 3/2, 3/2, 4/3 | 2/1, 2/1, 2/1 |
+| f10 | 0:00:11 / 0:12:42 / 0:00:15 | 0:00:11 / 0:06:29 / 0:12:43 | 0:00:11 / 0:06:29 / 0:12:43 | 0:04:23 | 0:06:28 | 0:06:28 | +0.0% | +47.5% | 0/2/0 | 0/4/6 | 1/213/1 | 1/89/188 | 1/0, 3/2, 1/0 | 1/0, 2/1, 3/2 |
+| f11 siege | 0:07:29 / 0:06:54 / 0:07:03 | 0:08:57 / 0:08:17 / 0:07:30 | 0:08:57 / 0:08:17 / 0:07:30 | 0:07:09 | 0:08:15 | 0:08:15 | +0.0% | +15.4% | 3/2/2 | 6/5/4 | 38/35/41 | 43/38/35 | 2/1, 2/1, 1/0 | 2/1, 2/1, 3/2 |
+| f1-10 again | 0:46:42 / 0:39:36 / 0:46:00 | 0:42:24 / 0:46:37 / 1:00:01 | 0:42:24 / 0:46:37 / 1:00:01 | 0:44:06 | 0:49:41 | 0:49:41 | +0.0% | +12.7% | 47/36/35 | 41/40/54 | 304/256/366 | 233/350/525 | | |
+| f11 | 0:12:18 / 0:07:24 / 0:07:00 | 0:04:36 / 0:06:23 / 0:04:59 | 0:04:36 / 0:06:23 / 0:04:59 | 0:08:54 | 0:05:19 | 0:05:19 | +0.0% | -40.3% | 6/4/3 | 5/2/2 | 179/99/96 | 48/97/74 | | |
+| f12 | 0:30:00 / 0:36:00 / 0:30:00 | 0:30:00 / 0:24:00 / 0:24:00 | 0:30:00 / 0:24:00 / 0:24:00 | 0:32:00 | 0:26:00 | 0:26:00 | +0.0% | -18.8% | 8/10/7 | 9/7/5 | 559/662/555 | 533/429/454 | | |
+| f13 | 1:30:00 / 1:42:00 / 1:30:00 | 1:30:00 / 1:48:00 / 1:48:00 | 1:30:00 / 1:48:00 / 1:48:00 | 1:34:00 | 1:42:00 | 1:42:00 | +0.0% | +8.5% | 6/9/12 | 8/10/11 | 2424/2743/2399 | 2486/2873/3038 | | |
+| f14 | 0:00:13 / 0:00:14 / 0:00:12 | 0:00:14 / 0:00:13 / 0:00:13 | 0:00:14 / 0:00:13 / 0:00:13 | 0:00:13 | 0:00:13 | 0:00:13 | +0.0% | +3.1% | 0/0/0 | 0/0/0 | 2/2/2 | 3/2/2 | 1/0, 1/0, 1/0 | 1/0, 1/0, 1/0 |
+| f15 | 0:00:21 / 0:00:25 / 0:00:23 | 0:00:22 / 0:00:22 / 0:00:22 | 0:00:22 / 0:00:22 / 0:00:22 | 0:00:23 | 0:00:22 | 0:00:22 | +0.0% | -4.2% | 0/0/0 | 0/0/0 | 9/9/9 | 9/9/9 | 1/0, 1/0, 1/0 | 1/0, 1/0, 1/0 |
+| f16 | 0:03:45 / 0:03:05 / 0:04:25 | 0:03:25 / 0:03:09 / 0:03:56 | 0:03:25 / 0:03:09 / 0:03:56 | 0:03:45 | 0:03:30 | 0:03:30 | +0.0% | -6.6% | 0/0/0 | 0/0/0 | 15/9/11 | 8/10/7 | 1/0, 1/0, 1/0 | 1/0, 1/0, 1/0 |
+| f17 | 0:14:13 / 0:14:19 / 0:14:17 | 0:07:49 / 0:27:12 / 0:14:13 | 0:07:49 / 0:27:12 / 0:14:13 | 0:14:16 | 0:16:25 | 0:16:25 | +0.0% | +15.0% | 14/14/10 | 6/22/11 | 205/208/222 | 108/445/223 | 4/2, 4/2, 4/2 | 3/1, 6/4, 4/2 |
+| f18 | 0:00:16 / 0:00:17 / 0:00:16 | - | 0:00:17 / 0:00:16 / 0:00:16 | 0:00:16 | - | 0:00:16 | - | -0.4% | 0/0/0 | 0/0/0 | 1/1/1 | 1/1/1 | 1/0, 1/0, 1/0 | 1/0, 1/0, 1/0 |
+| f19 | 0:02:00 / 0:02:13 / 0:01:54 | - | 0:02:18 / 0:02:02 / 0:01:57 | 0:02:02 | - | 0:02:06 | - | +3.0% | 0/0/0 | 0/0/0 | 60/60/60 | 60/60/60 | 1/0, 1/0, 1/0 | 1/0, 1/0, 1/0 |
+| f20 | 0:03:06 / 0:03:17 / 0:03:06 | - | 0:03:20 / 0:03:07 / 0:03:14 | 0:03:10 | - | 0:03:14 | - | +2.1% | 0/0/0 | 0/0/0 | 92/92/92 | 92/92/92 | 1/0, 1/0, 1/0 | 1/0, 1/0, 1/0 |
+| Run 1 | 0:26:41 / 0:22:52 / 0:24:13 | 0:26:14 / 0:26:26 / 0:25:51 | 0:26:14 / 0:26:26 / 0:25:51 | 0:24:35 | 0:26:11 | 0:26:11 | +0.0% | +6.5% | | | | | | |
+| Run 2 | 0:53:15 / 1:01:09 / 0:53:52 | 0:48:28 / 0:48:06 / 0:59:51 | 0:48:28 / 0:48:06 / 0:59:51 | 0:56:05 | 0:52:09 | 0:52:09 | +0.0% | -7.0% | | | | | | |
+| Run 3 to f17 | 3:17:32 / 3:23:02 / 3:12:17 | 2:58:50 / 3:35:56 / 3:35:44 | 2:58:50 / 3:35:56 / 3:35:44 | 3:17:37 | 3:23:30 | 3:23:30 | +0.0% | +3.0% | | | | | | |
+| Run 3 | 3:22:55 / 3:28:50 / 3:17:32 | - | 3:04:45 / 3:41:22 / 3:41:11 | 3:23:05 | - | 3:29:06 | - | +3.0% | | | | | | |
+| Whole climb | 4:42:50 / 4:52:51 / 4:35:37 | - | 4:19:28 / 4:55:54 / 5:06:54 | 4:43:46 | - | 4:47:25 | - | +1.3% | | | | | | |
+
+Level at the floor 20 clear: old 46/46/46, branch 45/47/46. Fights in the
+climb: old 2940/3187/2913, branch 2675/3204/3384.
+
+`--side navy` (runs 1 and 2 and `f1-10 again` are the merchants' rows):
+
+| Segment | Old | Main | Branch | Old mean | Main mean | Branch mean | Branch vs main | Branch vs old | KO old | KO branch | Kills old | Kills branch | Boss tries/lost old | Boss tries/lost branch |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| f11 | 0:06:18 / 0:07:24 / 0:07:00 | 0:16:36 / 0:06:23 / 0:04:59 | 0:16:36 / 0:06:23 / 0:04:59 | 0:06:54 | 0:09:19 | 0:09:19 | +0.0% | +35.0% | 3/6/6 | 13/5/3 | 87/81/84 | 221/76/70 | | |
+| f12 | 0:30:00 / 0:30:00 / 0:30:00 | 0:30:00 / 0:30:00 / 0:30:00 | 0:30:00 / 0:30:00 / 0:30:00 | 0:30:00 | 0:30:00 | 0:30:00 | +0.0% | +0.0% | 13/16/12 | 7/14/9 | 517/506/528 | 560/516/563 | | |
+| f13 | 1:36:00 / 1:30:00 / 1:36:00 | 1:42:00 / 1:42:00 / 1:30:00 | 1:42:00 / 1:42:00 / 1:30:00 | 1:34:00 | 1:38:00 | 1:38:00 | +0.0% | +4.3% | 14/15/11 | 14/16/9 | 2497/2271/2612 | 2831/2661/2459 | | |
+| f14 | 0:00:15 / 0:00:13 / 0:00:13 | 0:00:13 / 0:00:13 / 0:00:13 | 0:00:13 / 0:00:13 / 0:00:13 | 0:00:13 | 0:00:13 | 0:00:13 | +0.0% | -2.2% | 0/0/0 | 0/0/0 | 3/3/2 | 3/3/2 | 1/0, 1/0, 1/0 | 1/0, 1/0, 1/0 |
+| f15 | 0:00:23 / 0:00:23 / 0:00:22 | 0:00:23 / 0:00:22 / 0:00:25 | 0:00:23 / 0:00:22 / 0:00:25 | 0:00:22 | 0:00:24 | 0:00:24 | +0.0% | +4.9% | 0/0/0 | 0/0/0 | 9/9/9 | 9/9/9 | 1/0, 1/0, 1/0 | 1/0, 1/0, 1/0 |
+| f16 | 0:03:03 / 0:04:32 / 1:17:11 | 0:02:59 / 0:03:22 / 0:04:16 | 0:02:59 / 0:03:22 / 0:04:16 | 0:28:15 | 0:03:32 | 0:03:32 | +0.0% | -87.5% | 0/0/1 | 0/0/0 | 7/13/22 | 9/10/9 | 1/0, 1/0, 1/0 | 1/0, 1/0, 1/0 |
+| f17 | 0:14:20 / 0:14:13 / 0:14:09 | 0:33:47 / 0:14:01 / 0:27:10 | 0:33:47 / 0:14:01 / 0:27:10 | 0:14:14 | 0:24:59 | 0:24:59 | +0.0% | +75.6% | 12/13/12 | 30/13/21 | 215/210/216 | 559/217/459 | 4/2, 4/2, 4/2 | 7/5, 4/2, 6/4 |
+| f18 | 0:00:16 / 0:00:17 / 0:00:17 | - | 0:00:16 / 0:00:16 / 0:00:16 | 0:00:17 | - | 0:00:16 | - | -2.8% | 0/0/0 | 0/0/0 | 1/1/1 | 1/1/1 | 1/0, 1/0, 1/0 | 1/0, 1/0, 1/0 |
+| f19 | 0:01:59 / 0:02:12 / 0:02:05 | - | 0:02:05 / 0:02:10 / 0:02:07 | 0:02:05 | - | 0:02:07 | - | +1.2% | 0/0/0 | 0/0/0 | 60/60/60 | 60/60/60 | 1/0, 1/0, 1/0 | 1/0, 1/0, 1/0 |
+| f20 | 0:03:21 / 0:03:10 / 0:03:07 | - | 0:03:18 / 0:03:22 / 0:03:06 | 0:03:13 | - | 0:03:15 | - | +1.2% | 0/0/0 | 0/0/0 | 92/92/92 | 92/92/92 | 1/0, 1/0, 1/0 | 1/0, 1/0, 1/0 |
+| Run 3 to f17 | 3:17:00 / 3:06:20 / 4:30:55 | 3:48:21 / 3:22:58 / 3:37:04 | 3:48:21 / 3:22:58 / 3:37:04 | 3:38:05 | 3:36:08 | 3:36:08 | +0.0% | -0.9% | | | | | | |
+| Run 3 | 3:22:37 / 3:11:59 / 4:36:23 | - | 3:53:59 / 3:28:46 / 3:42:33 | 3:43:40 | - | 3:41:46 | - | -0.8% | | | | | | |
+| Whole climb | 4:42:33 / 4:36:01 / 5:54:28 | - | 5:08:42 / 4:43:19 / 5:08:15 | 5:04:20 | - | 5:00:05 | - | -1.4% | | | | | | |
+
+Level at the floor 20 clear: old 46/46/46, branch 48/46/47. Fights in the
+climb: old 2882/2809/2997, branch 3306/2998/3229.
+
+The desert: every desert boss was won at the first try on every seed and
+side in both builds (the forecourt guardian at level 41, the judge at 33
+with nothing taken, the roadstead's three crew at 45); the kills of floors
+19 and 20 (60 and 92 on every seed, side and build) are the gate hunts and
+the boss; floors 18 to 20 are within 3% of the old means on both sides.
+
+Against section 3.4, on the means over the three seeds, against the old
+build (`.scratch-c7/tables.mjs`):
+
+- Every run total is within 15%: run 1 +6.5%, run 2 -7.0%, run 3 +3.0%
+  merchants and -0.8% navy, the whole climb +1.3% and -1.4%.
+- Segments over two minutes of old mean outside 35%, each equal on `main`
+  (the seven rows the brief listed; nothing new with this port):
+
+| Segment | Side | Old mean | Branch mean | Change | Kind | Cause |
+|---|---|---|---|---|---|---|
+| f8 | both | 0:02:20 | 0:04:24 | +88.4% | keeper, reported | Chance over a few keeper tries |
+| f9 | both | 0:14:56 | 0:06:28 | -56.7% | keeper, reported | Chance over a few keeper tries |
+| f10 | both | 0:04:23 | 0:06:28 | +47.5% | keeper, reported | Chance over a few keeper tries |
+| f11 | merchants | 0:08:54 | 0:05:19 | -40.3% | schedule-bound | Chance at the water: old seed 42 lost the legs of its first convoy |
+| f11 | navy | 0:06:54 | 0:09:19 | +35.0% | schedule-bound | Chance at the water: 13 knockouts on seed 42 |
+| f16 | navy | 0:28:15 | 0:03:32 | -87.5% | boss, reported | Chance: old seed 1234 loses a royale and waits out the lockout |
+| f17 | navy | 0:14:14 | 0:24:59 | +75.6% | boss, reported | Chance over a few boss tries (port C6) |
+
+- Floors 12 and 13 per seed against one convoy (6 minutes): merchants f12
+  0 / -12 / -6 and f13 0 / +6 / +18 minutes; navy f12 0 / 0 / 0 and f13
+  +6 / +12 / -6. Outside one convoy: merchants f12 seed 7, merchants f13
+  seed 1234, navy f13 seed 7 (all equal on `main`, section 13).
+
+How each cause was found. No rule difference was found; none of the
+candidate causes but chance applies (any-order floors: the wards run 7, 8,
+9, 10 in both builds; segment boundaries: both drivers close a segment on
+the floor's clear; passive XP: it moved the streams in port W, which is why
+these seeds land where they do, not the odds):
+
+- Floors 8 to 10. A lost keeper try costs a 6-minute grind at the den, so
+  a seed's time is a multiple of about 6:30. Tries lost, old against
+  branch: f8 1, 0, 0 and 1, 0, 1; f9 2, 2, 3 and 1, 1, 1; f10 0, 2, 0 and
+  0, 1, 2. John at the doors of floors 8 and 9 is within one level in the
+  two builds (floor 9: old 12/11/11, branch 13/11/12); at floor 10's he is
+  two to four levels lower in the branch (old 19/18/21, branch 16/16/17:
+  the old seeds lost more at floor 9 and hunted its den longer).
+  The keepers duelled by a fixed character at the same level, the same
+  counters (the band position and step) and the same sky, in both builds
+  (`.scratch-c7/duel-*.ts`, `.scratch-c7/duels.txt`): the young beast
+  (L16) won 114 of 200 old, 103 of 200 branch, 121 and 118 ticks a fight;
+  the death knight (L18) 28 and 26 of 60 at attributes 26, 43 and 42 of 60
+  at 30; the ore eater stage 4 (L23) 20 and 26 of 60. Each pair is within
+  its sampling error: the same odds, about even, met a few times per seed.
+- Floor 11. One convoy (8 crates) and a won fight at the roadstead clear
+  it; crates are lost on the legs John misses while knocked out or walking
+  back. Merchants: the old seed 42 was knocked out 6 times and needed a
+  second convoy (12:18); the branch needs one on every seed (per seed
+  -7:42, -1:01, -2:01). Navy: the branch's seed 42 was knocked out 13
+  times (16:36 against 6:18). Checked on that seed: John at the door is
+  level 18 in both builds and every derived stat (67) is within 5% of the
+  other build's but the gold gain and two small resistances; the roadstead
+  duelled from John's own door state, the same sky, 300 tries each: old 299
+  won, 35 ticks a fight (one foe 26.9, two foes 55.1), branch 300 won, 35
+  ticks (27.3, 53.4); a fixed character: 144 and 147 of 150 from full
+  health, 55 and 66 of 150 from a fifth. Knockouts on floor 11 over all six
+  climbs: old 28, branch 30. (Runs of 60 to 100 tries first read 31 against
+  36 ticks; at 300 the two read alike: a pair of foes takes twice as long
+  as one, so group size dominates a small sample.)
+- Floors 12 and 13. The same schedule: 15 convoys bring floor 13's 120
+  crates in 1:30 when no leg is lost. Knockouts on floor 13 are alike in
+  total (merchants old 27, branch 29; navy 40 and 39); what moves a seed by
+  a convoy is when they land against the legs. The blockade duelled from
+  John's own floor 13 door state (seed 1234, merchants), the same sky, 300
+  tries each: old and branch 27 ticks a fight with techniques (one foe 17.9
+  and 17.9, two 32.1 and 32.9), 23 without; 300 and 300 won. Port C3's open
+  question on the blockade's fights (13.4 to 13.8 against 12.1 to 12.6
+  kills per leg then)
+  does not show in John's door state now.
+- Floor 16, navy: section 13. The old seed 1234 loses its first royale
+  (a field fight) and waits out the 72-minute lockout; the branch wins its
+  first. Each build draws the field's seed from its own generator.
+- Floor 17, navy: section 14.1 (the regent's duels equal; 5, 2 and 4 gate
+  tries lost against 2 each).
+
+### 15.2 Live play on floors 18 to 20
+
+Both builds in one process (the old modules imported read-only),
+alternating rounds, seed 42: each build's John to the floor 17 close, stood
+at the spot hunting, the new build's clock and weather seed set to the old
+build's (the same sky: overcast at the open spots), 100 ticks of warm-up,
+then each round loads that state and runs 3,000 ticks. 10 rounds per spot.
+Machine load 9 to 14% at the starts. Microseconds per tick (minimum /
+median) and kills in the first round:
+
+| Per tick | Old `game.tick()` | New `kernel.tick()` | New `kernel.tick()` + `kernel.view()` | Kills old / new |
+|---|---|---|---|---|
+| The Dunes (floor 18, open sky, hunt) | 106 / 114 | 39 / 42 | 4,150 / 4,210 | 161 / 168 |
+| The Grand Gallery (floor 19, roofed) | 69 / 78 | 35 / 37 | 4,071 / 4,276 | 95 / 140 |
+| The River Road (floor 20, open sky) | 105 / 118 | 40 / 44 | 4,099 / 4,384 | 154 / 140 |
+
+- The new tick is 0.37, 0.47 and 0.37 of the old one on floors 18 to 20.
+- The Gallery's kill count differs in that round; a fixed character there
+  fights alike in both builds (200 tries: 13 and 12 ticks a fight, the same
+  mix of mummies and scorpions), so the count is John's state in that
+  window. The new tick is cheaper with more kills.
+- The view is `kernel.view()` as a whole (docs/PERFORMANCE.md section 3.4,
+  older than this port): 4.2 to 4.4 ms a call here.
+- What the port adds per tick: nothing. No tick hook and no read of another
+  slice; the content grows by 23 spots and 3 floors that the per-kill clear
+  check and the views walk.
+
+### 15.3 Offline budgets and the speed project
+
+Against `main` (`68fdfc1`, the worktree `D:\ksgproto28-b-main`), both
+builds' modules in one process, alternating rounds (the scripts of 12.3).
+Another agent application ran a test loop of a different project for much
+of this time (a `node tests/model.test.mjs` loop, about 1.4 processor
+cores); machine load is given for each batch. Wall time (minimum / median),
+the wall difference of the medians, and processor time of the process,
+the median of the per-round differences.
+
+| Run of 8 hours | Rounds | Load | `main` wall | Branch wall | Wall median | Processor, paired |
+|---|---|---|---|---|---|---|
+| No fight, no condition | 15 | 20 to 25% | 1,794 / 1,873 | 1,794 / 1,848 | -25 (-1.3%) | +15 (+0.8%) |
+| A poison held | 15 | 20 to 25% | 4,460 / 4,898 | 4,424 / 4,902 | +4 (+0.1%) | -62 (-1.0%) |
+| Floor 1 table sent to combat | 3 | 17 to 60% | 6,035 / 6,208 | 5,872 / 6,224 | +16 (+0.3%) | +124 (+1.7%) |
+| Floor 6 Tunnels sent to combat | 3 | 17 to 60% | 10,331 / 10,433 | 10,231 / 10,360 | -73 (-0.7%) | -282 (-2.3%) |
+| World: hunt, floor 4 Woods Edge | 3 | 17 to 60% | 10,612 / 10,755 | 10,446 / 10,636 | -119 (-1.1%) | -234 (-2.0%) |
+| World: hunt, floor 6 Tunnels | 3 | 17 to 60% | 10,392 / 12,190 | 9,808 / 11,755 | -435 (-3.6%) | -421 (-3.2%) |
+| World: the roadstead | 3 | 17 to 60% | 9,876 / 10,575 | 9,647 / 10,530 | -45 (-0.4%) | -360 (-3.1%) |
+
+The speed project's four states (built by John in each build, then 8 hours
+of catch-up asking the holds) and the idle run, two processes of 3 rounds
+(load 52% falling to 16%, then 19 to 23%); wall and processor both paired:
+
+| State | `main` wall | Branch wall | Wall, paired | Processor, paired | Second process alone, wall per round |
+|---|---|---|---|---|---|
+| Floor 1 hunting | 6,567 / 7,818 | 6,276 / 7,874 | -34 (-0.4%) | -141 (-1.7%) | -364, +59, -291 |
+| Floor 6 hunting | 12,590 / 15,303 | 12,689 / 13,869 | -1,007 (-6.6%) | -1,063 (-6.2%) | -1,007, -427, +169 |
+| Idle in town | 2,217 / 2,352 | 2,185 / 2,306 | +10 (+0.4%) | +32 (+1.3%) | -32, +10, +43 |
+| Floor 7 hunting | 8,238 / 9,208 | 8,328 / 10,097 | +405 (+4.4%) | +686 (+6.7%) | +405, -198, -2 |
+| Idle (budget run), 18 | 1,955 / 2,155 | 1,933 / 2,105 | -34 (-1.6%) | -30 (-1.3%) | |
+
+No state of the speed project or budget run stands on floors 18 to 20, and
+the port adds no per-tick work; the readings scatter both ways under the
+outside load (floor 6 -6.6%, floor 7 +4.4%, the second process's rounds
+-1,007 to +405 ms).
+
+`npm run verify` on the port's code, exit 0 (machine load 12% at the
+start): svelte-check 0 errors; unit 3,699 passed, 4 skipped, 119 todo;
+budget 4 (idle 1,933 ms of 2,420, poison 5,034 of 8,250, floor 1 5,595 of
+7,700, floor 6 9,455 of 14,850); budget-world 3 (floor 4 9,439, floor 6
+9,393, the roadstead 8,642, each of 14,300); speed (floor 1 58%, floor 6
+76%, town 65%, floor 7 56% of the limit; machine load 15 to 24%; yardstick
+203 to 232 ms; kills 10,631, 11,622, 0 and 12,979, within 10% of the old
+build's); john 14; build. Every outcome digest equal to the recorded ones.
+
+### 15.4 Browser check
+
+Port 5600 was held by another agent application's dev server (a different
+checkout, `D:\ksgproto28-ui-gemini`, "Frontier Idle") for the whole
+session, so the check ran on the build preview, port 5601 (`ksgb-preview`,
+the build of the port's code), at 1024 px and 375 px. The preview's slot
+(`ksgb:production:save`) held a new game (4,487 bytes); it was backed up at
+`ksgb:production:save.before-step4C7-check` and put back after, the backup
+key removed, every edit of the slot made from a static file of the same
+origin. The save used: John (seed 42) through floor 20, stood on the Quay
+with every desert spot discovered, five bronze ingots added, `savedAt` an
+hour ahead (no catch-up); served from the preview's folder for the check
+and deleted after.
+
+- The Quay, Location panel, 1024 px: the spot line ("The Ascent, The Delta
+  Port"), Rest at the Quay, the Sky card (overcast, the Ascent's
+  prognosis), the map's three desert areas, and the ladder card: "The
+  ladder answers here. Floor 21: not in this build.", floors 18 to 20
+  cleared, "Gate: 60 desert kills (60 of 60), met", "Gate: 150 desert
+  kills (150 of 150), met", their clears and rides.
+- Quests panel at the Quay: The Broker, his description and "Says: “The
+  port house licenses the digs and buys what comes out of them. It sells
+  nothing back.”"; Talk sent the greeting and the control read "Met",
+  disabled.
+- Inventory panel at the Quay: the bronze ingots' "Sell all: 90 g" paid 90
+  gold (2,557,127 to 2,557,217): the global price at the broker's quay.
+- Ride to floor 18: the Well-Head (its text, the rest, the Sky card); the
+  First Obelisk picked on the map ("Route: 3 s at base speed, 1 leg", Go,
+  Rest in the Shade, Read the Obelisk); Go and Read the Obelisk walked and
+  explored it to 100% in about 18 seconds; the slot afterwards held
+  `flag:chart` 1 and the find `f18_read_first`.
+- 375 px: the obelisk's activities 182 and 179 px wide, 44 px high; the
+  ladder card 351 px wide, each ride 144 × 44; no horizontal scroll.
+- Ride to floor 19 (the Causeway); the Treasury's card ("Once the judge has
+  fallen, nothing more can be taken this run") and the Door's; Go and
+  Search the Treasury explored it to 100%: nothing taken (`flag:tomb:taken`
+  0, no find), as the seal says after John's kill of the judge.
+- Ride to floor 20, Go to the Quay; the Roadstead's card (cleared, so no
+  forced-fight line); the Quests panel at 375 px: the people list 351 px
+  wide, the line box 325 × 59 px, "Met" 44 px high, no horizontal scroll.
+- No console errors.
+
+Not checked in a browser: an obelisk read at the third bearing and the
+roadstead's surprised crew live (tested headless), the judge's level rise
+live, the seam verb (no floor 21), the dev server on 5600.
+
+### 15.5 Step 4 status
+
+Step 4 is done but for port F (conditional, section 5.10). The ports L,
+C1 to C7 and W brought bands 3 to 7 (floors 7 to 20), the stronghold and
+its automatic prestige, the hold and bonus time, the harbor and the sea,
+the festival and the royale, Weathersense and Chronosense, the Malgeri
+Crossing and the desert. A new save plays floor 0 to floor 20 in three runs
+by commands only (`tests/john.ts`), with no wall on any seed or side.
+
+Parity with the old build (section 3.4, this section's tables):
+
+- Holds: every run total within 15% of the old mean on both sides (run 1
+  +6.5%; run 2 -7.0%; run 3 +3.0% merchants, -0.8% navy; the whole climb
+  +1.3% and -1.4%); every long segment that is not a keeper or boss row
+  within 35% but floor 11; the desert within 3%.
+- Does not hold, and why: the keeper floors 8 to 10, floor 11 (both
+  sides), floors 12 and 13 on three seed-floor pairs, and the navy rows of
+  floors 16 and 17 are outside the tolerance. Each is chance met a few
+  times per seed: keeper and boss fights at about even odds (duels equal in
+  both builds), and the convoy legs lost to knockouts (fights equal in both
+  builds from John's own door state). No rule difference was found. The
+  builds draw different streams: the old prestige reseeded the generator
+  (the kernel's runs on), and each build draws its own weather seed and its
+  own royale field seed, so the same seed meets different skies and
+  different fights after run 1.
+
+What port F inherits: Shadow Clone, the statue rules, the hold of play for
+a Facet evolution (section 5.10; the 4 Facet todos).
+
+What the UI step inherits, from step 4: the offline summary dialog (the
+first-calm and ladder-end lines are in the log), a log a production build
+shows, the map's road terms and level badge, the header weather chip, the
+double speed control of bonus time, the Combat panel's dev encounter picker
+(ships in production), the singular of fight-count terms. Of the unit
+project's 119 `it.todo` cases, 40 are tagged for the UI step, 29 test an
+old save migration (no importer, docs/REBUILD.md section 1), 4 wait on
+port F.
+
+Open findings: none that changes a rule. The gold John earns in run 1 is
+still under the old build's (docs/SPINE.md section 9.1, not traced).
