@@ -170,7 +170,7 @@ export function previewForge(reads: ForgeReads, placement: Placement): ForgePrev
 // ---- the craft ----
 
 /** Forge one piece. Answered for the bench run of `benches`. The old `forgeOnce`. */
-export const forgeRequest = defineRequest<{ placement: BenchPlacement; duration?: number; forge?: AssembledPlacement }, boolean>(
+export const forgeRequest = defineRequest<{ placement: BenchPlacement; duration?: number; forge?: AssembledPlacement; xpScale?: number }, boolean>(
   'smithing/forge',
 );
 
@@ -180,7 +180,7 @@ export const forgeRequest = defineRequest<{ placement: BenchPlacement; duration?
  * reason is logged), which stops a run. The grade rolls the way a cook's
  * does; there is no smithing tool, so nothing caps it.
  */
-function forgeOnce(ctx: Ctx<SmithingState>, placement: Placement): boolean {
+function forgeOnce(ctx: Ctx<SmithingState>, placement: Placement, xpScale?: number): boolean {
   const check = previewForge(forgeReadsOf(ctx), placement);
   if (!check.ok) {
     if (check.reason) ctx.emit(logLine, { msg: text('locked', { reason: check.reason }), kind: 'danger' });
@@ -200,6 +200,7 @@ function forgeOnce(ctx: Ctx<SmithingState>, placement: Placement): boolean {
     tags: ['craft', FORGING.tag],
     amount: FORGING.xp + 0.2 * check.ticks,
     sourceKey: [`forging:${check.class.id}`],
+    ...(xpScale !== undefined ? { scale: xpScale } : {}),
   });
   ctx.emit(benchCrafted, { discipline: FORGING.id });
 
@@ -269,7 +270,7 @@ const system: SystemDef<SmithingState, SmithingView> = defineSystem<SmithingStat
   content: { parts, item_classes: itemClasses, smithing_text: smithingText },
 
   requests: [
-    answer(forgeRequest, (ctx, { forge }) => forgeOnce(ctx, placementOf(partsOfLoose(forge)))),
+    answer(forgeRequest, (ctx, { forge, xpScale }) => forgeOnce(ctx, placementOf(partsOfLoose(forge)), xpScale)),
   ],
 
   view: (ctx): SmithingView => {

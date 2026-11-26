@@ -346,8 +346,8 @@ the old buff slot did for a spell and for a defensive form.
 | `combatTags`, `WEAPON_DAMAGE_TYPES`, `trackWeaponFamily`, `playerDamageType` | 1278-1352 | `engine.ts`, `damage.ts` |
 | `monsterResistance`, `afterPenetration`, `monsterSlice`, `incomingSlice`, `incomingDamage`, `addSlice`, crit keys, `resNote` | 1354-1575 | `damage.ts`, `monsters` (`monsterResistance`) |
 | Drop tables | 1586-1700 | `loot` (port 3) |
-| Statues, rubble, `standAside`; `rattle` | 1701-1777 | Statues not ported; `rattle` in `engine.ts` |
-| `onKill`, `onDefeat` | 1778-1946 | `engine.ts`, without the statue rules and the knockout |
+| Statues, rubble, `standAside`; `rattle` | 1701-1777 | `engine.ts` (step 4 port F); `rattle` in `engine.ts` |
+| `onKill`, `onDefeat` | 1778-1946 | `engine.ts`, without the knockout; the statue rules since step 4 port F |
 | `activeRotation`, `pickActive` | 1948-2093 | `engine.ts` over `actions.ts` |
 | `pickCounter`, `fireCounter` | 2095-2222 | Not ported (extension point) |
 | Crafted self-casts, monster workings, counterspells | 2224-2803 | Not ported (extension point) |
@@ -386,7 +386,6 @@ are in `onKill` and `onDefeat`.
 | Facet ability strikes and actions | `combat/damage-enemy`, `combat/bar-filled`, `combat/hit`, `registerPlayerAction('facet:')`. |
 | Gene abilities, incantation, tongues | A player kind for the gene active; `combat/barFillMult`. |
 | Coatings (`spendCoating`) | `registerBlowRider`: `perHit` for the typed slices of each hit, `afterBlow` for the conditions and the "used up" line; alchemy port. A test registers one. |
-| Statues and rubble, `standAside` | No monster of floors 0 to 6 has the rule. A statue condition on an enemy is reported once through the skip log. |
 | Skill actives (`strike`, `spell`, `buff`) | No skill record in the registry is an active. A player kind for skill ids when one exists. Combat buffs exist since port 5 (`combat/add-buff`). |
 | The approach (`pendingApproach`) | No road of floors 0 to 6 has one. Step 4: `world` applies it after `combat/fight-started`, or through a field of `combat/start-forced`. |
 | Toll golem spell reactions, wards, festival, sea | Not ported. The 30-tick address of the toll golem is ported (`introTicks`); its reward is in `world` (spine port 6). |
@@ -417,7 +416,7 @@ are in `onKill` and `onDefeat`.
   registered.
 - `combat/set-hunt`: the site has no id or no encounter list, or names an
   unknown monster.
-- `combat/statue`: an enemy holds a statue condition.
+- `combat/statue-landed`: no enemy of an open fight has the entity id.
 - `combat/close-ledger`: no ledger is open.
 
 A fight that does not start because the site is cleared, the table is empty
@@ -594,3 +593,49 @@ skip.
   combat tick is the arrival tick (port C3), so the player's first blow,
   which a surprised formation hands the player, spends the front member's
   surprise in that tick.
+
+## Step 4 port F: the statue rules
+
+Port of old `combat.ts` 1700-1870 (`isStatue`, `standing`, `throwRubble`,
+`standAside`, the statue half of `onKill`), 3950 (a statue whose condition
+ran out leaves unbroken), 4145 (`standAside` after the ability's tick) and
+4841 (a statue does nothing in the enemy phase). Only Facet's Basilisk Hide
+and its branches apply a statue condition (`petrified`, `petrified_rubble`,
+`petrified_standing` of `statuses`, field `statue`: `rocks`, `burst`,
+`chunks`, `xp`, `stands`).
+
+- **Behind a fight flag.** `Fight.statues` (optional, absent until set) says
+  an enemy of this fight has held a statue condition. Every statue read is
+  made only in such a fight, so a fight without one reads nothing more than
+  before the port and draws the generator the same way. Set by the request
+  `combat/statue-landed` (the ability's host makes it where its dose turns an
+  enemy to stone, inside the handler) and, for a statue condition that came
+  by another door, by the enemy condition tick, where the skip
+  `combat/statue` of the spine port stood.
+- **A statue does nothing**: the enemy phase skips it; its bar does not even
+  fill.
+- **Left alone**: when its condition runs out (the enemy condition tick), it
+  leaves unbroken (`onKill` with `gone`): rocks at max HP x `burst` (Rubble
+  0.5; the others 0, "crumbles away").
+- **Broken**: killed while it holds the condition, it throws rocks at max
+  HP x `rocks` (1; Stoneskin 0) at the living enemies behind it (higher
+  slots, statues left out), split evenly, half Piercing and half Slashing,
+  through each one's armour and resistance (`monsterSlice`); no condition
+  bite, no graft harvest, no hit event, as the old `throwRubble`. Each enemy
+  hit is told to the fight hooks (`FightHook.rocks`, the old
+  `facetSignal('rocks')`); Rubble puts Stone on it. The rocks' kills are
+  swept inside the kill, before the line is read for survivors.
+- **Pay**: Stone Chunks are gold: the monster's gold x gold gain x `chunks`
+  (0.5; Rubble 0). XP x `xp` (0.5), level XP from the same number. No drop
+  table. The kill line is "🗿 The <name> (level <n>) is broken / bursts /
+  crumbles away: Stone Chunks worth <g> gold."
+- **Standing statues** (Stoneskin): one in the centre slot trades places
+  with a random enemy still fighting (`standAside`, after the ability's
+  tick, before the front is read). When only standing statues remain, the
+  fight is won and each crumbles as it ends; the last closes the fight. After
+  a kill in the centre, the enemy that steps forward is drawn from the
+  enemies still fighting (without statues: every survivor, as before).
+
+Spec: `tests/facetAbilities.test.ts`, "Basilisk Hide" (old
+`basiliskHide.test.ts` and `basiliskEvolve.test.ts`).
+

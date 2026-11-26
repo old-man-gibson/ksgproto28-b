@@ -274,3 +274,12 @@ panel's away line names both anvils once the spot is discovered. No code
 changed here: the anvil was already read from the spot's `benches`. The
 spot's eight recipes are `crafting`'s (seven came with this port). Checked
 in a browser at 1024 px and 375 px.
+
+## Step 4 port F
+
+- The craft request takes `xpScale` (a Shadow Clone's share of the skill
+  XP, `benches` README, port F) and passes it as `scale` on its skill XP
+  events. A clone's craft is otherwise the player's craft: the same preview,
+  spend, roll and lines.
+- The Anvil panel mounts `facet/CloneBenchButton.svelte` ("Send a clone"),
+  shown only while the held ability has clones.

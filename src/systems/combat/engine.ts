@@ -909,10 +909,83 @@ export function startStagedGroup(ctx: C, site: EncounterSite, members: readonly 
 
 // ---- kill, defeat, close ----
 
-/** An enemy died. The old `onKill`, without the statue rules. */
-function onKill(ctx: C, index: number): void {
+/** How a statue leaves the fight (`StatusDef.statue`). The old `StatueRule`. */
+type StatueRule = NonNullable<(typeof STATUSES)[string]['statue']>;
+
+/**
+ * The statue rule of the condition an enemy holds, or null. Read only in a
+ * fight that has had a statue (`fight.statues`): no other fight can hold one.
+ * The old `statueOf` of a monster.
+ */
+function statueRule(ctx: C, c: DeepReadonly<Fight>, e: DeepReadonly<Enemy>): StatueRule | null {
+  return c.statues ? statueOf(heldBy(ctx, e)) : null;
+}
+
+/** A Stoneskin statue: it stays until the fight ends, out of the centre slot. The old `standing`. */
+function standing(ctx: C, c: DeepReadonly<Fight>, e: DeepReadonly<Enemy> | null): boolean {
+  return !!e && !!statueRule(ctx, c, e)?.stands;
+}
+
+/**
+ * Rocks: a statue's max HP x `mult`, thrown at the living enemies behind it
+ * (higher slots), split evenly, half Piercing and half Slashing, through each
+ * one's armour and resistance. Statues are not targets. Each enemy hit is
+ * told to the fight hooks (`rocks`: Basilisk Hide's Rubble puts Stone on
+ * it). The kills are left to the caller. The old `throwRubble`.
+ */
+function throwRubble(ctx: C, statue: { name: string; maxHp: number }, index: number, mult: number, verb: string): void {
+  const c = ctx.state.fight!;
+  const behind = c.enemies.flatMap((e, j) => (e && j > index && e.hp > 0 && !statueRule(ctx, c, e) ? [j] : []));
+  if (behind.length === 0) return;
+  const share = (statue.maxHp * mult) / behind.length / 2;
+  let total = 0;
+  for (const j of behind) {
+    const e = c.enemies[j]!;
+    let dealt = 0;
+    for (const type of ['piercing', 'slashing'] as const) {
+      const dmg = Math.max(1, Math.round(monsterSlice(statsOf(ctx, e), type, 'Rubble', share, 0).dealt));
+      e.hp -= dmg;
+      e.lastHit = type;
+      noteOutgoing(ctx.state, now(ctx), dmg);
+      dealt += dmg;
+    }
+    total += dealt;
+    for (const hook of fightHooks()) hook.rocks?.(ctx as ActionCtx, j, dealt);
+  }
+  feed(ctx, `🪨 The ${statue.name} statue ${verb}: rocks hit ${behind.length} ${behind.length === 1 ? 'enemy' : 'enemies'} behind it for ${total}.`);
+}
+
+/**
+ * A Stoneskin statue never holds the centre slot, so the player's blows pass
+ * it by: one there trades places with a random enemy still fighting. With
+ * none left the fight is won, and `onKill` crumbles the statues. True when
+ * the fight ended here. The old `standAside`.
+ */
+function standAside(ctx: C): boolean {
+  const c = ctx.state.fight!;
+  const front = c.enemies[0];
+  if (!front || !standing(ctx, c, front)) return false;
+  const fighting = c.enemies.flatMap((e, i) => (e && !standing(ctx, c, e) ? [i] : []));
+  if (fighting.length === 0) {
+    onKill(ctx, 0, statueRule(ctx, c, front));
+    return !ctx.state.fight;
+  }
+  const pick = fighting[randInt(ctx, 0, fighting.length - 1)];
+  c.enemies[0] = c.enemies[pick];
+  c.enemies[pick] = front;
+  feed(ctx, `↔️ ${c.enemies[0]!.icon} ${c.enemies[0]!.name} steps forward!`);
+  return false;
+}
+
+/**
+ * An enemy died. The old `onKill`. `gone`: the rule of a statue leaving
+ * unbroken, because its condition ran out or, standing, because the fight is
+ * over. A statue that died with its condition still held was broken.
+ */
+function onKill(ctx: C, index: number, gone: StatueRule | null = null): void {
   const c = ctx.state.fight!;
   const monster = c.enemies[index]!;
+  const statue = gone ?? statueRule(ctx, c, monster);
   const def = MONSTERS[monster.defId];
   const tags = combatTags(ctx);
   const site = ctx.state.site;
@@ -935,14 +1008,16 @@ function onKill(ctx: C, index: number): void {
   const kept = def?.keepsWounds;
   if (kept) ctx.emit(clearCounter, { key: kept.key });
 
-  const gold = Math.round(monster.gold * statBlockOf(ctx).goldGain);
+  // A statue's loot is Stone Chunks, a share of its gold, and it teaches a
+  // share of its XP (Basilisk Hide); it drops nothing else.
+  const gold = Math.round(monster.gold * statBlockOf(ctx).goldGain * (statue ? statue.chunks : 1));
   if (gold > 0) ctx.request(addGold, { amount: gold, earned: true });
   // The XP is cut by how far the fighter has outgrown the monster; the same
   // number pays level XP.
-  const xp = killXp(levelOf(ctx.read(levels)), monster);
+  const xp = statue ? killXp(levelOf(ctx.read(levels)), monster) * statue.xp : killXp(levelOf(ctx.read(levels)), monster);
   ctx.emit(grantSkillXp, { tags, amount: xp, sourceKey: monster.defId });
   const monsterTags = [...monsterTagSet(monster.defId)];
-  if (def) {
+  if (def && !statue) {
     ctx.request(rollDropTable, {
       table: def.loot,
       source: monster.defId,
@@ -954,14 +1029,23 @@ function onKill(ctx: C, index: number): void {
       ...(monster.lastHit ? { lastHit: monster.lastHit } : {}),
     });
   }
+  const rocks = statue ? (gone ? statue.burst : statue.rocks) : 0;
   // The kill's own line goes after its drops and before the kill event.
-  ctx.emit(
-    logLine,
-    huntLine([
-      { label: fillText(TEXT.hunt_kill, { icon: monster.icon, name: monster.name }).trim(), qty: 1 },
-      ...(gold > 0 ? [{ label: 'gold', qty: gold, style: 'amount' as const }] : []),
-    ]),
-  );
+  if (statue) {
+    const how = !gone ? 'is broken' : rocks > 0 ? 'bursts' : 'crumbles away';
+    ctx.emit(logLine, {
+      msg: `🗿 The ${monster.name} (level ${monster.level}) ${how}${gold > 0 ? `: Stone Chunks worth ${gold} gold.` : '.'}`,
+      kind: 'combat',
+    });
+  } else {
+    ctx.emit(
+      logLine,
+      huntLine([
+        { label: fillText(TEXT.hunt_kill, { icon: monster.icon, name: monster.name }).trim(), qty: 1 },
+        ...(gold > 0 ? [{ label: 'gold', qty: gold, style: 'amount' as const }] : []),
+      ]),
+    );
+  }
   ctx.emit(enemyKilled, {
     entity: monster.entity,
     defId: monster.defId,
@@ -982,10 +1066,37 @@ function onKill(ctx: C, index: number): void {
   // Training equipment pays no level XP.
   if (def?.passive !== true) ctx.emit(grantLevelXp, { xp: xp * KILL_LEVEL_XP_RATE });
 
+  // The statue's size is read before it leaves the kernel: its rocks are its max HP.
+  const thrower = rocks > 0 ? { name: monster.name, maxHp: statsOf(ctx, monster).maxHp } : null;
   c.enemies[index] = null;
   forget(ctx, monster);
 
+  // A statue's rocks can kill what stood behind it. Those deaths are swept
+  // here, before the line is read for survivors, so the last of them ends the
+  // fight rather than leaving corpses in the line.
+  if (thrower) {
+    throwRubble(ctx, thrower, index, rocks, gone ? 'bursts' : 'breaks');
+    for (let j = c.enemies.length - 1; j > index; j--) {
+      const e = c.enemies[j];
+      if (!e || e.hp > 0) continue;
+      onKill(ctx, j);
+      if (!ctx.state.fight) return;
+    }
+  }
+
   const survivors = c.enemies.map((e, i) => (e ? i : -1)).filter((i) => i >= 0);
+  // Standing statues (Stoneskin) outlast the fighting: once only they remain
+  // the fight is won, and each crumbles as it ends. The last one closes it.
+  const fighting = c.statues ? survivors.filter((i) => !standing(ctx, c, c.enemies[i])) : survivors;
+  if (survivors.length > 0 && fighting.length === 0) {
+    for (const j of survivors) {
+      const left = c.enemies[j];
+      if (!left) continue;
+      onKill(ctx, j, statueRule(ctx, c, left));
+      if (!ctx.state.fight) return;
+    }
+    return;
+  }
   if (survivors.length === 0) {
     // A finite site counts the win against its budget; the last one clears it.
     if (site?.fightLimit) {
@@ -1007,7 +1118,7 @@ function onKill(ctx: C, index: number): void {
   // A random enemy still fighting steps into the centre; the two trade
   // places, so the slot it came from is the one left empty.
   if (index === 0) {
-    const pick = survivors[randInt(ctx, 0, survivors.length - 1)];
+    const pick = fighting[randInt(ctx, 0, fighting.length - 1)];
     c.enemies[0] = c.enemies[pick];
     c.enemies[pick] = null;
     feed(ctx, `↔️ ${c.enemies[0]!.icon} ${c.enemies[0]!.name} steps forward!`);
@@ -1216,12 +1327,9 @@ function tickEnemyStatuses(ctx: C, c: Fight): void {
     const e = c.enemies[i];
     if (!e || heldBy(ctx, e).length === 0) continue;
 
-    // Statues are not ported (no monster of floors 0 to 6 has the rule). A
-    // statue condition on an enemy is reported, not ignored in silence.
-    if (statueOf(heldBy(ctx, e)) && !c.reported?.[`statue:${e.entity}`]) {
-      (c.reported ??= {})[`statue:${e.entity}`] = true;
-      ctx.skip('combat/statue', `"${e.name}" holds a statue condition; statue rules are not ported`);
-    }
+    // A statue condition that landed by another door than `combat/statue-landed`
+    // (the run's ability tells combat at once) turns the statue rules on here.
+    if (!c.statues && statueOf(heldBy(ctx, e))) c.statues = true;
 
     // A matured root network carries what it learned to everything else in the fight.
     const carried = ctx.request(dueGraftSpread, { entity: e.entity });
@@ -1253,6 +1361,13 @@ function tickEnemyStatuses(ctx: C, c: Fight): void {
       pools: { mana: { current: mind.current, trueMax: mind.max } },
     });
     const detonated = burnMind(ctx, e, mind, result);
+    // A statue whose condition ran out leaves the fight unbroken.
+    const gone = c.statues && result.expired.length > 0 ? result.expired.map((id) => STATUSES[id]?.statue).find((r) => !!r) : undefined;
+    if (gone) {
+      onKill(ctx, i, gone);
+      if (!ctx.state.fight) return;
+      continue;
+    }
     if (result.damage <= 0) {
       if (detonated && e.hp <= 0) {
         onKill(ctx, i);
@@ -1582,6 +1697,8 @@ export function runCombatTick(ctx: C): void {
     onDefeat(ctx, fallen.outcome, fallen.cause);
     return;
   }
+  // A standing statue (Stoneskin) never holds the centre slot.
+  if (c.statues && standAside(ctx)) return;
 
   const front = c.enemies[0];
   if (!front) {
@@ -2263,6 +2380,8 @@ function enemyPhase(ctx: C, c: Fight, stats: Readonly<DerivedStats>): void {
   for (let i = 0; i < c.enemies.length; i++) {
     const e = c.enemies[i];
     if (!e) continue;
+    // A statue does nothing; its bar does not even fill.
+    if (c.statues && statueOf(heldBy(ctx, e))) continue;
     // The terms of an honourable duel: everyone but the front can only watch.
     if (i > 0 && statusPacifiesFlankers(mine(ctx))) continue;
     const mod = POSITION_MODS[i === 0 ? 'front' : 'back'][e.range];

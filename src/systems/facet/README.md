@@ -1,12 +1,15 @@
 # facet
 
-The run's unique ability, as FACET documents: step 3, port 10. Port of old
+The run's unique ability, as FACET documents: step 3, port 10, and step 4
+port F (Shadow Clone, the statue rules, the hold of play). Port of old
 `src/core/facet/` (`host.ts`, `signal.ts`, `quantities.ts`, `load.ts` and
 the core loader), the Facet parts of `game.ts` and `state.ts`, the Ability
 tab (`AbilityPanel.svelte`), the evolution window (`EvolveModal.svelte`) and
 the old tests `facet`, `solarCharge`, `zenkai`, `littleMoons`, `bramble`,
 `basiliskHide`, `basiliskEvolve`, `weakestWeaponMaster`, `calorieBurn`,
-`abilityReadout`. Source of truth: old KSG `main` (`7c1267b`), old
+`abilityReadout`; port F: old `systems/clones.ts`, the clone half of old
+`facet/host.ts`, the hold in old `game.ts` (`pendingEvolution`) and the
+old test `shadowClone`. Source of truth: old KSG `main` (`7c1267b`), old
 `docs/FACET.md`.
 
 ## The core is not in git
@@ -35,9 +38,12 @@ repository holds a core file.
   `tests/facet.test.ts` prints one test that says so;
   `tests/facetMissing.test.ts` runs only then.
 
-## Tentative (user, 2026-11-20)
+## Tentative (user, 2026-11-20), kept (docs/CONTENT.md section 6, Q2)
 
-The user has not decided whether the rebuild includes Facet abilities. So:
+When the Facet port landed the user had not decided whether the rebuild
+includes Facet abilities. Before step 4 port F the user confirmed they are
+kept, and port F ported what was left behind. The switch and its default
+are unchanged:
 
 - **Off by default.** A new save holds `{ on: false, docs: [], queued:
   null, fallen: null }`. Off, no ability can be granted, the Ability tab is
@@ -76,6 +82,14 @@ in its comment.
 | `package.json` | script `facet:install` (+1) | Runs `scripts/install-facet-core.mjs`. |
 | `scripts/install-facet-core.mjs` | new file | Copies and checks the core. |
 | `docs/SETUP.md` | new file; section "The Facet core" | How to install the core. |
+| `src/systems/combat/actions.ts` | `FightHook.rocks` (+6) | Step 4 port F: the old `facetSignal('rocks')`. |
+| `src/systems/combat/types.ts` | `Fight.statues` (+8) | Step 4 port F: the statue rules apply in this fight. |
+| `src/systems/combat/engine.ts` | the statue rules (`statueRule`, `standing`, `throwRubble`, `standAside`, the statue half of `onKill`, the crumble in the enemy condition tick, the enemy-phase skip, `standAside` in `runCombatTick`); the spine's `combat/statue` skip removed | Step 4 port F. Combat README, "Step 4 port F". |
+| `src/systems/combat/index.ts` | request `combat/statue-landed` and its answer (+15) | Step 4 port F: the host marks the fight. |
+| `src/systems/benches/index.ts` | `BenchOwner.craft` takes `xpScale` (+5) | Step 4 port F: a clone's share of a craft's skill XP. |
+| `src/systems/alchemy`, `cooking`, `smithing`, `mutagens` `index.ts` | the craft request's `xpScale` passed as `scale` | Step 4 port F. |
+| `src/systems/alchemy/AlchemyPanel.svelte`, `cooking/KitchenPanel.svelte`, `mutagens/ChromosomePanel.svelte`, `smithing/AnvilPanel.svelte` | mount `CloneBenchButton.svelte` (+3 each) | Step 4 port F: "Send a clone". |
+| `src/systems/world/LocationPanel.svelte` | mount `CloneActivities.svelte` (+2) | Step 4 port F: the clone buttons of a spot. |
 
 Tests outside this port's own files: `tests/conditionResist.test.ts`, "exactly
 these thirteen are marked" leaves out ids that start with `fc_` (+2, -1);
@@ -106,6 +120,10 @@ fields `combat`, `martial` and `stats` already read (`pureBlows`,
 | `AbilityPanel.svelte`, `panel.ts` | The Ability tab. |
 | `FacetOverlay.svelte`, `overlay.ts` | The switch from the address; the evolution window. |
 | `FactLines.svelte` | "Label: fact" lines. |
+| `clones.ts` | Shadow Clone: the rules from the clone cell, send, recall, the work of each tick (old `systems/clones.ts`). |
+| `hold.ts` | The hold of play while an evolution waits (old `pendingEvolution` in `Game.tick`). |
+| `CloneActivities.svelte` | The clone buttons of a spot, mounted by the Location panel. |
+| `CloneBenchButton.svelte` | "Send a clone" under a bench's run buttons, mounted by the four bench panels. |
 
 ## Slice
 
@@ -115,10 +133,13 @@ fields `combat`, `martial` and `stats` already read (`pureBlows`,
 | `docs` | The run's ability, at most one (old `state.facets`). A document carries its cells' values, so the slice saves the ability. A new run starts empty (old: prestige started a new state). |
 | `queued` | The action pressed for the next bar fill (old `CombatState.queuedAct`). Cleared when a fight closes. |
 | `fallen` | A defeat the ability asked for (old `CombatState.fallen`), settled by the next fight tick. Cleared when a fight closes. |
+| `clones` | Step 4 port F. The Shadow Clones at work, oldest first (old `state.clones`): order, spot, an activity or a bench run (its own copy of the layout, its clock and batch), the activity's progress. Optional: absent while none is out, so every save without clones is the same as before the port; no version step, no migration. |
 
 Version 1, `tests/fixtures/facet/v1.json` (the new slice: the fixture
 holds no bank document, so no core text is in git). `migrations.ts` is
-empty.
+empty. Port F added `clones` as an optional field that is absent in a new
+slice and in every save with no clone out, so the version, the fixture and
+the outcome digests' state hashes stay as they were.
 
 ## The core and the host
 
@@ -177,7 +198,8 @@ generator (`rand`, `pick`, `weightedPick`) and the mercy ledger (`proc`,
 | `eat` | `consumables/used` of a dish with calories (`dishCalories` of `cooking`) |
 | `miracleCast` | `spellcraft/cast` by the player, school divine, with a deity, in a fight |
 | `statue` | the host's `applyStatus` |
-| `hit`, `crit`, `dodge`, `parry`, `graze`, `enemyCast`, `rocks` | Not raised. No bank document listens to the first six; `rocks` needs the statue rules (Left behind). |
+| `rocks` | the fight hook `rocks` of `combat`, inside the kill that threw them (`target`, `amount`); step 4 port F |
+| `hit`, `crit`, `dodge`, `parry`, `graze`, `enemyCast` | Not raised. No bank document listens. |
 
 `kill`, `fightWon`, `fightEnd`, `fightStart`, `flaskUsed`, `itemUsed`,
 `eat` and `miracleCast` arrive after the handler that raised them returns,
@@ -187,7 +209,7 @@ document reads them in a way that changes within one tick.
 ## Requests this system answers
 
 `facet/fight-tick`, `facet/bar-fill`, `facet/take-pressed`,
-`facet/use-action`, `facet/hit-taken`, `facet/route-xp`. Each is made by a
+`facet/use-action`, `facet/hit-taken`, `facet/route-xp`, `facet/rocks`. Each is made by a
 hook this system registered with another system, inside that system's
 handler.
 
@@ -196,11 +218,15 @@ handler.
 | Command | Refused when |
 |---|---|
 | `facet/switch { on }` | on without the core (`Facet core not installed`); it is already in that position |
-| `facet/grant { id }` | the core is not installed; the switch is off; the id needs a system not ported (`shadow_clone`); the bank has no such id |
+| `facet/grant { id }` | the core is not installed; the switch is off; the bank has no such id |
 | `facet/choose-option { v }` | the held ability offers no choice; no option `v`; the choice cells are missing |
 | `facet/press { key }` | no fight is open; no ability is held; the action is not ready |
 | `facet/evolve { key }` | no evolution is on offer; the key is not on the offer |
 | `facet/set-cell { key, share }` | no held ability has the cell (old `debugSetCell`; the tests use it) |
+| `facet/send-clone { activity }` | `"<id>" is not a gathering or job activity here`; `No Shadow Clone` (no clone cell, or a cap below 1); `Knocked out` |
+| `facet/send-clone-bench { discipline, placement, duration?, forge? }` | `no bench has the id "<id>"`; `no system works the bench "<id>"`; `No Shadow Clone`; `Knocked out` |
+| `facet/recall-clone { order }` | `no clone has the order <n>` |
+| `facet/recall-clones` | `no clone is out` |
 
 The other commands answer `Facet core not installed` first when the core
 is missing. `facet/stacks` (skip log): a document wrote a set cell.
@@ -229,25 +255,39 @@ is missing. `facet/stacks` (skip log): a document wrote a set cell.
   its cause.
 - The Ability tab: description, cells, bars, inputs, actions, conditions,
   evolution, the choice row, the grant rows. One ability per run.
+- Step 4 port F:
+  - **Shadow Clone** (`clones.ts`, old `systems/clones.ts`): the clone
+    cell's cap (1 + 1 per 10 levels, max 5), `cloneYield` 0.4 and `cloneXp`
+    0.25 are the rules; the cell's value is the count out, which its carrier
+    turns into 5% off max mana per clone. Send to a gathering or job activity
+    of the spot, or to a bench layout (its own copy, its own clock: the
+    bench's pace, each pass divided by 0.4, whole crafts from the player's
+    stock, waiting quietly when short); with every clone out the oldest
+    fades. A clone ends on recall, on a knockout, when the player stands
+    more than max(0, floor((level - 10) / 5)) floors from it, or when its
+    activity no longer exists (quietly). On an activity it keeps the
+    player's pace and yields 40% of the materials or pay, and 25% of the
+    activity's skill XP, no attribute XP, no drops, no discovery. Its
+    bench crafts pay 25% of their skill XP (`xpScale` of the bench craft
+    request). The Ability tab lists the clones with Recall and Recall all;
+    the Location panel and the four bench panels mount the send buttons.
+  - **The statue rules** in `combat` (combat README, "Step 4 port F"): a
+    statue does nothing, crumbles or bursts when its condition runs out,
+    throws rocks when broken, pays Stone Chunks (gold) and half its XP and
+    drops nothing; Stoneskin's statues stand out of the centre until the
+    fight is won. The host tells combat at once when its dose turns an
+    enemy to stone (`combat/statue-landed`), and raises `rocks` for the
+    rocks' hits (Rubble's 15 Stone).
+  - **The hold of play** (`hold.ts`, kernel decision 36): while an
+    evolution waits on a pick, `kernel.tick()` runs no system, keeps the
+    tick number and banks one tick of bonus time (`bonus/bank`); catch-up
+    stops at the waiting pick and banks the ticks left. The window says so
+    and shows the bank (old `EvolveModal.svelte`).
 
 ## Left behind
 
-- **Statue rules in combat** (old `combat.ts` 1700 to 1870, `isStatue` in
-  the enemy phase, the crumble on expiry, `throwRubble`, `standAside`, the
-  Stone Chunks payout, the win when only standing statues remain). The
-  combat port left them as an extension point because no monster of floors
-  0 to 6 has the rule; only Basilisk Hide applies the statue conditions.
-  Without them a Petrified enemy is blocked and slowed to 0 for 3 s (the
-  condition's own `blocks` and `mods`), then fights again; nothing breaks
-  into rocks, nothing pays Chunks, Rubble's rocks and Stoneskin's standing
-  statues do nothing, and `world.statues` stays 0. Combat still reports a
-  statue condition once per fight (`combat/statue`). The old tests are
-  `it.todo` in `tests/facetAbilities.test.ts`.
-- **Shadow Clone**: its clones are old `systems/clones.ts` (deployment,
-  `tickClones`, bench and activity buttons, recall), a system not ported.
-  The grant refuses it.
-- **The hold of play** while an evolution waits (old `Game.tick`, bonus
-  time banked). The window shows; play goes on under it.
+- Statue rules, Shadow Clone, the hold of play: ported in step 4 port F
+  (above).
 - **The sidebar lines** of the cells that act now: the rebuild has no
   sidebar. The Ability tab shows every cell; the status list leaves the
   carriers of shown cells out, as the old sidebar did.
@@ -268,6 +308,31 @@ is missing. `facet/stacks` (skip log): a document wrote a set cell.
   outcome. The carrier of a cell the Ability tab shows is `hidden`.
 - Ability strikes go through a request, so the kill is swept at the old
   sweep points, the same as before.
+- Step 4 port F:
+  - The clones work in this system's tick (order 30: after the weather,
+    before the dish claims). The old `advance` ran `tickClones` after the
+    bench run and before the sea, the festival, the wards and the sky. The
+    clones read the level, the spot and the knockout flag: a change one of
+    those systems makes in its own tick (the festival placing the player,
+    a level from their XP) reaches the clones in the same tick here and in
+    the next tick in the old build. The generator's order within a tick
+    differs too; the two builds' streams already differ.
+  - `facet/send-clone-bench` refuses a bench that no system works (the
+    Rune Table): the old send took it and the clone then waited for ever.
+    The old panel never offered it.
+  - `facet/recall-clones` with none out is refused with a reason; the old
+    call returned 0.
+  - The statue rules read the enemies' conditions only in a fight marked
+    `statues`. A statue condition put on an enemy by anything but the host
+    (nothing in the content does; a test does) gets the rules from the next
+    enemy condition tick, where combat notices it, unless the caller tells
+    combat with `combat/statue-landed`, as the tests do.
+  - The hold of play is a kernel play hold (decision 36). The old
+    `Game.tick` checked the stronghold's automatic prestige before the
+    hold; here the prestige is a tick handler, so a waiting pick holds it
+    too, until the pick. Both can be due in one tick only if a statue of
+    the wave's last fight brings the evolution; the old build would have
+    ended the run with the offer unpicked.
 
 ## Old rules ported as they are
 
@@ -281,14 +346,31 @@ is missing. `facet/stacks` (skip log): a document wrote a set cell.
   above 0 (`heldWith`), so a stance with Power 0 does nothing.
 - `spendPool` is in the host though no bank document spends since Little
   Moons' cost was removed (user, 2026-11-03).
+- Step 4 port F:
+  - A clone at a bench short of stock waits for the next pass and says
+    nothing (old `cloneCraft` previewed first for that reason).
+  - Granting an ability replaces the documents but not the clones: with
+    Shadow Clone granted again the clones stay out, and the new document's
+    count reads 0 (no mana reserved) until a clone is sent or ends; with
+    another ability they end, quietly, on the next tick.
+  - A job clone pays nothing when its share rounds to 0 (the player's own
+    shift pays at least 1); a gathering clone with a share under 1 rolls the
+    remainder (`integerYield`).
+  - A clone's activity cycle grants skill XP only: no attribute XP, no
+    drops, no discovery check, no cycle event (quests and achievements do
+    not hear it). Its gathered materials bump `gather:<material>` and its
+    pay `gold:earned`.
+  - A statue's kill counts as a kill everywhere (`combat/kill`, the
+    counters, bestiary, quests); its level XP is the reduced XP.
 
 ## Tests
 
 `tests/facet.test.ts` (the installed core against `core.lock.json`, the
 corpus, the host, the switch, save and load, two kernels in one process,
 Solar Charge), `tests/facetAbilities.test.ts` (every ability),
-`tests/facetReplay.test.ts` (determinism with an ability held): skipped
-without the core. `tests/facetMissing.test.ts`: only without the core. Changed from the old tests
+`tests/facetReplay.test.ts` (determinism with an ability held),
+`tests/shadowClone.test.ts` (step 4 port F, old `shadowClone.test.ts`):
+skipped without the core. `tests/facetMissing.test.ts`: only without the core. Changed from the old tests
 where the skeleton changed the call: a blow goes through `resources/hit`,
 events through `emit`, a minute through ten ticks, `debugSetCell` through
 `facet/set-cell`. Not ported: the old host-member tests for `spendPool`

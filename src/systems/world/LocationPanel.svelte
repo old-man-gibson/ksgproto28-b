@@ -4,6 +4,7 @@
   import { send, viewOf } from '../../ui/game.svelte';
   import knockout, { stayHere } from '../knockout';
   import ladder from '../ladder';
+  import CloneActivities from '../facet/CloneActivities.svelte';
   import FestivalPanel from '../festival/FestivalPanel.svelte';
   import SeaPanel from '../sea/SeaPanel.svelte';
   import SkyPanel from '../weather/SkyPanel.svelte';
@@ -107,6 +108,7 @@
     </div>
   </div>
 
+  <CloneActivities />
   <SeaPanel />
   <FestivalPanel />
   <SkyPanel />

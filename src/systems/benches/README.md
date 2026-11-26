@@ -145,3 +145,20 @@ remaining, batch. The alchemy view repeats it for its panel.
 - No owner is registered. A carve is the command `runecarving/carve`, not a
   run, as in the old build; `benches/start` with `runecarving` is refused
   with `no system works the bench "runecarving"`.
+
+## Step 4 port F: Shadow Clones at a bench
+
+- The owner's `craft` request takes `xpScale`: the share of the craft's
+  skill XP that lands, a Shadow Clone's (0.25), the old `scaledSkillXp`
+  scope around `cloneCraft`. Absent, 1. Each owner passes it as `scale` on
+  the `skills/grant-xp` and `skills/grant-discovery-xp` events of its
+  craft (alchemy, cooking, smithing, mutagens). No craft grants attribute
+  XP, so nothing else is scaled, as in the old build.
+- The clone's run lives in `facet` (`src/systems/facet/clones.ts`): it asks
+  the owner's `preview` and then `craft` itself, on its own clock (the
+  bench's pace from `benchJobTicks`, each pass divided by the clone's yield
+  share). This system's slice and its run are unchanged; the player's run
+  and a clone's work side by side from the same stock.
+- "Send a clone" under a bench panel's run buttons is
+  `facet/CloneBenchButton.svelte`, mounted by the Alembic, Kitchen, Culture
+  Bench and Anvil panels.

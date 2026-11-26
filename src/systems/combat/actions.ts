@@ -421,6 +421,12 @@ export interface FightHook {
   barFill?(ctx: ActionCtx): void;
   /** Before the rotation is read at the player's bar fill. True: it took the fill (a pressed action). */
   takeFill?(ctx: ActionCtx): boolean;
+  /**
+   * A statue's rocks hit the enemy in `slot` for `amount` (old
+   * `facetSignal('rocks')` in `throwRubble`). Called inside the kill that
+   * threw them, before the dead behind the statue are swept. Step 4 port F.
+   */
+  rocks?(ctx: ActionCtx, slot: number, amount: number): void;
 }
 
 const FIGHT_HOOKS = new Map<string, FightHook>();

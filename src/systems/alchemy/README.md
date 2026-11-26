@@ -314,3 +314,12 @@ consumable cases, the study card, the salve, food), the bench case of
   festival's door). `alchemy/return { held, weaponUid }`: the held flasks
   go before the ones the attempt left; the held coating comes back unless
   the blade in hand (`weaponUid`) carries the attempt's own.
+
+## Step 4 port F
+
+- The craft request takes `xpScale` (a Shadow Clone's share of the skill
+  XP, `benches` README, port F) and passes it as `scale` on its skill XP
+  events. A clone's craft is otherwise the player's craft: the same preview,
+  spend, roll and lines.
+- The Alchemy panel mounts `facet/CloneBenchButton.svelte` ("Send a clone"),
+  shown only while the held ability has clones.

@@ -97,7 +97,7 @@ export const useFlask = defineCommand<{ index: number }>('alchemy/use-flask');
 /** A flask was used: the doses it granted, whatever its form. `meals` records them as claims. */
 export const flaskUsed = defineEvent<{ grants: StatusApplication[] }>('alchemy/flask-used');
 /** Work the Alembic once: spend the layout and shelve the flask. The old `brew`. Answered for `benches`. */
-export const brewRequest = defineRequest<{ placement: Placement; duration?: number }, boolean>('alchemy/brew');
+export const brewRequest = defineRequest<{ placement: Placement; duration?: number; xpScale?: number }, boolean>('alchemy/brew');
 
 /** One blow's worth of oil. The old `CoatingBite`. */
 export interface CoatingBite {
@@ -186,8 +186,8 @@ export function canUseFlask(ctx: ReadCtx & { tick: number }, state: DeepReadonly
   return { ok: true };
 }
 
-/** Work the Alembic once. The old `brew`. */
-function brewOnce(ctx: A, placement: Placement): boolean {
+/** Work the Alembic once. The old `brew`. `xpScale`: a Shadow Clone's share of the skill XP. */
+function brewOnce(ctx: A, placement: Placement, xpScale?: number): boolean {
   const check = checkBrew(benchReadsOf(ctx), placement);
   if (!check.ok || !check.spec || !check.sequence) {
     if (check.reason) ctx.emit(logLine, { msg: say('locked', { reason: check.reason }), kind: 'danger' });
@@ -210,6 +210,7 @@ function brewOnce(ctx: A, placement: Placement): boolean {
     tags: ['craft', ALCHEMY.tag],
     amount: ALCHEMY.xp * (1 + check.sequence.length * 0.2),
     sourceKey: noveltyKeys(ALCHEMY, placement),
+    ...(xpScale !== undefined ? { scale: xpScale } : {}),
   });
   // Quest objectives hear bench work as the old bus event `craft`.
   ctx.emit(benchCrafted, { discipline: ALCHEMY.id });
@@ -400,7 +401,7 @@ const alchemy = defineSystem<AlchemyState, AlchemyView>({
       if (!state.coating || state.coating.weaponUid !== weaponUid) state.coating = back.coating;
       state.flasks = [...back.flasks, ...state.flasks];
     }),
-    answer(brewRequest, (ctx, { placement }) => brewOnce(ctx, placement)),
+    answer(brewRequest, (ctx, { placement, xpScale }) => brewOnce(ctx, placement, xpScale)),
     answer(spendCoatingRequest, (ctx) => {
       const held = activeCoating(ctx.state, ctx.read(items).equipment.weapon?.uid);
       if (!held) return null;

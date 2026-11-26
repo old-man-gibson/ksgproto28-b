@@ -38,6 +38,7 @@
     withPart,
     type PartFamilyId,
   } from './anvilView';
+  import CloneBenchButton from '../facet/CloneBenchButton.svelte';
   import FormChart from './FormChart.svelte';
   import { anvil, setLayout, syncAnvil } from './layout.svelte';
   import Silhouette from './Silhouette.svelte';
@@ -246,6 +247,8 @@
               <Button onclick={clear}>Clear</Button>
             {/if}
           </div>
+          <!-- Shadow Clone: a clone forges this from your stock (step 4 port F). -->
+          <CloneBenchButton discipline={FORGING.id} placement={{}} ok={preview.ok} forge={clonePlacement(placement)} />
           <div class="reason">{!preview.ok && !job ? preview.reason : ''}</div>
         </div>
 

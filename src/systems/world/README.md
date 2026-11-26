@@ -355,3 +355,12 @@ cold and lightning are set in `spellcraft` (`cast.ts`).
   that declares it ("Sailing to ..."); every other climb says Climbing or
   Descending (spine port 6 code, `ride` in `engine.ts`). Floor 20
   declares Sailing and floor 21 does not exist, so no live climb says it.
+
+## Step 4 port F
+
+- The Location panel mounts `facet/CloneActivities.svelte` under the
+  activities: one "Clone" button per gathering or job activity of the spot
+  and the clones working here, shown only while the held ability has clones
+  (old `LocationPanel.svelte`). The clones work in `facet`'s tick with the
+  activity rules of this system (`activityFillRate`, `activityCost`,
+  `activityOutputMult`, `activityXpTags`, `floorOfSpot`).

@@ -13,6 +13,7 @@
     type Placement,
   } from '../benches';
   import { MATERIALS, QUALITY_TIERS, type MaterialsState, type QualityTier } from '../materials';
+  import CloneBenchButton from '../facet/CloneBenchButton.svelte';
   import { STATUSES } from '../statuses';
   import cooking, {
     cookbook,
@@ -230,6 +231,8 @@
         <Button onclick={() => (setLayout({}, layout.units), (picking = null))}>Clear</Button>
       {/if}
     </div>
+    <!-- Shadow Clone: a clone keeps working this layout from your stock (step 4 port F). -->
+    {#if benchId}<CloneBenchButton discipline={benchId} placement={bench} ok={!!check?.ok} duration={units} />{/if}
   {:else}
     <p class="card dim note">Cooking needs a kitchen bench: {kitchenSpots.join(', ') || 'none in reach'}.</p>
   {/if}

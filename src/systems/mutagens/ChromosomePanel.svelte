@@ -4,6 +4,7 @@
   import benches, { startBench, stopBench } from '../benches';
   import { QUALITY_TIERS, QUALITY_ORDER, type QualityTier } from '../materials';
   import { STAT_NAMES, type ContentMod, type DerivedStats, type StatKey } from '../stats';
+  import CloneBenchButton from '../facet/CloneBenchButton.svelte';
   import { STATUSES } from '../statuses';
   import mutagens, {
     ARMS,
@@ -326,6 +327,8 @@
         <Button disabled={!culture?.ok || !!job} onclick={() => subject && send(startBench({ discipline: CULTURE_BENCH, placement: { subject }, count: null }))}>Refine all</Button>
         <Button disabled={!job} onclick={() => send(stopBench(undefined))}>Stop</Button>
       </div>
+      <!-- Shadow Clone: a clone keeps refining this grade from your stock (step 4 port F). -->
+      <CloneBenchButton discipline={CULTURE_BENCH} placement={subject ? { subject } : {}} ok={!!subject && !!culture?.ok} />
       <div class="progress" aria-label="Refinement progress"><div class="progress-fill" style="width: {((job?.progress ?? 0) * 100).toFixed(1)}%"></div></div>
       <div class="reason small">{culture && !culture.ok && !job ? culture.reason : job ? `${(Math.max(0, job.ticksLeft) / 10).toFixed(1)}s · ${job.done} done` : ''}</div>
     {/if}

@@ -2,7 +2,16 @@
   import Button from '../../ui/components/Button.svelte';
   import { send, viewOf } from '../../ui/game.svelte';
   import FactLines from './FactLines.svelte';
-  import facet, { chooseOption, grantFacet, pressAction, switchFacet, type CellReadout, type FacetReadout } from './index';
+  import facet, {
+    chooseOption,
+    grantFacet,
+    pressAction,
+    recallClone,
+    recallClones,
+    switchFacet,
+    type CellReadout,
+    type FacetReadout,
+  } from './index';
 
   // The run's ability in full (old `AbilityPanel.svelte`): what it does,
   // every cell its document marks for showing, the inputs it reads, the
@@ -140,6 +149,31 @@
   {:else}
     <p class="dim">No ability this run.</p>
   {/each}
+
+  <!-- Shadow Clone: who is working where, and the way back (old AbilityPanel, "Clones at work"). -->
+  {#if view.clones}
+    {@const clones = view.clones}
+    <h3>Clones at work</h3>
+    {#if clones.out.length}
+      <ul class="rows" data-testid="clones-out">
+        {#each clones.out as c (c.order)}
+          <li class="row">
+            <div class="head">
+              <span>👥 {c.task} · {c.spotName}</span>
+              <Button onclick={() => send(recallClone({ order: c.order }))}>Recall</Button>
+            </div>
+            {#if c.nextIn !== null}<p class="dim num">Next craft in {c.nextIn} s</p>{/if}
+          </li>
+        {/each}
+      </ul>
+      <div class="facts">
+        <FactLines text={`Reach: They stop when you are more than ${clones.reach} floors away. Threshold is floor 0.`} />
+      </div>
+      <div class="grant"><Button onclick={() => send(recallClones())}>Recall all</Button></div>
+    {:else}
+      <p class="dim">None out. Send one from a job, gathering or a bench.</p>
+    {/if}
+  {/if}
 
   <h3>Grant</h3>
   <p class="dim">One ability per run. A grant replaces the one held. Tentative port: switch it off with the button below or <code>?facet=off</code>.</p>

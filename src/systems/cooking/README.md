@@ -255,3 +255,12 @@ section 14.4.
 `cookingWindows` (46), `heatTrack` (27), `gradeLedger` (10), `meals` (62,
 3 todo), `mealsView` (13), `cookBookView` (29, 2 todo), the three food
 cases of `conditionResist`, the food case of `consumables`.
+
+## Step 4 port F
+
+- The craft request takes `xpScale` (a Shadow Clone's share of the skill
+  XP, `benches` README, port F) and passes it as `scale` on its skill XP
+  events. A clone's craft is otherwise the player's craft: the same preview,
+  spend, roll and lines.
+- The Kitchen panel mounts `facet/CloneBenchButton.svelte` ("Send a clone"),
+  shown only while the held ability has clones.

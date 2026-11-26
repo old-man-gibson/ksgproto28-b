@@ -318,14 +318,14 @@ export const fuse = defineCommand<{ nuclease: string; id: string; quality: Quali
 export const unlockMutagens = defineCommand<{ lowerArm?: 'g' | 'i' }>('mutagens/unlock');
 
 /** The bench run's craft: one refinement of the subject. Old `refineOnce`. */
-export const refineRequest = defineRequest<{ placement: Placement }, boolean>('mutagens/refine');
+export const refineRequest = defineRequest<{ placement: Placement; xpScale?: number }, boolean>('mutagens/refine');
 
 const locked = (ctx: M, reason: string): void => {
   ctx.emit(logLine, { msg: text('locked', { reason }), kind: 'danger' });
 };
 
-const xp = (ctx: M, amount: number, sourceKey?: string): void => {
-  ctx.emit(grantSkillXp, { tags: ['craft', 'geneshaping'], amount, ...(sourceKey ? { sourceKey } : {}) });
+const xp = (ctx: M, amount: number, sourceKey?: string, scale?: number): void => {
+  ctx.emit(grantSkillXp, { tags: ['craft', 'geneshaping'], amount, ...(sourceKey ? { sourceKey } : {}), ...(scale !== undefined ? { scale } : {}) });
 };
 
 /**
@@ -415,8 +415,8 @@ function harvestKill(ctx: M, monsterId: string): void {
   }
 }
 
-/** Push one grade up. Old `refine`. Null when refused (the reason is logged). */
-function refine(ctx: M, id: string, from: QualityTier): QualityTier | null {
+/** Push one grade up. Old `refine`. Null when refused (the reason is logged). `xpScale`: a Shadow Clone's share of the skill XP. */
+function refine(ctx: M, id: string, from: QualityTier, xpScale?: number): QualityTier | null {
   const check = canRefine(mutagenReadsOf(ctx, ctx.state), id, from);
   if (!check.ok) {
     locked(ctx, check.reason!);
@@ -427,7 +427,7 @@ function refine(ctx: M, id: string, from: QualityTier): QualityTier | null {
   ctx.request(takeMaterial, { id: 'biomatter', qty: refineCost(target) });
   ctx.request(grantGraded, { id, quality: target, qty: 1 });
   const def = MAIN_GENES[id] ?? MUTATIONS[id];
-  xp(ctx, 8 * (qualityRank(target) + 1), id);
+  xp(ctx, 8 * (qualityRank(target) + 1), id, xpScale);
   ctx.emit(logLine, { msg: text('refined', { icon: def?.icon ?? '', name: def?.name ?? id, grade: QUALITY_TIERS[target].name }), kind: 'item' });
   return target;
 }
@@ -656,10 +656,10 @@ const system: SystemDef<MutagensState, MutagensView> = defineSystem<MutagensStat
   ],
 
   requests: [
-    answer(refineRequest, (ctx, { placement }) => {
+    answer(refineRequest, (ctx, { placement, xpScale }) => {
       const subject = placement.subject;
       if (!subject) return false;
-      const got = refine(ctx, subject.id, subject.quality);
+      const got = refine(ctx, subject.id, subject.quality, xpScale);
       if (got) ctx.emit(benchCrafted, { discipline: CULTURE_BENCH });
       return got !== null;
     }),

@@ -126,6 +126,14 @@ export interface Fight {
   introTicks?: number;
   /** Buffs on the player, counted down each tick. */
   buffs: CombatBuff[];
+  /**
+   * An enemy of this fight has held a statue condition (Basilisk Hide). The
+   * statue rules read the enemies' conditions only in such a fight, so a
+   * fight without one reads nothing more than before the rules were ported.
+   * Set by `combat/statue-landed` and by the enemy condition tick. Step 4
+   * port F.
+   */
+  statues?: true;
 }
 
 export const NEUTRAL_POSITION = 'neutral';

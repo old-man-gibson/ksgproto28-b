@@ -2,9 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { CORE } from '../src/systems/facet';
 
 // Skipped without the Facet core (docs/SETUP.md); tests/facet.test.ts says so.
-import type { Kernel } from '../src/kernel';
+import { catchUp, createKernel, runHeadless, type Kernel } from '../src/kernel';
+import { systems } from '../src/systems';
 import { attrXpNeeded, grantAttrXp, type AttributesState } from '../src/systems/attributes';
-import { fightStarted, fightWon, enemyKilled, setRotation, setTrigger, type Enemy } from '../src/systems/combat';
+import { fightStarted, fightWon, enemyKilled, setRotation, setTrigger, statueLanded, sweepRequest, type Enemy } from '../src/systems/combat';
 import { consumableUsed, useConsumable } from '../src/systems/consumables';
 import { CALORIES_PER_WELL_FED, dishCalories } from '../src/systems/cooking';
 import {
@@ -21,7 +22,7 @@ import resources from '../src/systems/resources';
 import { SKILLS } from '../src/systems/skills';
 import { spellCast } from '../src/systems/spellcraft';
 import { attrValue, effectiveAttr, formulaAttr, statBlockOf } from '../src/systems/stats';
-import { findStatus, heldOf, removeStatus, statueOf, type StatusesState } from '../src/systems/statuses';
+import { applyStatus, findStatus, heldOf, removeStatus, statueOf, type StatusesState } from '../src/systems/statuses';
 import {
   combatOf,
   counterOf,
@@ -504,6 +505,33 @@ describe.skipIf(!CORE)('Basilisk Hide', () => {
     for (let i = 0; i < 200 && !isStatue(k, e.entity); i++) blow(k, e, 5, 'slashing', 5);
     expect(isStatue(k, e.entity)).toBe(true);
   }
+  /**
+   * A statue condition put straight on an enemy, as the old tests' `applyStatus`
+   * did, through the two doors the ability's host uses: the condition, then
+   * combat told that a statue landed (`combat/statue-landed`).
+   */
+  function turnToStone(k: Kernel, entity: string, id: string) {
+    expect(ask(k, applyStatus, { entity, app: { id } })).not.toBeNull();
+    ask(k, statueLanded, { entity });
+  }
+  /** An enemy of the open fight by entity, or null once it has left. */
+  const foe = (k: Kernel, entity: string) => combatOf(k).fight?.enemies.find((e) => e?.entity === entity) ?? null;
+  /** Max HP and HP of one enemy set to `hp`. */
+  function toughen(k: Kernel, entity: string, hp: number) {
+    setMods(k, [{ stat: 'stats/maxHp', kind: 'add', value: hp }], entity);
+    setFoe(k, entity, (e) => (e.hp = hp));
+  }
+  const goldOf = (k: Kernel) => slice<{ gold: number }>(k, 'gold').gold;
+  /** The old bus listeners on `fight:won` and `kill`. */
+  function watch(k: Kernel) {
+    const seen = { won: 0, kills: 0 };
+    k.onEvent((event) => {
+      if (event.type === fightWon.type) seen.won++;
+      if (event.type === enemyKilled.type) seen.kills++;
+    });
+    return seen;
+  }
+  const logLines = (k: Kernel) => slice<LogState>(k, 'log').log.map((l) => l.msg);
 
   it('a blow puts Stone on its attacker, and an attacker with more CON resists it', () => {
     const k = holding('basilisk_hide');
@@ -543,7 +571,76 @@ describe.skipIf(!CORE)('Basilisk Hide', () => {
     expect(stoneOn(k, front.entity)).toBe(0);
   });
 
-  it.todo('a statue does nothing, crumbles after 3 s, breaks into rocks: combat statue rules are not ported (README, Left behind)');
+  // Old basiliskHide "at 100 Stone ... a statue that does nothing", its second half (step 4 port F).
+  it('a statue does nothing: its bar does not even fill', () => {
+    const k = holding('basilisk_hide');
+    intoFight(k);
+    hardenFoes(k, 1e9);
+    const front = frontEnemy(k);
+    setFoe(k, front.entity, (e) => (e.attrs.con = 1));
+    petrify(k, front);
+    patchFight(k, (s) => {
+      s.fight!.enemies = [s.fight!.enemies.find((e) => e?.entity === front.entity)!, null, null, null, null];
+    });
+    const bar = frontEnemy(k).bar;
+    idle(k, 10);
+    expect(frontEnemy(k).entity).toBe(front.entity);
+    expect(frontEnemy(k).bar).toBe(bar);
+  });
+
+  it('a statue left alone crumbles after 3 seconds: half its gold, no drops, and the fight is won', () => {
+    const k = holding('basilisk_hide');
+    intoFight(k);
+    const front = frontEnemy(k);
+    patchFight(k, (s) => {
+      const e = s.fight!.enemies.find((x) => x?.entity === front.entity)!;
+      e.gold = 100;
+      s.fight!.enemies = [e, null, null, null, null];
+    });
+    turnToStone(k, front.entity, 'petrified');
+    const gold = goldOf(k);
+    // Read before the payout: the statue's XP can level you up, and CHA moves gold gain.
+    const gain = statBlockOf(reads(k)).goldGain;
+    const stock = JSON.stringify(slice<MaterialsState>(k, 'materials'));
+    const seen = watch(k);
+    idle(k, 40);
+    expect(seen.won).toBe(1);
+    expect(seen.kills).toBe(1);
+    expect(goldOf(k) - gold).toBe(Math.round(100 * gain * 0.5));
+    expect(JSON.stringify(slice<MaterialsState>(k, 'materials'))).toBe(stock);
+    expect(logLines(k).some((l) => l.includes('crumbles away: Stone Chunks worth'))).toBe(true);
+  });
+
+  it('a statue broken before it crumbles throws rocks at the enemies behind it', () => {
+    const k = holding('basilisk_hide');
+    const [front, behind] = stage(k, [
+      { monsterId: 'forest_rat', level: 1 },
+      { monsterId: 'forest_rat', level: 1 },
+    ]);
+    toughen(k, behind.entity, 1e6);
+    turnToStone(k, front.entity, 'petrified');
+    setFoe(k, front.entity, (e) => (e.hp = 0));
+    ask(k, sweepRequest, undefined);
+    expect(foe(k, behind.entity)!.hp).toBeLessThan(1e6);
+    expect(frontEnemy(k).entity).toBe(behind.entity);
+    expect(transcript(k).some((f) => f.text.includes('statue breaks'))).toBe(true);
+  });
+
+  it('rocks that kill the last enemy behind the statue end the fight', () => {
+    const k = holding('basilisk_hide');
+    const [front, behind] = stage(k, [
+      { monsterId: 'forest_rat', level: 1 },
+      { monsterId: 'forest_rat', level: 1 },
+    ]);
+    setFoe(k, behind.entity, (e) => (e.hp = 1));
+    turnToStone(k, front.entity, 'petrified');
+    const seen = watch(k);
+    setFoe(k, front.entity, (e) => (e.hp = 0));
+    ask(k, sweepRequest, undefined);
+    expect(seen.kills).toBe(2);
+    expect(seen.won).toBe(1);
+    expect(combatOf(k).fight).toBeNull();
+  });
 
   it('a statue counts when the enemy stood at 85% of your level or attribute total', () => {
     const k = holding('basilisk_hide');
@@ -587,7 +684,57 @@ describe.skipIf(!CORE)('Basilisk Hide', () => {
     expect(k.staleStats()).toEqual([]);
   });
 
-  it.todo('play holds while the pick is on offer: the hold of play is not ported (README, Left behind)');
+  // Old basiliskEvolve "at 100 play holds on the pick ...", its hold half (step 4 port F; kernel decision 36).
+  it('play holds while the pick is on offer, the held time is banked, and the pick lifts the hold', () => {
+    const k = holding('basilisk_hide');
+    const level = slice<{ level: number }>(k, 'levels').level;
+    const [rival] = stage(k, [{ monsterId: 'forest_rat', level }]);
+    hardenFoes(k, 1e9);
+    setFoe(k, rival.entity, (e) => (e.attrs.con = 1));
+    setShare(k, 'statues', 0.99);
+    petrify(k, rival);
+    expect(facetView(k).evolution).not.toBeNull();
+
+    // Held: the clock does not move, and the time is banked.
+    const ticks = k.snapshot().kernel.tick;
+    const banked = slice<{ banked: number }>(k, 'bonus').banked;
+    k.tick();
+    expect(k.snapshot().kernel.tick).toBe(ticks);
+    expect(slice<{ banked: number }>(k, 'bonus').banked).toBeGreaterThan(banked);
+    expect(facetView(k).evolution!.banked).toBe('0s');
+
+    // A load keeps the offer, and so the hold.
+    const loaded = makeGame({ seed: 5 });
+    expect(loaded.load(JSON.parse(JSON.stringify(k.save(0)))).ok).toBe(true);
+    const loadedAt = loaded.snapshot().kernel.tick;
+    loaded.tick();
+    expect(loaded.snapshot().kernel.tick).toBe(loadedAt);
+
+    expect(k.dispatch(chooseEvolution({ key: 'basilisk_stoneskin' })).ok).toBe(true);
+    expect(facetView(k).evolution).toBeNull();
+    k.tick();
+    expect(k.snapshot().kernel.tick).toBe(ticks + 1);
+  });
+
+  it('offline, catch-up stops at a waiting pick and banks the rest', () => {
+    const k = holding('basilisk_hide');
+    const level = slice<{ level: number }>(k, 'levels').level;
+    const [rival] = stage(k, [{ monsterId: 'forest_rat', level }]);
+    hardenFoes(k, 1e9);
+    setFoe(k, rival.entity, (e) => (e.attrs.con = 1));
+    setShare(k, 'statues', 0.99);
+    petrify(k, rival);
+    const before = slice<{ banked: number }>(k, 'bonus').banked;
+    const offline = createKernel({ systems, validateContent: false, catchingUp: true });
+    expect(offline.load(k.save(0)).ok).toBe(true);
+    const result = runHeadless(offline, { ticks: 600, hold: true });
+    expect(result).toMatchObject({ ticks: 0, heldBy: 'facet' });
+    expect(offline.tickCount).toBe(k.tickCount);
+    expect(slice<{ banked: number }>(offline, 'bonus').banked).toBe(before + 600);
+    // The catch-up of the page: the same envelope out.
+    const after = catchUp({ systems, envelope: k.save(0), ticks: 600, now: 0 });
+    expect((after.slices.bonus.data as { banked: number }).banked).toBe(before + 600);
+  });
 
   it("Gorgon's Gaze stones the front enemy each second, and blows add half", () => {
     const k = holding('basilisk_gorgon');
@@ -608,9 +755,110 @@ describe.skipIf(!CORE)('Basilisk Hide', () => {
     expect(stoneOn(k, first.entity) - second1).toBeCloseTo(resisted * 0.5 * (6 + con / 10), 6);
     petrify(k, first);
     expect(stoneOn(k, second.entity)).toBeCloseTo(resisted * 25, 6);
+    // The gaze is on the next enemy now (step 4 port F: the old case's last part).
+    const before = stoneOn(k, second.entity);
+    for (let t = 0; t < 10; t++) ask(k, fightTick, undefined);
+    expect(stoneOn(k, second.entity)).toBeCloseTo(before + second1, 6);
   });
 
-  it.todo('Rubble and Stoneskin: rocks, bursts, standing statues need the combat statue rules (README, Left behind)');
+  // Old basiliskEvolve, Rubble (step 4 port F).
+  it('Rubble: rocks put Stone on what they hit, and a statue pays no Stone Chunks', () => {
+    const k = holding('basilisk_rubble');
+    const [front, behind] = stage(k, [
+      { monsterId: 'forest_rat', level: 1 },
+      { monsterId: 'forest_rat', level: 1 },
+    ]);
+    toughen(k, behind.entity, 1e9);
+    setFoe(k, behind.entity, (e) => (e.attrs.con = 1));
+    setFoe(k, front.entity, (e) => (e.gold = 100));
+    turnToStone(k, front.entity, 'petrified_rubble');
+    const gold = goldOf(k);
+    setFoe(k, front.entity, (e) => (e.hp = 0));
+    ask(k, sweepRequest, undefined);
+    expect(foe(k, behind.entity)!.hp).toBeLessThan(1e9);
+    expect(stoneOn(k, behind.entity)).toBeGreaterThan(0);
+    expect(goldOf(k)).toBe(gold);
+    expect(transcript(k).some((f) => f.text.includes('statue breaks'))).toBe(true);
+  });
+
+  it('Rubble: a statue left alone bursts when it would crumble', () => {
+    const k = holding('basilisk_rubble');
+    const [front, behind] = stage(k, [
+      { monsterId: 'forest_rat', level: 1 },
+      { monsterId: 'forest_rat', level: 1 },
+    ]);
+    toughen(k, behind.entity, 1e9);
+    setFoe(k, behind.entity, (e) => (e.attrs.con = 1));
+    turnToStone(k, front.entity, 'petrified_rubble');
+    for (let t = 0; t < 40 && foe(k, front.entity); t++) {
+      patchFight(k, (s) => {
+        if (s.fight) s.fight.playerBar = 0;
+      });
+      fullHp(k);
+      k.tick();
+    }
+    expect(foe(k, front.entity)).toBeNull();
+    expect(transcript(k).some((f) => f.text.includes('statue bursts'))).toBe(true);
+    expect(foe(k, behind.entity)!.hp).toBeLessThan(1e9);
+  });
+
+  // Old basiliskEvolve, Stoneskin (step 4 port F).
+  it('Stoneskin: a statue steps out of the centre, raises your armour, and crumbles when the fight is won', () => {
+    const k = holding('basilisk_stoneskin');
+    const [front, behind] = stage(k, [
+      { monsterId: 'forest_rat', level: 1 },
+      { monsterId: 'forest_rat', level: 1 },
+    ]);
+    toughen(k, behind.entity, 1e9);
+    setFoe(k, behind.entity, (e) => (e.attrs.con = 1));
+    setFoe(k, front.entity, (e) => (e.gold = 100));
+    const armor = statBlockOf(reads(k)).armor;
+    turnToStone(k, front.entity, 'petrified_standing');
+    idle(k, 1);
+    expect(frontEnemy(k).entity).toBe(behind.entity);
+    expect(combatOf(k).fight!.enemies.some((e) => e?.entity === front.entity)).toBe(true);
+    expect(cell(k, 'standing')).toBe(1);
+    expect(statBlockOf(reads(k)).armor).toBeGreaterThan(armor);
+
+    // The last enemy still fighting falls: the fight is won and the statue pays its Chunks.
+    const gold = goldOf(k);
+    const seen = watch(k);
+    setFoe(k, behind.entity, (e) => {
+      e.gold = 0;
+      e.hp = 0;
+    });
+    ask(k, sweepRequest, undefined);
+    expect(seen.won).toBe(1);
+    expect(seen.kills).toBe(2);
+    // Read after: the first kill's XP can level you up, and CHA moves gold gain.
+    expect(goldOf(k) - gold).toBe(Math.round(100 * statBlockOf(reads(k)).goldGain * 0.5));
+    expect(combatOf(k).fight).toBeNull();
+  });
+
+  it('Stoneskin: a standing statue that falls throws no rocks', () => {
+    const k = holding('basilisk_stoneskin');
+    const [, statue, behind] = stage(k, [
+      { monsterId: 'forest_rat', level: 1 },
+      { monsterId: 'forest_rat', level: 1 },
+      { monsterId: 'forest_rat', level: 1 },
+    ]);
+    toughen(k, behind.entity, 1e9);
+    turnToStone(k, statue.entity, 'petrified_standing');
+    setFoe(k, statue.entity, (e) => (e.hp = 0));
+    ask(k, sweepRequest, undefined);
+    expect(foe(k, behind.entity)!.hp).toBe(1e9);
+    expect(transcript(k).some((f) => f.text.includes('rocks hit'))).toBe(false);
+  });
+
+  it('Stoneskin: when the last enemy fighting turns to stone, the fight is won', () => {
+    const k = holding('basilisk_stoneskin');
+    const [front] = stage(k, [{ monsterId: 'forest_rat', level: 1 }]);
+    const seen = watch(k);
+    turnToStone(k, front.entity, 'petrified_standing');
+    idle(k, 1);
+    expect(seen.won).toBe(1);
+    expect(combatOf(k).fight).toBeNull();
+  });
 });
 
 // ---------------------------------------------------------------------------

@@ -241,8 +241,8 @@ export const eatFoodRequest = defineRequest<{ id: string; quality: QualityTier; 
 export const cooked = defineEvent<CookedPayload>('cooking/cooked');
 
 /** One craft request per bench: `benches` hands the owner a placement and a duration only. */
-const CRAFT: Record<string, RequestDef<{ placement: Placement; duration?: number }, boolean>> = Object.fromEntries(
-  COOKING_BENCH_IDS.map((id) => [id, defineRequest<{ placement: Placement; duration?: number }, boolean>(`cooking/craft-${id}`)]),
+const CRAFT: Record<string, RequestDef<{ placement: Placement; duration?: number; xpScale?: number }, boolean>> = Object.fromEntries(
+  COOKING_BENCH_IDS.map((id) => [id, defineRequest<{ placement: Placement; duration?: number; xpScale?: number }, boolean>(`cooking/craft-${id}`)]),
 );
 
 for (const id of COOKING_BENCH_IDS) {
@@ -268,8 +268,9 @@ function spend(ctx: K, disc: DisciplineDef, placement: Placement): boolean {
   return true;
 }
 
-/** Cook it. The old `cook`. */
-function cookOnce(ctx: K, disc: DisciplineDef, placement: Placement, duration?: number): CookResult | null {
+/** Cook it. The old `cook`. `xpScale`: a Shadow Clone's share of the skill XP. */
+function cookOnce(ctx: K, disc: DisciplineDef, placement: Placement, duration?: number, xpScale?: number): CookResult | null {
+  const scale = xpScale !== undefined ? { scale: xpScale } : {};
   const reads = benchReadsOf(ctx);
   const check = previewCook(reads, placement, disc, duration);
   if (!check.ok || !check.outcome || !check.quality) {
@@ -289,7 +290,7 @@ function cookOnce(ctx: K, disc: DisciplineDef, placement: Placement, duration?: 
     ctx.request(grantGraded, { id, quality: cut, qty: 1 });
     ctx.emit(checkDiscovery, { tags: [disc.tag] });
     // A cut is not a dish: no novelty key, the ordinary rate.
-    ctx.emit(grantSkillXp, { tags: ['craft', disc.tag], amount: disc.xp * (1 + qualityRank(cut) * 0.15) });
+    ctx.emit(grantSkillXp, { tags: ['craft', disc.tag], amount: disc.xp * (1 + qualityRank(cut) * 0.15), ...scale });
     const made = MATERIALS[id];
     ctx.emit(benchCrafted, { discipline: disc.id });
     ctx.emit(
@@ -321,7 +322,7 @@ function cookOnce(ctx: K, disc: DisciplineDef, placement: Placement, duration?: 
   const hadSignature = signatureEarned(book, result.id, count);
   ctx.emit(bumpCounter, { key: cookedKey(result.id) });
   ctx.emit(bumpCounter, { key: cookedGradeKey(result.id, quality) });
-  if (count === 0) ctx.emit(grantDiscoveryXp, { domain: 'cookery' });
+  if (count === 0) ctx.emit(grantDiscoveryXp, { domain: 'cookery', ...scale });
   const noteCookTime = !hadCookTime && cookTimeKnown(book, result.id, count + 1) && dishHasCookTime(result.id);
   const noteSignature = !hadSignature && signatureEarned(book, result.id, count + 1);
 
@@ -330,6 +331,7 @@ function cookOnce(ctx: K, disc: DisciplineDef, placement: Placement, duration?: 
     tags: ['craft', disc.tag],
     amount: disc.xp * (1 + placed(placement).length * 0.2) * (1 + qualityRank(quality) * 0.15),
     sourceKey: result.id,
+    ...scale,
   });
 
   const dish = MATERIALS[result.id];
@@ -632,7 +634,7 @@ const cooking: SystemDef<CookingState, CookingView> = defineSystem<CookingState,
       return cookOnce(ctx, disc, placement, duration);
     }),
     ...COOKING_BENCH_IDS.map((id) =>
-      answer(CRAFT[id], (ctx: K, { placement, duration }) => cookOnce(ctx, DISCIPLINES[id], placement, duration) !== null),
+      answer(CRAFT[id], (ctx: K, { placement, duration, xpScale }) => cookOnce(ctx, DISCIPLINES[id], placement, duration, xpScale) !== null),
     ),
     answer(eatFoodRequest, (ctx, { id, quality, queued }) => eatFood(ctx, id, quality, queued)),
   ],

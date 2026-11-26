@@ -195,6 +195,13 @@ export const abilityStrikeRequest = defineRequest<
   { entity: string; amount: number; type: DamageType; by: { name: string; icon: string; hit?: string } },
   number
 >('combat/ability-strike');
+/**
+ * A statue condition landed on an enemy of the open fight: the statue rules
+ * apply in this fight from now on (`Fight.statues`). Made by the run's
+ * ability where it applies the dose that turns an enemy to stone. Step 4
+ * port F.
+ */
+export const statueLanded = defineRequest<{ entity: string }, void>('combat/statue-landed');
 /** A buff on the player for the fight. The old `c.buffs.push`. */
 export const addBuff = defineRequest<CombatBuff, void>('combat/add-buff');
 /** Move the player to a position. The old `setPosition`. */
@@ -510,6 +517,14 @@ const combat = defineSystem<CombatState, CombatView>({
         return 0;
       }
       return abilityStrike(ctx, e, p.amount, p.type, p.by);
+    }),
+    answer(statueLanded, (ctx, p) => {
+      const fight = ctx.state.fight;
+      if (!fight || !enemyOf(ctx.state, p.entity)) {
+        ctx.skip(statueLanded.type, `no enemy of an open fight has the entity id "${p.entity}"`);
+        return;
+      }
+      fight.statues = true;
     }),
     answer(sweepRequest, (ctx) => {
       if (!ctx.state.fight) return ctx.skip(sweepRequest.type, 'no fight is open');

@@ -17,7 +17,7 @@
  */
 import { TPS, type Ctx, type DeepReadonly } from '../../kernel';
 import clock, { totalTicksOf } from '../clock';
-import combat, { abilityStrikeRequest, isSiteBoss, type Enemy } from '../combat';
+import combat, { abilityStrikeRequest, isSiteBoss, statueLanded, type Enemy } from '../combat';
 import levels from '../levels';
 import { logLine } from '../log';
 import mercy, { procRate, rollProcChance } from '../mercy';
@@ -38,6 +38,7 @@ import statuses, {
 import { resourceValue } from '../resources';
 import resources from '../resources';
 import type { FacetDoc, FacetHost } from './facet';
+import { noteEvolutionHold } from './hold';
 import { CORE } from './load';
 
 export { CORE, NO_CORE } from './load';
@@ -307,7 +308,11 @@ function createHost(): FacetHost {
       const foe = ref === PLAYER_REF ? null : foeOf(ctx, ref);
       const was = foe ? statueOf(heldOf(ctx.read(statuses), entity)) : null;
       const landed = ctx.request(applyStatus, { entity, app, ...(source ? { source } : {}) });
-      if (foe && !was && statueOf(heldOf(ctx.read(statuses), entity))) signalStatue(ctx, ref, foe);
+      if (foe && !was && statueOf(heldOf(ctx.read(statuses), entity))) {
+        // The statue rules of combat apply in this fight from now on.
+        ctx.request(statueLanded, { entity });
+        signalStatue(ctx, ref, foe);
+      }
       return landed;
     },
     removeStatus: (ref: string, id: string) => {
@@ -393,9 +398,10 @@ function createHost(): FacetHost {
       if (line) writer('log').emit(logLine, { msg: line, kind: 'info' });
     },
     // The `evolve` effect wrote its offer onto the document; play holds until
-    // the player picks. This only says so.
+    // the player picks (`hold.ts`). This says so and writes the hold.
     offerEvolution: (_ref: string, id: string) => {
       const doc = docOf(id);
+      noteEvolutionHold(top().state, true);
       writer('offerEvolution').emit(logLine, {
         msg: `${doc?.reading?.icon ?? '✦'} ${doc?.reading?.name ?? 'Your ability'} can evolve: pick a branch.`,
         kind: 'info',

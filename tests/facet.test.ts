@@ -134,7 +134,7 @@ describe.skipIf(!CORE)('the switch', () => {
   it('is off in a new game: no ability, no tab, an empty slice', () => {
     const kernel = makeGame({ seed: 3 });
     expect(slice<FacetState>(kernel, 'facet')).toEqual({ on: false, docs: [], queued: null, fallen: null });
-    expect(facetView(kernel)).toEqual({ on: false, core: true, held: [], bank: [], evolution: null, inFight: false });
+    expect(facetView(kernel)).toEqual({ on: false, core: true, held: [], bank: [], evolution: null, inFight: false, clones: null });
     expect(facetListed(kernel.view().systems)).toBe(false);
   });
 
@@ -148,7 +148,8 @@ describe.skipIf(!CORE)('the switch', () => {
     const kernel = holding('solar_charge');
     expect(facetListed(kernel.view().systems)).toBe(true);
     expect(facetView(kernel).bank.map((b) => b.key)).toContain('little_moons');
-    expect(facetView(kernel).bank.map((b) => b.key)).not.toContain('shadow_clone');
+    // Every bank entry, Shadow Clone included since step 4 port F.
+    expect(facetView(kernel).bank.map((b) => b.key)).toContain('shadow_clone');
     expect(heldOf(slice(kernel, 'statuses')).some((s) => s.id.startsWith('fc_'))).toBe(true);
     expect(kernel.dispatch(switchFacet({ on: false }))).toEqual({ ok: true });
     expect(facetOf(kernel).docs).toEqual([]);
@@ -156,9 +157,11 @@ describe.skipIf(!CORE)('the switch', () => {
     expect(kernel.staleStats()).toEqual([]);
   });
 
-  it('refuses Shadow Clone: its clones are not ported', () => {
+  // Step 4 port F: the clones are ported (tests/shadowClone.test.ts), so the grant takes it.
+  it('grants Shadow Clone, with its clone section in the view', () => {
     const kernel = holding(null);
-    expect(kernel.dispatch(grantFacet({ id: 'shadow_clone' })).ok).toBe(false);
+    expect(kernel.dispatch(grantFacet({ id: 'shadow_clone' })).ok).toBe(true);
+    expect(facetView(kernel).clones).toMatchObject({ max: 1, out: [], blocked: null });
   });
 });
 

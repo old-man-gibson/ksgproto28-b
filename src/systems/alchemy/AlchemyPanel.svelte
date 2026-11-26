@@ -3,6 +3,7 @@
   import { send, viewOf } from '../../ui/game.svelte';
   import { recallLayout, rememberLayout, startBench, stopBench, type GradedStack, type Placement } from '../benches';
   import type { MaterialsState, QualityTier } from '../materials';
+  import CloneBenchButton from '../facet/CloneBenchButton.svelte';
   import { STATUSES } from '../statuses';
   import alchemy, { ALCHEMY, BREW_FORMS, checkBrew, composeBrew, sequenceOf, useFlask } from './index';
 
@@ -198,6 +199,8 @@
         <Button onclick={() => ((bench = {}), (picking = null))}>Clear</Button>
       {/if}
     </div>
+    <!-- Shadow Clone: a clone keeps brewing this layout from your stock (step 4 port F). -->
+    <CloneBenchButton discipline={ALCHEMY.id} placement={bench} ok={check.ok} />
   {:else}
     <p class="card dim note">Brewing needs an Alembic: {view.benchSpots.join(', ')}.</p>
   {/if}

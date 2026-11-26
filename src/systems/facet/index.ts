@@ -22,9 +22,12 @@ import {
   type Ctx,
   type DeepReadonly,
   type ViewCtx,
+  TPS,
 } from '../../kernel';
 import { flaskUsed } from '../alchemy';
 import { attrXpNeeded, registerXpRouter } from '../attributes';
+import { benchOwner, DISCIPLINES, type AssembledPlacement, type Placement } from '../benches';
+import bonus, { bankTicks } from '../bonus';
 import clock, { TICKS_PER_GAME_MINUTE, totalTicksOf } from '../clock';
 import combat, {
   ABILITY_RUN,
@@ -38,15 +41,30 @@ import combat, {
 } from '../combat';
 import { consumableUsed } from '../consumables';
 import { dishCalories } from '../cooking';
+import levels from '../levels';
 import log, { feedLine, feedSettle, logLine } from '../log';
 import { registerDamageWatch } from '../resources';
 import { spellCast } from '../spellcraft';
 import { ATTRIBUTE_IDS, finalAttributes, type AttributeId } from '../stats';
 import statuses, { heldOf, removeStatus, STATUSES } from '../statuses';
+import world, { SPOTS, spotActivities } from '../world';
+import {
+  benchPassOf,
+  cloneActivity,
+  cloneBlocked,
+  cloneReach,
+  cloneTask,
+  recallAll,
+  recallOne,
+  rulesOf,
+  sendClone,
+  tickClones,
+} from './clones';
 import type { FacetCell, FacetDoc } from './facet';
+import { evolutionHolds, noteEvolutionHold, offering } from './hold';
 import { bind, carrierPrefix, CORE, NO_CORE, refOfEntity, withCtx, withReads } from './host';
 import { migrations } from './migrations';
-import { FACET_ACTION, initialFacet, PLAYER_REF, type FacetState } from './state';
+import { FACET_ACTION, FOE, initialFacet, PLAYER_REF, type FacetState } from './state';
 
 export * from './state';
 export { CORE, NO_CORE } from './host';
@@ -68,6 +86,21 @@ export const pressAction = defineCommand<{ key: string }>('facet/press');
 export const chooseEvolution = defineCommand<{ key: string }>('facet/evolve');
 /** Set a cell of the held ability to a share of its cap (old `debugSetCell`, the debug panel's rows). */
 export const setCell = defineCommand<{ key: string; share: number }>('facet/set-cell');
+/** Send a Shadow Clone to a gathering or job activity at the player's spot (old `sendCloneToActivity`). */
+export const sendCloneCommand = defineCommand<{ activity: string }>('facet/send-clone');
+/** Send a Shadow Clone to run a bench layout at the player's spot, on its own clock (old `sendCloneToBench`). */
+export const sendCloneToBench = defineCommand<{
+  discipline: string;
+  placement: Placement;
+  /** A timed bench's length in units. */
+  duration?: number;
+  /** An assembling bench (the anvil): the parts. */
+  forge?: AssembledPlacement;
+}>('facet/send-clone-bench');
+/** Recall one Shadow Clone by its order (old `recallClone`). */
+export const recallClone = defineCommand<{ order: number }>('facet/recall-clone');
+/** Recall every Shadow Clone (old `recallClones`). */
+export const recallClones = defineCommand<void>('facet/recall-clones');
 
 // ---- requests (the hooks other systems call; each answers inside their handler) ----
 
@@ -86,6 +119,8 @@ export const hitTaken = defineRequest<
 >('facet/hit-taken');
 /** XP for an attribute at or past the ceiling. True when the ability took it (old `routeAttrXp`). */
 export const routeXp = defineRequest<{ attr: AttributeId; amount: number }, boolean>('facet/route-xp');
+/** A statue's rocks hit the enemy at `slot` (old `facetSignal('rocks')` in `throwRubble`). */
+export const rocksLanded = defineRequest<{ slot: number; amount: number }, void>('facet/rocks');
 
 // ---- the core, called with this system's context ----
 
@@ -146,11 +181,6 @@ function dropCarriers(ctx: C, doc: DeepReadonly<FacetDoc>): void {
   for (const id of ids) ctx.request(removeStatus, { entity: 'player', id });
 }
 
-/** The held document that offers an evolution, or undefined. */
-function offering(docs: readonly DeepReadonly<FacetDoc>[]): DeepReadonly<FacetDoc> | undefined {
-  return docs.find((d) => Array.isArray(d.offer) && d.offer.length > 0);
-}
-
 /** Levels `xp` buys from `ceiling` up, each priced like a real attribute level (old `levelsPast`). */
 export function levelsPast(ceiling: number, xp: number): number {
   let left = xp;
@@ -175,6 +205,10 @@ registerFightHook('facet', {
     if (held(ctx)) ctx.request(barFill, undefined);
   },
   takeFill: (ctx) => (CORE && ctx.read(facet).queued ? ctx.request(takePressed, undefined) : false),
+  // Only a fight with a statue throws rocks, and only the ability makes statues.
+  rocks: (ctx, slot, amount) => {
+    if (held(ctx)) ctx.request(rocksLanded, { slot, amount });
+  },
 });
 
 // Ability actions ride the rotation like a spell or a technique, last
@@ -271,6 +305,35 @@ export interface FacetReadout {
   actions: (HeldAction & { queued: boolean })[];
 }
 
+/** One Shadow Clone at work. */
+export interface CloneOutView {
+  order: number;
+  /** The activity's name or the bench's. */
+  task: string;
+  spot: string;
+  spotName: string;
+  /** A bench run: whole seconds to the next pass. Null on an activity. */
+  nextIn: number | null;
+}
+
+/** Shadow Clone, for the Ability tab, the Location panel and the bench panels. */
+export interface CloneView {
+  /** The most out at once. */
+  max: number;
+  /** Floors from the player a clone keeps working. */
+  reach: number;
+  /** Why a clone cannot be sent now, or null. */
+  blocked: string | null;
+  out: CloneOutView[];
+  /** The gathering and job activities of the player's spot: what a clone can take here. */
+  here: { id: string; name: string; icon: string }[];
+  /** The tasks of the clones at the player's spot. */
+  atSpot: string[];
+  /** A clone's yield share and skill XP share, in percent. */
+  yieldPct: number;
+  xpPct: number;
+}
+
 export interface FacetView {
   on: boolean;
   /** The core is in this build (`src/systems/facet/core/`, docs/SETUP.md). */
@@ -278,9 +341,11 @@ export interface FacetView {
   held: FacetReadout[];
   /** The bank: what the Ability tab can grant while the switch is on. */
   bank: EvolutionChoice[];
-  /** An evolution waiting on a pick, or null. */
-  evolution: { from: string; icon: string; choices: EvolutionChoice[] } | null;
+  /** An evolution waiting on a pick, or null. Play is held while it waits; `banked` is the bonus time bank. */
+  evolution: { from: string; icon: string; choices: EvolutionChoice[]; banked: string } | null;
   inFight: boolean;
+  /** The held ability's clones, or null when it has none (every ability but Shadow Clone). */
+  clones: CloneView | null;
 }
 
 type ClauseShape = { on?: string; do?: unknown[] };
@@ -382,15 +447,49 @@ function readouts(ctx: ViewCtx<FacetState>): FacetReadout[] {
   });
 }
 
-/** Bank entries a grant offers: every entry, branches included, as the old debug rows listed them; none left behind. */
+/** Bank entries a grant offers: every entry, branches included, as the old debug rows listed them. */
 function grantable(): EvolutionChoice[] {
-  return Object.keys(Facet.bank ?? {})
-    .filter((k) => !LEFT_BEHIND.has(k))
-    .map(choiceOf);
+  return Object.keys(Facet.bank ?? {}).map(choiceOf);
 }
 
-/** Bank entries this port does not offer: they need a system not ported yet (README, "Left behind"). */
-export const LEFT_BEHIND: ReadonlySet<string> = new Set(['shadow_clone']);
+/** The old `msToTime` of a tick count: the bonus time bank as the old window read it. */
+function ticksToTime(ticks: number): string {
+  const s = Math.floor(ticks / TPS);
+  if (s < 60) return `${s}s`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m}m`;
+  const h = Math.floor(m / 60);
+  return `${h}h ${m % 60}m`;
+}
+
+/** The clones of the held ability, for the panels. Call inside `withReads`. */
+function cloneView(ctx: ViewCtx<FacetState>): CloneView | null {
+  const rules = rulesOf(ctx.state.docs);
+  if (!rules) return null;
+  const at = ctx.read(world).spot;
+  const spot = SPOTS[at];
+  const out = ctx.state.clones ?? [];
+  return {
+    max: rules.max,
+    reach: cloneReach(ctx.read(levels).level),
+    blocked: cloneBlocked(ctx, rules),
+    out: out.map((c) => ({
+      order: c.order,
+      task: cloneTask(c),
+      spot: c.spot,
+      spotName: SPOTS[c.spot]?.name ?? c.spot,
+      nextIn: c.bench ? Math.max(0, Math.ceil(c.bench.ticksLeft / TPS)) : null,
+    })),
+    here: spot
+      ? spotActivities(spot)
+          .filter((a) => a.kind === 'gather' || a.kind === 'job')
+          .map((a) => ({ id: a.id, name: a.name, icon: a.icon }))
+      : [],
+    atSpot: out.filter((c) => c.spot === at).map((c) => cloneTask(c)),
+    yieldPct: Math.round(rules.yieldShare * 100),
+    xpPct: Math.round(rules.xpShare * 100),
+  };
+}
 
 /** Whether the navigation lists the Ability tab: while the switch is on. Read by `panel.ts`. */
 export function facetListed(views: Readonly<Record<string, unknown>>): boolean {
@@ -408,8 +507,27 @@ const facet = defineSystem<FacetState, FacetView>({
   // `Game.advance` ran `tickFacets` after `tickSky` and before `tickMealClaims`.
   order: 30,
 
+  // While an evolution waits on a pick, a tick moves nothing and is banked as
+  // bonus time (old `Game.tick`: `pendingEvolution`, `bankTick` and return),
+  // as the keeper's dare holds. Kernel decision 36.
+  playHold: {
+    holds: evolutionHolds,
+    held: (ctx) => ctx.emit(bankTicks, { ticks: 1 }),
+  },
+  // Offline, the old catch-up went through the same tick, banking each held
+  // tick up to the cap: stopping on the first held tick and banking the rest
+  // gives the same bank (decisions 35 and 36).
+  catchUpHold: {
+    holds: evolutionHolds,
+    held: (ctx, ticksLeft) => ctx.emit(bankTicks, { ticks: ticksLeft }),
+  },
+
   tick: (ctx) => {
     if (!CORE || !ctx.state.docs.length) return;
+    // Shadow Clones work wherever they were sent, travel or not (old
+    // `tickClones`). The old tick ran them after the bench run and before
+    // the sea; here they run in this system's tick (README, Differences).
+    if (ctx.state.clones) withCtx(ctx, () => tickClones(ctx));
     // Once per game minute, in a fight or not (old `tickFacets`).
     if (totalTicksOf(ctx.read(clock)) % TICKS_PER_GAME_MINUTE === 0) withCtx(ctx, () => Facet.minute(PLAYER_REF));
     // The ability's floating feed runs settle once no fight is open (old `tickCombat`).
@@ -427,6 +545,9 @@ const facet = defineSystem<FacetState, FacetView>({
         ctx.state.docs = [];
         ctx.state.queued = null;
         ctx.state.fallen = null;
+        // With the ability gone the old tick ended every clone, quietly.
+        delete ctx.state.clones;
+        noteEvolutionHold(ctx.state, false);
       }
       ctx.state.on = next;
       return OK;
@@ -434,12 +555,12 @@ const facet = defineSystem<FacetState, FacetView>({
     handle(grantFacet, (ctx, { id }) => {
       if (!CORE) return skipped(NO_CORE);
       if (!ctx.state.on) return skipped('Facet abilities are switched off');
-      if (LEFT_BEHIND.has(id)) return skipped(`"${id}" needs a system that is not ported yet`);
       const template = Facet.bank?.[id];
       if (!template) return skipped(`the bank has no ability "${id}"`);
       for (const doc of ctx.state.docs) dropCarriers(ctx, doc);
       ctx.state.docs = [Facet.hydrate(JSON.parse(JSON.stringify(template)) as FacetDoc)];
       ctx.state.queued = null;
+      noteEvolutionHold(ctx.state, offering(ctx.state.docs) !== undefined);
       withCtx(ctx, () => bind(ctx.state, true));
       return OK;
     }),
@@ -480,12 +601,59 @@ const facet = defineSystem<FacetState, FacetView>({
       if (!next) return skipped(`"${key}" is not on the offer`);
       dropCarriers(ctx, from);
       ctx.state.docs = ctx.state.docs.map((d) => (d === from ? next : d));
+      noteEvolutionHold(ctx.state, offering(ctx.state.docs) !== undefined);
       withCtx(ctx, () => bind(ctx.state, true));
       ctx.emit(logLine, {
         msg: `${from.reading?.icon ?? '✦'} ${from.reading?.name ?? 'Your ability'} evolves into ${next.reading?.icon ?? '✦'} ${next.reading?.name ?? key}.`,
         kind: 'info',
       });
       return OK;
+    }),
+    handle(sendCloneCommand, (ctx, { activity }) => {
+      if (!CORE) return skipped(NO_CORE);
+      const spot = ctx.read(world).spot;
+      if (!cloneActivity(spot, activity)) return skipped(`"${activity}" is not a gathering or job activity here`);
+      return withCtx(ctx, () => {
+        const rules = rulesOf(ctx.state.docs);
+        const why = cloneBlocked(ctx, rules);
+        if (why || !rules) return skipped(why ?? 'No Shadow Clone');
+        sendClone(ctx, rules, { spot, activity, progress: 0 });
+        return OK;
+      });
+    }),
+    handle(sendCloneToBench, (ctx, { discipline, placement, duration, forge }) => {
+      if (!CORE) return skipped(NO_CORE);
+      if (!DISCIPLINES[discipline]) return skipped(`no bench has the id "${discipline}"`);
+      if (!benchOwner(discipline)) return skipped(`no system works the bench "${discipline}"`);
+      return withCtx(ctx, () => {
+        const rules = rulesOf(ctx.state.docs);
+        const why = cloneBlocked(ctx, rules);
+        if (why || !rules) return skipped(why ?? 'No Shadow Clone');
+        const pass = benchPassOf(ctx, rules, discipline, placement, duration, forge);
+        sendClone(ctx, rules, {
+          spot: ctx.read(world).spot,
+          bench: {
+            discipline,
+            // Plain copies: the clone's run outlives the panel's working layout.
+            placement: JSON.parse(JSON.stringify(placement)) as Placement,
+            ...(duration !== undefined ? { duration } : {}),
+            ...(forge ? { forge: JSON.parse(JSON.stringify(forge)) as AssembledPlacement } : {}),
+            ticksPer: pass.ticksPer,
+            ticksLeft: pass.ticksPer,
+            batch: pass.batch,
+          },
+          progress: 0,
+        });
+        return OK;
+      });
+    }),
+    handle(recallClone, (ctx, { order }) => {
+      if (!CORE) return skipped(NO_CORE);
+      return withCtx(ctx, () => (recallOne(ctx, order) ? OK : skipped(`no clone has the order ${order}`)));
+    }),
+    handle(recallClones, (ctx) => {
+      if (!CORE) return skipped(NO_CORE);
+      return withCtx(ctx, () => (recallAll(ctx) > 0 ? OK : skipped('no clone is out')));
     }),
     handle(setCell, (ctx, { key, share }) => {
       if (!CORE) return skipped(NO_CORE);
@@ -517,6 +685,7 @@ const facet = defineSystem<FacetState, FacetView>({
     }),
     answer(useAction, (ctx, { key }) => useNow(ctx, key)),
     answer(hitTaken, (ctx, detail) => signal(ctx, 'hitTaken', { ...detail })),
+    answer(rocksLanded, (ctx, { slot, amount }) => signal(ctx, 'rocks', { target: FOE + slot, amount })),
     answer(routeXp, (ctx, { attr, amount }) => {
       if (!CORE) return false;
       const cap = ceilingOf(ctx);
@@ -568,7 +737,7 @@ const facet = defineSystem<FacetState, FacetView>({
   view: (ctx): FacetView => {
     const state = ctx.state;
     // A save switched on in a build with the core reads as off in one without it.
-    if (!state.on || !CORE) return { on: false, core: CORE, held: [], bank: [], evolution: null, inFight: false };
+    if (!state.on || !CORE) return { on: false, core: CORE, held: [], bank: [], evolution: null, inFight: false, clones: null };
     return withReads(ctx, state, () => {
       const from = offering(state.docs);
       return {
@@ -577,9 +746,15 @@ const facet = defineSystem<FacetState, FacetView>({
         held: readouts(ctx),
         bank: grantable(),
         evolution: from
-          ? { from: from.reading?.name ?? 'Your ability', icon: from.reading?.icon ?? '✦', choices: (from.offer as string[]).map(choiceOf) }
+          ? {
+              from: from.reading?.name ?? 'Your ability',
+              icon: from.reading?.icon ?? '✦',
+              choices: (from.offer as string[]).map(choiceOf),
+              banked: ticksToTime(ctx.read(bonus).banked),
+            }
           : null,
         inFight: !!ctx.read(combat).fight,
+        clones: cloneView(ctx),
       };
     });
   },

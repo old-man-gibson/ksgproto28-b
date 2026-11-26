@@ -42,8 +42,12 @@ export type AssembledPlacement = { [slot: string]: { kind: string; mat: string; 
 export interface BenchOwner {
   /** Whether the layout would make anything now, and why not. `forge`: an assembling bench's parts. */
   preview(ctx: BenchReadCtx, placement: Placement, duration?: number, forge?: AssembledPlacement): { ok: boolean; reason?: string };
-  /** Work it once: spend and make. False when it could not be made (the owner logs why). */
-  craft: RequestDef<{ placement: Placement; duration?: number; forge?: AssembledPlacement }, boolean>;
+  /**
+   * Work it once: spend and make. False when it could not be made (the owner
+   * logs why). `xpScale` multiplies the skill XP of the craft: a Shadow
+   * Clone's share (`facet`, the old `scaledSkillXp`); absent, 1.
+   */
+  craft: RequestDef<{ placement: Placement; duration?: number; forge?: AssembledPlacement; xpScale?: number }, boolean>;
   /** An assembling bench: ticks of one craft before craft speed (old `forgeTicks`). */
   ticks?(forge: AssembledPlacement): number;
 }

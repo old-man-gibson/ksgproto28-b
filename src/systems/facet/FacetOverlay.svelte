@@ -9,9 +9,10 @@
   // - The switch of the tentative port, from the address: `?facet=on` or
   //   `?facet=off`. It is saved with the game, so the address is needed once.
   // - The evolution pick (old `EvolveModal.svelte`). The offer is written onto
-  //   the saved document, so a reload brings it back. The old build held play
-  //   until a pick and banked the time; the hold of play is not ported, so
-  //   play goes on under the window.
+  //   the saved document, so a reload brings it back. Play is held until a
+  //   branch is picked and the held time is banked as bonus time (`hold.ts`,
+  //   kernel decision 36). No backdrop click and no Escape: the pick is the
+  //   way out.
   const view = $derived(viewOf(facet));
 
   // What the address asks for, sent once. A command sent while catch-up runs
@@ -48,7 +49,7 @@
 {#if view.evolution}
   <div class="backdrop">
     <div class="box" role="dialog" aria-modal="true" aria-labelledby="facet-evolve-title">
-      <h2 id="facet-evolve-title">{view.evolution.icon} {view.evolution.from} evolves</h2>
+      <h2 id="facet-evolve-title">⏸️ {view.evolution.icon} {view.evolution.from} evolves</h2>
       <p class="dim">Pick 1 branch. Progress carries over. The pick is final for this run.</p>
       <ul class="branches">
         {#each view.evolution.choices as c (c.key)}
@@ -59,6 +60,7 @@
           </li>
         {/each}
       </ul>
+      <p class="dim" data-testid="facet-evolve-held">Play is paused until you pick. Paused time goes to bonus time: ⏩ {view.evolution.banked}.</p>
     </div>
   </div>
 {/if}

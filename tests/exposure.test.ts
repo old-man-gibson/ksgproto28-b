@@ -1628,9 +1628,9 @@ describe('skyContentIssues', () => {
   });
 });
 
-describe('not ported', () => {
-  it.todo('Solar Charge banks `world.sunlight` each game minute (Facet is not ported)');
-});
+// Solar Charge banks `world.sunlight` each game minute: tests/facet.test.ts,
+// "Solar Charge", "banks under open sky by day" (step 3, the Facet port; the
+// todo that stood here was closed in step 4 port F).
 
 // ---------- the modifier source ----------
 
