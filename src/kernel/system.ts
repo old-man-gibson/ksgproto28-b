@@ -221,6 +221,15 @@ export interface Ctx<S> extends DerivedReads {
    * docs/KERNEL.md decision 30.
    */
   endRun(): void;
+  /**
+   * The system's play hold may have started or ended. After the current
+   * command or tick step has drained its events, the kernel asks the
+   * system's `playHold.holds` and keeps the answer; ticks read the kept
+   * answer and ask nothing. A system with a play hold calls this wherever
+   * its hold can change. Without a play hold it does nothing. See
+   * docs/KERNEL.md decision 36.
+   */
+  holdChanged(): void;
 }
 
 /** Reads a slice as the run that just ended left it. Given to `newRun`. */
@@ -268,16 +277,18 @@ export interface SystemDef<S, V = unknown> {
    * Stops offline catch-up while it holds (decision 35). `catchUp` asks
    * `holds` before every tick, so it answers from memory the system keeps,
    * never from the slices. On the first true the catch-up stops and `held`
-   * runs with the ticks left; its events are delivered.
+   * runs with the ticks left; its events are delivered. A system that also
+   * has a play hold is not asked: catch-up reads the play hold's kept answer.
    */
   catchUpHold?: CatchUpHold<S>;
   /**
-   * Holds play (decision 36): `kernel.tick()` asks `holds` before every
-   * tick, so it answers from memory the system keeps, never from the slices.
-   * On the first true that tick runs no system and the tick number stays;
+   * Holds play (decision 36). The kernel asks `holds` when the system says
+   * its hold may have changed (`ctx.holdChanged()`), after a load, a reset
+   * and a new run, and keeps the answer; no tick asks. While the first holder
+   * in system order holds, a tick runs no system and the tick number stays;
    * `held` runs instead and its events are delivered. Commands still run.
-   * A system with a play hold declares `catchUpHold` too, with the same
-   * `holds`: catch-up asks only the catch-up holds, once per tick.
+   * A system with a play hold declares `catchUpHold` too: catch-up stops on
+   * the same kept answer and runs that `held` with the ticks left.
    */
   playHold?: PlayHold<S>;
 }

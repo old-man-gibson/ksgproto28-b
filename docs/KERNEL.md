@@ -42,8 +42,8 @@ slice type.
 | `view(ctx)` | What the UI reads. Returns new objects, never the slice. |
 | `order` | Tick order, lower first. Ties run in id order. Default 0. |
 | `newRun(ctx, previous)` | Optional. Runs after a new run replaced every slice (decision 30). `previous(system)` reads a slice as the old run left it. |
-| `catchUpHold` | Optional. `{ holds(ctx), held(ctx, ticksLeft) }`: stops offline catch-up while it holds (decision 35). |
-| `playHold` | Optional. `{ holds(ctx), held(ctx) }`: holds play; a tick asked while it holds runs `held` instead and leaves the tick number as it was (decision 36). |
+| `catchUpHold` | Optional. `{ holds(ctx), held(ctx, ticksLeft) }`: stops offline catch-up while it holds (decision 35). A system that also holds play is not asked: catch-up reads the kept play-hold answer. |
+| `playHold` | Optional. `{ holds(ctx), held(ctx) }`: holds play; a tick while it holds runs `held` instead and leaves the tick number as it was. The kernel keeps the answer of `holds` and asks again after `ctx.holdChanged()`, a load, a reset and a new run (decision 36). |
 
 `defineSystem` throws on a bad id, a missing or extra migration step, and a
 stat, source, command or request outside the system's namespace.
@@ -67,6 +67,7 @@ The context (`ctx`) given to `tick`, command handlers and event handlers:
 | `dropEntity(entity)` | Forget the derived values of an entity that no longer exists. |
 | `skip(action, reason)` | Log an action that did not happen, outside a command. |
 | `endRun()` | End the run: after the current command or tick step drains, every slice starts new and each `newRun` runs (decision 30). |
+| `holdChanged()` | The system's play hold may have started or ended: after the current command or tick step drains, the kernel asks its `playHold.holds` and keeps the answer (decision 36). Nothing without a play hold. |
 
 ## 3. State and commands
 
@@ -84,10 +85,10 @@ The context (`ctx`) given to `tick`, command handlers and event handlers:
 ## 4. Tick and determinism
 
 - 10 ticks per second (`TPS`, `MS_PER_TICK`).
-- `kernel.tick()` asks every system that declares `playHold` before each
-  tick (decision 36). On the first `holds` that is true, no system ticks and
-  the tick number stays; the holder's `held` runs and its events drain.
-  Commands and views are not held.
+- `kernel.tick()` reads the kept answers of the play holds (decision 36):
+  while the first holder in system order holds, no system ticks and the
+  tick number stays; the holder's `held` runs and its events drain. No tick
+  asks a holder. Commands and views are not held.
 - `TickAccumulator` turns frame time into ticks. One frame runs at most 30
   ticks; the remainder is dropped.
 - A gap longer than 3 seconds goes to catch-up (section 8), not to the
@@ -255,14 +256,15 @@ An answer returns copies, never a reference into its slice.
 - `catchUp` creates its kernel with `catchingUp: true`: `ctx.catchingUp`
   is true in every handler of that run and false in every other kernel
   (decision 34).
-- A play hold (decision 36) is asked inside `kernel.tick()`, so a
+- A play hold (decision 36) is read inside `kernel.tick()`, so a
   `runHeadless` loop without `hold` spends a held tick: its count is the
   loop's, not the kernel's tick number. A system with a play hold declares
   `catchUpHold` as well (`defineSystem` checks); with `hold`, `runHeadless`
-  runs each tick through `tickAfterHolds`, which skips the play-hold ask, so
-  the catch-up ask is the one ask of the tick.
-- `catchUp` asks every system that declares `catchUpHold` before each tick
-  (`kernel.catchUpHeld(ticksLeft)`); on the first `holds` that is true it
+  runs each tick through `tickAfterHolds`, which skips the play-hold read,
+  so the catch-up check is the one check of the tick.
+- `catchUp` checks every system that declares `catchUpHold` before each
+  tick (`kernel.catchUpHeld(ticksLeft)`): a system with a play hold by its
+  kept answer, the others by asking `holds`. On the first that holds it
   stops, the holder's `held` runs with the ticks left, and its events are
   delivered (decision 35). `runHeadless` asks only with the option `hold`,
   which `catchUp` sets; a run that stopped reports `ticks` run and `heldBy`.
@@ -835,7 +837,7 @@ point. Each took the simpler option.
     +31 and +17 ms (1.7% and 1.0%; 1.8% and 3.1% before the single ask).
     If port F adds holders, the next step is a push model: the kernel keeps
     one held set that the systems update, and checks one field per tick
-    (docs/PERFORMANCE.md section 6.4). Not built.
+    (docs/PERFORMANCE.md section 6.4). Built in port F (below).
     `tests/runner.test.ts` tests the kernel with a toy system;
     `tests/training.test.ts` the dare's cases. Approved by the parent session
     on 2026-11-22 for the keeper's dare; port F reuses it for the Facet
@@ -844,3 +846,33 @@ point. Each took the simpler option.
     John would run through a waiting dare; (b) every system's tick reads a
     hold: every folder edited; (c) the dare without the hold, as the Facet
     port left its evolution: a rule change.
+
+37. **Play holds, pushed (step 4 port F; the follow-up of decision 36).**
+    Port F adds the second play holder, the Facet evolution (old
+    `pendingEvolution` beside `dareHolds` in `Game.tick`). With decision
+    36 as built, every live tick and every catch-up tick asked each holder:
+    the evolution's ask alone measured +47 ms of about 1,860 (+2.5%) on the
+    idle catch-up of 8 hours and +16 to +78 ms live (9 rounds, one process,
+    processor time, load 1%), work a game without Facet pays on every tick.
+    The push model: a system says its hold may have changed with
+    `ctx.holdChanged()` (the dare when posed and when answered; the Facet
+    host when the core writes an offer, and the evolve, grant and switch
+    commands). After the command or tick step that said so has drained, the
+    kernel asks that system's `playHold.holds` and keeps the answer; after a
+    load, a reset, a new run and at creation it asks every holder. A `holds`
+    may emit (the dare drops a stray hold); those events are delivered then,
+    and a holder that says changed again is asked again (at most 8 rounds,
+    else it throws). `kernel.tick()` reads the first kept answer that holds
+    and asks nothing; catch-up reads the kept answer of a system that holds
+    play and asks only the catch-up-only holders (the festival). A holder
+    that changes its hold without saying so is not seen until it says so or
+    a load: `tests/runner.test.ts` states it. The memory each holder kept for
+    the per-tick ask is gone: the dare's `holds` reads the counters, the
+    evolution's the documents. Alternatives: (a) keep the ask per tick and
+    accept the cost; (b) one held set the systems write directly: a
+    holder's answer can depend on events still queued (the dare's counters
+    are set by events), so the kernel asks after the drain instead.
+    Cost against `main` (`a096cbe`), the idle run of 8 hours, one process,
+    alternating rounds, processor time: docs/CONTENT.md section 16.
+    `tests/runner.test.ts` (the toy holder), `tests/training.test.ts`,
+    `tests/facetAbilities.test.ts` (the evolution's hold).

@@ -87,43 +87,22 @@ export function dareBeaten(ctx: ReadCtx, spot: DeepReadonly<SpotDef>): boolean {
 
 // ---- the hold of play ----
 
-/**
- * Whether a dare holds play, for one training slice object: memory, never
- * saved, as the festival's catch-up hold (decision 35). `kernel.tick()` asks
- * it before every tick, so it does not read the slices. Written when it
- * changes: a dare posed, a dare answered. A load and a new run replace the
- * slice object; the first ask after either is a miss and reads the counters
- * once.
- */
-let holdFor: object | null = null;
-let holdNow = false;
-
 type HoldCtx = Ctx<TrainingState>;
 
-function setHold(ctx: HoldCtx, held: boolean): void {
-  holdFor = ctx.state;
-  holdNow = held;
-}
-
 /**
- * Read the hold from the counters and keep it. A hold whose dare has vanished
- * (content renamed under a save) is dropped rather than left to freeze a game
- * with no question on screen: the old `dareHolds`.
+ * Whether a dare holds play: the hold counter, with its dare still waiting.
+ * The kernel keeps the answer (decision 36) and asks again when this system
+ * says the hold changed (`ctx.holdChanged()`: a dare posed, a dare
+ * answered), after the events of that step are delivered, and after a load
+ * or a new run. A hold whose dare has vanished (content renamed under a
+ * save) is dropped rather than left to freeze a game with no question on
+ * screen: the old `dareHolds`.
  */
-function noteHold(ctx: HoldCtx): boolean {
-  setHold(ctx, false);
+function dareHolds(ctx: HoldCtx): boolean {
   if (!holdingForDare(ctx)) return false;
-  if (pendingDare(ctx)) {
-    holdNow = true;
-    return true;
-  }
+  if (pendingDare(ctx)) return true;
   ctx.emit(clearCounter, { key: HOLD_KEY });
   return false;
-}
-
-/** The kept hold; a miss (another slice object) reads the counters once. The old `dareHolds`. */
-function dareHolds(ctx: HoldCtx): boolean {
-  return ctx.state === holdFor ? holdNow : noteHold(ctx);
 }
 
 /** True while a dare is waiting for an answer: play is held. */
@@ -176,7 +155,7 @@ function onWin(ctx: T, spotId: string, forced: boolean): void {
   ctx.emit(setCounter, { key: winsKey(spot.id), value: 0 });
   ctx.emit(setCounter, { key: pendingKey(spot.id), value: 1 });
   ctx.emit(setCounter, { key: HOLD_KEY, value: 1 });
-  setHold(ctx, true);
+  ctx.holdChanged();
   ctx.emit(logLine, {
     msg: fillText(TEXT.dare_held, { name: MONSTERS[spot.dare.monsterId]?.name ?? spot.dare.monsterId }),
     kind: 'danger',
@@ -195,7 +174,7 @@ export const answerDare = defineCommand<{ accept: boolean }>('training/answer-da
 function answer(ctx: T, accept: boolean) {
   const spot = pendingDare(ctx);
   // The hold lifts first, whatever follows (the old `delete stats[HOLD_KEY]`).
-  setHold(ctx, false);
+  ctx.holdChanged();
   if (count(ctx, HOLD_KEY) !== 0) ctx.emit(clearCounter, { key: HOLD_KEY });
   if (!spot?.dare) return skipped('no dare is waiting');
   ctx.emit(clearCounter, { key: pendingKey(spot.id) });

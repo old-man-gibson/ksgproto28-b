@@ -42,24 +42,27 @@ did not change for it there either): `dare:<spot>:pending`,
 While a dare waits, play is held (kernel decision 36, K2, approved for this
 port by the parent session on 2026-11-22):
 
-- Live: the system declares `playHold`. `kernel.tick()` asks `holds` before
-  every tick; while it is true no system ticks, the tick number stays, and
+- Live: the system declares `playHold`. The kernel keeps the answer of
+  `holds` (decision 37: asked after `ctx.holdChanged()`, a load or a new
+  run); while it holds no system ticks, the tick number stays, and
   `held` emits `bonus/bank { ticks: 1 }`: each held tick is banked as bonus
   time, as the old `Game.tick` did (`bankTick` and return). Commands still
   run, so the answer gets through and lifts the hold; the view still
   publishes.
 - Offline: the system also declares `catchUpHold` (decision 35) with the
-  same `holds`; `held` banks the ticks left. Catch-up asks only this, once
-  per tick (a play hold needs a catch-up hold; decision 36). The old catch-up went through
+  same `holds`; `held` banks the ticks left. Catch-up reads the kept
+  answer (a play hold needs a catch-up hold; decisions 36, 37). The old catch-up went through
   the same `Game.tick` and banked each held tick, up to the cap: the same
   bank. A dare posed mid catch-up stops it there; a short gap that the shell
   ticks in place (30 ticks or fewer) banks tick by tick.
-- `holds` answers from memory (one boolean for the last training slice
-  object asked, as the festival's hold), written when a dare is posed or
-  answered. A load or a new run replaces the slice object: the first ask
-  after either reads `hold:dare` and the pending flags once. A hold with no
-  pending dare behind it (content renamed under a save) is dropped on that
-  read: the counter is cleared and play runs (the old `dareHolds`).
+- `holds` reads `hold:dare` and the pending flags. The system says
+  `ctx.holdChanged()` when a dare is posed and when it is answered; the
+  kernel asks after that step's events (the counters) are delivered, and
+  after a load or a new run. A hold with no pending dare behind it (content
+  renamed under a save) is dropped on that read: the counter is cleared and
+  play runs (the old `dareHolds`). Until step 4 port F `holds` was asked
+  before every tick and answered from a memory of one boolean per slice
+  object (decision 37).
 - The old step buttons (`step`, `stepToEvent`), which did nothing while
   held, have no counterpart here.
 

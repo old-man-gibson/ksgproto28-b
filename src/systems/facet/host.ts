@@ -38,7 +38,6 @@ import statuses, {
 import { resourceValue } from '../resources';
 import resources from '../resources';
 import type { FacetDoc, FacetHost } from './facet';
-import { noteEvolutionHold } from './hold';
 import { CORE } from './load';
 
 export { CORE, NO_CORE } from './load';
@@ -398,10 +397,10 @@ function createHost(): FacetHost {
       if (line) writer('log').emit(logLine, { msg: line, kind: 'info' });
     },
     // The `evolve` effect wrote its offer onto the document; play holds until
-    // the player picks (`hold.ts`). This says so and writes the hold.
+    // the player picks (`hold.ts`). This says so and tells the kernel.
     offerEvolution: (_ref: string, id: string) => {
       const doc = docOf(id);
-      noteEvolutionHold(top().state, true);
+      writer('offerEvolution').holdChanged();
       writer('offerEvolution').emit(logLine, {
         msg: `${doc?.reading?.icon ?? '✦'} ${doc?.reading?.name ?? 'Your ability'} can evolve: pick a branch.`,
         kind: 'info',

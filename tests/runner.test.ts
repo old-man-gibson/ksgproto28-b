@@ -157,13 +157,16 @@ describe('a catch-up hold', () => {
 });
 
 /**
- * Kernel decision 36 (K2, branch step3-gaps): a system's `playHold`.
- * `kernel.tick()` asks every system that declares it before each tick; on
- * the first true no system ticks, the tick number stays, and the holder's
- * `held` runs and drains. Commands and views are not held. A play holder
- * declares a catch-up hold with the same `holds`; catch-up asks only that,
- * once per tick. The keeper's dare is the one holder
- * (tests/training.test.ts); port F reuses it.
+ * Kernel decision 36 (K2, branch step3-gaps; the push model, step 4 port F):
+ * a system's `playHold`. The kernel keeps each holder's answer of `holds`
+ * and asks again only after the holder says it may have changed
+ * (`ctx.holdChanged()`), once the command or tick step has drained, and
+ * after a load, a reset and a new run. While the first holder in system
+ * order holds, a tick runs no system, the tick number stays, and the
+ * holder's `held` runs and drains. Commands and views are not held. A play
+ * holder declares a catch-up hold; catch-up reads the kept answer and asks
+ * nothing of it. The keeper's dare (tests/training.test.ts) and the Facet
+ * evolution (tests/facetAbilities.test.ts) are the holders.
  */
 describe('a play hold', () => {
   interface Latch {
@@ -177,16 +180,15 @@ describe('a play hold', () => {
     ticks: number;
     heard: number;
   }
-  /** One boolean per latch slice object, as decision 35 asks of a hold. */
-  let kept: { slice: object | null; on: boolean } = { slice: null, on: false };
-  const keep = (slice: object, on: boolean) => (kept = { slice, on });
   /** Asks of the latch's `holds`, to count them. */
   let asks = 0;
   const latchHolds = (ctx: { state: Latch }) => {
     asks += 1;
-    return ctx.state === kept.slice ? kept.on : keep(ctx.state, ctx.state.on).on;
+    return ctx.state.on;
   };
   const setLatch = defineCommand<{ on: boolean }>('latch/set');
+  /** Sets the latch and does not say so: the kernel keeps its last answer. */
+  const setQuietly = defineCommand<{ on: boolean }>('latch/set-quietly');
   const heldEvent = defineEvent<void>('latch/held');
   const latch = defineSystem<Latch>({
     id: 'latch',
@@ -196,13 +198,17 @@ describe('a play hold', () => {
       ctx.state.ticks += 1;
       if (ctx.state.ticks === ctx.state.setAt) {
         ctx.state.on = true;
-        keep(ctx.state, true);
+        ctx.holdChanged();
       }
     },
     commands: [
       handle(setLatch, (ctx, { on }) => {
         ctx.state.on = on;
-        keep(ctx.state, on);
+        ctx.holdChanged();
+        return OK;
+      }),
+      handle(setQuietly, (ctx, { on }) => {
+        ctx.state.on = on;
         return OK;
       }),
     ],
@@ -284,22 +290,27 @@ describe('a play hold', () => {
     expect(slicesOf(k).latch).toMatchObject({ ticks: 5, held: 5 });
   });
 
-  it('after a load, the first ask reads the loaded state', () => {
+  it('a load asks every holder: the loaded state decides', () => {
     const held = toy();
     held.dispatch(setLatch({ on: true }));
     const free = toy();
     free.tick(1);
-    // The kept flag belongs to `held`'s slice; `free` loads a held save and holds.
     expect(free.load(held.save(0)).ok).toBe(true);
     free.tick(3);
+    // The held save brought its tick, 0, and holds.
     expect(free.tickCount).toBe(0);
     // And a save with no hold loaded into a held kernel ticks.
     expect(held.load(toy().save(0)).ok).toBe(true);
     held.tick(3);
     expect(held.tickCount).toBe(3);
+    // A reset too.
+    held.dispatch(setLatch({ on: true }));
+    held.reset(2);
+    held.tick(2);
+    expect(held.tickCount).toBe(2);
   });
 
-  it('the first holder in system order takes the tick; the others are not asked', () => {
+  it('the first holder in system order takes the tick; the others are not run', () => {
     const k = toy([always]);
     k.dispatch(setLatch({ on: true }));
     k.tick(2);
@@ -311,19 +322,32 @@ describe('a play hold', () => {
     expect(k.tickCount).toBe(0);
   });
 
-  it('catch-up asks once per tick: the catch-up ask covers the play hold', () => {
+  it('no tick asks, live or in catch-up: a holder is asked when it says changed, and after a load', () => {
     const k = toy();
     asks = 0;
     expect(runHeadless(k, { ticks: 10, hold: true }).ticks).toBe(10);
-    expect(asks).toBe(10);
-    asks = 0;
     k.tick(10);
-    expect(asks).toBe(10);
-    // Held from the start: the catch-up hold takes the rest, no tick runs.
+    expect(asks).toBe(0);
+    // Said changed: one ask, after the command's events are delivered.
     k.dispatch(setLatch({ on: true }));
+    expect(asks).toBe(1);
+    // Held from the start: the catch-up hold takes the rest, no tick runs, nothing is asked.
     const result = runHeadless(k, { ticks: 30, hold: true });
     expect(result).toMatchObject({ ticks: 0, heldBy: 'latch' });
     expect(slicesOf(k).latch).toMatchObject({ ticks: 20, held: 30 });
+    expect(asks).toBe(1);
+    k.load(k.save(0));
+    expect(asks).toBe(2);
+  });
+
+  it('a change the holder does not say is not seen: the kept answer stands until it says so', () => {
+    const k = toy();
+    k.dispatch(setQuietly({ on: true }));
+    k.tick(2);
+    expect(k.tickCount).toBe(2);
+    k.dispatch(setLatch({ on: true }));
+    k.tick(2);
+    expect(k.tickCount).toBe(2);
   });
 
   it('a play hold without a catch-up hold is refused at declaration', () => {
@@ -343,6 +367,29 @@ describe('a play hold', () => {
     expect(runHeadless(k, { ticks: 7 }).ticks).toBe(7);
     expect(k.tickCount).toBe(0);
     expect(slicesOf(k).latch.held).toBe(7);
+  });
+
+  it('a new run asks every holder', () => {
+    const ender = defineCommand<void>('latch-end/end');
+    const endRun = defineSystem<Record<string, never>>({
+      id: 'latch-end',
+      version: 1,
+      initial: () => ({}),
+      commands: [
+        handle(ender, (ctx) => {
+          ctx.endRun();
+          return OK;
+        }),
+      ],
+    });
+    const k = createKernel({ systems: [latch, watch, endRun], seed: 1 });
+    k.dispatch(setLatch({ on: true }));
+    k.tick(2);
+    expect(k.tickCount).toBe(0);
+    // The new run starts every slice new: the latch is off again.
+    expect(k.dispatch(ender()).ok).toBe(true);
+    k.tick(2);
+    expect(k.tickCount).toBe(2);
   });
 });
 

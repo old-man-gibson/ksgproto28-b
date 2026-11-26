@@ -721,10 +721,10 @@ the digests:
 - The speed test's method: each state in a fresh process, as the old
   build was measured. A change of method, not of speed; the user chose
   it, and it is built since 2026-11-22 (5.2, 5.3).
-- Later, if port F adds play holders (docs/KERNEL.md decision 36): a push
-  model for the holds. Today `kernel.tick()` asks each play holder and
-  catch-up asks each catch-up holder before every tick; each ask reads the
-  holder's slice object to see whether its memory is current (the dare
-  alone: about 1% of an idle tick). With one held set that the systems
-  update when a hold starts or ends, and that a load or a new run
-  recomputes, the kernel checks one field per tick. Not built.
+- A push model for the play holds (docs/KERNEL.md decisions 36, 37):
+  built in step 4 port F, when the Facet evolution became the second play
+  holder. Before it `kernel.tick()` asked each play holder and catch-up
+  asked each catch-up holder before every tick (the dare alone: about 1% of
+  an idle tick; the evolution added about 2.5% of the idle catch-up). Now a
+  holder says when its hold may have changed, the kernel asks it after that
+  step drains and keeps the answer, and a tick reads one field.

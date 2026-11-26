@@ -278,7 +278,7 @@ is missing. `facet/stacks` (skip log): a document wrote a set cell.
     fight is won. The host tells combat at once when its dose turns an
     enemy to stone (`combat/statue-landed`), and raises `rocks` for the
     rocks' hits (Rubble's 15 Stone).
-  - **The hold of play** (`hold.ts`, kernel decision 36): while an
+  - **The hold of play** (`hold.ts`, kernel decisions 36 and 37): while an
     evolution waits on a pick, `kernel.tick()` runs no system, keeps the
     tick number and banks one tick of bonus time (`bonus/bank`); catch-up
     stops at the waiting pick and banks the ticks left. The window says so

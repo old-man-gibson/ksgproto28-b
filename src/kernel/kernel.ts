@@ -201,6 +201,22 @@ export function createKernel(options: KernelOptions): Kernel {
     }
   };
 
+  // The play holds (decision 36), pushed: each holder's answer is kept, and
+  // asked again only after the holder says it may have changed, and after a
+  // load, a reset and a new run. Filled below, once the contexts exist.
+  interface PlayHolder {
+    id: string;
+    ctx: Ctx<any>;
+    hold: NonNullable<AnySystem['playHold']>;
+    /** The kept answer of `holds`. */
+    on: boolean;
+    /** Said changed since the last ask. */
+    dirty: boolean;
+  }
+  const playHolderOf = new Map<string, PlayHolder>();
+  /** Some holder said its hold changed since the last settle. */
+  let holdsDirty = false;
+
   // One context per system, built once. The getters read the current state
   // object, so a context stays valid after `load` replaces the state.
   const contexts = new Map<string, Ctx<any>>();
@@ -228,6 +244,12 @@ export function createKernel(options: KernelOptions): Kernel {
       endRun: () => {
         runEnding = true;
       },
+      holdChanged: () => {
+        const h = playHolderOf.get(id);
+        if (!h) return;
+        h.dirty = true;
+        holdsDirty = true;
+      },
     });
   }
 
@@ -253,6 +275,8 @@ export function createKernel(options: KernelOptions): Kernel {
         drain();
       }
     }
+    // Every slice is new: every play hold is asked again.
+    settleHolds(true);
   }
 
   // Registration. Everything below is read from the declarations.
@@ -290,31 +314,66 @@ export function createKernel(options: KernelOptions): Kernel {
     }
   }
 
+  // The play holds (decision 36), in system order.
+  const playHolders: PlayHolder[] = systems
+    .filter((system) => system.playHold)
+    .map((system) => ({ id: system.id, ctx: contexts.get(system.id)!, hold: system.playHold!, on: false, dirty: true }));
+  for (const h of playHolders) playHolderOf.set(h.id, h);
+  /** The first holder in system order whose kept answer holds, or null. What `tick()` reads. */
+  let heldBy: PlayHolder | null = null;
+
   // The catch-up holds (decision 35), each with its context, in system order:
-  // asked before every catch-up tick, so the ask is a flat loop.
+  // asked before every catch-up tick, so the ask is a flat loop. A system that
+  // also holds play is not asked: its kept play-hold answer stands for both.
   const holders = systems
     .filter((system) => system.catchUpHold)
-    .map((system) => ({ id: system.id, ctx: contexts.get(system.id)!, hold: system.catchUpHold! }));
+    .map((system) => ({
+      id: system.id,
+      ctx: contexts.get(system.id)!,
+      hold: system.catchUpHold!,
+      play: playHolderOf.get(system.id) ?? null,
+    }));
 
-  // The play holds (decision 36), asked before every tick the same way.
-  const playHolders = systems
-    .filter((system) => system.playHold)
-    .map((system) => ({ ctx: contexts.get(system.id)!, hold: system.playHold! }));
-
-  /** The holder that holds this tick, or null. Asked before every tick: kept small. */
-  function playHolder(): (typeof playHolders)[number] | null {
-    for (let i = 0; i < playHolders.length; i++) {
-      const h = playHolders[i];
-      if (h.hold.holds(h.ctx)) return h;
+  /**
+   * Ask the holders that said their hold changed (every holder with `all`),
+   * keep the answers, and find the one that holds. A `holds` may emit (the
+   * dare drops a stray hold): its events are delivered here, and a holder
+   * that says changed again is asked again.
+   */
+  function settleHolds(all = false): void {
+    if (all) {
+      for (const h of playHolders) h.dirty = true;
+      holdsDirty = playHolders.length > 0;
     }
-    return null;
+    let rounds = 0;
+    while (holdsDirty) {
+      if (++rounds > 8) throw new Error('a play hold kept changing while it was asked');
+      holdsDirty = false;
+      for (const h of playHolders) {
+        if (!h.dirty) continue;
+        h.dirty = false;
+        h.on = h.hold.holds(h.ctx);
+      }
+      if (queue.length > 0) {
+        drain();
+        if (runEnding) settleRun();
+      }
+    }
+    heldBy = null;
+    for (const h of playHolders) {
+      if (h.on) {
+        heldBy = h;
+        break;
+      }
+    }
   }
 
   /** A held tick: the holder's `held` runs and drains in place of the tick. */
-  function runHeld(h: (typeof playHolders)[number]): void {
+  function runHeld(h: PlayHolder): void {
     h.hold.held(h.ctx);
     drain();
     if (runEnding) settleRun();
+    if (holdsDirty) settleHolds();
   }
 
   // After every source is registered, so a dependency may name a source of a
@@ -344,6 +403,7 @@ export function createKernel(options: KernelOptions): Kernel {
       if (runEnding) settleRun();
     }
     state.kernel.tick++;
+    if (holdsDirty) settleHolds();
   }
 
   function buildState(input: unknown): { state: KernelState; warnings: string[] } {
@@ -387,7 +447,12 @@ export function createKernel(options: KernelOptions): Kernel {
     queue.length = 0;
     runEnding = false;
     derived.touchAll();
+    // Another state: every play hold is asked again.
+    settleHolds(true);
   }
+
+  // The first state's play holds.
+  settleHolds(true);
 
   return {
     systems,
@@ -408,15 +473,15 @@ export function createKernel(options: KernelOptions): Kernel {
       if (!result.ok) logSkip(entry.system.id, command.type, result.reason);
       drain();
       if (runEnding) settleRun();
+      if (holdsDirty) settleHolds();
       return result;
     },
 
     tick(count = 1) {
-      const asks = playHolders.length > 0;
+      // The kept answers (decision 36): nothing is asked here.
       for (let i = 0; i < count; i++) {
-        const h = asks ? playHolder() : null;
-        if (h === null) tickOnce();
-        else runHeld(h);
+        if (heldBy === null) tickOnce();
+        else runHeld(heldBy);
       }
     },
 
@@ -481,10 +546,11 @@ export function createKernel(options: KernelOptions): Kernel {
     catchUpHeld(ticksLeft) {
       for (let i = 0; i < holders.length; i++) {
         const h = holders[i];
-        if (!h.hold.holds(h.ctx)) continue;
+        if (!(h.play ? h.play.on : h.hold.holds(h.ctx))) continue;
         h.hold.held(h.ctx, ticksLeft);
         drain();
         if (runEnding) settleRun();
+        if (holdsDirty) settleHolds();
         return h.id;
       }
       return null;

@@ -61,7 +61,7 @@ import {
   tickClones,
 } from './clones';
 import type { FacetCell, FacetDoc } from './facet';
-import { evolutionHolds, noteEvolutionHold, offering } from './hold';
+import { evolutionHolds, offering } from './hold';
 import { bind, carrierPrefix, CORE, NO_CORE, refOfEntity, withCtx, withReads } from './host';
 import { migrations } from './migrations';
 import { FACET_ACTION, FOE, initialFacet, PLAYER_REF, type FacetState } from './state';
@@ -547,7 +547,7 @@ const facet = defineSystem<FacetState, FacetView>({
         ctx.state.fallen = null;
         // With the ability gone the old tick ended every clone, quietly.
         delete ctx.state.clones;
-        noteEvolutionHold(ctx.state, false);
+        ctx.holdChanged();
       }
       ctx.state.on = next;
       return OK;
@@ -560,7 +560,7 @@ const facet = defineSystem<FacetState, FacetView>({
       for (const doc of ctx.state.docs) dropCarriers(ctx, doc);
       ctx.state.docs = [Facet.hydrate(JSON.parse(JSON.stringify(template)) as FacetDoc)];
       ctx.state.queued = null;
-      noteEvolutionHold(ctx.state, offering(ctx.state.docs) !== undefined);
+      ctx.holdChanged();
       withCtx(ctx, () => bind(ctx.state, true));
       return OK;
     }),
@@ -601,7 +601,7 @@ const facet = defineSystem<FacetState, FacetView>({
       if (!next) return skipped(`"${key}" is not on the offer`);
       dropCarriers(ctx, from);
       ctx.state.docs = ctx.state.docs.map((d) => (d === from ? next : d));
-      noteEvolutionHold(ctx.state, offering(ctx.state.docs) !== undefined);
+      ctx.holdChanged();
       withCtx(ctx, () => bind(ctx.state, true));
       ctx.emit(logLine, {
         msg: `${from.reading?.icon ?? '✦'} ${from.reading?.name ?? 'Your ability'} evolves into ${next.reading?.icon ?? '✦'} ${next.reading?.name ?? key}.`,
