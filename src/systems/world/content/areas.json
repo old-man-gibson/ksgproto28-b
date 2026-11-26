@@ -168,5 +168,27 @@
     "name": "The Malgeri Crossing",
     "regionId": "the_ascent",
     "skyRegionId": "malgeri_range"
+  },
+  {
+    "id": "ascent_f18_area",
+    "name": "The Necropolis Road",
+    "regionId": "the_ascent",
+    "sheltered": false,
+    "tags": [
+      "heat"
+    ]
+  },
+  {
+    "id": "ascent_f19_area",
+    "name": "The Pyramid",
+    "regionId": "the_ascent",
+    "sheltered": false,
+    "scene": "crypt"
+  },
+  {
+    "id": "ascent_f20_area",
+    "name": "The Delta Port",
+    "regionId": "the_ascent",
+    "sheltered": false
   }
 ]

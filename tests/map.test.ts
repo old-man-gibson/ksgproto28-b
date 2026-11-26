@@ -68,11 +68,12 @@ describe('names at the widths the layout gives', () => {
     // since step 4 port C1 floors 7 to 10 (the castle is not a floor), and
     // since port C2 floor 11 and the hold, since port C3 floors 12 to 14,
     // since port C4 floor 15, since port C5 floor 16, since port C6 floor 17
-    // (its area is in the Ascent: the Malgeri Range is its sky, not its map).
-    expect(MAPS.length).toBe(20);
+    // (its area is in the Ascent: the Malgeri Range is its sky, not its map),
+    // since port C7 floors 18 to 20.
+    expect(MAPS.length).toBe(23);
     expect(MAPS.some((m) => m.region === 'threshold')).toBe(true);
     expect(MAPS.some((m) => m.region === 'the_hold')).toBe(true);
-    expect(MAPS.filter((m) => m.region === 'the_ascent').length).toBe(17);
+    expect(MAPS.filter((m) => m.region === 'the_ascent').length).toBe(20);
   });
 
   it.todo('touch nothing: no name on another name, a pin or a chip, and none outside the frame (UI step: the surveyed plan)');

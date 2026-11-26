@@ -36,8 +36,10 @@
  *   Mouth the haven. Test spots on floor 6 give the ties and the fight budget
  *   floor 6 does not have.
  * - floor 10 (the Row and the Mine): the Tunnels and the Drop of floor 6.
- * - the harbor waters and the roadstead: `kr_pit` and `kr_roadstead`.
- * - the Door of floor 19: a test spot with a boss line behind a forced road.
+ * - the harbor waters: `kr_pit` and `kr_roadstead`. Floor 20's roadstead
+ *   (step 4 port C7) runs as its own water beside them.
+ * - the Door of floor 19: a test spot with a boss line behind a forced road;
+ *   since step 4 port C7 the old case runs on the real Door as well.
  * - performances and prestige are `it.todo`. The bench run case runs
  *   since the alchemy port (step 3); the festival case since step 4 port C4.
  */
@@ -2096,8 +2098,9 @@ describe('a roofed fallback is never harder than the spot that was lost at', () 
 });
 
 // The harbor waters and the roadstead are step 4 content, and no road in
-// scope is forced. The same structure in the pocket world: `kr_pit` is a
+// scope was forced. The same structure in the pocket world: `kr_pit` is a
 // plain hunt behind a forced road, `kr_roadstead` one with a single fight.
+// Step 4 port C7: floor 20's roadstead (the old fifth water) joins them.
 describe('a hunt behind a forced road with nothing to fall back to', () => {
   interface Water {
     spot: string;
@@ -2106,6 +2109,7 @@ describe('a hunt behind a forced road with nothing to fall back to', () => {
   const WATERS: Water[] = [
     { spot: 'kr_pit', haven: 'kr_camp' },
     { spot: 'kr_roadstead', haven: 'kr_camp' },
+    { spot: 'f20_roadstead', haven: 'f20_quay' },
   ];
 
   /** At the water, its haven and the road to it found, nothing else known. */
@@ -2213,6 +2217,25 @@ describe('a hunt behind a forced road with nothing to fall back to', () => {
     // The lowest-level roofed hunt on the floor, and no target to come back to.
     expect(pending(g)).toMatchObject({ phase: 'fallback', target: null, fallback: { spot: 'f6_tunnels' } });
     expect(lines(g)).toContain(`${SPOTS.kr_f6_door.name}: forced road in, not re-entered. Hunting ${SPOTS.f6_tunnels.name} for 200 wins.`);
+  });
+
+  it('a boss door is not sailed into again: it falls back where a fallback exists (the Door of floor 19, step 4 port C7)', () => {
+    // The Door: a boss row behind the Burial Chamber's forced road.
+    const g = game(205);
+    patchWorld(g, (x) => {
+      x.spot = 'f19_door';
+      x.discovered.push('f19_causeway', 'f19_entrance', 'f19_gallery', 'f19_chamber', 'f19_door');
+      x.safeSpots = { nearest: 'f19_causeway', unconditional: 'f19_causeway' };
+    });
+    expect(SPOTS.f19_door.encounters!.some((e) => e.boss)).toBe(true);
+    patchWorld(g, (x) => (x.spot = 'f19_causeway'));
+    const goal = { spot: 'f19_door', activity: 'hunt' };
+    expect(blockOf(g, goal)).toBe('forced_road');
+    expect(blockOf(g, goal, true)).toBe('forced_road');
+    fallAt(g, 'f19_door');
+    // The lowest-level roofed hunt on the floor, and no target to come back to.
+    expect(pending(g)).toMatchObject({ phase: 'fallback', target: null, fallback: { spot: 'f19_entrance' } });
+    expect(lines(g)).toContain(`${SPOTS.f19_door.name}: forced road in, not re-entered. Hunting ${SPOTS.f19_entrance.name} for 200 wins.`);
   });
 
   it('a boss row behind a forced road is one fight to be chosen: with nothing to fall back to, it idles', () => {

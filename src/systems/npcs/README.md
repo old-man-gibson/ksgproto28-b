@@ -102,3 +102,12 @@ The hamlet of floor 17 (old `npcs.data.ts` 322-341, text `npcs.text.ts`
   The Quests panel mounts it (before this port it drew the list itself and
   showed no dialogue, so no lore line could be seen). Tested by a server
   render in `tests/malgeri.test.ts`.
+
+## Step 4 port C7
+
+The broker of floor 20 (old `npcs.data.ts` 343-356, text `npcs.text.ts`
+170-175): `f20_broker` on the Quay, three lines of dialogue, no quests,
+no `shop` (the old entry's `shop.lines: []` is written as no shop: the
+content lint holds a shop to one line). Selling is not tied to a spot or a
+person: the broker "buys at the posted rates", the global sell price, as
+any sale does (`shops`).

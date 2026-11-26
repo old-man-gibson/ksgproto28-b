@@ -64,5 +64,13 @@
     "index": 6,
     "clearsToAdvance": 1,
     "desc": "Floor 17, the Malgeri Crossing: four maps in a line, from the cave out of the Vermin Festival over the eastern ascent, the ridge and the peak, and down the west side to a hamlet before the desert. Open slopes take the range’s weather; roofed places take none."
+  },
+  {
+    "id": "ascent_desert",
+    "name": "The Desert",
+    "towerId": "the_ascent",
+    "index": 7,
+    "clearsToAdvance": 3,
+    "desc": "Floors 18 to 20: the Necropolis Road, the Pyramid and the Delta Port. Each floor must be cleared before the next opens. Floors 19 and 20 also need desert kills: 60, then 150 in all."
   }
 ]

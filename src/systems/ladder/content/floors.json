@@ -356,5 +356,76 @@
     ],
     "clearXp": 900,
     "desc": "Floor 17, the Malgeri Crossing: from the cave exit up the eastern slope, along the ridge to the peak and down the west face to the hamlet. Hunts are endless, and the open slopes take the sky’s weather. The Peak Guardian’s first kill opens the way down the west face. Clear: kill the Slime Regent at the hamlet’s gates. The Brood Queen’s nest off the cave’s hub is optional."
+  },
+  {
+    "id": "ascent_f18",
+    "name": "The Necropolis Road",
+    "towerId": "the_ascent",
+    "bandId": "ascent_desert",
+    "index": 18,
+    "areaId": "ascent_f18_area",
+    "landing": "f18_well_head",
+    "clear": [
+      {
+        "type": "stat",
+        "key": "boss:f18_forecourt",
+        "value": 1
+      }
+    ],
+    "clearXp": 950,
+    "desc": "Floor 18, the Necropolis Road: open desert between five obelisks, each a haven, with dens of desert monsters along the road. Each obelisk read adds one to your chart; with three, the roadstead crew on floor 20 starts its fight surprised. The forecourt guardian’s kill is the clear, and it fights again on every visit."
+  },
+  {
+    "id": "ascent_f19",
+    "name": "The Pyramid",
+    "towerId": "the_ascent",
+    "bandId": "ascent_desert",
+    "index": 19,
+    "areaId": "ascent_f19_area",
+    "landing": "f19_causeway",
+    "gate": [
+      {
+        "type": "stat",
+        "key": "kills:tag:desert",
+        "value": 60
+      }
+    ],
+    "clear": [
+      {
+        "type": "stat",
+        "key": "boss:f19_door",
+        "value": 1
+      }
+    ],
+    "clearXp": 1000,
+    "desc": "Floor 19, the Pyramid. Opens at 60 desert kills. The treasury off the burial chamber holds six grave goods; each one taken raises the judge at the door. The judge’s kill is the clear, and seals the treasury for the rest of the run."
+  },
+  {
+    "id": "ascent_f20",
+    "name": "The Delta Port",
+    "towerId": "the_ascent",
+    "bandId": "ascent_desert",
+    "index": 20,
+    "areaId": "ascent_f20_area",
+    "landing": "f20_river_road",
+    "gate": [
+      {
+        "type": "stat",
+        "key": "kills:tag:desert",
+        "value": 150
+      }
+    ],
+    "clear": [
+      {
+        "type": "stat",
+        "key": "fights:f20_roadstead",
+        "value": 1
+      }
+    ],
+    "clearXp": 1050,
+    "seam": {
+      "verb": "Sailing"
+    },
+    "desc": "Floor 20, the Delta Port. Opens at 150 desert kills. A quay, a broker, warehouses and the roadstead. The roadstead fight is the crossing to floor 21 and the clear."
   }
 ]

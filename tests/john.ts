@@ -66,8 +66,16 @@
  * `clock/debug-advance`; the old driver wrote the clock), and his den at the
  * peak is the open east ridge.
  *
- * Differences from the old driver, each from a port not done yet:
- * - Floors 18 to 20 are port C7. `through` stops at 17.
+ * Floors 18 to 20 (step 4 port C7, `through` 18 to 20): the desert, the
+ * old `desertFloors[18]` to `[20]`. Floor 18: the road obelisk to obelisk
+ * (none read) to the forecourt, the guardian tried with the dunes as the
+ * den. Floor 19: its gate's sixty desert kills hunted at floor 18's dunes,
+ * then the pyramid's passage, gallery and chamber to the Door (nothing taken
+ * from the treasury), the judge tried with the gallery as the den. Floor 20:
+ * its gate's hundred and fifty at floor 19's valley temples, then the quay
+ * and the roadstead's one fight, the river road as the den.
+ *
+ * Differences from the old driver:
  * - The prestige takes no seed: the old `Game.prestige(seed)` reseeded the
  *   generator; the kernel's generator runs on.
  *
@@ -131,8 +139,8 @@ export const SEGMENTS = [
   // Run 3: floors 1 to 10 again, then the harbor (`through` 11 to 14) and
   // the festival's floors 15 and 16.
   'reclimb3', 'floor11', 'floor12', 'floor13', 'floor14', 'floor15', 'floor16',
-  // Floor 17, the Malgeri Crossing (`through` 17).
-  'floor17',
+  // Floor 17, the Malgeri Crossing (`through` 17), and the desert (18 to 20).
+  'floor17', 'floor18', 'floor19', 'floor20',
 ] as const;
 export type ClimbSegment = (typeof SEGMENTS)[number];
 
@@ -153,6 +161,9 @@ const BOSSES: Partial<Record<ClimbSegment, string[]>> = {
   floor16: [ARENA],
   // The peak's guardian (the gate down the west face) and the regent at the hamlet's gates (the clear).
   floor17: ['f17_peak', 'f17_keeper'],
+  floor18: ['f18_forecourt'],
+  floor19: ['f19_door'],
+  floor20: ['f20_roadstead'],
 };
 
 /** Floor 17's calm lines (docs/CONTENT.md section 5.8). */
@@ -185,7 +196,7 @@ export interface ClimbOptions {
    * The last floor: 3 (band 1, the default) to 6 (band 2), 7 to 10 (band 3,
    * run 2), 11 to 14 (the siege, which ends run 2, and run 3 to that floor of
    * the harbor), 15 (run 3 to the festival's dark room), 16 (its royale), 17
-   * (the Malgeri Crossing).
+   * (the Malgeri Crossing), 18 to 20 (the desert).
    */
   through?: number;
   /** Ticks of play one floor past 6 may take before it is a wall. Default four hours. */
@@ -923,6 +934,48 @@ export function runJohn(options: ClimbOptions): ClimbReport {
     },
   };
   if (!attempt('floor17', 'ascent_f17', floor17.work, { prep: floor17.prep })) return finish();
+
+  // ---- The desert (floors 18 to 20). The gates of 19 and 20 are desert
+  // kills, hunted on the floor below before the climb. The old
+  // `desertFloors[18]` to `[20]`. ----
+  const desert = () => stat('kills:tag:desert');
+  const gateKills = (floorId: string) => gateValue(FLOORS[floorId], 'kills:tag:desert');
+  const desertFloors: Record<18 | 19 | 20, { work: () => void; prep?: () => void }> = {
+    18: {
+      work: () => {
+        if (scout(['f18_first_obelisk', 'f18_dune_den', 'f18_second_obelisk', 'f18_tomb_row', 'f18_third_obelisk', 'f18_forecourt'])) {
+          keeperLoop('f18_dune_den', 'f18_forecourt', () => clears('ascent_f18'));
+        }
+      },
+    },
+    19: {
+      // Floor 19's gate: sixty desert kills, hunted at floor 18's den.
+      prep: () => {
+        if (desert() >= gateKills('ascent_f19')) return;
+        if (scout(['f18_dune_den'])) persist('f18_dune_den', 'hunt', () => desert() >= gateKills('ascent_f19'));
+      },
+      work: () => {
+        if (scout(['f19_entrance', 'f19_gallery', 'f19_chamber', 'f19_door'])) {
+          keeperLoop('f19_gallery', 'f19_door', () => clears('ascent_f19'));
+        }
+      },
+    },
+    20: {
+      // Floor 20's gate: a hundred and fifty, hunted in floor 19's valley.
+      prep: () => {
+        if (desert() >= gateKills('ascent_f20')) return;
+        if (scout(['f19_causeway', 'f19_valley'])) persist('f19_valley', 'hunt', () => desert() >= gateKills('ascent_f20'));
+      },
+      work: () => {
+        if (scout(['f20_quay', 'f20_roadstead'])) keeperLoop('f20_river_road', 'f20_roadstead', () => clears('ascent_f20'));
+      },
+    },
+  };
+  for (const n of [18, 19, 20] as const) {
+    if (n > opts.through) return finish();
+    const floor = desertFloors[n];
+    if (!attempt(`floor${n}`, `ascent_f${n}`, floor.work, { prep: floor.prep })) return finish();
+  }
   return finish();
 }
 
@@ -952,6 +1005,9 @@ export const FLOOR_OF: Record<ClimbSegment, string> = {
   floor15: 'f15',
   floor16: 'f16',
   floor17: 'f17',
+  floor18: 'f18',
+  floor19: 'f19',
+  floor20: 'f20',
 };
 
 /** The per-floor table of one climb, in the old pacing script's columns. */

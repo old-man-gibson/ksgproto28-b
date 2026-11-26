@@ -18,7 +18,7 @@ moving half of `systems/towers.ts` (`climbTo`, `rideLeg`, `ride`),
 | `engine.ts` | The slice type and every rule: roads, the pathfinder, rides, travel, arrival, activities, finds, drops, the retreat, the office block of floor 1 |
 | `index.ts` | The declaration: commands, requests, events, the view |
 | `LocationPanel.svelte`, `panel.ts` | The Location panel |
-| `content/regions.json`, `areas.json`, `spots.json`, `key_items.json`, `world_text.json` | 3 regions, 16 areas, 80 spots, 3 key items, the log lines |
+| `content/regions.json`, `areas.json`, `spots.json`, `key_items.json`, `world_text.json` | 5 regions, 32 areas, 200 spots (80 at spine port 6), 3 key items, the log lines |
 
 ## Slice (version 1)
 
@@ -124,7 +124,8 @@ cold and lightning are set in `spellcraft` (`cast.ts`).
   until those systems exist.
 - The approach of a road (`ApproachSpec`, `pendingApproach`): no road in
   scope has one. Step 4.
-- The festival forfeit, the seam verb of floor 20.
+- The festival forfeit (port C4). The seam verb of floor 20 was in `ride`
+  from this port on, with no floor to read it until port C7.
 - Bonus time.
 - The surveyed plan of the map and the Stations row.
 
@@ -322,3 +323,35 @@ cold and lightning are set in `spellcraft` (`cast.ts`).
   The descent's latch is named in the spot and floor text. The old map
   printed the road's terms (`routeInfo.shut`); the UI step
   (`tests/wardLabels.test.ts` todo).
+
+## Step 4 port C7
+
+- Content, appended from the old registry: areas `ascent_f18_area` (The
+  Necropolis Road: open sky, tag `heat`), `ascent_f19_area` (The Pyramid:
+  open sky, scene `crypt`) and `ascent_f20_area` (The Delta Port: open
+  sky), and their 23 spots, old records with their text. 200 spots, 32
+  areas.
+  - Floor 18 (10): the Well-Head (landing), five obelisks (each a haven
+    with a rest and a read: an explore of 180 ticks whose one find bumps
+    `flag:chart`), the Dunes, the Salt Flat (rock salt), the Tomb Row, the
+    Forecourt (the sand colossus, a boss line, no fight limit).
+  - Floor 19 (8): the Causeway (landing), the Valley Temples, the Side Tomb
+    (the road in needs Heat Resistance 10; three finds), the Entrance
+    Passage, the Grand Gallery, the Burial Chamber, the Treasury (six grave
+    goods, each bumping `flag:tomb:taken` and each refused once
+    `boss:f19_door` is above 0) and the Door (the judge, `ph_sabaket`, a
+    boss line with `levelRise` on `flag:tomb:taken`, share 0.1, ceiling
+    45). The chamber's road to the Door is forced, authored on the chamber
+    only; the mirror back is a plain road.
+  - Floor 20 (5): the River Road (landing, hunt), the Quay (haven; the
+    forced road to the Roadstead carries an approach: surprised on the
+    enemies when `flag:chart` is 3 or more), the Warehouses (roofed: a job,
+    the grain floor), the Notice Wall (no activity), the Roadstead (one
+    fight, three crew).
+- No new code: finds with a counter and conditions, gated roads, forced
+  roads, the approach and the line's level rise were ported before.
+- The seam verb (old `FloorDef.seam`, read by `climbTo`): `world/climb`
+  says the floor's verb on a climb of exactly one rung up from the floor
+  that declares it ("Sailing to ..."); every other climb says Climbing or
+  Descending (spine port 6 code, `ride` in `engine.ts`). Floor 20
+  declares Sailing and floor 21 does not exist, so no live climb says it.

@@ -1,13 +1,13 @@
 /**
  * The location, tower and floor lints of the old `tests/content.test.ts`
  * ("world graph", "towers, bands & floors", the activity drops, the region
- * skies, the band 3 wards), under their old names, on the registries here: 4
- * regions, 29 areas, 177 spots, 1 tower, 6 bands, 18 floors (step 4 port C1
+ * skies, the band 3 wards), under their old names, on the registries here: 5
+ * regions, 32 areas, 200 spots, 1 tower, 7 bands, 21 floors (step 4 port C1
  * added band 3, the City; port C2 floor 11's stronghold, band 4 and the
  * hold; port C3 the harbor, floors 11 to 14, and the sea lint; port C4 the
  * festival's band 5, floor 15 and the festival lint, without the royale's;
  * port C5 floor 16 and the royale's lint; port C6 band 6, floor 17 and the
- * Malgeri Range).
+ * Malgeri Range; port C7 band 7, the desert, floors 18 to 20).
  *
  * Changed: imports; a find's gold is `{ min, max }`; an activity's `attrXp` is
  * a list. The old cases stood on the shelved countryside where they named a
@@ -196,7 +196,7 @@ function searchContentIssues(spot: SpotDef): string[] {
 
 // New here: what the port holds.
 describe('the registries in scope', () => {
-  it('177 spots (27 in Threshold, 53 on floors 0 to 6, 16 in the City, 10 on floor 11, 20 on floors 12 to 14, 7 on floor 15, 1 on floor 16, 18 on floor 17, 25 in the hold), 29 areas, 5 regions', () => {
+  it('200 spots (27 in Threshold, 53 on floors 0 to 6, 16 in the City, 10 on floor 11, 20 on floors 12 to 14, 7 on floor 15, 1 on floor 16, 18 on floor 17, 10 on floor 18, 8 on floor 19, 5 on floor 20, 25 in the hold), 32 areas, 5 regions', () => {
     const inRegion = (regionId: string) => Object.values(SPOTS).filter((s) => AREAS[s.areaId]?.regionId === regionId).length;
     const cityAreas = new Set(['ascent_castle_area', ...['ascent_f7', 'ascent_f8', 'ascent_f9', 'ascent_f10'].map((id) => FLOORS[id].areaId)]);
     const inCity = Object.values(SPOTS).filter((s) => cityAreas.has(s.areaId)).length;
@@ -206,7 +206,9 @@ describe('the registries in scope', () => {
     const onFloor15 = Object.values(SPOTS).filter((s) => s.areaId === FLOORS.ascent_f15.areaId).length;
     const onFloor16 = Object.values(SPOTS).filter((s) => s.areaId === FLOORS.ascent_f16.areaId).length;
     const onFloor17 = Object.values(SPOTS).filter((s) => s.areaId === FLOORS.ascent_f17.areaId).length;
-    expect(Object.keys(SPOTS)).toHaveLength(177);
+    const onFloor = (id: string) => Object.values(SPOTS).filter((s) => s.areaId === FLOORS[id].areaId).length;
+    const onDesert = onFloor('ascent_f18') + onFloor('ascent_f19') + onFloor('ascent_f20');
+    expect(Object.keys(SPOTS)).toHaveLength(200);
     expect(inRegion('threshold')).toBe(27);
     expect(inCity).toBe(16);
     expect(onFloor11).toBe(10);
@@ -214,18 +216,29 @@ describe('the registries in scope', () => {
     expect(onFloor15).toBe(7);
     expect(onFloor16).toBe(1);
     expect(onFloor17).toBe(18);
+    expect([onFloor('ascent_f18'), onFloor('ascent_f19'), onFloor('ascent_f20')]).toEqual([10, 8, 5]);
     expect(inRegion('the_hold')).toBe(25);
-    expect(inRegion('holding_level') + inRegion('the_ascent') - inCity - onFloor11 - onFloors12to14 - onFloor15 - onFloor16 - onFloor17).toBe(53);
-    expect(Object.keys(AREAS)).toHaveLength(29);
+    expect(inRegion('holding_level') + inRegion('the_ascent') - inCity - onFloor11 - onFloors12to14 - onFloor15 - onFloor16 - onFloor17 - onDesert).toBe(53);
+    expect(Object.keys(AREAS)).toHaveLength(32);
     // The Malgeri Range holds no area: floor 17's area stands in the Ascent under its sky (`skyRegionId`).
     expect(Object.keys(REGIONS).sort()).toEqual(['holding_level', 'malgeri_range', 'the_ascent', 'the_hold', 'threshold']);
     expect(inRegion('malgeri_range')).toBe(0);
   });
 
-  it('1 tower, 6 bands, 18 floors', () => {
+  it('1 tower, 7 bands, 21 floors', () => {
     expect(Object.keys(TOWERS)).toEqual(['the_ascent']);
-    expect(Object.keys(BANDS)).toEqual(['ascent_lower', 'ascent_middle', 'ascent_upper', 'ascent_harbor', 'ascent_festival', 'ascent_aberrant']);
-    expect(Object.values(FLOORS).map((f) => f.index).sort((a, b) => a - b)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]);
+    expect(Object.keys(BANDS)).toEqual([
+      'ascent_lower',
+      'ascent_middle',
+      'ascent_upper',
+      'ascent_harbor',
+      'ascent_festival',
+      'ascent_aberrant',
+      'ascent_desert',
+    ]);
+    expect(Object.values(FLOORS).map((f) => f.index).sort((a, b) => a - b)).toEqual([
+      0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+    ]);
   });
 
   it('the starting spot is the cell of floor 0', () => {
@@ -885,7 +898,7 @@ describe('towers, bands & floors', () => {
       .map(({ floor, report }) => `${floor.id} (${report.skipped})`);
     expect(skipped, 'floors whose spine rules did not run').toEqual(['ascent_f14 (no-clear-spot)']);
     expect(Object.keys(SPINE_EXEMPT), 'the forge stays quiet for exactly these').toEqual(['ascent_f14']);
-    expect(reports()).toHaveLength(17);
+    expect(reports()).toHaveLength(20);
     expect(issuesOf('spine')).toEqual([]);
   });
 

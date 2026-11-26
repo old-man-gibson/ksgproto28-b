@@ -15,7 +15,7 @@ This system moves nobody. `world` rides the ladder (`world/climb`).
 |---|---|
 | `index.ts` | Registries, the reads, the stops, the clear, the view |
 | `floorRules.ts` | The structure rules of a floor: spine, no skip, wing depth, wing loop, clear table. Pure. |
-| `content/towers.json`, `bands.json`, `floors.json` | 1 tower, 2 bands, 7 floors (floor 0 and floors 1 to 6) |
+| `content/towers.json`, `bands.json`, `floors.json` | 1 tower, 7 bands, 21 floors (floor 0 and floors 1 to 20; 2 bands and 7 floors at spine port 6) |
 | `content/ladder_text.json` | The line for a tower whose top rung is cleared |
 
 ## Slice
@@ -162,3 +162,18 @@ None: this system has no command and no request.
   condition (`world`), not a ladder gate. The floor rules (spine, no skip,
   wing depth, wing loop, clear table) and the explore rule pass on floor 17
   (`tests/malgeri.test.ts`, `tests/worldContent.test.ts`).
+
+## Step 4 port C7
+
+- Band 7 (`ascent_desert`, The Desert, three clears to advance, no gate,
+  no hub) and floors 18 to 20, old records: 18 `ascent_f18` (The
+  Necropolis Road, clear `boss:f18_forecourt`, 950 XP), 19 `ascent_f19`
+  (The Pyramid, gate `kills:tag:desert` 60, clear `boss:f19_door`, 1000
+  XP), 20 `ascent_f20` (The Delta Port, gate `kills:tag:desert` 150, clear
+  `fights:f20_roadstead` 1, 1050 XP, `seam: { verb: 'Sailing' }`). 7
+  bands, 21 floors.
+- Floor 20 is the top rung, as in the old build: its clear writes the end
+  notice ("Floor 21: not in this build.") once per run, the ladder card
+  shows it, and nothing rides past it (`tests/ladderEnd.test.ts`).
+- The floor rules (spine, no skip, wing depth, wing loop, clear table) and
+  the explore rule pass on floors 18 to 20 (`tests/worldContent.test.ts`).

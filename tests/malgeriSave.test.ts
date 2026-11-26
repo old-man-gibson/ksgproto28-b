@@ -53,11 +53,13 @@ const cleared = (k: Kernel) => clearMet(ladderReader(reads(k)), FLOORS.ascent_f1
 
 describe('floor 17 in the save', () => {
   it('keeps the clear and the peak gate of a save that killed the regent', () => {
-    const k = reload(saved('f17_hamlet_square', { 'boss:f17_keeper': 1, 'boss:f17_peak': 1 }));
+    // On floor 18's landing, as the old case (step 4 port C7; Hamlet Square before it).
+    const k = reload(saved('f18_well_head', { 'boss:f17_keeper': 1, 'boss:f17_peak': 1 }));
     expect(counts(k)['boss:f17_keeper']).toBe(1);
     expect(counts(k)['boss:f17_peak']).toBe(1);
+    // Floors 18 to 20 open on the clear.
     expect(cleared(k)).toBe(true);
-    expect(worldOf(k).spot).toBe('f17_hamlet_square');
+    expect(worldOf(k).spot).toBe('f18_well_head');
   });
 
   it('keeps a save that was cleared and standing at the keeper spot where it is, hunting', () => {

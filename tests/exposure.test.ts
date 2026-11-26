@@ -28,6 +28,11 @@
  * Step 4 port W: the old "the forecast" (5 cases) and `skyContentIssues` (7
  * cases) of `sky.test.ts`, and a case for Weathersense in the exposure tick,
  * in place of three `it.todo`.
+ *
+ * Step 4 port C7: the desert's part of the old `openSky.test.ts` (floors 18
+ * to 20 in the open areas, the roofed lists, the open spots and the night
+ * spots; "weather changes over 120 days on floor 12 and on floor 18", which
+ * no earlier port carried) in place of the todo "floors 18 to 20".
  */
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { catchUp, PLAYER, type Kernel } from '../src/kernel';
@@ -422,7 +427,7 @@ describe('open sky in the tower', () => {
     expect(wet('f1_landing')).toBe(false);
   });
 
-  // ---- openSky.test.ts, floors 0 to 14 and the castle ----
+  // ---- openSky.test.ts, floors 0 to 20 and the castle ----
 
   /** Spots inside an open tower area that carry `indoor`, by floor. */
   const INDOOR_SPOTS: Record<string, string[]> = {
@@ -446,6 +451,10 @@ describe('open sky in the tower', () => {
       'f17_hamlet_square',
       'f17_hamlet_forge',
     ],
+    // Step 4 port C7. f19_door is roofed because its only way in is the
+    // forced road from the Burial Chamber (old comment).
+    f19: ['f19_side_tomb', 'f19_entrance', 'f19_gallery', 'f19_chamber', 'f19_treasury', 'f19_door'],
+    f20: ['f20_warehouses'],
   };
   const LEFT_OPEN = [
     'f0_gate',
@@ -456,6 +465,9 @@ describe('open sky in the tower', () => {
     'f10_artificers_row',
     'f11_gatehouse',
     'f14_beast_lair',
+    'f18_tomb_row',
+    'f19_valley',
+    'f20_notice_wall',
   ];
   const OPEN_AREAS = [
     'ascent_f0_area',
@@ -472,8 +484,11 @@ describe('open sky in the tower', () => {
     'ascent_f14_area',
     // Open by its sky region (`skyRegionId`), not by `sheltered: false`.
     'ascent_f17_area',
+    'ascent_f18_area',
+    'ascent_f19_area',
+    'ascent_f20_area',
   ];
-  /** One open spot per floor of bands 3 and 4, for the night checks. */
+  /** One open spot per floor of bands 3, 4 and 7, for the night checks. */
   const NIGHT_SPOT: Record<number, string> = {
     7: 'f7_docks',
     8: 'f8_forest_gate',
@@ -483,6 +498,9 @@ describe('open sky in the tower', () => {
     12: 'f12_landing',
     13: 'f13_landing',
     14: 'f14_landing',
+    18: 'f18_well_head',
+    19: 'f19_causeway',
+    20: 'f20_river_road',
   };
   const skyAt = (spot: string) => skyKindAt(reads(gameAt(spot, at(40, 12), undefined, SEED_B)), spot);
 
@@ -490,7 +508,7 @@ describe('open sky in the tower', () => {
     const open = Object.values(AREAS)
       .filter((a) => a.regionId === 'the_ascent' && a.sheltered === false)
       .map((a) => a.id);
-    // Floor 11 since step 4 port C2, floors 12 to 14 since port C3.
+    // Floor 11 since step 4 port C2, floors 12 to 14 since port C3, floors 18 to 20 since port C7.
     expect(open).toEqual([
       'ascent_f4_area',
       'ascent_f5_area',
@@ -503,6 +521,9 @@ describe('open sky in the tower', () => {
       'ascent_f12_area',
       'ascent_f13_area',
       'ascent_f14_area',
+      'ascent_f18_area',
+      'ascent_f19_area',
+      'ascent_f20_area',
     ]);
   });
 
@@ -511,7 +532,7 @@ describe('open sky in the tower', () => {
     expect(skyAt('castle_court')).toBeNull();
   });
 
-  it('floors 7 to 14 read the one sky the Ascent pins, so two floors share a kind at one tick', () => {
+  it('floors 7 to 14 and 18 to 20 read the one sky the Ascent pins, so two floors share a kind at one tick', () => {
     const kinds = new Set<string>();
     for (const spot of Object.values(NIGHT_SPOT)) {
       const kind = skyKindAt(reads(gameAt(spot, at(120, 9), undefined, SEED_B)), spot);
@@ -522,7 +543,7 @@ describe('open sky in the tower', () => {
     expect(kinds.size).toBe(1);
   });
 
-  it('the night on floors 7 to 14 is dark and moonlit under the open sky, and teaches Darkvision', () => {
+  it('the night on floors 7 to 14 and 18 to 20 is dark and moonlit under the open sky, and teaches Darkvision', () => {
     for (const [floor, spot] of Object.entries(NIGHT_SPOT)) {
       const r = reads(gameAt(spot, at(3, 23), undefined, SEED_B));
       const moon = moonlightOn(r);
@@ -534,7 +555,7 @@ describe('open sky in the tower', () => {
     }
   });
 
-  it('the night on floors 7 to 14 is not dark by day', () => {
+  it('the night on floors 7 to 14 and 18 to 20 is not dark by day', () => {
     for (const spot of Object.values(NIGHT_SPOT)) {
       expect(darknessFactor(reads(gameAt(spot, at(3, 12), undefined, SEED_B))), spot).toBe(0);
     }
@@ -666,7 +687,41 @@ describe('open sky in the tower', () => {
     expect(sunlight(reads(gameAt('f17_hamlet_square', at(3, 12), undefined, SEED_B)))).toBe(0);
   });
 
-  it.todo('floors 18 to 20: open and roofed areas, night and sun (step 4 port C7)');
+  it('weather changes over 120 days on floor 12 and on floor 18 (it is not a fixed still) (step 4 port C7, old openSky case)', () => {
+    // Both spots are open: the spot's sky is its region's weather (one kernel checks that).
+    expect(skyAt('f12_landing')).not.toBeNull();
+    expect(skyAt('f18_well_head')).not.toBeNull();
+    const seen = new Set<string>();
+    for (let d = 1; d < 120; d++) {
+      for (const spot of ['f12_landing', 'f18_well_head']) seen.add(String(weatherAt(SEED_B, skyRegionOf(spot)!, at(d, 12))?.kind));
+    }
+    expect(seen.has('still')).toBe(false);
+    expect(seen.has('undefined')).toBe(false);
+    expect(seen.size).toBeGreaterThan(2);
+  });
+
+  it('floors 18 to 20: the open road, causeway and delta take the Ascent sky by night and day; the pyramid and the warehouses take none (step 4 port C7)', () => {
+    for (const id of ['ascent_f18', 'ascent_f19', 'ascent_f20']) {
+      const area = AREAS[FLOORS[id].areaId];
+      expect(area.regionId, id).toBe('the_ascent');
+      expect(area.sheltered, id).toBe(false);
+      expect(area.skyRegionId, id).toBeUndefined();
+    }
+    // Floor 18 is all open road; its area trains heat by place (old `heat` tag).
+    expect(AREAS.ascent_f18_area.tags).toEqual(['heat']);
+    for (const spot of Object.values(SPOTS).filter((s) => s.areaId === 'ascent_f18_area')) {
+      expect(spot.tags ?? [], spot.id).not.toContain('indoor');
+      expect(skyAt(spot.id), spot.id).not.toBeNull();
+    }
+    const night = reads(gameAt('f19_causeway', at(3, 23), undefined, SEED_B));
+    expect(moonlightOn(night)).not.toBeNull();
+    expect(darknessFactor(night)).toBeGreaterThan(0);
+    expect(sunlight(reads(gameAt('f20_river_road', at(3, 12), undefined, SEED_B)))).toBeGreaterThan(0);
+    for (const id of ['f19_chamber', 'f19_door', 'f20_warehouses']) {
+      expect(sunlight(reads(gameAt(id, at(3, 12), undefined, SEED_B))), id).toBe(0);
+      expect(moonlightOn(reads(gameAt(id, at(3, 23), undefined, SEED_B))), id).toBeNull();
+    }
+  });
   it.todo('the header weather chip shows `still` at a roofed spot (the UI step: `headerSky` of the old shell)');
 });
 

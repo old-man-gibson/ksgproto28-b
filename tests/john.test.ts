@@ -12,9 +12,9 @@
  * bureaucrat" (a duel harness over forced fights with pinned attributes,
  * left for the next John work).
  *
- * "The road past band 2" (the old smoke case at floor 20) is ported at
- * floor 10 since step 4 port C1: run 2 ends after band 3's wards; the siege
- * and run 3 arrive with ports C2 to C7.
+ * "The road past band 2" (the old smoke case at floor 20) climbed to floor
+ * 10 since step 4 port C1 and one floor further with each port; since port
+ * C7 it climbs to floor 20, as the old one.
  */
 import { beforeAll, describe, expect, it } from 'vitest';
 import { TPS } from '../src/kernel';
@@ -159,16 +159,15 @@ describe('John through band 2', () => {
 
 describe('John: the road past band 2 (smoke test, no bounds)', () => {
   /**
-   * The driver's own health, not the game's pacing: `through: 17` plays three
+   * The driver's own health, not the game's pacing: `through: 20` plays three
    * runs (one prestige by choice, the siege's automatic one) and reports a
    * time for every floor. A floor that stays shut for the cap is a finding
    * (`stuck`, then a debug skip), so this does not fail on one; it fails when
    * John stops for want of a rule, or when a segment never closes. The
-   * numbers are `npm run pacing -- --through 17`. The old case climbs to 20
-   * (port C7).
+   * numbers are `npm run pacing -- --through 20`.
    */
-  it('plays every floor to 17 and never stops for want of a rule', () => {
-    const r = runJohn({ seed: 42, weapon: 'skip', through: 17 });
+  it('plays every floor to 20 and never stops for want of a rule', () => {
+    const r = runJohn({ seed: 42, weapon: 'skip', through: 20 });
     for (const k of SEGMENTS) expect(r.done[k], `${k} never closed`).not.toBeNull();
     for (const [k, st] of Object.entries(r.stuck)) expect(st.wall, `${k}: ${st.why}`).toBe(true);
     expect(r.runs.floor10, 'floor 10 is played in the second run').toBe(2);
@@ -177,6 +176,9 @@ describe('John: the road past band 2 (smoke test, no bounds)', () => {
     expect(r.runs.floor15, 'floor 15 is played in the third run').toBe(3);
     expect(r.runs.floor16, 'floor 16 is played in the third run').toBe(3);
     expect(r.runs.floor17, 'floor 17 is played in the third run').toBe(3);
+    expect(r.runs.floor20, 'floor 20 is played in the third run').toBe(3);
+    // The desert's three bosses: the forecourt guardian, the judge, the roadstead's crew.
+    for (const seg of ['floor18', 'floor19', 'floor20'] as const) expect(r.bossTries[seg], seg).toBeGreaterThan(0);
     // Floor 17 opens its descent on the peak's guardian and clears on the regent.
     expect(r.malgeri.peakFights, 'the peak guardian was fought').toBeGreaterThan(0);
     expect(r.bossTries.floor17).toBeGreaterThan(r.malgeri.peakFights);

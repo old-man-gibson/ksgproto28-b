@@ -18,8 +18,8 @@
  *   `NPCS_TEXT`, `MONSTERS_TEXT`) are fields of the records here; the scans
  *   read the text fields of the records (names, descriptions, find and
  *   activity lines, road labels, dialogue), not their data.
- * - `f18_well_head` (the desert, port C7) is not here; the neighbour scan
- *   reads `f16_arena` only.
+ * - The neighbour scan reads `f16_arena` and, since step 4 port C7,
+ *   `f18_well_head`, as the old one did.
  * - "the forge validator on veils and lore": the old forge's rule is
  *   `veilIssues` (bestiary) and `loreIssues` (npcs) here, called on the live
  *   registries with one record swapped, as the old stand-in store did.
@@ -333,7 +333,7 @@ describe('floor 17: the disclosure rule', () => {
   it("names none of it in the floor's spot, find, floor and band text, nor the neighbours that describe it", () => {
     const texts = [
       ...Object.values(SPOTS)
-        .filter((s) => s.id.startsWith('f17_') || s.id === 'f16_arena')
+        .filter((s) => s.id.startsWith('f17_') || s.id === 'f16_arena' || s.id === 'f18_well_head')
         .flatMap((s) => spotText(s).map((text) => ({ key: s.id, text }))),
       { key: 'ascent_f17.name', text: FLOOR.name },
       { key: 'ascent_f17.desc', text: FLOOR.desc ?? '' },

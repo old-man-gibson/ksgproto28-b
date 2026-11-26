@@ -669,5 +669,18 @@
       "A steady post keeps the roads safe.",
       "The gates are held against a slime regent and its legionaries. The road on to the desert is past them."
     ]
+  },
+  {
+    "id": "f20_broker",
+    "name": "The Broker",
+    "icon": "💰",
+    "spotId": "f20_quay",
+    "quests": [],
+    "desc": "The port house broker on floor 20’s quay. Buys at the posted rates, which are the global sell prices: selling here pays what selling anywhere pays. Sells nothing.",
+    "dialogue": [
+      "Posted rates. The same coin you would get for it anywhere in the tower; the port house pays no premium.",
+      "The port house licenses the digs and buys what comes out of them. It sells nothing back.",
+      "The ferry to the island leaves from the roadstead. Its crew fights whoever rows out."
+    ]
   }
 ]

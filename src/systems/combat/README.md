@@ -582,3 +582,15 @@ skip.
   combat ticks after the world in the same kernel tick, so a forced fight's
   first combat tick is the arrival tick (older than this port;
   `tests/approach.test.ts` reads the opening from the transcript).
+
+## Step 4 port C7
+
+- No code. The judge of floor 19 is the first live line with `levelRise`
+  (spine port 4: `steppedLevel` applies `encounterLevel` of `levels` to
+  a table roll, leader and fillers alike, never to a pinned override). Its
+  counter `flag:tomb:taken` is read when the line spawns.
+- The roadstead's crew is the second live approach after the harbor's
+  picket: three reads on floor 18 leave the crew surprised. The first
+  combat tick is the arrival tick (port C3), so the player's first blow,
+  which a surprised formation hands the player, spends the front member's
+  surprise in that tick.

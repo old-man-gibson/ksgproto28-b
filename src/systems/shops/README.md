@@ -39,4 +39,14 @@ are off it. A partial buy is allowed (buy 5 with gold for 3 buys 3). Bumps
 
 ## Left behind
 
-- The counters of floors 11 to 20 and the broker (step 4).
+- The counters of floors 11 to 20 and the broker (step 4). The harbor's
+  two counters came with port C3; the broker (no shelf) with port C7.
+
+## Step 4 port C7
+
+- The broker of floor 20 (`npcs`) has no shelf: `visibleLines` is empty,
+  so nothing can be bought from it below resale. Its "buying" is the plain
+  sale of `materials` and `items`, at the global price
+  (`materialSellPrice` and `gradedUnitPrice` with `stats/goldGain`):
+  the quay pays what the Foot pays (`tests/desert.test.ts`). No code
+  changed.
