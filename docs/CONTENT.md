@@ -535,7 +535,7 @@ and can run beside another port (W touches only `weather` and `clock`).
   hold the tolerance; the segments outside it are the seven of `main`,
   each chance met a few times per seed (15.1). Step 4 status: 15.5.
 
-### 5.10 Port F: Facet leftovers (conditional)
+### 5.10 Port F: Facet leftovers (conditional; done, section 16)
 
 - Scope: `clones.ts` (253); `combat.ts` 1700-1870, 4145, 4841 (statues
   crumble, break, throw rocks, pay Stone Chunks); `Game.ts` 226-233, 271
@@ -3027,7 +3027,7 @@ live, the seam verb (no floor 21), the dev server on 5600.
 
 ### 15.5 Step 4 status
 
-Step 4 is done but for port F (conditional, section 5.10). The ports L,
+Step 4 is done but for port F (conditional, section 5.10; done since, section 16.7). The ports L,
 C1 to C7 and W brought bands 3 to 7 (floors 7 to 20), the stronghold and
 its automatic prestige, the hold and bonus time, the harbor and the sea,
 the festival and the royale, Weathersense and Chronosense, the Malgeri
@@ -3065,3 +3065,291 @@ port F.
 
 Open findings: none that changes a rule. The gold John earns in run 1 is
 still under the old build's (docs/SPINE.md section 9.1, not traced).
+
+## 16. Port F: Facet leftovers (done)
+
+Done 2026-11-25 on branch `step4-F`, from `main` at `a096cbe`. Not merged,
+not pushed. Commits:
+
+1. `52bfa16`, the port.
+2. `722afbb`, the kernel's play holds pushed (docs/KERNEL.md decision 37).
+   Its own commit, so it can be taken or left apart from the port; without
+   it the port reuses decision 36 as built and pays the cost in 16.4.
+3. This account.
+
+The outcome digests did not change (every digest of `npm run verify`
+passed on both commits), so there is no digest commit.
+
+The full account: the `facet` README (the port F parts of "Lines outside
+this folder", "Slice", "Ported", "Differences", "Old rules"), the "Step 4
+port F" sections of the `combat`, `benches`, `alchemy`, `cooking`,
+`smithing`, `mutagens` and `world` READMEs, the `training` README's hold,
+and docs/KERNEL.md decision 37.
+
+The user confirmed before the port that Facet abilities are kept (section
+6, Q2). The switch and its default (off) are unchanged.
+
+What was ported:
+
+- **Shadow Clone** (old `systems/clones.ts`, 253 lines, and the clone half
+  of old `facet/host.ts`), in `facet` (`clones.ts`). The clone cell of the
+  held document gives the rules: its cap is the most clones out (1 + 1 per
+  10 character levels, max 5), its carrier's `cloneYield` 0.4 and `cloneXp`
+  0.25 the shares, its value the count out (5% off max mana per clone).
+  Send to a gathering or job activity of the spot or to a bench layout;
+  with every clone out the oldest fades; a clone ends on recall, on a
+  knockout, when the player stands more than max(0, floor((level - 10) / 5))
+  floors away, and quietly when its activity no longer exists. On an
+  activity it keeps the player's pace and yields 40% of the materials or
+  pay and 25% of the activity's skill XP (no attribute XP, no drops); at a
+  bench it makes whole crafts from the player's stock, each pass the
+  bench's time divided by 0.4, and waits quietly when short. The slice
+  field `clones` is optional and absent while none is out: no version
+  step, no migration, and every save and state hash without clones is as
+  before. Commands `facet/send-clone`, `facet/send-clone-bench`,
+  `facet/recall-clone`, `facet/recall-clones`. The grant takes
+  `shadow_clone`.
+- **Bench crafts at a clone's share**: the bench owner's `craft` request
+  takes `xpScale` (the old `scaledSkillXp` scope); alchemy, cooking,
+  smithing and mutagens pass it as `scale` on their skill XP events. No
+  craft grants attribute XP, so nothing else is scaled, as in the old
+  build. `crafting` (the per-recipe activities) needs nothing: a clone
+  takes gathering and job activities only (old `cloneActivity`).
+- **The statue rules** (old `combat.ts` 1700-1870, 3950, 4145, 4841), in
+  `combat` behind the fight flag `Fight.statues` (optional, absent until
+  set): a statue does nothing; left alone it crumbles or, with Rubble,
+  bursts; broken it throws rocks at the enemies behind it; it pays Stone
+  Chunks (gold x 0.5, Rubble 0) and half its XP and drops nothing (the
+  `loot` system's drop table is skipped); Stoneskin's statues stand out of
+  the centre and the fight is won when only they remain. The host sets the
+  flag through `combat/statue-landed` where its dose turns an enemy to
+  stone; the enemy condition tick sets it for a statue that came another
+  way, where the spine's `combat/statue` skip stood. The fight hook
+  `rocks` raises the ability event `rocks` (Rubble's 15 Stone). A fight
+  without a statue reads nothing more than before.
+- **The hold of play while an evolution waits** (old `Game.tick` 226-233
+  and 271, `facet/host.ts:579`): a play hold and a catch-up hold on the
+  waiting offer (decision 36): a held tick runs no system, keeps the tick
+  number and banks one tick of bonus time; catch-up stops at the waiting
+  pick and banks the rest. Pushed by the second commit (decision 37).
+- **UI**: the Ability tab lists "Clones at work" with Recall and Recall
+  all; the Location panel mounts the clone buttons of the spot
+  (`facet/CloneActivities.svelte`); the Alembic, Kitchen, Culture Bench and
+  Anvil panels mount "Send a clone" (`facet/CloneBenchButton.svelte`); the
+  evolution window (old `EvolveModal.svelte`) says play is paused and shows
+  the bonus time bank.
+- Spec, every old case accounted for:
+
+| Old file | Cases | Here |
+|---|---|---|
+| `shadowClone.test.ts` | 8 | 8 in `tests/shadowClone.test.ts` under the old names. "a craft by a clone pays 25% of the skill XP yours does" uses grade f onions, not c: the cut's grade is rolled and its XP grows with it; the old stream gave both crafts the same cut; here the generator also draws on every tick (the kernel's toy `counter`), so crafts on different ticks roll apart, and grade f pins both cuts. The bench cases stand at the Granary Kitchens (the old shelved home had the same board). |
+| `basiliskHide.test.ts` | 6 | In `tests/facetAbilities.test.ts`, "Basilisk Hide": the first two and the first half of the third since step 3; port F adds "a statue does nothing: its bar does not even fill" (the third's second half), the crumble (half the gold, no drops, the fight won), the rocks of a broken statue, and the rocks that end the fight. |
+| `basiliskEvolve.test.ts` | 8 | The 85% count since step 3; the offer, the save and the branch since step 3, the hold now ("play holds while the pick is on offer, the held time is banked, and the pick lifts the hold"); Gorgon's Gaze since step 3, its last part (the gaze moves on) now; Rubble's two cases and Stoneskin's three now. |
+| The Facet todos | 4 | `facetAbilities.test.ts` 546, 590 and 613 are the cases above. `exposure.test.ts` 1632 ("Solar Charge banks `world.sunlight`", from spine port 6, before the Facet port) is covered by `tests/facet.test.ts` "banks under open sky by day" since step 3; the todo is a pointer now. |
+
+  New: "offline, catch-up stops at a waiting pick and banks the rest"
+  (`facetAbilities`); `tests/facet.test.ts` "grants Shadow Clone, with its
+  clone section in the view" in place of "refuses Shadow Clone"; the
+  toy holder of `tests/runner.test.ts` rewritten for decision 37 with two
+  new cases (a change the holder does not say is not seen; a new run asks
+  every holder). Statue conditions put straight on an enemy in a test go
+  through `statuses/apply` and then `combat/statue-landed`, the two doors
+  the host uses. Unit project: 3,720 passed, 4 skipped, 115 todo (`main`:
+  3,699, 4, 119).
+
+Differences from the old build, none a rule change (facet README):
+
+- The clones work in `facet`'s tick (order 30, after the weather); the old
+  `advance` ran them after the bench run and before the sea, the festival,
+  the wards and the sky. A spot, level or knockout change made in one of
+  those ticks reaches the clones in the same tick here, the next tick in
+  the old build.
+- `facet/send-clone-bench` refuses a bench no system works (the Rune
+  Table); the old call sent a clone that waited for ever (the old panel
+  never offered it). `facet/recall-clones` with none out is refused with a
+  reason; the old call returned 0.
+- A statue condition put on an enemy by anything but the host (no content
+  does) gets the statue rules from the next enemy condition tick unless the
+  caller says `combat/statue-landed`.
+- The stronghold's automatic prestige is a tick handler here, so a
+  waiting pick holds it too; the old `Game.tick` checked the prestige
+  first. Both are due in one tick only if a statue of the wave's last fight
+  brings the evolution.
+
+Old rules ported as they are: a clone at a bench short of stock waits and
+says nothing; granting Shadow Clone again keeps the clones out with the new
+document's count at 0 (no mana reserved) until a clone is sent or ends; a
+job clone whose share rounds to 0 pays nothing; a clone's activity cycle
+grants skill XP only (no attribute XP, no drops, no discovery check, no
+cycle event); a statue's kill is a kill everywhere and pays level XP at
+the reduced XP.
+
+Noticed, older than this port:
+
+- The kernel's toy `counter` system draws the generator on every tick
+  (`LUCKY_CHANCE`), so any roll made a few ticks later than in the old
+  build lands on another number; the old Shadow Clone case relied on two
+  crafts on different ticks rolling the same cut.
+- The Facet test helper `holding(ability, { level })` sets the attribute
+  levels, not the character level; the name reads as the latter.
+- A level-1 character hunting the Woods Edge of floor 4 is knocked out by
+  a goblin's Lacerated and wakes in the Holding Cell with "no known route
+  back" (both builds); the live measurement used level 10.
+
+### 16.1 John
+
+No John segment changes with Facet off. `npm run pacing -- --through 20
+--seeds 42,7,1234` and with `--side navy`, on `main` (`a096cbe`, the
+worktree `D:\ksgproto28-b-main`) and on the branch after each commit: the
+output of the branch equals `main`'s line for line on both sides, every
+seed and segment (the wall-clock lines aside). Every outcome digest of
+`tests/outcome.test.ts` and of the budget runs is unchanged.
+
+### 16.2 Live play with a Facet ability
+
+Both builds in one process, alternating rounds, 10 rounds of 3,000 ticks
+after 1,000 of warm-up, from the same character made the same way in each
+build (`.scratch-F/live.ts`): hunting the Woods Edge of floor 4. Old
+`game.tick()` against new `kernel.tick()`; the two cores are the same
+files, and each round installs its own build's host. Microseconds per tick
+(minimum / median), and the first round's work:
+
+| Fight | Load | Old `game.tick()` | New `kernel.tick()` | New / old | Kills old / new | Other |
+|---|---|---|---|---|---|---|
+| With a Shadow Clone (level 30, attributes 25, one clone at The Alembics' retorts job) | 17 to 22% | 115 / 130 | 47 / 58 | 0.45 | 119 / 118 | the clone out at the end in both |
+| The same character, no clone | 25% | 96 / 107 | 38 / 45 | 0.42 | 119 / 118 | |
+| Statues (Basilisk Hide, level 10, STR 1, CON 400, the others 25) | 2 to 17% | 120 / 142 | 52 / 64 | 0.45 | 75 / 73 | 9 / 5 statues |
+
+- The clone costs old about 17 to 23 µs a tick and new about 9 to 13: its
+  rules (the cap read from the document every tick, as the old build did),
+  the reach and the activity cycle.
+- A statue fight in each build costs what a fight costs: the statue rules
+  read the enemies' conditions only in a fight with a statue.
+- Stoneskin and an ability-less baseline of the statue character were
+  tried and dropped: one build's character was knocked out in the window
+  (a goblin's Lacerated), so the work differed.
+
+### 16.3 Offline budgets and the speed project
+
+Against `main` (`a096cbe`), both builds' modules in one process,
+alternating rounds (`.scratch-F/ab.ts`, `.scratch-F/abspeed.ts`, from port
+C7's). Wall time (minimum / median) and the median of the per-round
+differences of the process's processor time.
+
+| Run of 8 hours | Rounds | Load | `main` wall | Branch wall | Wall median | Processor, paired |
+|---|---|---|---|---|---|---|
+| No fight, no condition | 25 | 26% at the end | 1,886 / 1,922 | 1,857 / 1,902 | -20 (-1.0%) | -15 (-0.7%) |
+| A poison held | 11 | 5% at the start | 4,825 / 4,976 | 4,780 / 4,867 | -109 (-2.2%) | -1 (-0.0%) |
+| Floor 1 table sent to combat | 3 | 5 to 26% | 5,839 / 5,860 | 5,670 / 5,815 | -45 (-0.8%) | -110 (-1.7%) |
+| Floor 6 Tunnels sent to combat | 3 | 5 to 26% | 9,463 / 9,673 | 9,246 / 9,260 | -413 (-4.3%) | -640 (-5.9%) |
+| World: hunt, floor 4 Woods Edge | 3 | 5 to 26% | 9,412 / 9,523 | 9,295 / 9,542 | +19 (+0.2%) | -15 (-0.1%) |
+| World: hunt, floor 6 Tunnels | 3 | 5 to 26% | 9,580 / 9,740 | 9,307 / 9,604 | -136 (-1.4%) | -157 (-1.4%) |
+| World: the roadstead | 3 | 5 to 26% | 8,743 / 9,107 | 8,673 / 8,796 | -311 (-3.4%) | -125 (-1.2%) |
+
+The speed project's four states (built by John in each build, then 8 hours
+of catch-up asking the holds), 3 rounds, run between the load readings of
+5% (before the poison batch) and 26% (after the 25-round idle batch):
+
+| State | `main` wall | Branch wall | Wall median | Processor, paired |
+|---|---|---|---|---|
+| Floor 1 hunting | 6,347 / 6,450 | 6,343 / 6,375 | -75 (-1.2%) | 0 (0.0%) |
+| Floor 6 hunting | 11,903 / 12,027 | 11,435 / 11,837 | -190 (-1.6%) | -469 (-3.5%) |
+| Idle in town | 2,122 / 2,197 | 2,147 / 2,203 | +6 (+0.3%) | +141 (+6.4%) |
+| Floor 7 hunting | 8,328 / 8,482 | 8,204 / 8,325 | -157 (-1.9%) | -31 (-0.3%) |
+
+The town state's processor reading (+6.4%, n=3, wall +0.3%) is the one
+reading above noise on its face; the idle run, the same kind of tick,
+reads -0.7% processor and -1.0% wall over 25 rounds.
+
+### 16.4 The play holds (decision 37)
+
+Decision 36 as built asked every play holder before every live tick and
+every catch-up tick. The evolution's hold made a second holder. The idle
+run of 8 hours, one process, alternating rounds, processor time, median of
+the per-round differences, load 1% (`.scratch-F/abhold.ts`): the branch at
+`52bfa16` against itself with the evolution's two holds removed: catch-up
++47 ms of about 1,860 (+2.5%), live +78 ms (+4.1%; +16 ms, -0.8%, against
+`main`), 9 rounds. With the push model (`722afbb`), against `main`, 9
+rounds, load 9%: catch-up -14 ms (-0.7%), live -31 ms (-1.6%); the rounds
+scatter by 100 to 500 ms, so both readings are noise; the 25-round idle
+batch of 16.3 reads -0.7%. A tick asks no holder now; catch-up asks only
+the festival's.
+
+### 16.5 Verify
+
+`npm run verify` on the code of the branch head, exit 0 (machine load 19%
+at the start, 10% at the end): svelte-check 0 errors; unit 3,720 passed, 4
+skipped, 115 todo; budget 4 (idle 1,943 ms of 2,420, poison 5,107 of 8,250,
+floor 1 5,844 of 7,700, floor 6 10,119 of 14,850); budget-world 3 (floor 4
+9,542, floor 6 9,987, the roadstead 8,703, each of 14,300); speed (floor 1
+59%, floor 6 80%, town 65%, floor 7 56% of the limit; machine load 11 to
+19%; yardstick 198 to 211 ms; kills 10,631, 11,622, 0 and 12,979, within
+1% of the old build's); john 14; build. Every outcome digest equal to the
+recorded ones. The same passed on each commit before it.
+
+### 16.6 Browser check
+
+The build preview on port 5601 (`ksgb-preview`, the build of the second
+commit), 1024 px and 375 px. The preview's slot (`ksgb:production:save`)
+held a new game (4,486 bytes); it was backed up at
+`ksgb:production:save.before-step4F-check`, each check save was written by
+a static page of the same origin, and the slot was put back after (4,486
+bytes, Facet off) and the backup key removed; the pages and saves were
+deleted from `dist/` and the server stopped. Three saves made headless
+(`.scratch-F/saves.ts`): Shadow Clone at level 25 with a clone at The
+Alembics' retorts and the player at the Granary Kitchens with six onions;
+Basilisk Hide at 99% of its count, hunting the Woods Edge until the offer;
+Stoneskin hunting the Woods Edge until a standing statue.
+
+- Character panel: mana 26.4 / 58 with one clone out.
+- Ability tab: "Clones at work": "👥 Wash Out the Retorts · The Alembics",
+  Recall, the reach line ("more than 3 floors away"), Recall all.
+- Kitchen, Cutting Board, Fair onion and Slice: "👥 Send a clone" and "A
+  clone makes this from your stock at 40% of your speed."; sent: the stock
+  went from 6 to 3 in about 10 s; the Ability tab listed "Preparing · The
+  Granary Kitchens" with "Next craft in 3 s", count 2 / 3.
+- Location panel: the "Shadow clones" card: "👥 Clone: Scrub the Pans",
+  "Here: Preparing.", the Yield and Count lines; two sends: 3 of 3 out and
+  the retorts clone, the oldest, gone ("Here: Preparing, Scrub the Pans,
+  Scrub the Pans.").
+- 375 px: the card 351 px wide, the button 239 x 44, the status line 325 x
+  24 (one line); the Ability tab's rows 351 px, Recall 75 x 44; Recall
+  removed the board clone (2 / 3); no horizontal scroll.
+- The evolution save: "⏸️ 🗿 Basilisk Hide evolves", the three branches
+  with their lines and Take buttons, "Play is paused until you pick. Paused
+  time goes to bonus time: ⏩ 7s."; over 6 s the clock stayed at 0:00:04,
+  the saved tick at 48, and the bank went to 13 s; at 375 px the window
+  351 x 770 inside 812, buttons 44 high, no horizontal scroll. Take
+  Stoneskin: the window closed and the clock ran (0:00:04 to 0:00:07 in
+  3 s).
+- The statue save: the Combat panel with the fighting Goblin (Lv 14, its
+  Stone icon) in the centre and the standing statue (🗿, Goblin Lv 16, 2 /
+  104, empty action bar) in slot 2; the log: "🗿 The Goblin (level 14)
+  crumbles away: Stone Chunks worth 25 gold." and others, the feed "↔️ 👺
+  Goblin steps forward!".
+- No console errors.
+
+Not checked in a browser: "Send a clone" in the Alembic, Culture Bench and
+Anvil panels (the same component as the Kitchen's); a broken statue's rocks
+and Rubble's burst live (tested headless); a clone left too far behind or
+ended by a knockout live; the dev server on 5600; the build without the
+core.
+
+### 16.7 Step 4 status
+
+Step 4 is done. The ports L, C1 to C7, W and F brought bands 3 to 7
+(floors 7 to 20), the stronghold and its automatic prestige, the hold and
+bonus time, the harbor and the sea, the festival and the royale,
+Weathersense and Chronosense, the Malgeri Crossing, the desert, and the
+Facet leftovers (Shadow Clone, the statue rules, the hold of play while an
+evolution waits). A new save plays floor 0 to floor 20 in three runs by
+commands only, with no wall on any seed or side; parity with the old build
+is section 15.5's, unchanged by port F.
+
+What the UI step inherits, from step 4: section 15.5's list. Of the unit
+project's 115 `it.todo` cases, 40 are tagged for the UI step and 29 test an
+old save migration (no importer), as in section 15.5; the four that waited
+on port F are cases or a pointer now.
+
+Open findings: none that changes a rule. Section 15.5's (the gold John
+earns in run 1, not traced) stands.
